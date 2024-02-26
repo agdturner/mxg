@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "CommonJS",
+        "outDir": "dist/",
+        "rootDir": "src/ts/",
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "declaration": true,
+        "sourceMap": true
+    },
+    "include": [
+        "src/ts/*.ts"
+    ],
+    "exclude": [
+        "dist/*.js"
+    ]
+}
