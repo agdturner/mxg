@@ -46,6 +46,7 @@ import {
     Control, DiagramEnergyOffset
 } from './control.js';
 
+/*
 // Code for service worker for Progressive Web App (PWA).
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -54,6 +55,7 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(swUrl);
     });
 }
+*/
 /*  
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
