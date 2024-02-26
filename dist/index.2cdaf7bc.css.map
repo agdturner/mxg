@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;;;;AAOA","sources":["src/style.css"],"sourcesContent":["table,\nth,\ntd {\n  border: 1px solid black;\n  border-collapse: collapse;\n}\n\nth,\ntd {\n  padding: 5px;\n}"],"names":[],"version":3,"file":"index.2cdaf7bc.css.map","sourceRoot":"/__parcel_source_root/"}

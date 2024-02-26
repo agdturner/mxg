@@ -7,6 +7,8 @@
     "build": "parcel build"
   },
   "devDependencies": {
+    "@parcel/packager-raw-url": "^2.11.0",
+    "@parcel/transformer-webmanifest": "^2.11.0",
     "parcel": "^2.11.0",
     "typescript": "^5.3.3"
   },
