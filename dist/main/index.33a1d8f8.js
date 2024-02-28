@@ -328,8 +328,11 @@ class $78e2bc6c20f9f192$export$499950da20810ac9 extends (0, $4831903fcafd8482$ex
      * @param padding - Optional padding string for formatting the XML output.
      * @returns An XML representation.
      */ toXML(pad, padding) {
-        if (pad == undefined) return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(this.deltaEDown.toXML("me.deltaEDown", padding), "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
-        else return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(this.deltaEDown.toXML("me.deltaEDown", padding), "energyTransferModel", undefined, undefined, undefined, padding, true);
+        if (pad == undefined) return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(this.deltaEDown.toXML("me:deltaEDown", padding), "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
+        else {
+            if (padding == undefined) padding = "";
+            return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(this.deltaEDown.toXML("me:deltaEDown", padding + pad), "me:energyTransferModel", this.attributes, undefined, undefined, padding, true);
+        }
     }
 }
 class $78e2bc6c20f9f192$export$bbdce6c921702068 {
@@ -345,7 +348,7 @@ class $78e2bc6c20f9f192$export$bbdce6c921702068 {
      * @param padding The padding (Optional).
      * @returns A tag representation.
      */ toTag(padding) {
-        let s = `<me.DOSCMethod xsi:type="${this.type}"/>`;
+        let s = `<me:DOSCMethod xsi:type="${this.type}"/>`;
         if (padding) return "\n" + padding + s;
         return "\n" + s;
     }
@@ -754,15 +757,15 @@ class $12a3b21d146eb8ae$export$d2ae4167a30cf6bb extends (0, $4831903fcafd8482$ex
         });
         // Tunneling
         let tunneling_xml = "";
-        if (this.tunneling != undefined) tunneling_xml = this.tunneling.toTag("me.tunneling", padding1);
+        if (this.tunneling != undefined) tunneling_xml = this.tunneling.toTag("me:tunneling", padding1);
         // TransitionState
         let transitionState_xml = "";
-        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML("transitionState", pad, padding1);
+        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML("me:transitionState", pad, padding1);
         // MCRCMethod
         let mCRCMethod_xml = "";
         if (this.mCRCMethod != undefined) {
-            if (this.mCRCMethod instanceof $12a3b21d146eb8ae$export$191e95ebb11cc88) mCRCMethod_xml = this.mCRCMethod.toXML("mCRCMethod", padding1);
-            else mCRCMethod_xml = this.mCRCMethod.toTag("mCRCMethod", padding1);
+            if (this.mCRCMethod instanceof $12a3b21d146eb8ae$export$191e95ebb11cc88) mCRCMethod_xml = this.mCRCMethod.toXML("me:MCRCMethod", padding1);
+            else mCRCMethod_xml = this.mCRCMethod.toTag("me:MCRCMethod", padding1);
         }
         return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml, tagName, this.attributes, undefined, undefined, padding0, true);
     }
@@ -876,11 +879,11 @@ class $eb2684c350976919$export$363c7374d425f4ad {
      */ toXML(pad, padding) {
         let padding1 = "";
         if (pad != undefined && padding != undefined) padding1 = padding + pad;
-        let s = this.bathGas.toXML("bathGas", pad, padding1);
+        let s = this.bathGas.toXML("me:bathGas", pad, padding1);
         this.pTs.forEach((pt)=>{
             s += pt.toTag("PTpair", padding1);
         });
-        return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(s, "conditions", undefined, undefined, undefined, padding, true);
+        return (0, $3b8751d27ddf0746$export$dad497fe1f6e27c0)(s, "me:conditions", undefined, undefined, undefined, padding, true);
     }
 }
 
@@ -1074,11 +1077,20 @@ let $496eced55b7d3f1a$var$xml_text;
         let attributes = (0, $3b8751d27ddf0746$export$fe94072fee8a6976)(xml_molecules[i]);
         let moleculeTagNames = new Set();
         let cns = xml_molecules[i].childNodes;
-        cns.forEach(function(node) {
-            moleculeTagNames.add(node.nodeName);
-        });
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
+        console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for(let j = 0; j < cns.length; j++){
+            let cn = cns[j];
+            //moleculeTagNames.add(cn.nodeName);
+            // This performs a check as wierdly in "me:DOSCMethod" was appearing twice when reading back in.
+            if (!moleculeTagNames.has(cn.nodeName)) moleculeTagNames.add(cn.nodeName);
+            else //if (cn.nodeName != "#text") {
+            console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+            console.log(cn.nodeName);
+        }
+        //});
+        console.log("moleculeTagNames:");
+        moleculeTagNames.forEach((x)=>console.log(x));
         // Set atoms.
         const atoms = new Map();
         // Sometimes there is an individual atom not in an atomArray.
@@ -1183,6 +1195,7 @@ let $496eced55b7d3f1a$var$xml_text;
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
+            moleculeTagNames.forEach((x)=>console.log(x));
             console.error("Remaining moleculeTagNames:");
             moleculeTagNames.forEach((x)=>console.error(x));
             throw new Error("Unexpected tags in molecule.");
@@ -2050,4 +2063,4 @@ window.setEnergy = $496eced55b7d3f1a$export$afc96e5ea6df45fd;
 
 
 export {$496eced55b7d3f1a$export$afc96e5ea6df45fd as setEnergy};
-//# sourceMappingURL=index.e933faa0.js.map
+//# sourceMappingURL=index.33a1d8f8.js.map

@@ -1,5 +1,5 @@
 import {
-    Attributes, NumberArrayWithAttributes, NumberWithAttributes 
+    Attributes, NumberArrayWithAttributes, NumberWithAttributes
 } from './classes.js';
 
 import {
@@ -165,11 +165,14 @@ export class EnergyTransferModel extends Attributes {
      */
     toXML(pad?: string, padding?: string): string {
         if (pad == undefined) {
-            return getTag(this.deltaEDown.toXML("me.deltaEDown", padding), "me:energyTransferModel",
-             this.attributes, undefined, undefined, padding, false);
+            return getTag(this.deltaEDown.toXML("me:deltaEDown", padding), "me:energyTransferModel",
+                this.attributes, undefined, undefined, padding, false);
         } else {
-            return getTag(this.deltaEDown.toXML("me.deltaEDown", padding), "energyTransferModel",
-             undefined, undefined, undefined, padding, true);
+            if (padding == undefined) {
+                padding = "";
+            }
+            return getTag(this.deltaEDown.toXML("me:deltaEDown", padding + pad), "me:energyTransferModel",
+                this.attributes, undefined, undefined, padding, true);
         }
     }
 }
@@ -195,7 +198,7 @@ export class DOSCMethod {
      * @returns A tag representation.
      */
     toTag(padding?: string): string {
-        let s: string = `<me.DOSCMethod xsi:type="${this.type}"/>`;
+        let s: string = `<me:DOSCMethod xsi:type="${this.type}"/>`;
         if (padding) {
             return "\n" + padding + s;
         }

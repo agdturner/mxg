@@ -688,11 +688,20 @@ let xml_text;
         let attributes = (0, _xmlJs.getAttributes)(xml_molecules[i]);
         let moleculeTagNames = new Set();
         let cns = xml_molecules[i].childNodes;
-        cns.forEach(function(node) {
-            moleculeTagNames.add(node.nodeName);
-        });
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
+        console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for(let j = 0; j < cns.length; j++){
+            let cn = cns[j];
+            //moleculeTagNames.add(cn.nodeName);
+            // This performs a check as wierdly in "me:DOSCMethod" was appearing twice when reading back in.
+            if (!moleculeTagNames.has(cn.nodeName)) moleculeTagNames.add(cn.nodeName);
+            else //if (cn.nodeName != "#text") {
+            console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+            console.log(cn.nodeName);
+        }
+        //});
+        console.log("moleculeTagNames:");
+        moleculeTagNames.forEach((x)=>console.log(x));
         // Set atoms.
         const atoms = new Map();
         // Sometimes there is an individual atom not in an atomArray.
@@ -797,6 +806,7 @@ let xml_text;
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
+            moleculeTagNames.forEach((x)=>console.log(x));
             console.error("Remaining moleculeTagNames:");
             moleculeTagNames.forEach((x)=>console.error(x));
             throw new Error("Unexpected tags in molecule.");
@@ -1980,8 +1990,11 @@ class EnergyTransferModel extends (0, _classesJs.Attributes) {
      * @param padding - Optional padding string for formatting the XML output.
      * @returns An XML representation.
      */ toXML(pad, padding) {
-        if (pad == undefined) return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me.deltaEDown", padding), "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
-        else return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me.deltaEDown", padding), "energyTransferModel", undefined, undefined, undefined, padding, true);
+        if (pad == undefined) return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me:deltaEDown", padding), "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
+        else {
+            if (padding == undefined) padding = "";
+            return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me:deltaEDown", padding + pad), "me:energyTransferModel", this.attributes, undefined, undefined, padding, true);
+        }
     }
 }
 class DOSCMethod {
@@ -1997,7 +2010,7 @@ class DOSCMethod {
      * @param padding The padding (Optional).
      * @returns A tag representation.
      */ toTag(padding) {
-        let s = `<me.DOSCMethod xsi:type="${this.type}"/>`;
+        let s = `<me:DOSCMethod xsi:type="${this.type}"/>`;
         if (padding) return "\n" + padding + s;
         return "\n" + s;
     }
@@ -2749,15 +2762,15 @@ class Reaction extends (0, _classesJs.Attributes) {
         });
         // Tunneling
         let tunneling_xml = "";
-        if (this.tunneling != undefined) tunneling_xml = this.tunneling.toTag("me.tunneling", padding1);
+        if (this.tunneling != undefined) tunneling_xml = this.tunneling.toTag("me:tunneling", padding1);
         // TransitionState
         let transitionState_xml = "";
-        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML("transitionState", pad, padding1);
+        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML("me:transitionState", pad, padding1);
         // MCRCMethod
         let mCRCMethod_xml = "";
         if (this.mCRCMethod != undefined) {
-            if (this.mCRCMethod instanceof MesmerILT) mCRCMethod_xml = this.mCRCMethod.toXML("mCRCMethod", padding1);
-            else mCRCMethod_xml = this.mCRCMethod.toTag("mCRCMethod", padding1);
+            if (this.mCRCMethod instanceof MesmerILT) mCRCMethod_xml = this.mCRCMethod.toXML("me:MCRCMethod", padding1);
+            else mCRCMethod_xml = this.mCRCMethod.toTag("me:MCRCMethod", padding1);
         }
         return (0, _xmlJs.getTag)(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml, tagName, this.attributes, undefined, undefined, padding0, true);
     }
@@ -2912,11 +2925,11 @@ class Conditions {
      */ toXML(pad, padding) {
         let padding1 = "";
         if (pad != undefined && padding != undefined) padding1 = padding + pad;
-        let s = this.bathGas.toXML("bathGas", pad, padding1);
+        let s = this.bathGas.toXML("me:bathGas", pad, padding1);
         this.pTs.forEach((pt)=>{
             s += pt.toTag("PTpair", padding1);
         });
-        return (0, _xmlJs.getTag)(s, "conditions", undefined, undefined, undefined, padding, true);
+        return (0, _xmlJs.getTag)(s, "me:conditions", undefined, undefined, undefined, padding, true);
     }
 }
 

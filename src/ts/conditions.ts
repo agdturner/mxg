@@ -99,10 +99,10 @@ export class Conditions {
         if (pad != undefined && padding != undefined) {
             padding1 = padding + pad;
         }
-        let s: string = this.bathGas.toXML("bathGas", pad, padding1);
+        let s: string = this.bathGas.toXML("me:bathGas", pad, padding1);
         this.pTs.forEach((pt) => {
             s += pt.toTag("PTpair", padding1);
         });
-        return getTag(s, "conditions", undefined, undefined, undefined, padding, true);
+        return getTag(s, "me:conditions", undefined, undefined, undefined, padding, true);
     }
 }

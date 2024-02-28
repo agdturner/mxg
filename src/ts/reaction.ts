@@ -549,20 +549,20 @@ export class Reaction extends Attributes {
         // Tunneling
         let tunneling_xml: string = "";
         if (this.tunneling != undefined) {
-            tunneling_xml = this.tunneling.toTag("me.tunneling", padding1);
+            tunneling_xml = this.tunneling.toTag("me:tunneling", padding1);
         }
         // TransitionState
         let transitionState_xml: string = "";
         if (this.transitionState != undefined) {
-            transitionState_xml = this.transitionState.toXML("transitionState", pad, padding1);
+            transitionState_xml = this.transitionState.toXML("me:transitionState", pad, padding1);
         }
         // MCRCMethod
         let mCRCMethod_xml: string = "";
         if (this.mCRCMethod != undefined) {
             if (this.mCRCMethod instanceof MesmerILT) {
-                mCRCMethod_xml = this.mCRCMethod.toXML("mCRCMethod", padding1);
+                mCRCMethod_xml = this.mCRCMethod.toXML("me:MCRCMethod", padding1);
             } else {
-                mCRCMethod_xml = this.mCRCMethod.toTag("mCRCMethod", padding1);
+                mCRCMethod_xml = this.mCRCMethod.toTag("me:MCRCMethod", padding1);
             }
         }
         return getTag(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml,

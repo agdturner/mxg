@@ -208,14 +208,28 @@ function initMolecules(xml: XMLDocument): void {
     for (let i = 0; i < xml_molecules.length; i++) {
         // Set attributes.
         let attributes: Map<string, string> = getAttributes(xml_molecules[i]);
-
         let moleculeTagNames: Set<string> = new Set();
         let cns: NodeListOf<ChildNode> = xml_molecules[i].childNodes;
-        cns.forEach(function (node) {
-            moleculeTagNames.add(node.nodeName);
-        });
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
+        console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for (let j = 0; j < cns.length; j ++) {
+            let cn: ChildNode = cns[j];
+            //moleculeTagNames.add(cn.nodeName);
+
+            // This performs a check as wierdly in "me:DOSCMethod" was appearing twice when reading back in.
+            if (!moleculeTagNames.has(cn.nodeName)) {
+                moleculeTagNames.add(cn.nodeName);
+            } else {
+                //if (cn.nodeName != "#text") {
+                    console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+                    //throw new Error("cn.nodeName appears twice in molecule.");
+                //}
+            }
+            console.log(cn.nodeName);
+        }
+        //});
+        console.log("moleculeTagNames:");
+        moleculeTagNames.forEach(x => console.log(x));
 
         // Set atoms.
         const atoms: Map<string, Atom> = new Map();
@@ -342,6 +356,7 @@ function initMolecules(xml: XMLDocument): void {
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
+            moleculeTagNames.forEach(x => console.log(x));
             console.error("Remaining moleculeTagNames:");
             moleculeTagNames.forEach(x => console.error(x));
             throw new Error("Unexpected tags in molecule.");
