@@ -45,8 +45,8 @@ https://agdturner.github.io/mxg-pwa/dist/
       "publicUrl": "/pwa-parcel-test/dist/main/"
     }
   },
-To:
 ```
+To:
 ```
   "targets": {
     "branch1": {
