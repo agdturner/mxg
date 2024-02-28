@@ -6,11 +6,26 @@ const CACHE_NAME = `mxg-${VERSION}`;
 
 // The static resources that the app needs to function.
 const APP_STATIC_RESOURCES = [
-    "/",
-    "/dist/index.html",
-    "/dist/app.js",
-    "/dist/style.css",
-    "/dist/icons/wheel.svg",
+    "./",
+    "favicon.ico",
+    "src/icons/circle.ico",
+    "src/icons/circle.svg",
+    "src/icons/tire.svg",
+    "src/icons/wheel.svg",
+    "src/index.html",
+    "src/style.css",
+    "src/ts/app.js",
+    "src/ts/canvas.ts",
+    "src/ts/classes.ts",
+    "src/ts/conditions.ts",
+    "src/ts/control.ts",
+    "src/ts/functions.ts",
+    "src/ts/html.ts",
+    "src/ts/modelParameters.ts",
+    "src/ts/molecule.ts",
+    "src/ts/reaction.ts",
+    "src/ts/util.ts",
+    "src/ts/xml.ts",
 ];
 
 // On install, cache the static resources

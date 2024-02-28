@@ -2,9 +2,16 @@
   "name": "mesmer-xml-gui",
   "description": "MESMER XML GUI.",
   "source": "src/index.html",
+  "version": "0.1.0",
   "scripts": {
     "start": "parcel",
     "build": "parcel build"
+  },
+  "targets": {
+    "main": {
+      "distDir": "./dist",
+      "publicUrl": "/mxg-pwa/dist/main/"
+    }
   },
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.11.0",
