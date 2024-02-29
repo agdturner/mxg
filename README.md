@@ -7,7 +7,7 @@ A Progressive Web App (PWA) is a type of application software delivered through 
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
 The PWA is packaged with Parcel2 and made available via:
-https://agdturner.github.io/mxg-pwa/dist/
+https://agdturner.github.io/mxg-pwa/dist/main/
 
 ## Dependencies:
 - Node > 20.11.0
