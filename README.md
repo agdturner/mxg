@@ -2,30 +2,42 @@
 
 MESMER is a Master Equation Solver for Multi Energy-well Reactions. It inputs and outputs data in an XML format. This is a Graphical User Interface development for visualising and generating new XML for MESMER.
 
-An online version from where a Progressive Web App (PWA) can be dowloaded for installation on your device:
+An online version (from where a Progressive Web App (PWA) can be dowloaded for installation on your device) is available via:
 https://agdturner.github.io/mxg-pwa/dist/main/
 
-A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details see:
+A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details about what a PWA is please see:
 - https://en.wikipedia.org/wiki/Progressive_web_app
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
-Downloading and installing a PWA varies by Web browser. Here are links to instructions for some major Web browsers:
+How to download and install a PWA varies by Web browser. Here are links to instructions for some major Web browsers:
 - Chrome: https://support.google.com/chrome/answer/9658361
 - Firefox: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing
 - Edge: https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux
 
-Whilst this development is versioned, it is alpha release and is not yet released for user testing or considered production ready.
+## GUI user instructions
+- Currently, the GUI starts with a single button called `load`.
+- When actioned, a `save` button should appear and a file input is requested.
+- The user is expected to locate and select a MESMER XML file.
+ - The program then attempts to load the XML file and present it in the GUI.
+   - If the interface does not change, then most likely there is an issue with loading that particular XML.
+- There are ways for the user to input and change values that will be saved in a new XML file when the `save` button is actioned.
+- Actioning the `save` button will download a new XML file to the usual place where files are downloaded on the users device. 
+- It is expected that in future releases there will be a way to compile a MESMER XML file from scratch without having first to load an existing XML file.
 
-A RoadMap for development is being produced. The development will go through a beta testing phase before there is a release candidate which is expected to be made in April 2024.
+## Development RoadMap
+- Development is currently in a pre-alpha prototype phase.
+- A first phase of alpha testing is expected to be done by the developers with selected user testers in March 2024.
+- Beta testing will follow this and release candidates and a first release is planned in April 2024.
 
-Currently, the GUI starts with a single button called `load`. When actioned, a `save` button should appear and a file input is requested. What is expected is that the user locates an MESMER XML file and loads it. Upon selecting the file, the interface should change to present details contained in the loaded XML. In future releases there may be a way to compile a MESMER XML file from scratch. Some details presented can be modified by the user. Actioning the `save` button will download a new XML file for the user and will be stored in the usual place where files are downloaded on the users device. 
-
-If alpha testers find an issue, then please report this using the agreed channels for communication. The version at the following URL is always the latest version:
+## Alpha testing
+- Alpha testers are encouraged to report issues using the agreed protocol.
+- The version at the following URL is always the latest version:
 https://agdturner.github.io/mxg-pwa/dist/main/
+- If using an installed PWA, you can update to the latest version by uninstalling and reinstalling the PWA. (Uninstalling can be done with the PWA running via the menu (three dots).)
+- Please test using the latest version before reporting an issue.
 
-If using the installed PWA, you can update to the latest version by uninstalling and reinstalling the PWA. Uninstalling can be done with the PWA running via the menu (three dots).
-
-It is expected that in due course, there will be more stable releases, and the MESMER team supporting users will be able to respond to issues posted in the usual way.
+## Support
+Once Version 1 is realeased, it is expected that the MESMER team will support development and use with issues reported in the usual way.
 
 
 ## Instructions for developers/contributors
