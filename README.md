@@ -1,6 +1,6 @@
 # MESMER XML GUI (MXG) Progressive Web App 
 
-MESMER is a Master Equation Solver for Multi Energy-well Reactions. It inputs and outputs data in an XML format. This is a Graphical User Interface developemnt for visualising and generating new XML for MESMER.
+MESMER is a Master Equation Solver for Multi Energy-well Reactions. It inputs and outputs data in an XML format. This is a Graphical User Interface development for visualising and generating new XML for MESMER.
 
 An online version from where a Progressive Web App (PWA) can be dowloaded for installation on your device:
 https://agdturner.github.io/mxg-pwa/dist/main/
