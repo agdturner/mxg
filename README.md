@@ -56,7 +56,7 @@ Node and Parcel2 are used to bundle everything together.
 
 Once launched, then open http://localhost:1234/ to test the GUI (change the url to match a different port if one was specified).
 
-### Making changes and redeployment:
+### Update and redeploy
 - Changes need committing and pushing to the repository for deployment.
 - To deploy a branch called `branch1` to `https://agdturner.github.io/pwa-parcel-test/dist/branch1/`, edit the package.json file and change:
 ```
