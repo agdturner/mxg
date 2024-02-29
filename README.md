@@ -1,22 +1,35 @@
-# MESMER XML GUI Progressive Web App
+# MESMER XML GUI (MXG) Progressive Web App 
 
-A repository used to develop the MESMER XML GUI Progressive Web App (MXG-PWA).
+MESMER is a Master Equation Solver for Multi Energy-well Reactions. It inputs and outputs data in an XML format. This is a Graphical User Interface developemnt for visualising and generating new XML for MESMER.
 
-A Progressive Web App (PWA) is a type of application software delivered through the web, built using common web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details see:
+An online version from where a Progressive Web App (PWA) can be dowloaded for installation on your device:
+https://agdturner.github.io/mxg-pwa/dist/main/
+
+A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details see:
 - https://en.wikipedia.org/wiki/Progressive_web_app
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
-The PWA is packaged with Parcel2 and made available via:
-https://agdturner.github.io/mxg-pwa/dist/main/
+Downloading and installing a PWA varies by Web browser. Here are links to instructions for some major Web browsers:
+- Chrome: https://support.google.com/chrome/answer/9658361?hl=en-GB&co=GENIE.Platform%3DDesktop
+- Firefox: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing
+- Edge: https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux
+
+Whilst this development is versioned, it is alpha release and is not production ready a RoadMap for the first official realease is being produced, but this is likely to be made in April 2024.
+
+## Instructions for developers/contributors
+
+Currently contributions only from those involved directly in the MXG development project are welcome.
+
+The MESMER PWA is packaged with Parcel2 and depends on Node. It has been developed using Microsoft Visual Studio Code mostly in TypeScript. 
 
 ## Dependencies:
 - Node > 20.11.0
- - Parcel > 2.11.0
 
 # Installation
 1. Clone the repository
 2. cd into the repository
-3. Run: npm install
+3. Install dependencies:
+`npm install`
 
 # Build
 - run:
@@ -25,17 +38,11 @@ https://agdturner.github.io/mxg-pwa/dist/main/
 # Launch
 - run:
 `npx parcel src/index.html`
-- By default this will run on port 1234. To use a different port for example 2345 run: `npx parcel src/index.html` -p 2345 Once launched, then open http://localhost:1234/ changing the url to match a different port if specified.
+- By default this will run on port 1234. To use a different port for example 2345 run: `npx parcel src/index.html -p 2345`
 
-# Developer set up
-1. Install Visual Studio Code
-2. Install Node
-3. Download this repository
-4. cd into the repository
-5. Install dependencies:
-`npm install`
+Once launched, then open http://localhost:1234/ changing the url to match a different port if specified to use the GUI.
 
-# Developer changes/redeployment:
+# Making changes and redeployment:
 - Changes need committing and pushing to the repository for deployment.
 - To deploy a branch called branch1 to https://agdturner.github.io/pwa-parcel-test/dist/branch1/ edit package.json and change:
 ```
