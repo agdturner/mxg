@@ -30,11 +30,14 @@ It is expected that in due course, there will be more stable releases, and the M
 
 ## Instructions for developers/contributors
 
-Currently contributions only from those involved directly in the MXG development project are welcome. Following release of version 1 contributions from the community will be welcomed in the usual way and more detailed guidance on how best to contribute will be released. 
+Currently, contributions are only welome from those involved directly in the onlgoing MXG development project that started in January 2024. Following release of Version 1 contributions from the community will be welcomed in the usual way and more detailed guidance on how best to contribute will be released.
 
 Microsoft Visual Studio Code with the Copilot extension has been used to develop the code which is mostly TypeScript.
 
 Node and Parcel2 are used to bundle everything together.
+
+To test things out, then please fork this repository. To get your own GitHub Pages version and PWA deployment working, then ensure that GitHub Pages is enabled for your forked repository and this should be available via:
+`https://<github_username>.github.io/<forked_repository_name>/dist/main/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
 
 ### Dependencies:
 - Node > 20.11.0
@@ -58,7 +61,7 @@ Once launched, then open http://localhost:1234/ to test the GUI (change the url 
 
 ### Update and redeploy
 - Changes need committing and pushing to the repository for deployment.
-- To deploy a branch called `branch1` to `https://agdturner.github.io/pwa-parcel-test/dist/branch1/`, edit the package.json file and change:
+- To deploy a branch called `branch1`, edit the `package.json` file and change:
 ```
   "targets": {
     "main": {
@@ -76,3 +79,5 @@ To:
     }
   },
 ```
+This new branch should deploy to:
+`https://<github_username>.github.io/<forked_repository_name>/dist/branch1/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
