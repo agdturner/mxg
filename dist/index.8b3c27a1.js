@@ -660,7 +660,7 @@ let xml_text;
  * @param {XMLDocument} xml The XML document.
  */ function initMolecules(xml) {
     let moleculeList_s = "moleculeList";
-    console.log(moleculeList_s);
+    console.log("Read and store " + moleculeList_s);
     let xml_moleculeList = (0, _xmlJs.getSingularElement)(xml, moleculeList_s);
     // Set molecules_title.
     molecules_title = document.getElementById("molecules_title");
@@ -688,20 +688,19 @@ let xml_text;
         let attributes = (0, _xmlJs.getAttributes)(xml_molecules[i]);
         let moleculeTagNames = new Set();
         let cns = xml_molecules[i].childNodes;
-        console.log("cns.length=" + cns.length);
+        //console.log("cns.length=" + cns.length);
         //cns.forEach(function (cn) {
         for(let j = 0; j < cns.length; j++){
             let cn = cns[j];
-            //moleculeTagNames.add(cn.nodeName);
-            // This performs a check as wierdly in "me:DOSCMethod" was appearing twice when reading back in.
+            // Check for nodeName repeats that are not #text.
             if (!moleculeTagNames.has(cn.nodeName)) moleculeTagNames.add(cn.nodeName);
-            else //if (cn.nodeName != "#text") {
-            console.warn("Another ChildNode with nodeName=" + cn.nodeName);
-            console.log(cn.nodeName);
+            else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+            if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+        //console.log(cn.nodeName);
         }
         //});
-        console.log("moleculeTagNames:");
-        moleculeTagNames.forEach((x)=>console.log(x));
+        //console.log("moleculeTagNames:");
+        //moleculeTagNames.forEach(x => console.log(x));
         // Set atoms.
         const atoms = new Map();
         // Sometimes there is an individual atom not in an atomArray.
@@ -782,11 +781,10 @@ let xml_text;
             if (els.length > 0) {
                 if (els.length != 1) throw new Error("energyTransferModel length=" + els.length);
                 let xml_deltaEDown = els[0].getElementsByTagName("me:deltaEDown");
-                if (xml_deltaEDown != null) {
-                    if (xml_deltaEDown.length != 1) throw new Error("deltaEDown length=" + xml_deltaEDown.length);
-                    let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_deltaEDown[0])));
-                    let deltaEDown = new (0, _moleculeJs.DeltaEDown)((0, _xmlJs.getAttributes)(xml_deltaEDown[0]), value);
-                    energyTransferModel = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(els[0]), deltaEDown);
+                if (xml_deltaEDown != null) for(let k = 0; k < xml_deltaEDown.length; k++){
+                    let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_deltaEDown[k])));
+                    let deltaEDown = new (0, _moleculeJs.DeltaEDown)((0, _xmlJs.getAttributes)(xml_deltaEDown[k]), value);
+                    energyTransferModel = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(els[k]), deltaEDown);
                 }
             }
         }
@@ -807,9 +805,10 @@ let xml_text;
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
             moleculeTagNames.forEach((x)=>console.log(x));
-            console.error("Remaining moleculeTagNames:");
+            console.warn("There are additional unexpected moleculeTagNames:");
             moleculeTagNames.forEach((x)=>console.error(x));
-            throw new Error("Unexpected tags in molecule.");
+            console.error("Unexpected tags in molecule.");
+        //throw new Error("Unexpected tags in molecule.");
         }
         let molecule = new (0, _moleculeJs.Molecule)(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod);
         //console.log(molecule.toString());
@@ -1893,14 +1892,6 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "DOSCMethod", ()=>DOSCMethod);
 /**
  * A class for representing a molecule.
- * @param {string} id The id of the molecule.
- * @param {string} description The description of the molecule.
- * @param {boolean} active Indicates if the molecule is active.
- * @param {Map<string, Atom>} atoms A Map of atoms with keys as string atom ids and values as Atoms.
- * @param {Map<string, Bond>} bonds A Map of bonds with keys as string atom ids and values as Bonds.
- * @param {Map<string, Property>} properties A map of properties.
- * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
- * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
  */ parcelHelpers.export(exports, "Molecule", ()=>Molecule);
 var _classesJs = require("./classes.js");
 var _functionsJs = require("./functions.js");
@@ -1971,6 +1962,9 @@ class Property extends (0, _classesJs.Attributes) {
     }
 }
 class DeltaEDown extends (0, _classesJs.NumberWithAttributes) {
+    static{
+        this.xmlTagName = "me:deltaEDown";
+    }
     /**
      * @param attributes The attributes.
      * @param units The units.
@@ -1981,20 +1975,26 @@ class DeltaEDown extends (0, _classesJs.NumberWithAttributes) {
 class EnergyTransferModel extends (0, _classesJs.Attributes) {
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {DeltaEDown} deltaEDown The DeltaEDown.
-     */ constructor(attributes, deltaEDown){
+     * @param {[DeltaEDown]} deltaEDowns The DeltaEDowns.
+     */ constructor(attributes, deltaEDowns){
         super(attributes);
-        this.deltaEDown = deltaEDown;
+        this.deltaEDowns = deltaEDowns;
     }
     /**
      * @param padding - Optional padding string for formatting the XML output.
      * @returns An XML representation.
      */ toXML(pad, padding) {
-        if (pad == undefined) return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me:deltaEDown", padding), "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
-        else {
-            if (padding == undefined) padding = "";
-            return (0, _xmlJs.getTag)(this.deltaEDown.toXML("me:deltaEDown", padding + pad), "me:energyTransferModel", this.attributes, undefined, undefined, padding, true);
+        let padding1 = "";
+        if (padding != undefined) {
+            if (pad != undefined) padding1 = padding + pad;
         }
+        // deltaEDowns
+        let deltaEDowns_xml = "";
+        this.deltaEDowns.forEach((d)=>{
+            deltaEDowns_xml += d.toXML("me:deltaEDown", padding1);
+        });
+        if (pad == undefined) return (0, _xmlJs.getTag)(deltaEDowns_xml, "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
+        else return (0, _xmlJs.getTag)(deltaEDowns_xml, "me:energyTransferModel", this.attributes, undefined, undefined, padding, true);
     }
 }
 class DOSCMethod {
@@ -2019,14 +2019,13 @@ class Molecule extends (0, _classesJs.Attributes) {
     /**
      * Create a molecule.
      * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
-     * Additional attributes known about are "description" and "active", but these do not exist for all molecules
-     * in Mesmer XML input/output files.
+     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
      * @param {Map<string, Atom>} atoms A Map of atoms with keys as ids.
      * @param {Map<string, Bond>} bonds A Map of bonds with. The keys combine the ids of the two bonded atoms.
      * @param {Map<string, Property>} properties A map of properties.
-     * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
+     * @param {[EnergyTransferModel] | null} energyTransferModels The energy transfer models.
      * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
-     */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod){
+     */ constructor(attributes, atoms, bonds, properties, energyTransferModels, dOSCMethod){
         super(attributes);
         let id = this.attributes.get("id");
         if (id == undefined) throw new Error("id is undefined");
@@ -2034,7 +2033,7 @@ class Molecule extends (0, _classesJs.Attributes) {
         this.atoms = atoms;
         this.bonds = bonds;
         this.properties = properties;
-        this.energyTransferModel = energyTransferModel;
+        this.energyTransferModels = energyTransferModels;
         this.dOSCMethod = dOSCMethod;
     }
     /** 
@@ -2048,7 +2047,9 @@ class Molecule extends (0, _classesJs.Attributes) {
         if (this.atoms.size > 0) r += `atoms(${(0, _functionsJs.mapToString)(this.atoms)}), `;
         if (this.bonds.size > 0) r += `bonds(${(0, _functionsJs.mapToString)(this.bonds)}), `;
         if (this.properties.size > 0) r += `properties(${(0, _functionsJs.mapToString)(this.properties)}), `;
-        if (this.energyTransferModel) r += `energyTransferModel(${this.energyTransferModel.toString()}), `;
+        if (this.energyTransferModels) this.energyTransferModels.forEach((energyTransferModel)=>{
+            r += `energyTransferModel(` + energyTransferModel.toString() + `), `;
+        });
         if (this.dOSCMethod) r += `dOSCMethod(${this.dOSCMethod.toString()}), `;
         return r + `)`;
     }
@@ -2158,7 +2159,9 @@ class Molecule extends (0, _classesJs.Attributes) {
         }
         // EnergyTransferModel
         let energyTransferModel_xml = "";
-        if (this.energyTransferModel) energyTransferModel_xml = this.energyTransferModel.toXML(pad, padding1);
+        if (this.energyTransferModels) this.energyTransferModels.forEach((etm)=>{
+            energyTransferModel_xml = etm.toXML(pad, padding1);
+        });
         // DOSCMethod
         let dOSCMethod_xml = "";
         if (this.dOSCMethod) dOSCMethod_xml = this.dOSCMethod.toTag(padding1);

@@ -178,7 +178,7 @@ function displayXML(xml: string) {
  */
 function initMolecules(xml: XMLDocument): void {
     let moleculeList_s: string = 'moleculeList';
-    console.log(moleculeList_s);
+    console.log("Read and store " + moleculeList_s);
     let xml_moleculeList: Element = getSingularElement(xml, moleculeList_s);
     // Set molecules_title.
     molecules_title = document.getElementById("molecules_title");
@@ -210,26 +210,25 @@ function initMolecules(xml: XMLDocument): void {
         let attributes: Map<string, string> = getAttributes(xml_molecules[i]);
         let moleculeTagNames: Set<string> = new Set();
         let cns: NodeListOf<ChildNode> = xml_molecules[i].childNodes;
-        console.log("cns.length=" + cns.length);
+        //console.log("cns.length=" + cns.length);
         //cns.forEach(function (cn) {
-        for (let j = 0; j < cns.length; j ++) {
+        for (let j = 0; j < cns.length; j++) {
             let cn: ChildNode = cns[j];
-            //moleculeTagNames.add(cn.nodeName);
-
-            // This performs a check as wierdly in "me:DOSCMethod" was appearing twice when reading back in.
+            // Check for nodeName repeats that are not #text.
             if (!moleculeTagNames.has(cn.nodeName)) {
                 moleculeTagNames.add(cn.nodeName);
             } else {
-                //if (cn.nodeName != "#text") {
+                // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+                if (cn.nodeName != "#text") {
                     console.warn("Another ChildNode with nodeName=" + cn.nodeName);
                     //throw new Error("cn.nodeName appears twice in molecule.");
-                //}
+                }
             }
-            console.log(cn.nodeName);
+            //console.log(cn.nodeName);
         }
         //});
-        console.log("moleculeTagNames:");
-        moleculeTagNames.forEach(x => console.log(x));
+        //console.log("moleculeTagNames:");
+        //moleculeTagNames.forEach(x => console.log(x));
 
         // Set atoms.
         const atoms: Map<string, Atom> = new Map();
@@ -325,14 +324,13 @@ function initMolecules(xml: XMLDocument): void {
                 if (els.length != 1) {
                     throw new Error("energyTransferModel length=" + els.length);
                 }
-                let xml_deltaEDown = els[0].getElementsByTagName("me:deltaEDown");
+                let xml_deltaEDown: HTMLCollectionOf<Element> = els[0].getElementsByTagName("me:deltaEDown");
                 if (xml_deltaEDown != null) {
-                    if (xml_deltaEDown.length != 1) {
-                        throw new Error("deltaEDown length=" + xml_deltaEDown.length);
+                    for (let k = 0; k < xml_deltaEDown.length; k++) {
+                        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_deltaEDown[k])));
+                        let deltaEDown: DeltaEDown = new DeltaEDown(getAttributes(xml_deltaEDown[k]), value);
+                        energyTransferModel = new EnergyTransferModel(getAttributes(els[k]), deltaEDown);
                     }
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_deltaEDown[0])));
-                    let deltaEDown: DeltaEDown = new DeltaEDown(getAttributes(xml_deltaEDown[0]), value);
-                    energyTransferModel = new EnergyTransferModel(getAttributes(els[0]), deltaEDown);
                 }
             }
         }
@@ -357,9 +355,10 @@ function initMolecules(xml: XMLDocument): void {
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
             moleculeTagNames.forEach(x => console.log(x));
-            console.error("Remaining moleculeTagNames:");
+            console.warn("There are additional unexpected moleculeTagNames:");
             moleculeTagNames.forEach(x => console.error(x));
-            throw new Error("Unexpected tags in molecule.");
+            console.error("Unexpected tags in molecule.");
+            //throw new Error("Unexpected tags in molecule.");
         }
 
         let molecule = new Molecule(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod);
@@ -398,7 +397,7 @@ let inputElement: HTMLInputElement;
 
 //function reload() {
 function loadXML() {
-        inputElement = document.createElement('input');
+    inputElement = document.createElement('input');
     inputElement.type = 'file';
     inputElement.onchange = function () {
         if (inputElement.files) {

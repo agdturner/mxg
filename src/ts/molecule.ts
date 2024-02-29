@@ -131,6 +131,8 @@ export class Property extends Attributes {
  */
 export class DeltaEDown extends NumberWithAttributes {
 
+    static readonly xmlTagName: string = "me:deltaEDown";
+
     /**
      * @param attributes The attributes.
      * @param units The units.
@@ -148,15 +150,15 @@ export class EnergyTransferModel extends Attributes {
     /**
      * The DeltaEDown.
      */
-    deltaEDown: DeltaEDown;
+    deltaEDowns: [DeltaEDown];
 
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {DeltaEDown} deltaEDown The DeltaEDown.
+     * @param {[DeltaEDown]} deltaEDowns The DeltaEDowns.
      */
-    constructor(attributes: Map<string, string>, deltaEDown: DeltaEDown) {
+    constructor(attributes: Map<string, string>, deltaEDowns: [DeltaEDown]) {
         super(attributes);
-        this.deltaEDown = deltaEDown;
+        this.deltaEDowns = deltaEDowns;
     }
 
     /**
@@ -164,14 +166,22 @@ export class EnergyTransferModel extends Attributes {
      * @returns An XML representation.
      */
     toXML(pad?: string, padding?: string): string {
+        let padding1: string = "";
+        if (padding != undefined) {
+            if (pad != undefined) {
+                padding1 = padding + pad;
+            }
+        }
+        // deltaEDowns
+        let deltaEDowns_xml: string = "";
+        this.deltaEDowns.forEach(d => {
+            deltaEDowns_xml += d.toXML("me:deltaEDown", padding1);
+        });
         if (pad == undefined) {
-            return getTag(this.deltaEDown.toXML("me:deltaEDown", padding), "me:energyTransferModel",
+            return getTag(deltaEDowns_xml, "me:energyTransferModel",
                 this.attributes, undefined, undefined, padding, false);
         } else {
-            if (padding == undefined) {
-                padding = "";
-            }
-            return getTag(this.deltaEDown.toXML("me:deltaEDown", padding + pad), "me:energyTransferModel",
+            return getTag(deltaEDowns_xml, "me:energyTransferModel",
                 this.attributes, undefined, undefined, padding, true);
         }
     }
@@ -208,16 +218,9 @@ export class DOSCMethod {
 
 /**
  * A class for representing a molecule.
- * @param {string} id The id of the molecule.
- * @param {string} description The description of the molecule.
- * @param {boolean} active Indicates if the molecule is active.
- * @param {Map<string, Atom>} atoms A Map of atoms with keys as string atom ids and values as Atoms.
- * @param {Map<string, Bond>} bonds A Map of bonds with keys as string atom ids and values as Bonds.
- * @param {Map<string, Property>} properties A map of properties.
- * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
- * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
  */
 export class Molecule extends Attributes {
+    // The molecule ID.
     id: string;
     // Atoms
     atoms: Map<string, Atom>;
@@ -226,19 +229,18 @@ export class Molecule extends Attributes {
     // Properties
     properties: Map<string, Property>;
     // EnergyTransferModel
-    energyTransferModel?: EnergyTransferModel;
+    energyTransferModels?: [EnergyTransferModel];
     // DOSCMethod
     dOSCMethod?: DOSCMethod;
 
     /**
      * Create a molecule.
      * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
-     * Additional attributes known about are "description" and "active", but these do not exist for all molecules
-     * in Mesmer XML input/output files.
+     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
      * @param {Map<string, Atom>} atoms A Map of atoms with keys as ids.
      * @param {Map<string, Bond>} bonds A Map of bonds with. The keys combine the ids of the two bonded atoms.
      * @param {Map<string, Property>} properties A map of properties.
-     * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
+     * @param {[EnergyTransferModel] | null} energyTransferModels The energy transfer models.
      * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
      */
     constructor(
@@ -246,7 +248,7 @@ export class Molecule extends Attributes {
         atoms: Map<string, Atom>,
         bonds: Map<string, Bond>,
         properties: Map<string, Property>,
-        energyTransferModel?: EnergyTransferModel,
+        energyTransferModels?: [EnergyTransferModel],
         dOSCMethod?: DOSCMethod) {
         super(attributes);
         let id: string | undefined = this.attributes.get("id");
@@ -257,7 +259,7 @@ export class Molecule extends Attributes {
         this.atoms = atoms;
         this.bonds = bonds;
         this.properties = properties;
-        this.energyTransferModel = energyTransferModel;
+        this.energyTransferModels = energyTransferModels;
         this.dOSCMethod = dOSCMethod;
     }
 
@@ -283,8 +285,10 @@ export class Molecule extends Attributes {
         if (this.properties.size > 0) {
             r += `properties(${mapToString(this.properties)}), `;
         }
-        if (this.energyTransferModel) {
-            r += `energyTransferModel(${this.energyTransferModel.toString()}), `;
+        if (this.energyTransferModels) {
+            this.energyTransferModels.forEach(energyTransferModel => {
+                r += `energyTransferModel(` + energyTransferModel.toString() + `), `;
+            });
         }
         if (this.dOSCMethod) {
             r += `dOSCMethod(${this.dOSCMethod.toString()}), `;
@@ -443,8 +447,10 @@ export class Molecule extends Attributes {
         }
         // EnergyTransferModel
         let energyTransferModel_xml: string = "";
-        if (this.energyTransferModel) {
-            energyTransferModel_xml = this.energyTransferModel.toXML(pad, padding1);
+        if (this.energyTransferModels) {
+            this.energyTransferModels.forEach(etm => {
+                energyTransferModel_xml = etm.toXML(pad, padding1);
+            });
         }
         // DOSCMethod
         let dOSCMethod_xml: string = "";

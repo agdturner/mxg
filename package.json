@@ -7,6 +7,9 @@
     "start": "parcel",
     "build": "parcel build"
   },
+  "compilerOptions": {
+    "sourceMap": true
+  },
   "targets": {
     "main": {
       "distDir": "./dist",
