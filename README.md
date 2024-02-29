@@ -36,7 +36,7 @@ Microsoft Visual Studio Code with the Copilot extension has been used to develop
 
 Node and Parcel2 are used to bundle everything together.
 
-## Dependencies:
+### Dependencies:
 - Node > 20.11.0
 
 # Installation
@@ -45,18 +45,18 @@ Node and Parcel2 are used to bundle everything together.
 3. Install dependencies:
 `npm install`
 
-# Build
+### Build
 - run:
 `parcel build`
 
-# Launch
+### Launch
 - run:
 `npx parcel src/index.html`
 - By default this will run on port 1234. To use a different port for example 2345 run: `npx parcel src/index.html -p 2345`
 
 Once launched, then open http://localhost:1234/ to test the GUI (change the url to match a different port if one was specified).
 
-# Making changes and redeployment:
+### Making changes and redeployment:
 - Changes need committing and pushing to the repository for deployment.
 - To deploy a branch called `branch1` to `https://agdturner.github.io/pwa-parcel-test/dist/branch1/`, edit the package.json file and change:
 ```
