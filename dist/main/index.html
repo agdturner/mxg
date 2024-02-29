@@ -9,7 +9,7 @@
   <script>var parcelRequire;
 
 </script>
-  <link rel="stylesheet" href="/mxg-pwa/dist/main/index.ba596df1.css">
+  <link rel="stylesheet" href="/mxg-pwa/dist/main/index.69a216d8.css">
   <link rel="manifest" href="/mxg-pwa/dist/main/up_/manifest.webmanifest">
 </head>
 
@@ -72,12 +72,11 @@
     <p id="xml_text"></p>
   </div>
 
-  <script type="module" src="/mxg-pwa/dist/main/index.0cda8b0d.js" defer=""></script>
+  <script type="module" src="/mxg-pwa/dist/main/index.c6c6b3b4.js" defer=""></script>
   <!-- Register the app's service worker. -->
   <script type="module">if ("serviceWorker" in navigator) window.addEventListener("load", function() {
     //navigator.serviceWorker.register('/sw.js')
-    navigator.serviceWorker.register(new URL("up_/sw.js", import.meta.url))//navigator.serviceWorker.register(new URL('/sw.js', import.meta.url), import.meta.url)
-    .then(function(registration) {
+    navigator.serviceWorker.register(new URL("up_/sw.js", import.meta.url)).then(function(registration) {
         // Registration was successful
         console.log("ServiceWorker registration successful with scope: ", registration.scope);
     }, function(err) {

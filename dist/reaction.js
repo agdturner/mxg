@@ -1,43 +1,29 @@
-import {
-    mapToString
-} from './functions.js';
-
-import {
-    Molecule
-} from './molecule.js';
-
-import {
-    TagWithAttributes, NodeWithNodes, NumberNode
-} from './classes.js';
-
-import {
-    getTag
-} from './xml.js';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Reaction = exports.ZhuNakamuraCrossing = exports.MesmerILT = exports.MCRCMethod = exports.Tunneling = exports.NInfinity = exports.TInfinity = exports.ActivationEnergy = exports.PreExponential = exports.TransitionState = exports.Product = exports.Reactant = exports.ReactionMolecule = void 0;
+const functions_js_1 = require("./functions.js");
+const classes_js_1 = require("./classes.js");
+const xml_js_1 = require("./xml.js");
 /**
  * A class for representing a Reaction Molecule.
  */
-export class ReactionMolecule extends TagWithAttributes {
-
+class ReactionMolecule extends classes_js_1.TagWithAttributes {
     /**
      * The molecule.
      */
-    static readonly tagName: string = "molecule";
-
+    static tagName = "molecule";
     /**
      * A reference to the molecule.
      */
-    molecule: Molecule;
-
+    molecule;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
+    constructor(attributes, molecule) {
         super(attributes, ReactionMolecule.tagName);
         this.molecule = molecule;
     }
-
     /**
      * Get the XML representation.
      * @param {string} tagName The tag name.
@@ -45,229 +31,203 @@ export class ReactionMolecule extends TagWithAttributes {
      * @param {string} padding The padding (Optional).
      * @returns An XML representation.
      */
-    toXML(tagName: string, pad?: string | undefined, padding?: string | undefined): string {
-        let padding1: string | undefined;
+    toXML(tagName, pad, padding) {
+        let padding1;
         if (pad != undefined && padding != undefined) {
             padding1 = padding + pad;
         }
-        let s: string = this.getSelfClosingTag(padding1);
-        return getTag(s, tagName, undefined, padding, true);
+        let s = this.getSelfClosingTag(padding1);
+        return (0, xml_js_1.getTag)(s, tagName, undefined, padding, true);
     }
 }
-
+exports.ReactionMolecule = ReactionMolecule;
 /**
  * A class for representing a reactant.
  * This is a molecule often with a role in a reaction.
  */
-export class Reactant extends ReactionMolecule {
-
+class Reactant extends ReactionMolecule {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "reactant";
-
+    static tagName = "reactant";
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
+    constructor(attributes, molecule) {
         super(attributes, molecule);
     }
 }
-
+exports.Reactant = Reactant;
 /**
  * A class for representing a product.
  * This is a molecule produced in a reaction.
  */
-export class Product extends ReactionMolecule {
-
+class Product extends ReactionMolecule {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "product";
-
+    static tagName = "product";
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
+    constructor(attributes, molecule) {
         super(attributes, molecule);
     }
-
 }
-
+exports.Product = Product;
 /**
  * A class for representing a transition state.
  */
-export class TransitionState extends ReactionMolecule {
-
+class TransitionState extends ReactionMolecule {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:transitionState";
-
+    static tagName = "me:transitionState";
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
+    constructor(attributes, molecule) {
         super(attributes, molecule);
     }
-
     /**
      * A convenience method to get the ref (the molecule ID) of the transition state.
      * @returns The ref of the transition state.
      */
-    getRef(): string {
-        let s: string | undefined = this.attributes.get("ref");
+    getRef() {
+        let s = this.attributes.get("ref");
         if (s == null) {
             throw new Error('Attribute "ref" is undefined.');
         }
         return s;
     }
 }
-
-
+exports.TransitionState = TransitionState;
 /**
  * A class for representing the Arrhenius pre-exponential factor.
  */
-export class PreExponential extends NumberNode {
-
+class PreExponential extends classes_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:preExponential";
-
+    static tagName = "me:preExponential";
     /**
      * A class for representing the Arrhenius pre-exponential factor.
-     * @param {Map<string, string>} attributes The attributes. 
+     * @param {Map<string, string>} attributes The attributes.
      * @param {number} value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, PreExponential.tagName, value);
     }
 }
-
+exports.PreExponential = PreExponential;
 /**
  * A class for representing the Arrhenius activation energy factor.
  */
-export class ActivationEnergy extends NumberNode {
-
+class ActivationEnergy extends classes_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:activationEnergy";
-
+    static tagName = "me:activationEnergy";
     /**
      * A class for representing the Arrhenius pre-exponential factor.
-     * @param {Map<string, string>} attributes The attributes. 
+     * @param {Map<string, string>} attributes The attributes.
      * @param {number} value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, ActivationEnergy.tagName, value);
     }
 }
-
+exports.ActivationEnergy = ActivationEnergy;
 /**
  * A class for representing the reference temperature.
  */
-export class TInfinity extends NumberNode {
-
+class TInfinity extends classes_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:TInfinity";
-
+    static tagName = "me:TInfinity";
     /**
-     * @param {Map<string, string>} attributes The attributes. 
+     * @param {Map<string, string>} attributes The attributes.
      * @param {number} value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, TInfinity.tagName, value);
     }
 }
-
+exports.TInfinity = TInfinity;
 /**
  * A class for representing the modified Arrhenius parameter factor.
  */
-export class NInfinity extends NumberNode {
-
+class NInfinity extends classes_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:nInfinity";
-
+    static tagName = "me:nInfinity";
     /**
-     * @param {Map<string, string>} attributes The attributes. 
+     * @param {Map<string, string>} attributes The attributes.
      * @param {number} value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, NInfinity.tagName, value);
     }
 }
-
+exports.NInfinity = NInfinity;
 /**
  * A class for representing tunneling.
  */
-export class Tunneling extends TagWithAttributes {
-
+class Tunneling extends classes_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:tunneling";
-    
+    static tagName = "me:tunneling";
     /**
      * @param {Map<string, string>} attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, Tunneling.tagName);
     }
 }
-
+exports.Tunneling = Tunneling;
 /**
  * A class for representing the MCRCMethod specifications.
  * Extended classes indicate how microcanonical rate constant is to be treated.
  */
-export class MCRCMethod extends TagWithAttributes {
-
+class MCRCMethod extends classes_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:MCRCMethod";
-
+    static tagName = "me:MCRCMethod";
     /**
      * @param {Map<string, string>} attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, MCRCMethod.tagName);
     }
 }
-
+exports.MCRCMethod = MCRCMethod;
 /**
  * A class for representing the inverse Laplace transform (ILT) type of microcanonical rate constant.
  */
-export class MesmerILT extends MCRCMethod {
-
+class MesmerILT extends MCRCMethod {
     /**
      * The pre-exponential factor.
      */
-    preExponential: PreExponential | undefined;
-    
+    preExponential;
     /**
      * The activation energy.
      */
-    activationEnergy: ActivationEnergy | undefined;
-    
+    activationEnergy;
     /**
      * The TInfinity.
      */
-    tInfinity: TInfinity | undefined;
-    
+    tInfinity;
     /**
      * The nInfinity.
      */
-    nInfinity: NInfinity | undefined;
-
+    nInfinity;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PreExponential | undefined} preExponential The pre-exponential factor.
@@ -275,16 +235,13 @@ export class MesmerILT extends MCRCMethod {
      * @param {TInfinity | undefined} tInfinity The TInfinity.
      * @param {NInfinity | undefined} nInfinity The nInfinity.
      */
-    constructor(attributes: Map<string, string>, preExponential: PreExponential | undefined,
-        activationEnergy: ActivationEnergy | undefined, tInfinity: TInfinity | undefined,
-        nInfinity: NInfinity | undefined) {
+    constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity) {
         super(attributes);
         this.preExponential = preExponential;
         this.activationEnergy = activationEnergy;
         this.tInfinity = tInfinity;
         this.nInfinity = nInfinity;
     }
-
     toString() {
         return `MesmerILT(${super.toString()}, ` +
             `preExponential(${this.preExponential}), ` +
@@ -292,52 +249,47 @@ export class MesmerILT extends MCRCMethod {
             `TInfinity(${this.tInfinity}), ` +
             `nInfinity(${this.nInfinity}))`;
     }
-
     /**
      * Get the XML representation.
      * @param {string} tagName The tag name.
      * @param {string} padding The padding (Optional).
      * @returns An XML representation.
      */
-    override toXML(tagName: string, padding?: string | undefined): string {
-        let padding1: string = "";
+    toXML(tagName, padding) {
+        let padding1 = "";
         if (padding != undefined) {
             padding1 = padding + "  ";
         }
-        let preExponential_xml: string = "";
+        let preExponential_xml = "";
         if (this.preExponential != undefined) {
             preExponential_xml = this.preExponential.toXML(padding1);
         }
-        let activationEnergy_xml: string = "";
+        let activationEnergy_xml = "";
         if (this.activationEnergy != undefined) {
             activationEnergy_xml = this.activationEnergy.toXML(padding1);
         }
-        let tInfinity_xml: string = "";
+        let tInfinity_xml = "";
         if (this.tInfinity != undefined) {
             tInfinity_xml = this.tInfinity.toXML(padding1);
         }
-        let nInfinity_xml: string = "";
+        let nInfinity_xml = "";
         if (this.nInfinity != undefined) {
             nInfinity_xml = this.nInfinity.toXML(padding1);
         }
-        return getTag(preExponential_xml + activationEnergy_xml + tInfinity_xml + nInfinity_xml,
-            tagName, this.attributes, padding, true);
+        return (0, xml_js_1.getTag)(preExponential_xml + activationEnergy_xml + tInfinity_xml + nInfinity_xml, tagName, this.attributes, padding, true);
     }
 }
-
+exports.MesmerILT = MesmerILT;
 /**
  * A class for representing the Zhu-Nakamura crossing MCRCMethod.
  */
-export class ZhuNakamuraCrossing extends MCRCMethod {
-
-
-    harmonicReactantDiabat_FC: number;
-    harmonicReactantDiabat_XO: number;
-    harmonicProductDiabat_DE: number;
-    exponentialProductDiabat_A: number;
-    exponentialProductDiabat_B: number;
-    exponentialProductDiabat_DE: number;
-
+class ZhuNakamuraCrossing extends MCRCMethod {
+    harmonicReactantDiabat_FC;
+    harmonicReactantDiabat_XO;
+    harmonicProductDiabat_DE;
+    exponentialProductDiabat_A;
+    exponentialProductDiabat_B;
+    exponentialProductDiabat_DE;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {number} harmonicReactantDiabat_FC The harmonic reactant diabatic FC.
@@ -347,13 +299,7 @@ export class ZhuNakamuraCrossing extends MCRCMethod {
      * @param {number} exponentialProductDiabat_B The exponential product diabatic B.
      * @param {number} exponentialProductDiabat_DE The exponential product diabatic DE.
      */
-    constructor(attributes: Map<string, string>,
-        harmonicReactantDiabat_FC: number,
-        harmonicReactantDiabat_XO: number,
-        harmonicProductDiabat_DE: number,
-        exponentialProductDiabat_A: number,
-        exponentialProductDiabat_B: number,
-        exponentialProductDiabat_DE: number) {
+    constructor(attributes, harmonicReactantDiabat_FC, harmonicReactantDiabat_XO, harmonicProductDiabat_DE, exponentialProductDiabat_A, exponentialProductDiabat_B, exponentialProductDiabat_DE) {
         super(attributes);
         this.harmonicReactantDiabat_FC = harmonicReactantDiabat_FC;
         this.harmonicReactantDiabat_XO = harmonicReactantDiabat_XO;
@@ -372,7 +318,7 @@ export class ZhuNakamuraCrossing extends MCRCMethod {
             `exponentialProductDiabat_DE(${this.exponentialProductDiabat_DE.toString()}))`;
     }
 }
-
+exports.ZhuNakamuraCrossing = ZhuNakamuraCrossing;
 /**
  * A class for representing the sum of states.
  * @param {string} units The units of energy.
@@ -401,7 +347,6 @@ export class SumOfStates extends NumberWithAttributes {
     }
 }
 */
-
 /**
  * A class for representing a sum of states point.
  * @param {number} value The value of the point.
@@ -426,7 +371,6 @@ export class SumOfStatesPoint {
     }
 }
 */
-
 /**
  * A class for representing the DefinedSumOfStates MCRCMethod.
  * @param {string} name The name or xsi:type of the method.
@@ -446,47 +390,38 @@ export class DefinedSumOfStates extends MCRCMethod {
     }
 }
 */
-
 /**
  * A class for representing a reaction.
  */
-export class Reaction extends NodeWithNodes {
-
+class Reaction extends classes_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "reaction";
-
+    static tagName = "reaction";
     /**
      * The id of the reaction. This is also stored in the attributes, but is hee for convenience...
      */
-    id: string;
-
+    id;
     /**
      * The reactants in the reaction.
      */
-    reactants: Map<string, Reactant>;
-
+    reactants;
     /**
      * The products of the reaction.
      */
-    products: Map<string, Product>;
-
+    products;
     /**
      * The MCRCMethod.
      */
-    mCRCMethod: MCRCMethod | undefined;
-
+    mCRCMethod;
     /**
      * The transition state.
      */
-    transitionState: TransitionState | undefined;
-
+    transitionState;
     /**
      * The tunneling.
      */
-    tunneling: Tunneling | undefined;
-
+    tunneling;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
@@ -496,11 +431,7 @@ export class Reaction extends NodeWithNodes {
      * @param {TransitionState | undefined} transitionState The transition state (optional).
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
      */
-    constructor(attributes: Map<string, string>, id: string,
-        reactants: Map<string, Reactant>, products: Map<string, Product>,
-        mCRCMethod?: MCRCMethod | undefined,
-        transitionState?: TransitionState | undefined,
-        tunneling?: Tunneling | undefined) {
+    constructor(attributes, id, reactants, products, mCRCMethod, transitionState, tunneling) {
         super(attributes, Reaction.tagName);
         this.id = id;
         this.reactants = reactants;
@@ -509,74 +440,67 @@ export class Reaction extends NodeWithNodes {
         this.transitionState = transitionState;
         this.tunneling = tunneling;
     }
-
     /**
      * Convert the product to a string.
      * @returns String representation of the product.
      */
-    toString(): string {
-        let s: string = super.toString();
+    toString() {
+        let s = super.toString();
         return super.toString() + `id(${this.id}), ` +
-            `reactants(${mapToString(this.reactants)}), ` +
-            `products(${mapToString(this.products)}), ` +
+            `reactants(${(0, functions_js_1.mapToString)(this.reactants)}), ` +
+            `products(${(0, functions_js_1.mapToString)(this.products)}), ` +
             `mCRCMethod(${this.mCRCMethod?.toString()}), ` +
             `transitionState(${this.transitionState?.toString()}), ` +
             `tunneling(${this.tunneling?.toString()}))`;
     }
-
     /**
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */
-    getReactantsLabel(): string {
+    getReactantsLabel() {
         return Array.from(this.reactants.values()).map(reactant => reactant.molecule.id).join(' + ');
     }
-
     /**
      * Get the combined energy of the reactants.
      * @returns The combined energy of the reactants.
      */
-    getReactantsEnergy(): number {
+    getReactantsEnergy() {
         return Array.from(this.reactants.values()).map(reactant => reactant.molecule.getEnergy()).reduce((a, b) => a + b, 0);
     }
-
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */
-    getProductsLabel(): string {
+    getProductsLabel() {
         return Array.from(this.products.values()).map(product => product.molecule.id).join(' + ');
     }
-
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(): number {
+    getProductsEnergy() {
         return Array.from(this.products.values()).map(product => product.molecule.getEnergy()).reduce((a, b) => a + b, 0);
     }
-
     /**
      * Get the label of the reaction.
      * @returns The label of the reaction.
      */
-    getLabel(): string {
-        let label: string = this.getReactantsLabel() + ' -> ' + this.getProductsLabel();
+    getLabel() {
+        let label = this.getReactantsLabel() + ' -> ' + this.getProductsLabel();
         return label;
     }
-
     /**
      * @param {string} tagName The tag name.
      * @param {string} pad The pad (Optional).
      * @param {number} level The level of padding (Optional).
      * @returns An XML representation.
      */
-    toXML(tagName: string, pad?: string, level?: number): string {
+    toXML(tagName, pad, level) {
         // Padding
-        let padding0: string = "";
-        let padding1: string = "";
-        let padding2: string = "";
-        let padding3: string = "";
+        let padding0 = "";
+        let padding1 = "";
+        let padding2 = "";
+        let padding3 = "";
         if (pad != undefined && level != undefined) {
             padding0 = pad.repeat(level);
             padding1 = padding0 + pad;
@@ -584,35 +508,37 @@ export class Reaction extends NodeWithNodes {
             padding3 = padding2 + pad;
         }
         // Reactants
-        let reactants_xml: string = "";
+        let reactants_xml = "";
         this.reactants.forEach(reactant => {
             reactants_xml += reactant.toXML("reactant", pad, padding1);
         });
         // Products
-        let products_xml: string = "";
+        let products_xml = "";
         this.products.forEach(product => {
             products_xml += product.toXML("product", pad, padding1);
         });
         // Tunneling
-        let tunneling_xml: string = "";
+        let tunneling_xml = "";
         if (this.tunneling != undefined) {
             tunneling_xml = this.tunneling.getSelfClosingTag(padding1);
         }
         // TransitionState
-        let transitionState_xml: string = "";
+        let transitionState_xml = "";
         if (this.transitionState != undefined) {
             transitionState_xml = this.transitionState.toXML(TransitionState.tagName, pad, padding1);
         }
         // MCRCMethod
-        let mCRCMethod_xml: string = "";
+        let mCRCMethod_xml = "";
         if (this.mCRCMethod != undefined) {
             if (this.mCRCMethod instanceof MesmerILT) {
                 mCRCMethod_xml = this.mCRCMethod.toXML(padding1);
-            } else {
+            }
+            else {
                 mCRCMethod_xml = this.mCRCMethod.getSelfClosingTag(padding1);
             }
         }
-        return getTag(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml,
-            tagName, this.attributes, padding0, true);
+        return (0, xml_js_1.getTag)(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml, tagName, this.attributes, padding0, true);
     }
 }
+exports.Reaction = Reaction;
+//# sourceMappingURL=reaction.js.map

@@ -677,8 +677,8 @@ let xml_text;
             throw new Error("Additional tag names in moleculeList:");
         }
     }
-    if (!moleculeListTagNames.has("molecule")) throw new Error("Expecting molecule tagName but it is not present!");
-    let xml_molecules = xml_moleculeList.getElementsByTagName("molecule");
+    if (!moleculeListTagNames.has((0, _moleculeJs.Molecule).tagName)) throw new Error('Expecting tags with "' + (0, _moleculeJs.Molecule).tagName + '" tagName but there are none!');
+    let xml_molecules = xml_moleculeList.getElementsByTagName((0, _moleculeJs.Molecule).tagName);
     let xml_molecules_length = xml_molecules.length;
     console.log("Number of molecules=" + xml_molecules_length);
     // Process each molecule.
@@ -706,9 +706,9 @@ let xml_text;
         // Sometimes there is an individual atom not in an atomArray.
         //let xml_atomArray = xml_molecules[i].getElementsByTagName("atomArray")[0];
         //if (xml_atomArray != null) {
-        moleculeTagNames.delete("atom");
+        moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
         moleculeTagNames.delete("atomArray");
-        let xml_atoms = xml_molecules[i].getElementsByTagName("atom");
+        let xml_atoms = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
         for(let j = 0; j < xml_atoms.length; j++){
             let attribs = (0, _xmlJs.getAttributes)(xml_atoms[j]);
             let id = attribs.get("id");
@@ -720,10 +720,10 @@ let xml_text;
         }
         //}
         // Read bondArray.
-        moleculeTagNames.delete("bond");
+        moleculeTagNames.delete((0, _moleculeJs.Bond).tagName);
         moleculeTagNames.delete("bondArray");
         const bonds = new Map();
-        let xml_bonds = xml_molecules[i].getElementsByTagName("bond");
+        let xml_bonds = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Bond).tagName);
         for(let j = 0; j < xml_bonds.length; j++){
             let attribs = (0, _xmlJs.getAttributes)(xml_bonds[j]);
             let id = attribs.get("atomRefs2");
@@ -739,9 +739,9 @@ let xml_text;
         //let xml_propertyList = xml_molecules[i].getElementsByTagName("propertyList")[0];
         //if (xml_propertyList != null) {
         //    let xml_properties = xml_propertyList.getElementsByTagName("property");
-        moleculeTagNames.delete("property");
+        moleculeTagNames.delete((0, _moleculeJs.Property).tagName);
         moleculeTagNames.delete("propertyList");
-        let xml_properties = xml_molecules[i].getElementsByTagName("property");
+        let xml_properties = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Property).tagName);
         for(let j = 0; j < xml_properties.length; j++){
             let attribs = (0, _xmlJs.getAttributes)(xml_properties[j]);
             let children = xml_properties[j].children;
@@ -761,45 +761,44 @@ let xml_text;
             if (nodeName == "scalar") {
                 moleculeTagNames.delete("scalar");
                 let value = parseFloat(textContent);
-                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _classesJs.NumberWithAttributes)(nodeAttributes, value)));
+                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _classesJs.NumberNode)(nodeAttributes, nodeName, value)));
                 if (dictRef === "me:ZPE") {
                     minMoleculeEnergy = Math.min(minMoleculeEnergy, value);
                     maxMoleculeEnergy = Math.max(maxMoleculeEnergy, value);
                 }
             } else if (nodeName == "array") {
                 moleculeTagNames.delete("array");
-                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _classesJs.NumberArrayWithAttributes)(nodeAttributes, (0, _functionsJs.toNumberArray)(textContent.split(/\s+/)), " ")));
-            } else if (nodeName == "matrix") ;
+                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _classesJs.NumberArrayNode)(nodeAttributes, nodeName, (0, _functionsJs.toNumberArray)(textContent.split(/\s+/)), " ")));
+            } else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
             else throw new Error("Unexpected nodeName: " + nodeName);
         }
         let els;
         // Read energyTransferModel
-        moleculeTagNames.delete("me:energyTransferModel");
+        moleculeTagNames.delete((0, _moleculeJs.EnergyTransferModel).tagName);
         let energyTransferModel = undefined;
-        els = xml_molecules[i].getElementsByTagName("me:energyTransferModel");
+        els = xml_molecules[i].getElementsByTagName((0, _moleculeJs.EnergyTransferModel).tagName);
         if (els != null) {
             if (els.length > 0) {
                 if (els.length != 1) throw new Error("energyTransferModel length=" + els.length);
-                let xml_deltaEDown = els[0].getElementsByTagName("me:deltaEDown");
-                if (xml_deltaEDown != null) for(let k = 0; k < xml_deltaEDown.length; k++){
-                    let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_deltaEDown[k])));
-                    let deltaEDown = new (0, _moleculeJs.DeltaEDown)((0, _xmlJs.getAttributes)(xml_deltaEDown[k]), value);
-                    energyTransferModel = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(els[k]), deltaEDown);
+                let xml_deltaEDown = els[0].getElementsByTagName((0, _moleculeJs.DeltaEDown).tagName);
+                if (xml_deltaEDown != null) {
+                    let deltaEDowns = [];
+                    for(let k = 0; k < xml_deltaEDown.length; k++){
+                        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_deltaEDown[k])));
+                        let deltaEDown = new (0, _moleculeJs.DeltaEDown)((0, _xmlJs.getAttributes)(xml_deltaEDown[k]), value);
+                        deltaEDowns.push(deltaEDown);
+                    }
+                    energyTransferModel = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(els[0]), deltaEDowns);
                 }
             }
         }
         // Read DOSCMethod
-        moleculeTagNames.delete("me:DOSCMethod");
+        moleculeTagNames.delete((0, _moleculeJs.DOSCMethod).tagName);
         let dOSCMethod = undefined;
-        els = xml_molecules[i].getElementsByTagName("me:DOSCMethod");
+        els = xml_molecules[i].getElementsByTagName((0, _moleculeJs.DOSCMethod).tagName);
         if (els != null) {
             let el = els[0];
-            if (el != null) {
-                if (el != null) {
-                    let type = el.getAttribute("xsi:type");
-                    if (type != null) dOSCMethod = new (0, _moleculeJs.DOSCMethod)(type);
-                }
-            }
+            if (el != null) dOSCMethod = new (0, _moleculeJs.DOSCMethod)((0, _xmlJs.getAttributes)(el));
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -872,22 +871,29 @@ function loadXML() {
                             let parser = new DOMParser();
                             let xml = parser.parseFromString(contents, "text/xml");
                             parse(xml);
+                        /*
+                            // Sending to the server for validation is no longer implemented as there is currently no server.
                             // Send XML to the server
-                            fetch("http://localhost:1234/", {
-                                method: "POST",
+                            fetch('http://localhost:1234/', {
+                                method: 'POST',
                                 headers: {
-                                    "Content-Type": "text/xml"
+                                    'Content-Type': 'text/xml',
                                 },
-                                body: contents
-                            }).then((response)=>{
-                                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                                return response.text();
-                            }).then((data)=>{
-                                console.log("Server response:", data);
-                            }).catch((error)=>{
-                                console.error("There was a problem with the fetch operation:", error);
-                            });
-                        }
+                                body: contents,
+                            })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(`HTTP error! status: ${response.status}`);
+                                    }
+                                    return response.text();
+                                })
+                                .then(data => {
+                                    console.log('Server response:', data);
+                                })
+                                .catch(error => {
+                                    console.error('There was a problem with the fetch operation:', error);
+                                });
+                            */ }
                     }
                 };
                 // Read the first chunk
@@ -992,43 +998,41 @@ let conditions;
  * Parse xml to initialise conditions.
  * @param {XMLDocument} xml The XML document.
  */ function initConditions(xml) {
-    let me_conditions_s = "me:conditions";
-    console.log(me_conditions_s);
-    let xml_conditions = (0, _xmlJs.getSingularElement)(xml, me_conditions_s);
+    console.log((0, _conditionsJs.Conditions).tagName);
+    let xml_conditions = (0, _xmlJs.getSingularElement)(xml, (0, _conditionsJs.Conditions).tagName);
     // Set conditions_title.
     conditions_title = document.getElementById("conditions_title");
     if (conditions_title != null) conditions_title.innerHTML = "Conditions";
     // BathGas
-    let xml_bathGas = (0, _xmlJs.getSingularElement)(xml_conditions, "me:bathGas");
+    let xml_bathGas = (0, _xmlJs.getSingularElement)(xml_conditions, (0, _conditionsJs.BathGas).tagName);
     let attributes = (0, _xmlJs.getAttributes)(xml_bathGas);
     let bathGas = new (0, _conditionsJs.BathGas)(attributes, (0, _utilJs.get)(molecules, xml_bathGas.childNodes[0].nodeValue));
     // PTs
     let xml_PTs = (0, _xmlJs.getSingularElement)(xml_conditions, "me:PTs");
-    let xml_PTPairs = xml_PTs.getElementsByTagName("me:PTpair");
+    let xml_PTPairs = xml_PTs.getElementsByTagName((0, _conditionsJs.PTpair).tagName);
     // Process each PTpair.
-    let PTs = [];
-    for(let i = 0; i < xml_PTPairs.length; i++)PTs.push(new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i])));
-    conditions = new (0, _conditionsJs.Conditions)(bathGas, PTs);
+    let pTs = [];
+    for(let i = 0; i < xml_PTPairs.length; i++)pTs.push(new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i])));
+    conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions), bathGas, new (0, _conditionsJs.PTs)(new Map, pTs));
 }
 let modelParameters;
 /**
  * Parses xml to initialise modelParameters.
  * @param {XMLDocument} xml The XML document.
  */ function initModelParameters(xml) {
-    let me_modelParameters_s = "me:modelParameters";
-    console.log(me_modelParameters_s);
-    let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, me_modelParameters_s);
+    console.log((0, _modelParametersJs.ModelParameters).tagName);
+    let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, (0, _modelParametersJs.ModelParameters).tagName);
     // Set modelParameters_title.
     modelParameters_title = document.getElementById("modelParameters_title");
     if (modelParameters_title != null) modelParameters_title.innerHTML = "Model Parameters";
     // GrainSize
-    let xml_grainSize = (0, _xmlJs.getSingularElement)(xml_modelParameters, "me:grainSize");
+    let xml_grainSize = (0, _xmlJs.getSingularElement)(xml_modelParameters, (0, _modelParametersJs.GrainSize).tagName);
     let attributes = (0, _xmlJs.getAttributes)(xml_grainSize);
     let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_grainSize)));
     let grainSize = new (0, _modelParametersJs.GrainSize)(attributes, value);
     // EnergyAboveTheTopHill
-    let xml_energyAboveTheTopHill = (0, _xmlJs.getSingularElement)(xml_modelParameters, "me:energyAboveTheTopHill");
-    let energyAboveTheTopHill = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_energyAboveTheTopHill)));
+    let xml_energyAboveTheTopHill = (0, _xmlJs.getSingularElement)(xml_modelParameters, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
+    let energyAboveTheTopHill = new (0, _modelParametersJs.EnergyAboveTheTopHill)((0, _xmlJs.getAttributes)(xml_energyAboveTheTopHill), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_energyAboveTheTopHill))));
     modelParameters = new (0, _modelParametersJs.ModelParameters)(grainSize, energyAboveTheTopHill);
 }
 let control;
@@ -1036,71 +1040,83 @@ let control;
  * Parses xml to initialise control.
  * @param {XMLDocument} xml The XML document.
  */ function initControl(xml) {
-    let me_control_s = "me:control";
-    console.log(me_control_s);
-    let xml_control = (0, _xmlJs.getSingularElement)(xml, me_control_s);
+    console.log((0, _controlJs.Control).tagName);
+    let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
     // Set control_title.
     let control_title = document.getElementById("control_title");
     if (control_title != null) control_title.innerHTML = "Control";
     // me:testDOS
-    let xml_testDOS = xml_control.getElementsByTagName("me:testDOS");
+    let xml_testDOS = xml_control.getElementsByTagName((0, _controlJs.TestDOS).tagName);
     let testDOS;
-    if (xml_testDOS.length > 0) testDOS = true;
+    if (xml_testDOS.length == 1) testDOS = new (0, _controlJs.TestDOS)();
+    else if (xml_testDOS.length > 1) console.warn("testDOS.length=" + xml_testDOS.length);
     // me:printSpeciesProfile
-    let xml_printSpeciesProfile = xml_control.getElementsByTagName("me:printSpeciesProfile");
+    let xml_printSpeciesProfile = xml_control.getElementsByTagName((0, _controlJs.PrintSpeciesProfile).tagName);
     let printSpeciesProfile;
-    if (xml_printSpeciesProfile.length > 0) printSpeciesProfile = true;
+    if (xml_printSpeciesProfile.length == 1) printSpeciesProfile = new (0, _controlJs.PrintSpeciesProfile)();
+    else if (xml_printSpeciesProfile.length > 1) console.warn("printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
     // me:testMicroRates
-    let xml_testMicroRates = xml_control.getElementsByTagName("me:testMicroRates");
+    let xml_testMicroRates = xml_control.getElementsByTagName((0, _controlJs.TestMicroRates).tagName);
     let testMicroRates;
-    if (xml_testMicroRates.length > 0) testMicroRates = true;
+    if (xml_testMicroRates.length == 1) testMicroRates = new (0, _controlJs.TestMicroRates)();
+    else if (xml_testMicroRates.length > 1) console.warn("testMicroRates.length=" + xml_testMicroRates.length);
     // me:testRateConstant
-    let xml_testRateConstant = xml_control.getElementsByTagName("me:testRateConstant");
+    let xml_testRateConstant = xml_control.getElementsByTagName((0, _controlJs.TestRateConstant).tagName);
     let testRateConstant;
-    if (xml_testRateConstant.length > 0) testRateConstant = true;
+    if (xml_testRateConstant.length == 1) testRateConstant = new (0, _controlJs.TestRateConstant)();
+    else if (xml_testRateConstant.length > 1) console.warn("testRateConstant.length=" + xml_testRateConstant.length);
     // me:printGrainDOS
-    let xml_printGrainDOS = xml_control.getElementsByTagName("me:printGrainDOS");
+    let xml_printGrainDOS = xml_control.getElementsByTagName((0, _controlJs.PrintGrainDOS).tagName);
     let printGrainDOS;
-    if (xml_printGrainDOS.length > 0) printGrainDOS = true;
+    if (xml_printGrainDOS.length == 1) printGrainDOS = new (0, _controlJs.PrintGrainDOS)();
+    else if (xml_printGrainDOS.length > 1) console.warn("printGrainDOS.length=" + xml_printGrainDOS.length);
     // me:printCellDOS
-    let xml_printCellDOS = xml_control.getElementsByTagName("me:printCellDOS");
+    let xml_printCellDOS = xml_control.getElementsByTagName((0, _controlJs.PrintCellDOS).tagName);
     let printCellDOS;
-    if (xml_printCellDOS.length > 0) printCellDOS = true;
+    if (xml_printCellDOS.length == 1) printCellDOS = new (0, _controlJs.PrintCellDOS)();
+    else if (xml_printCellDOS.length > 1) console.warn("printCellDOS.length=" + xml_printCellDOS.length);
     // me:printReactionOperatorColumnSums
-    let xml_printReactionOperatorColumnSums = xml_control.getElementsByTagName("me:printReactionOperatorColumnSums");
+    let xml_printReactionOperatorColumnSums = xml_control.getElementsByTagName((0, _controlJs.PrintReactionOperatorColumnSums).tagName);
     let printReactionOperatorColumnSums;
-    if (xml_printReactionOperatorColumnSums.length > 0) printReactionOperatorColumnSums = true;
+    if (xml_printReactionOperatorColumnSums.length == 1) printReactionOperatorColumnSums = new (0, _controlJs.PrintReactionOperatorColumnSums)();
+    else if (xml_printReactionOperatorColumnSums.length > 1) console.warn("printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
     // me:printTunnellingCoefficients
-    let xml_printTunnellingCoefficients = xml_control.getElementsByTagName("me:printTunnellingCoefficients");
+    let xml_printTunnellingCoefficients = xml_control.getElementsByTagName((0, _controlJs.PrintTunnellingCoefficients).tagName);
     let printTunnellingCoefficients;
-    if (xml_printTunnellingCoefficients.length > 0) printTunnellingCoefficients = true;
+    if (xml_printTunnellingCoefficients.length == 1) printTunnellingCoefficients = new (0, _controlJs.PrintTunnellingCoefficients)();
+    else if (xml_printTunnellingCoefficients.length > 1) console.warn("printTunnellingCoefficients.length=" + xml_printTunnellingCoefficients.length);
     // me:printGrainkfE
-    let xml_printGrainkfE = xml_control.getElementsByTagName("me:printGrainkfE");
+    let xml_printGrainkfE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkfE).tagName);
     let printGrainkfE;
-    if (xml_printGrainkfE.length > 0) printGrainkfE = true;
+    if (xml_printGrainkfE.length == 1) printGrainkfE = new (0, _controlJs.PrintGrainkfE)();
+    else if (xml_printGrainkfE.length > 1) console.warn("printGrainkfE.length=" + xml_printGrainkfE.length);
     // me:printGrainBoltzmann
-    let xml_printGrainBoltzmann = xml_control.getElementsByTagName("me:printGrainBoltzmann");
+    let xml_printGrainBoltzmann = xml_control.getElementsByTagName((0, _controlJs.PrintGrainBoltzmann).tagName);
     let printGrainBoltzmann;
-    if (xml_printGrainBoltzmann.length > 0) printGrainBoltzmann = true;
+    if (xml_printGrainBoltzmann.length == 1) printGrainBoltzmann = new (0, _controlJs.PrintGrainBoltzmann)();
+    else if (xml_printGrainBoltzmann.length > 1) console.warn("printGrainBoltzmann.length=" + xml_printGrainBoltzmann.length);
     // me:printGrainkbE
-    let xml_printGrainkbE = xml_control.getElementsByTagName("me:printGrainkbE");
+    let xml_printGrainkbE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkbE).tagName);
     let printGrainkbE;
-    if (xml_printGrainkbE.length > 0) printGrainkbE = true;
+    if (xml_printGrainkbE.length == 1) printGrainkbE = new (0, _controlJs.PrintGrainkbE)();
+    else if (xml_printGrainkbE.length > 1) console.warn("printGrainkbE.length=" + xml_printGrainkbE.length);
     // me:eigenvalues
-    let xml_eigenvalues = xml_control.getElementsByTagName("me:eigenvalues");
+    let xml_eigenvalues = xml_control.getElementsByTagName((0, _controlJs.Eigenvalues).tagName);
     let eigenvalues;
-    if (xml_eigenvalues.length > 0) eigenvalues = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_eigenvalues[0])));
+    if (xml_eigenvalues.length == 1) eigenvalues = new (0, _controlJs.Eigenvalues)((0, _xmlJs.getAttributes)(xml_eigenvalues[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_eigenvalues[0]))));
+    else console.warn("eigenvalues.length=" + xml_eigenvalues.length);
     // me:hideInactive
-    let xml_hideInactive = xml_control.getElementsByTagName("me:hideInactive");
+    let xml_hideInactive = xml_control.getElementsByTagName((0, _controlJs.HideInactive).tagName);
     let hideInactive;
-    if (xml_hideInactive.length > 0) hideInactive = true;
+    if (xml_hideInactive.length == 1) hideInactive = new (0, _controlJs.HideInactive)();
+    else console.warn("hideInactive.length=" + xml_hideInactive.length);
     // me:diagramEnergyOffset
-    let xml_diagramEnergyOffset = xml_control.getElementsByTagName("me:diagramEnergyOffset");
+    let xml_diagramEnergyOffset = xml_control.getElementsByTagName((0, _controlJs.DiagramEnergyOffset).tagName);
     let diagramEnergyOffset;
-    if (xml_diagramEnergyOffset.length > 0) {
+    if (xml_diagramEnergyOffset.length == 1) {
         let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_diagramEnergyOffset[0])));
         diagramEnergyOffset = new (0, _controlJs.DiagramEnergyOffset)((0, _xmlJs.getAttributes)(xml_diagramEnergyOffset[0]), value);
-    }
+    } else console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
     control = new (0, _controlJs.Control)(testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
 }
 /**
@@ -1110,7 +1126,7 @@ let control;
     let reactionList_s = "reactionList";
     console.log(reactionList_s);
     let xml_reactionList = (0, _xmlJs.getSingularElement)(xml, reactionList_s);
-    let xml_reactions = xml_reactionList.getElementsByTagName("reaction");
+    let xml_reactions = xml_reactionList.getElementsByTagName((0, _reactionJs.Reaction).tagName);
     let xml_reactions_length = xml_reactions.length;
     console.log("Number of reactions=" + xml_reactions_length);
     // Process each reaction.
@@ -1127,26 +1143,26 @@ let control;
             console.log("id=" + reactionID);
             // Load reactants.
             let reactants = new Map([]);
-            let xml_reactants = xml_reactions[i].getElementsByTagName("reactant");
+            let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for(let j = 0; j < xml_reactants.length; j++){
-                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], "molecule");
+                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _moleculeJs.Molecule).tagName);
                 let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
                 reactants.set(moleculeID, new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_molecule), (0, _utilJs.get)(molecules, moleculeID)));
             }
             // Load products.
             let products = new Map([]);
-            let xml_products = xml_reactions[i].getElementsByTagName("product");
+            let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
             //console.log("xml_products.length=" + xml_products.length);
             for(let j = 0; j < xml_products.length; j++){
-                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], "molecule");
+                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
                 let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
                 products.set(moleculeID, new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_molecule), (0, _utilJs.get)(molecules, moleculeID)));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
             let mCRCMethod;
-            let xml_MCRCMethod = xml_reactions[i].getElementsByTagName("me:MCRCMethod");
+            let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _reactionJs.MCRCMethod).tagName);
             //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
             //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
             if (xml_MCRCMethod.length > 0) {
@@ -1155,9 +1171,9 @@ let control;
                 if (name == null) {
                     let type = attributes.get("xsi:type");
                     if (type != null) {
-                        if (type === "me:MesmerILT") {
+                        if (type === (0, _reactionJs.MesmerILT).tagName) {
                             let preExponential;
-                            let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName("me:preExponential");
+                            let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.PreExponential).tagName);
                             if (xml_preExponential != null) {
                                 if (xml_preExponential[0] != null) {
                                     let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_preExponential[0])));
@@ -1165,7 +1181,7 @@ let control;
                                 }
                             }
                             let activationEnergy;
-                            let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName("me:activationEnergy");
+                            let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.ActivationEnergy).tagName);
                             if (xml_activationEnergy != null) {
                                 if (xml_activationEnergy[0] != null) {
                                     let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_activationEnergy[0])));
@@ -1191,7 +1207,7 @@ let control;
                             mCRCMethod = new (0, _reactionJs.MesmerILT)(attributes, preExponential, activationEnergy, tInfinity, nInfinity);
                         }
                     }
-                } else mCRCMethod = new (0, _reactionJs.MCRCMethod)(attributes, name);
+                } else mCRCMethod = new (0, _reactionJs.MCRCMethod)(attributes);
             }
             // Load transition state.
             //console.log("Load  transition state...");
@@ -1547,14 +1563,14 @@ let control;
  * Display conditions.
  */ function displayConditions() {
     let bathGas_element = document.getElementById("bathGas");
-    if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + conditions.bathGas.molecule.getID();
+    if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().molecule.getID();
     let PTs_element = document.getElementById("PT_table");
     let table = (0, _htmlJs.getTH)([
         "P",
         "T"
     ]);
     if (PTs_element != null) {
-        conditions.pTs.forEach(function(pTpair) {
+        conditions.getPTs().PTpairs.forEach(function(pTpair) {
             table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)(pTpair.P.toString()) + (0, _htmlJs.getTD)(pTpair.T.toString()));
         });
         PTs_element.innerHTML = table;
@@ -1568,8 +1584,8 @@ let control;
         "Parameter",
         "Value"
     ]);
-    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Grain Size") + (0, _htmlJs.getTD)(modelParameters.grainSize.value.toString()));
-    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Energy Above The Top Hill") + (0, _htmlJs.getTD)(modelParameters.energyAboveTheTopHill.toString()));
+    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Grain Size") + (0, _htmlJs.getTD)(modelParameters.getGrainSize().value.toString()));
+    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Energy Above The Top Hill") + (0, _htmlJs.getTD)(modelParameters.getEnergyAboveTheTopHill().toString()));
     if (modelParameters_element != null) modelParameters_element.innerHTML = table;
 }
 /**
@@ -1629,14 +1645,14 @@ window.setEnergy = setEnergy;
     molecules.forEach(function(molecule, id) {
         moleculeList += molecule.toXML("molecule", pad, level);
     });
-    moleculeList = (0, _xmlJs.getTag)(moleculeList, "moleculeList", undefined, undefined, undefined, pad, true);
+    moleculeList = (0, _xmlJs.getTag)(moleculeList, "moleculeList", undefined, pad, true);
     // Create reactionList.
     level = 2;
     let reactionList = "";
     reactions.forEach(function(reaction, id) {
         reactionList += reaction.toXML("reaction", pad, level);
     });
-    reactionList = (0, _xmlJs.getTag)(reactionList, "reactionList", undefined, undefined, undefined, pad, true);
+    reactionList = (0, _xmlJs.getTag)(reactionList, "reactionList", undefined, pad, true);
     // Create me.Conditions
     let xml_conditions = conditions.toXML(pad, pad);
     // Create modelParameters
@@ -1731,15 +1747,15 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"7znDa":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
 /**
  * Get the attribute of an xml element.
  * @param xml The xml element to search in.
  * @param name The name of the attribute to search for.
  * @returns The value of the attribute.
  * @throws An error if the attribute is not found.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getAttribute", ()=>getAttribute);
+ */ parcelHelpers.export(exports, "getAttribute", ()=>getAttribute);
 /**
  * Get the first element in element with a tag name tagName.
  * @param element The xml element to search in.
@@ -1760,12 +1776,13 @@ parcelHelpers.export(exports, "getAttribute", ()=>getAttribute);
  * @throws An error if the nodeValue is null.
  */ parcelHelpers.export(exports, "getNodeValue", ()=>getNodeValue);
 /**
+ * A class for a tag.
+ */ parcelHelpers.export(exports, "Tag", ()=>Tag);
+/**
  * Create and return a XML start tag. For multiple attributes, pass them in a map.
  * If there is only one, then pass the name and value as separate parameters.
  * @param tagName The tag name.
  * @param {Map<string, any>} attributes The attributes (optional).
- * @param {string} attributeName The name of the attribute (optional).
- * @param {any} attributeValue The value of the attribute (optional).
  * @param {string} padding The padding (optional).
  * @returns The XML start tag.
  */ parcelHelpers.export(exports, "getStartTag", ()=>getStartTag);
@@ -1781,10 +1798,7 @@ parcelHelpers.export(exports, "getAttribute", ()=>getAttribute);
  * If there is only one, then pass the name and value as separate parameters.
  * @param content The content of the tag.
  * @param tagName The tag name.
- * @param delimeter Whether values are delimeted.
  * @param {Map<string, any>} attributes The attributes (optional).
- * @param {string} attributeName The name of the attribute (optional).
- * @param {any} attributeValue The value of the attribute (optional).
  * @param {string} padding The padding (optional).
  * @param {boolean} padValue Whether to pad the value (optional).
  * @returns The XML tag with content.
@@ -1805,6 +1819,7 @@ parcelHelpers.export(exports, "getAttribute", ()=>getAttribute);
  * Convert XML to HTML.
  * @param {string} text The XML text.
  */ parcelHelpers.export(exports, "toHTML", ()=>toHTML);
+var _html = require("./html");
 function getAttribute(xml, name) {
     let v = xml.getAttribute(name);
     if (!v) throw new Error(name + " attribute not found");
@@ -1825,12 +1840,26 @@ function getNodeValue(node) {
     if (nodeValue == null) throw new Error("nodeValue is null");
     return nodeValue;
 }
-function getStartTag(tagName, attributes, attributeName, attributeValue, padding) {
+class Tag {
+    /**
+     * @param {string} tagName The tag name.
+     */ constructor(tagName){
+        this.tagName = tagName;
+    }
+    /**
+     * @param {string | undefined} padding The padding (optional).
+     * @returns A self closing tag.
+     */ getSelfClosingTag(padding) {
+        let s = (0, _html.getSelfClosingTag)(null, this.tagName);
+        if (padding) return "\n" + padding + s;
+        return s;
+    }
+}
+function getStartTag(tagName, attributes, padding) {
     let s = "";
     if (padding != undefined) s += "\n" + padding;
     s += "<" + tagName;
     if (attributes) for (let [k, v] of attributes)s += " " + k + '="' + v.toString() + '"';
-    if (attributeName && attributeValue) s += " " + attributeName + '="' + attributeValue.toString() + '"';
     return s + ">";
 }
 function getEndTag(tagName, padding, padValue) {
@@ -1840,8 +1869,8 @@ function getEndTag(tagName, padding, padValue) {
     }
     return s + "</" + tagName + ">";
 }
-function getTag(content, tagName, attributes, attributeName, attributeValue, padding, padValue) {
-    let startTag = getStartTag(tagName, attributes, attributeName, attributeValue, padding);
+function getTag(content, tagName, attributes, padding, padValue) {
+    let startTag = getStartTag(tagName, attributes, padding);
     let endTag = getEndTag(tagName, padding, padValue);
     return startTag + content + endTag;
 }
@@ -1863,426 +1892,7 @@ function toHTML(text) {
     return text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>").replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/  /g, "&nbsp;&nbsp;");
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ahQNx":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * A class for representing an atom.
- * @param {Map<string, string>} attributes The attributes.
- * If there is no "id" or "elementType" key an error will be thrown.
- */ parcelHelpers.export(exports, "Atom", ()=>Atom);
-/**
- * A class for representing an atomic bond - a bond beteen two atoms.
- * @param {Map<string, string>} attributes The attributes.
- * @param {Atom} atomA One atom.
- * @param {Atom} atomB Another atom.
- * @param {string} order The order of the bond.
- */ parcelHelpers.export(exports, "Bond", ()=>Bond);
-/**
- * A class for representing a property.
- */ parcelHelpers.export(exports, "Property", ()=>Property);
-/**
- * Represents the deltaEDown class.
- */ parcelHelpers.export(exports, "DeltaEDown", ()=>DeltaEDown);
-/**
- * A class for representing an energy transfer model.
- */ parcelHelpers.export(exports, "EnergyTransferModel", ()=>EnergyTransferModel);
-/**
- * A class for representing a method for calculating the density of states.
- */ parcelHelpers.export(exports, "DOSCMethod", ()=>DOSCMethod);
-/**
- * A class for representing a molecule.
- */ parcelHelpers.export(exports, "Molecule", ()=>Molecule);
-var _classesJs = require("./classes.js");
-var _functionsJs = require("./functions.js");
-var _xmlJs = require("./xml.js");
-class Atom extends (0, _classesJs.Attributes) {
-    /**
-     * @param attributes The attributes. If there is no "id" or "elementType" key an error will be thrown.
-     */ constructor(attributes){
-        super(attributes);
-        let id = attributes.get("id");
-        if (id == undefined) throw new Error("id is undefined");
-        let elementType = attributes.get("elementType");
-        if (elementType == undefined) throw new Error("elementType is undefined");
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        let s = super.toString();
-        return s + `)`;
-    }
-    /**
-     * @returns The id of the atom.
-     */ get id() {
-        return this.attributes.get("id");
-    }
-    /**
-     * @returns The element type of the atom.
-     */ get elementType() {
-        return this.attributes.get("elementType");
-    }
-}
-class Bond extends (0, _classesJs.Attributes) {
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     */ constructor(attributes){
-        super(attributes);
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        let s = super.toString();
-        return s + `)`;
-    }
-}
-class Property extends (0, _classesJs.Attributes) {
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {NumberWithAttributes | NumberArrayWithAttributes} property The property.
-     */ constructor(attributes, property){
-        super(attributes);
-        this.property = property;
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        return super.toString() + ` property(${this.property.toString()}))`;
-    }
-    /**
-     * @param padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding1 = undefined;
-        if (pad != undefined) {
-            if (padding != undefined) padding1 = padding + pad;
-        }
-        if (this.property instanceof (0, _classesJs.NumberWithAttributes)) return (0, _xmlJs.getTag)(this.property.toXML("scalar", padding1), "property", this.attributes, undefined, undefined, padding, true);
-        else return (0, _xmlJs.getTag)(this.property.toXML("array", padding1), "property", this.attributes, undefined, undefined, padding, true);
-    }
-}
-class DeltaEDown extends (0, _classesJs.NumberWithAttributes) {
-    static{
-        this.xmlTagName = "me:deltaEDown";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param units The units.
-     */ constructor(attributes, value){
-        super(attributes, value);
-    }
-}
-class EnergyTransferModel extends (0, _classesJs.Attributes) {
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {[DeltaEDown]} deltaEDowns The DeltaEDowns.
-     */ constructor(attributes, deltaEDowns){
-        super(attributes);
-        this.deltaEDowns = deltaEDowns;
-    }
-    /**
-     * @param padding - Optional padding string for formatting the XML output.
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding1 = "";
-        if (padding != undefined) {
-            if (pad != undefined) padding1 = padding + pad;
-        }
-        // deltaEDowns
-        let deltaEDowns_xml = "";
-        this.deltaEDowns.forEach((d)=>{
-            deltaEDowns_xml += d.toXML("me:deltaEDown", padding1);
-        });
-        if (pad == undefined) return (0, _xmlJs.getTag)(deltaEDowns_xml, "me:energyTransferModel", this.attributes, undefined, undefined, padding, false);
-        else return (0, _xmlJs.getTag)(deltaEDowns_xml, "me:energyTransferModel", this.attributes, undefined, undefined, padding, true);
-    }
-}
-class DOSCMethod {
-    constructor(type){
-        this.type = type;
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        return `DOSCMethod(type(${this.type}))`;
-    }
-    /**
-     * @param padding The padding (Optional).
-     * @returns A tag representation.
-     */ toTag(padding) {
-        let s = `<me:DOSCMethod xsi:type="${this.type}"/>`;
-        if (padding) return "\n" + padding + s;
-        return "\n" + s;
-    }
-}
-class Molecule extends (0, _classesJs.Attributes) {
-    /**
-     * Create a molecule.
-     * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
-     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param {Map<string, Atom>} atoms A Map of atoms with keys as ids.
-     * @param {Map<string, Bond>} bonds A Map of bonds with. The keys combine the ids of the two bonded atoms.
-     * @param {Map<string, Property>} properties A map of properties.
-     * @param {[EnergyTransferModel] | null} energyTransferModels The energy transfer models.
-     * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
-     */ constructor(attributes, atoms, bonds, properties, energyTransferModels, dOSCMethod){
-        super(attributes);
-        let id = this.attributes.get("id");
-        if (id == undefined) throw new Error("id is undefined");
-        this.id = id;
-        this.atoms = atoms;
-        this.bonds = bonds;
-        this.properties = properties;
-        this.energyTransferModels = energyTransferModels;
-        this.dOSCMethod = dOSCMethod;
-    }
-    /** 
-     * @returns A string representation.
-     */ toString() {
-        let r = `Molecule(id(${this.getID()}), `;
-        let description = this.getDescription();
-        if (description != undefined) r += `description(${description}), `;
-        let active = this.getActive();
-        if (active != undefined) r += `active(${active}), `;
-        if (this.atoms.size > 0) r += `atoms(${(0, _functionsJs.mapToString)(this.atoms)}), `;
-        if (this.bonds.size > 0) r += `bonds(${(0, _functionsJs.mapToString)(this.bonds)}), `;
-        if (this.properties.size > 0) r += `properties(${(0, _functionsJs.mapToString)(this.properties)}), `;
-        if (this.energyTransferModels) this.energyTransferModels.forEach((energyTransferModel)=>{
-            r += `energyTransferModel(` + energyTransferModel.toString() + `), `;
-        });
-        if (this.dOSCMethod) r += `dOSCMethod(${this.dOSCMethod.toString()}), `;
-        return r + `)`;
-    }
-    /**
-     * @return The id of the molecule.
-     */ getID() {
-        return this.attributes.get("id");
-    }
-    /**
-     * Gets the description of the molecule.
-     * @returns The description of the molecule, or undefined if it is not set.
-     */ getDescription() {
-        return this.attributes.get("description");
-    }
-    /**
-     * Gets the active status of the molecule.
-     * @returns The active status of the molecule, or undefined if it is not set.
-     */ getActive() {
-        let active = this.attributes.get("active");
-        if (active != undefined) return true;
-        return active;
-    }
-    /**
-     * @returns {number} The energy of the molecule or zero if the energy is not set.
-     * @throws An error if "me.ZPE" is a property, but is not mapped to a PropertyScalar.
-     */ getEnergy() {
-        let zpe = this.properties.get("me:ZPE");
-        if (zpe == undefined) return 0;
-        if (zpe.property instanceof (0, _classesJs.NumberWithAttributes)) return zpe.property.value;
-        else throw new Error("Expected a PropertyScalar but got a PropertyArray and not sure how to handle that.");
-    }
-    /**
-     * Set the Energy of the molecule.
-     * @param {number} energy The energy of the molecule in kcal/mol.
-     */ setEnergy(energy) {
-        let property = this.properties.get("me:ZPE");
-        if (property == undefined) throw new Error("No me.ZPE property found");
-        if (property.property instanceof (0, _classesJs.NumberArrayWithAttributes)) throw new Error("Expected a NumberWithAttributes but got a NumberArrayWithAttributes and not sure how to handle that.");
-        else property.property.value = energy;
-    }
-    /**
-     * Get the RotationConstants of the molecule.
-     * @returns The RotationConstants of the molecule.
-     */ getRotationConstants() {
-        let property = this.properties.get("me:rotConsts");
-        if (property != undefined) {
-            if (property.property != null) {
-                if (property.property instanceof (0, _classesJs.NumberWithAttributes)) return [
-                    property.property.value
-                ];
-                else return property.property.values;
-            } else return undefined;
-        }
-        return property;
-    }
-    /**
-     * Get the VibrationFrequencies of the molecule.
-     * @returns The VibrationFrequencies of the molecule.
-     */ getVibrationFrequencies() {
-        let property = this.properties.get("me:vibFreqs");
-        if (property != undefined) {
-            if (property.property instanceof (0, _classesJs.NumberWithAttributes)) return [
-                property.property.value
-            ];
-            else if (property.property instanceof (0, _classesJs.NumberArrayWithAttributes)) return property.property.values;
-            else return undefined;
-        }
-        return property;
-    }
-    /**
-     * @param {string} tagName The tag name.
-     * @param {string} pad The pad (Optional).
-     * @param {number} level The level of padding (Optional).
-     * @returns An XML representation.
-     */ toXML(tagName, pad, level) {
-        // Padding
-        let padding0 = "";
-        let padding1 = "";
-        let padding2 = "";
-        let padding3 = "";
-        if (pad != undefined && level != undefined) {
-            padding0 = pad.repeat(level);
-            padding1 = padding0 + pad;
-            padding2 = padding1 + pad;
-            padding3 = padding2 + pad;
-        }
-        // Atoms
-        let atoms_xml = "";
-        for (let atom of this.atoms.values())atoms_xml += atom.toTag("atom", padding2);
-        if (this.atoms.size > 1) {
-            if (atoms_xml != "") atoms_xml = (0, _xmlJs.getTag)(atoms_xml, "atomArray", undefined, undefined, undefined, padding1, true);
-        }
-        // Bonds
-        let bonds_xml = "";
-        for (let bond of this.bonds.values())bonds_xml += bond.toTag("bond", padding2);
-        if (bonds_xml != "") bonds_xml = (0, _xmlJs.getTag)(bonds_xml, "bondArray", undefined, undefined, undefined, padding1, true);
-        // Properties
-        let properties_xml = "";
-        this.properties.forEach((property)=>{
-            let property_xml = "";
-            if (property.property instanceof (0, _classesJs.NumberWithAttributes)) property_xml += property.property.toXML("scalar", padding3);
-            else property_xml += property.property.toXML("array", padding3);
-            properties_xml += (0, _xmlJs.getTag)(property_xml, "property", property.attributes, undefined, undefined, padding2, true);
-        });
-        if (this.properties.size > 1) {
-            if (properties_xml != "") properties_xml = (0, _xmlJs.getTag)(properties_xml, "propertyList", undefined, undefined, undefined, padding1, true);
-        }
-        // EnergyTransferModel
-        let energyTransferModel_xml = "";
-        if (this.energyTransferModels) this.energyTransferModels.forEach((etm)=>{
-            energyTransferModel_xml = etm.toXML(pad, padding1);
-        });
-        // DOSCMethod
-        let dOSCMethod_xml = "";
-        if (this.dOSCMethod) dOSCMethod_xml = this.dOSCMethod.toTag(padding1);
-        return (0, _xmlJs.getTag)(atoms_xml + bonds_xml + properties_xml + energyTransferModel_xml + dOSCMethod_xml, tagName, this.attributes, undefined, undefined, padding0, true);
-    }
-}
-
-},{"./classes.js":"ikp7x","./functions.js":"dxSxr","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ikp7x":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * A class for representing things with attributes.
- * @param {Map<string, string>} attributes The attributes.
- */ parcelHelpers.export(exports, "Attributes", ()=>Attributes);
-/**
- * A class for representing a number with attributes.
- * e.g. A value with units and measurement/uncertainty information.
- */ parcelHelpers.export(exports, "NumberWithAttributes", ()=>NumberWithAttributes);
-/**
- * A class for representing numerical values with a shared attributes.
- * e.g. An array values sharing the same units and measurement details.
- */ parcelHelpers.export(exports, "NumberArrayWithAttributes", ()=>NumberArrayWithAttributes);
-var _html = require("./html");
-var _xml = require("./xml");
-class Attributes {
-    /**
-     * @param attributes The attributes.
-     */ constructor(attributes){
-        this.attributes = attributes;
-    }
-    /**
-     * @returns The name in lower case.
-     */ /*
-    get name(): string {
-        return this.constructor.name.toLowerCase().trim();
-    }
-    */ /**
-     * @returns A string representation.
-     */ toString() {
-        let r = this.constructor.name + `(`;
-        this.attributes.forEach((value, key)=>{
-            r += `${key}(${value}), `;
-        });
-        return r;
-    }
-    /**
-     * Get the tag representation.
-     * @param {string} tagName The tag name.
-     * @param {string} padding The padding (Optional).
-     * @returns A tag representation.
-     */ toTag(tagName, padding) {
-        let s = (0, _html.getSelfClosingTag)(this.attributes, tagName);
-        if (padding) return "\n" + padding + s;
-        return "\n" + s;
-    }
-    /**
-     * Get the XML representation.
-     * @param {string} tagName The tag name.
-     * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(tagName, padding) {
-        return (0, _xml.getTag)("", tagName, this.attributes, undefined, undefined, padding, false);
-    }
-}
-class NumberWithAttributes extends Attributes {
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {number} value The value.
-     */ constructor(attributes, value){
-        super(attributes);
-        this.value = value;
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        return super.toString() + `, ${this.value.toString()})`;
-    }
-    /**
-     * Get the XML representation.
-     * @param {string} tagName The tag name.
-     * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(tagName, padding) {
-        return (0, _xml.getTag)(this.value.toString().trim(), tagName, this.attributes, undefined, undefined, padding, false);
-    }
-}
-class NumberArrayWithAttributes extends Attributes {
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {number[]} values The values.
-     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
-     */ constructor(attributes, values, delimiter){
-        super(attributes);
-        /**
-     * The delimiter of the values.
-     */ this.delimiter = ",";
-        this.values = values;
-        if (delimiter) this.delimiter = delimiter;
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        return super.toString() + `, ${this.values.toString()})`;
-    }
-    /**
-     * Set the delimiter.
-     * @param {string} delimiter The delimiter.
-     */ setDelimiter(delimiter) {
-        this.delimiter = delimiter;
-    }
-    /**
-     * Get the XML representation.
-     * @param {string} tagName The tag name.
-     * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(tagName, padding) {
-        return (0, _xml.getTag)(this.values.toString().replaceAll(",", this.delimiter), tagName, this.attributes, undefined, undefined, padding, false);
-    }
-}
-
-},{"./html":"aLPSL","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aLPSL":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./html":"aLPSL"}],"aLPSL":[function(require,module,exports) {
 /**
  * Create a table header row.
  * @param {string[]} headings The headings.
@@ -2362,7 +1972,537 @@ function getSelfClosingTag(attributes, tagName) {
     return s + " />";
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dxSxr":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ahQNx":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * A class for representing an atom.
+ * @param {Map<string, string>} attributes The attributes.
+ * If there is no "id" or "elementType" key an error will be thrown.
+ */ parcelHelpers.export(exports, "Atom", ()=>Atom);
+/**
+ * A class for representing an atomic bond - a bond beteen two atoms.
+ * @param {Map<string, string>} attributes The attributes.
+ * @param {Atom} atomA One atom.
+ * @param {Atom} atomB Another atom.
+ * @param {string} order The order of the bond.
+ */ parcelHelpers.export(exports, "Bond", ()=>Bond);
+/**
+ * A class for representing a property.
+ */ parcelHelpers.export(exports, "Property", ()=>Property);
+/**
+ * Represents the deltaEDown class.
+ */ parcelHelpers.export(exports, "DeltaEDown", ()=>DeltaEDown);
+/**
+ * A class for representing an energy transfer model.
+ */ parcelHelpers.export(exports, "EnergyTransferModel", ()=>EnergyTransferModel);
+/**
+ * A class for representing a method for calculating the density of states.
+ */ parcelHelpers.export(exports, "DOSCMethod", ()=>DOSCMethod);
+/**
+ * A class for representing a bondRef.
+ */ parcelHelpers.export(exports, "BondRef", ()=>BondRef);
+/**
+ * A class for representing a PotentialPoint.
+ */ parcelHelpers.export(exports, "PotentialPoint", ()=>PotentialPoint);
+/**
+ * A class for representing a HinderedRotorPotential.
+ */ parcelHelpers.export(exports, "HinderedRotorPotential", ()=>HinderedRotorPotential);
+/**
+ * A class for representing the extra DOSC method.
+ */ parcelHelpers.export(exports, "ExtraDOSCMethod", ()=>ExtraDOSCMethod);
+/**
+ * A class for representing a molecule.
+ */ parcelHelpers.export(exports, "Molecule", ()=>Molecule);
+var _classesJs = require("./classes.js");
+var _functionsJs = require("./functions.js");
+var _xmlJs = require("./xml.js");
+class Atom extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "atom";
+    }
+    /**
+     * @param attributes The attributes. If there is no "id" or "elementType" key an error will be thrown.
+     */ constructor(attributes){
+        super(attributes, Atom.tagName);
+        let id = attributes.get("id");
+        if (id == undefined) throw new Error("id is undefined");
+        let elementType = attributes.get("elementType");
+        if (elementType == undefined) throw new Error("elementType is undefined");
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        let s = super.toString();
+        return s + `)`;
+    }
+    /**
+     * @returns The id of the atom.
+     */ get id() {
+        return this.attributes.get("id");
+    }
+    /**
+     * @returns The element type of the atom.
+     */ get elementType() {
+        return this.attributes.get("elementType");
+    }
+}
+class Bond extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "bond";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, Bond.tagName);
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        let s = super.toString();
+        return s + `)`;
+    }
+}
+class Property extends (0, _classesJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "property";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {NumberNode | NumberArrayWithAttributes} property The property.
+     */ constructor(attributes, property){
+        super(attributes, Property.tagName);
+        this.property = property;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        return super.toString() + ` (${this.property.toString()}))`;
+    }
+    /**
+     * @param padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(pad, padding) {
+        let padding1 = undefined;
+        if (pad != undefined) {
+            if (padding != undefined) padding1 = padding + pad;
+        }
+        return (0, _xmlJs.getTag)(this.property.toXML(padding1), Property.tagName, this.attributes, padding, true);
+    }
+}
+class DeltaEDown extends (0, _classesJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:deltaEDown";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param units The units.
+     */ constructor(attributes, value){
+        super(attributes, DeltaEDown.tagName, value);
+    }
+}
+class EnergyTransferModel extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:energyTransferModel";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {DeltaEDown[]} deltaEDowns The DeltaEDowns.
+     */ constructor(attributes, deltaEDowns){
+        super(attributes, EnergyTransferModel.tagName);
+        this.deltaEDowns = deltaEDowns;
+    }
+    /**
+     * @param padding - Optional padding string for formatting the XML output.
+     * @returns An XML representation.
+     */ toXML(pad, padding) {
+        let padding1 = "";
+        if (padding != undefined) {
+            if (pad != undefined) padding1 = padding + pad;
+        }
+        // deltaEDowns
+        let deltaEDowns_xml = "";
+        this.deltaEDowns.forEach((d)=>{
+            deltaEDowns_xml += d.toXML(padding1);
+        });
+        if (pad == undefined) return (0, _xmlJs.getTag)(deltaEDowns_xml, EnergyTransferModel.tagName, this.attributes, padding, false);
+        else return (0, _xmlJs.getTag)(deltaEDowns_xml, EnergyTransferModel.tagName, this.attributes, padding, true);
+    }
+}
+class DOSCMethod extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:DOSCMethod";
+    }
+    constructor(attributes){
+        super(attributes, DOSCMethod.tagName);
+    }
+}
+class BondRef extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.xmlTagName = "me:bondRef";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param bondRef The bondRef.
+     */ constructor(attributes, bondRef){
+        super(attributes, BondRef.xmlTagName);
+        this.bondRef = bondRef;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        return super.toString + ` (${this.bondRef}))`;
+    }
+    /**
+     * @param padding The padding (Optional).
+     * @returns A tag representation.
+     */ toXML(padding) {
+        let s = (0, _xmlJs.getStartTag)(BondRef.xmlTagName);
+        if (padding) return "\n" + padding + s;
+        s += this.bondRef;
+        return s + (0, _xmlJs.getEndTag)(BondRef.xmlTagName);
+    }
+}
+class PotentialPoint extends (0, _classesJs.TagWithAttributes) {
+    static{
+        this.xmlTagName = "me:PotentialPoint";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, PotentialPoint.xmlTagName);
+    }
+}
+class HinderedRotorPotential extends (0, _classesJs.TagWithAttributes) {
+    static{
+        this.xmlTagName = "me:HinderedRotorPotential";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param PotentialPoint The PotentialPoint.
+     */ constructor(attributes, PotentialPoint){
+        super(attributes, HinderedRotorPotential.xmlTagName);
+        this.PotentialPoint = PotentialPoint;
+    }
+}
+class ExtraDOSCMethod extends (0, _classesJs.TagWithAttributes) {
+    static{
+        this.xmlTagName = "me:ExtraDOSCMethod";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param bondRef The bondRef.
+     * @param HinderedRotorPotential The HinderedRotorPotential.
+     */ constructor(attributes, bondRef, HinderedRotorPotential){
+        super(attributes, ExtraDOSCMethod.xmlTagName);
+        this.bondRef = bondRef;
+        this.hinderedRotorPotential = HinderedRotorPotential;
+    }
+}
+class Molecule extends (0, _classesJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "molecule";
+    }
+    /**
+     * Create a molecule.
+     * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
+     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
+     * @param {Map<string, Atom>} atoms A Map of atoms with keys as ids.
+     * @param {Map<string, Bond>} bonds A Map of bonds with. The keys combine the ids of the two bonded atoms.
+     * @param {Map<string, Property>} properties A map of properties.
+     * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
+     * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
+     */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod){
+        super(attributes, Molecule.tagName);
+        let id = this.attributes.get("id");
+        if (id == undefined) throw new Error("id is undefined");
+        this.id = id;
+        this.atoms = atoms;
+        this.bonds = bonds;
+        this.properties = properties;
+        this.energyTransferModel = energyTransferModel;
+        this.dOSCMethod = dOSCMethod;
+    }
+    /** 
+     * @returns A string representation.
+     */ toString() {
+        let r = `Molecule(id(${this.getID()}), `;
+        let description = this.getDescription();
+        if (description != undefined) r += `description(${description}), `;
+        let active = this.getActive();
+        if (active != undefined) r += `active(${active}), `;
+        if (this.atoms.size > 0) r += `atoms(${(0, _functionsJs.mapToString)(this.atoms)}), `;
+        if (this.bonds.size > 0) r += `bonds(${(0, _functionsJs.mapToString)(this.bonds)}), `;
+        if (this.properties.size > 0) r += `properties(${(0, _functionsJs.mapToString)(this.properties)}), `;
+        if (this.energyTransferModel) r += `energyTransferModel(${this.energyTransferModel.toString()}), `;
+        if (this.dOSCMethod) r += `dOSCMethod(${this.dOSCMethod.toString()}), `;
+        return r + `)`;
+    }
+    /**
+     * @return The id of the molecule.
+     */ getID() {
+        return this.attributes.get("id");
+    }
+    /**
+     * Gets the description of the molecule.
+     * @returns The description of the molecule, or undefined if it is not set.
+     */ getDescription() {
+        return this.attributes.get("description");
+    }
+    /**
+     * Gets the active status of the molecule.
+     * @returns The active status of the molecule, or undefined if it is not set.
+     */ getActive() {
+        let active = this.attributes.get("active");
+        if (active != undefined) return true;
+        return active;
+    }
+    /**
+     * @returns {number} The energy of the molecule or zero if the energy is not set.
+     * @throws An error if "me.ZPE" is a property, but is not mapped to a PropertyScalar.
+     */ getEnergy() {
+        let zpe = this.properties.get("me:ZPE");
+        if (zpe == undefined) return 0;
+        if (zpe.property instanceof (0, _classesJs.NumberNode)) return zpe.property.value;
+        else throw new Error("Expected a PropertyScalar but got a PropertyArray and not sure how to handle that.");
+    }
+    /**
+     * Set the Energy of the molecule.
+     * @param {number} energy The energy of the molecule in kcal/mol.
+     */ setEnergy(energy) {
+        let property = this.properties.get("me:ZPE");
+        if (property == undefined) throw new Error("No me.ZPE property found");
+        if (property.property instanceof (0, _classesJs.NumberArrayNode)) throw new Error("Unexpected NumberArrayNode.");
+        else property.property.value = energy;
+    }
+    /**
+     * Get the RotationConstants of the molecule.
+     * @returns The RotationConstants of the molecule.
+     */ getRotationConstants() {
+        let property = this.properties.get("me:rotConsts");
+        if (property != undefined) {
+            if (property.property != null) {
+                if (property.property instanceof (0, _classesJs.NumberNode)) return [
+                    property.property.value
+                ];
+                else return property.property.values;
+            } else return undefined;
+        }
+        return property;
+    }
+    /**
+     * Get the VibrationFrequencies of the molecule.
+     * @returns The VibrationFrequencies of the molecule.
+     */ getVibrationFrequencies() {
+        let property = this.properties.get("me:vibFreqs");
+        if (property != undefined) {
+            if (property.property instanceof (0, _classesJs.NumberNode)) return [
+                property.property.value
+            ];
+            else if (property.property instanceof (0, _classesJs.NumberArrayNode)) return property.property.values;
+            else return undefined;
+        }
+        return property;
+    }
+    /**
+     * @param {string} tagName The tag name.
+     * @param {string} pad The pad (Optional).
+     * @param {number} level The level of padding (Optional).
+     * @returns An XML representation.
+     */ toXML(tagName, pad, level) {
+        // Padding
+        let padding0 = "";
+        let padding1 = "";
+        let padding2 = "";
+        let padding3 = "";
+        if (pad != undefined && level != undefined) {
+            padding0 = pad.repeat(level);
+            padding1 = padding0 + pad;
+            padding2 = padding1 + pad;
+            padding3 = padding2 + pad;
+        }
+        // Atoms
+        let atoms_xml = "";
+        for (let atom of this.atoms.values())atoms_xml += atom.getSelfClosingTag(padding2);
+        if (this.atoms.size > 1) {
+            if (atoms_xml != "") atoms_xml = (0, _xmlJs.getTag)(atoms_xml, "atomArray", undefined, padding1, true);
+        }
+        // Bonds
+        let bonds_xml = "";
+        for (let bond of this.bonds.values())bonds_xml += bond.getSelfClosingTag(padding2);
+        if (bonds_xml != "") bonds_xml = (0, _xmlJs.getTag)(bonds_xml, "bondArray", undefined, padding1, true);
+        // Properties
+        let properties_xml = "";
+        this.properties.forEach((property)=>{
+            let property_xml = property.property.toXML(padding3);
+            properties_xml += (0, _xmlJs.getTag)(property_xml, Property.tagName, property.attributes, padding2, true);
+        });
+        if (this.properties.size > 1) {
+            if (properties_xml != "") properties_xml = (0, _xmlJs.getTag)(properties_xml, "propertyList", undefined, padding1, true);
+        }
+        // EnergyTransferModel
+        let energyTransferModel_xml = "";
+        if (this.energyTransferModel) energyTransferModel_xml = this.energyTransferModel.toXML(pad, padding1);
+        // DOSCMethod
+        let dOSCMethod_xml = "";
+        if (this.dOSCMethod) dOSCMethod_xml = this.dOSCMethod.getSelfClosingTag(padding1);
+        return (0, _xmlJs.getTag)(atoms_xml + bonds_xml + properties_xml + energyTransferModel_xml + dOSCMethod_xml, tagName, this.attributes, padding0, true);
+    }
+}
+
+},{"./classes.js":"ikp7x","./functions.js":"dxSxr","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ikp7x":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * A class for representing A Tag with attributes.
+ * @param {Map<string, string>} attributes The attributes.
+ */ parcelHelpers.export(exports, "TagWithAttributes", ()=>TagWithAttributes);
+/**
+ * A class for representing a TagWithAttributes with a number as a value.
+ */ parcelHelpers.export(exports, "NumberNode", ()=>NumberNode);
+/**
+ * A class for representing a TagWithAttributes with an array of numbers as a value.
+ */ parcelHelpers.export(exports, "NumberArrayNode", ()=>NumberArrayNode);
+/**
+ * A class for representing attributes with attributes.
+ */ parcelHelpers.export(exports, "NodeWithNodes", ()=>NodeWithNodes);
+var _xml = require("./xml");
+class TagWithAttributes extends (0, _xml.Tag) {
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, tagName){
+        super(tagName);
+        this.attributes = attributes;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        let r = this.tagName + `(`;
+        this.attributes.forEach((value, key)=>{
+            r += `${key}(${value}), `;
+        });
+        return r;
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(padding) {
+        return (0, _xml.getTag)("", this.tagName, this.attributes, padding, false);
+    }
+}
+class NumberNode extends TagWithAttributes {
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {number} value The value.
+     */ constructor(attributes, tagName, value){
+        super(attributes, tagName);
+        this.value = value;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        return super.toString() + `, ${this.value.toString()})`;
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(padding) {
+        return (0, _xml.getTag)(this.value.toString().trim(), this.tagName, this.attributes, padding, false);
+    }
+}
+class NumberArrayNode extends TagWithAttributes {
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} tagName The tag name.
+     * @param {number[]} values The values.
+     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     */ constructor(attributes, tagName, values, delimiter){
+        super(attributes, tagName);
+        /**
+     * The delimiter of the values.
+     */ this.delimiter = ",";
+        this.values = values;
+        if (delimiter) this.delimiter = delimiter;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        return super.toString() + `, ${this.values.toString()})`;
+    }
+    /**
+     * Set the delimiter.
+     * @param {string} delimiter The delimiter.
+     */ setDelimiter(delimiter) {
+        this.delimiter = delimiter;
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(padding) {
+        return (0, _xml.getTag)(this.values.toString().replaceAll(",", this.delimiter), this.tagName, this.attributes, padding, false);
+    }
+}
+class NodeWithNodes extends TagWithAttributes {
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} tagName The tag name.
+     */ constructor(attributes, tagName){
+        super(attributes, tagName);
+        this.nodes = new Map();
+    }
+    /**
+     * Add a node.
+     * @param {TagWithAttributes | NodeWithNodes} node The node.
+     */ addNode(node) {
+        this.nodes.set(this.nodes.size, node);
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        let s = super.toString();
+        this.nodes.forEach((v, k)=>{
+            s += `, ${v.toString()}`;
+        });
+        return s + ")";
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} pad The pad (Optional).
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(pad, padding) {
+        let padding1;
+        if (pad != undefined && padding != undefined) padding1 = padding + pad;
+        let s = "";
+        this.nodes.forEach((v)=>{
+            if (v instanceof TagWithAttributes) s += v.toXML(padding1);
+            else s += v.toXML(pad, padding1);
+            s += v.toXML(padding1);
+        });
+        return (0, _xml.getTag)(s, this.tagName, this.attributes, padding, false);
+    }
+}
+
+},{"./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dxSxr":[function(require,module,exports) {
 /**
  * For convertina a map to a string.
  * @param map The map to convert to a string.
@@ -2516,12 +2656,17 @@ export class DefinedSumOfStates extends MCRCMethod {
 var _functionsJs = require("./functions.js");
 var _classesJs = require("./classes.js");
 var _xmlJs = require("./xml.js");
-class ReactionMolecule extends (0, _classesJs.Attributes) {
+class ReactionMolecule extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The molecule.
+     */ this.tagName = "molecule";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */ constructor(attributes, molecule){
-        super(attributes);
+        super(attributes, ReactionMolecule.tagName);
         this.molecule = molecule;
     }
     /**
@@ -2531,13 +2676,18 @@ class ReactionMolecule extends (0, _classesJs.Attributes) {
      * @param {string} padding The padding (Optional).
      * @returns An XML representation.
      */ toXML(tagName, pad, padding) {
-        let padding1 = "";
+        let padding1;
         if (pad != undefined && padding != undefined) padding1 = padding + pad;
-        let s = this.toTag("molecule", padding1);
-        return (0, _xmlJs.getTag)(s, tagName, undefined, undefined, undefined, padding, true);
+        let s = this.getSelfClosingTag(padding1);
+        return (0, _xmlJs.getTag)(s, tagName, undefined, padding, true);
     }
 }
 class Reactant extends ReactionMolecule {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "reactant";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
@@ -2546,6 +2696,11 @@ class Reactant extends ReactionMolecule {
     }
 }
 class Product extends ReactionMolecule {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "product";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
@@ -2554,6 +2709,11 @@ class Product extends ReactionMolecule {
     }
 }
 class TransitionState extends ReactionMolecule {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:transitionState";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
@@ -2569,57 +2729,82 @@ class TransitionState extends ReactionMolecule {
         return s;
     }
 }
-class PreExponential extends (0, _classesJs.NumberWithAttributes) {
+class PreExponential extends (0, _classesJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:preExponential";
+    }
     /**
      * A class for representing the Arrhenius pre-exponential factor.
      * @param {Map<string, string>} attributes The attributes. 
      * @param {number} value The value of the factor.
      */ constructor(attributes, value){
-        super(attributes, value);
+        super(attributes, PreExponential.tagName, value);
     }
 }
-class ActivationEnergy extends (0, _classesJs.NumberWithAttributes) {
+class ActivationEnergy extends (0, _classesJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:activationEnergy";
+    }
     /**
      * A class for representing the Arrhenius pre-exponential factor.
      * @param {Map<string, string>} attributes The attributes. 
      * @param {number} value The value of the factor.
      */ constructor(attributes, value){
-        super(attributes, value);
+        super(attributes, ActivationEnergy.tagName, value);
     }
 }
-class TInfinity extends (0, _classesJs.NumberWithAttributes) {
+class TInfinity extends (0, _classesJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:TInfinity";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes. 
      * @param {number} value The value of the factor.
      */ constructor(attributes, value){
-        super(attributes, value);
+        super(attributes, TInfinity.tagName, value);
     }
 }
-class NInfinity extends (0, _classesJs.NumberWithAttributes) {
+class NInfinity extends (0, _classesJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:nInfinity";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes. 
      * @param {number} value The value of the factor.
      */ constructor(attributes, value){
-        super(attributes, value);
+        super(attributes, NInfinity.tagName, value);
     }
 }
-class Tunneling extends (0, _classesJs.Attributes) {
+class Tunneling extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:tunneling";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      */ constructor(attributes){
-        super(attributes);
+        super(attributes, Tunneling.tagName);
     }
 }
-class MCRCMethod extends (0, _classesJs.Attributes) {
+class MCRCMethod extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:MCRCMethod";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {string} name The name or xsi:type of the method.
-     */ constructor(attributes, name){
-        super(attributes);
-        this.mCRCMethodName = name;
-    }
-    toString() {
-        return `MCRCMethod(name(${this.mCRCMethodName}))`;
+     */ constructor(attributes){
+        super(attributes, MCRCMethod.tagName);
     }
 }
 class MesmerILT extends MCRCMethod {
@@ -2630,7 +2815,7 @@ class MesmerILT extends MCRCMethod {
      * @param {TInfinity | undefined} tInfinity The TInfinity.
      * @param {NInfinity | undefined} nInfinity The nInfinity.
      */ constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity){
-        super(attributes, "MesmerILT");
+        super(attributes);
         this.preExponential = preExponential;
         this.activationEnergy = activationEnergy;
         this.tInfinity = tInfinity;
@@ -2648,14 +2833,14 @@ class MesmerILT extends MCRCMethod {
         let padding1 = "";
         if (padding != undefined) padding1 = padding + "  ";
         let preExponential_xml = "";
-        if (this.preExponential != undefined) preExponential_xml = this.preExponential.toXML("me.preExponential", padding1);
+        if (this.preExponential != undefined) preExponential_xml = this.preExponential.toXML(padding1);
         let activationEnergy_xml = "";
-        if (this.activationEnergy != undefined) activationEnergy_xml = this.activationEnergy.toXML("me.activationEnergy", padding1);
+        if (this.activationEnergy != undefined) activationEnergy_xml = this.activationEnergy.toXML(padding1);
         let tInfinity_xml = "";
-        if (this.tInfinity != undefined) tInfinity_xml = this.tInfinity.toXML("me.nInfinity", padding1);
+        if (this.tInfinity != undefined) tInfinity_xml = this.tInfinity.toXML(padding1);
         let nInfinity_xml = "";
-        if (this.nInfinity != undefined) nInfinity_xml = this.nInfinity.toXML("me.nInfinity", padding1);
-        return (0, _xmlJs.getTag)(preExponential_xml + activationEnergy_xml + tInfinity_xml + nInfinity_xml, tagName, this.attributes, undefined, undefined, padding, true);
+        if (this.nInfinity != undefined) nInfinity_xml = this.nInfinity.toXML(padding1);
+        return (0, _xmlJs.getTag)(preExponential_xml + activationEnergy_xml + tInfinity_xml + nInfinity_xml, tagName, this.attributes, padding, true);
     }
 }
 class ZhuNakamuraCrossing extends MCRCMethod {
@@ -2668,7 +2853,7 @@ class ZhuNakamuraCrossing extends MCRCMethod {
      * @param {number} exponentialProductDiabat_B The exponential product diabatic B.
      * @param {number} exponentialProductDiabat_DE The exponential product diabatic DE.
      */ constructor(attributes, harmonicReactantDiabat_FC, harmonicReactantDiabat_XO, harmonicProductDiabat_DE, exponentialProductDiabat_A, exponentialProductDiabat_B, exponentialProductDiabat_DE){
-        super(attributes, "ZhuNakamuraCrossing");
+        super(attributes);
         this.harmonicReactantDiabat_FC = harmonicReactantDiabat_FC;
         this.harmonicReactantDiabat_XO = harmonicReactantDiabat_XO;
         this.harmonicProductDiabat_DE = harmonicProductDiabat_DE;
@@ -2680,7 +2865,12 @@ class ZhuNakamuraCrossing extends MCRCMethod {
         return `ZhuNakamuraCrossing(${super.toString()}, ` + `harmonicReactantDiabat_FC(${this.harmonicReactantDiabat_FC.toString()}), ` + `harmonicReactantDiabat_XO(${this.harmonicReactantDiabat_XO.toString()}), ` + `harmonicProductDiabat_DE(${this.harmonicProductDiabat_DE.toString()}), ` + `exponentialProductDiabat_A(${this.exponentialProductDiabat_A.toString()}), ` + `exponentialProductDiabat_B(${this.exponentialProductDiabat_B.toString()}), ` + `exponentialProductDiabat_DE(${this.exponentialProductDiabat_DE.toString()}))`;
     }
 }
-class Reaction extends (0, _classesJs.Attributes) {
+class Reaction extends (0, _classesJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "reaction";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
@@ -2690,7 +2880,7 @@ class Reaction extends (0, _classesJs.Attributes) {
      * @param {TransitionState | undefined} transitionState The transition state (optional).
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
      */ constructor(attributes, id, reactants, products, mCRCMethod, transitionState, tunneling){
-        super(attributes);
+        super(attributes, Reaction.tagName);
         this.id = id;
         this.reactants = reactants;
         this.products = products;
@@ -2765,17 +2955,17 @@ class Reaction extends (0, _classesJs.Attributes) {
         });
         // Tunneling
         let tunneling_xml = "";
-        if (this.tunneling != undefined) tunneling_xml = this.tunneling.toTag("me:tunneling", padding1);
+        if (this.tunneling != undefined) tunneling_xml = this.tunneling.getSelfClosingTag(padding1);
         // TransitionState
         let transitionState_xml = "";
-        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML("me:transitionState", pad, padding1);
+        if (this.transitionState != undefined) transitionState_xml = this.transitionState.toXML(TransitionState.tagName, pad, padding1);
         // MCRCMethod
         let mCRCMethod_xml = "";
         if (this.mCRCMethod != undefined) {
-            if (this.mCRCMethod instanceof MesmerILT) mCRCMethod_xml = this.mCRCMethod.toXML("me:MCRCMethod", padding1);
-            else mCRCMethod_xml = this.mCRCMethod.toTag("me:MCRCMethod", padding1);
+            if (this.mCRCMethod instanceof MesmerILT) mCRCMethod_xml = this.mCRCMethod.toXML(padding1);
+            else mCRCMethod_xml = this.mCRCMethod.getSelfClosingTag(padding1);
         }
-        return (0, _xmlJs.getTag)(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml, tagName, this.attributes, undefined, undefined, padding0, true);
+        return (0, _xmlJs.getTag)(reactants_xml + products_xml + tunneling_xml + transitionState_xml + mCRCMethod_xml, tagName, this.attributes, padding0, true);
     }
 }
 
@@ -2883,6 +3073,9 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for representing a Pressure and Temperature pair.
  */ parcelHelpers.export(exports, "PTpair", ()=>PTpair);
 /**
+ * A class for representing a set of Pressure and Temperature pairs.
+ */ parcelHelpers.export(exports, "PTs", ()=>PTs);
+/**
  * A class for representing a bath gas reaction molecule.
  */ parcelHelpers.export(exports, "BathGas", ()=>BathGas);
 /**
@@ -2890,12 +3083,16 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "Conditions", ()=>Conditions);
 var _classesJs = require("./classes.js");
 var _reactionJs = require("./reaction.js");
-var _xmlJs = require("./xml.js");
-class PTpair extends (0, _classesJs.Attributes) {
+class PTpair extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "PTpair";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      */ constructor(attributes){
-        super(attributes);
+        super(attributes, PTpair.tagName);
         let p = attributes.get("P");
         if (p) this.P = parseFloat(p);
         else throw new Error("P is undefined");
@@ -2904,89 +3101,166 @@ class PTpair extends (0, _classesJs.Attributes) {
         else throw new Error("T is undefined");
     }
 }
+class PTs extends (0, _classesJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:PTs";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {PTpair[]} PTpairs The PT pairs.
+     */ constructor(attributes, PTpairs){
+        super(attributes, PTs.tagName);
+        this.PTpairs = PTpairs;
+    }
+}
 class BathGas extends (0, _reactionJs.ReactionMolecule) {
-    constructor(attributes, molecule){
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:bathGas";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {Molecule} molecule The molecule.
+     */ constructor(attributes, molecule){
         super(attributes, molecule);
     }
 }
-class Conditions {
+class Conditions extends (0, _classesJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:conditions";
+    }
     /**
      * @param {BathGas} bathGas The bath gas.
      * @param {PTpair} pTs The Pressure and Temperature pairs.
-     */ constructor(bathGas, pTs){
-        this.bathGas = bathGas;
-        this.pTs = pTs;
+     */ constructor(attributes, bathGas, pTs){
+        super(attributes, Conditions.tagName);
+        this.addNode(bathGas);
+        this.addNode(pTs);
     }
     /**
-     * @returns A string representation.
-     */ toString() {
-        return `Conditions(` + `bathGas(${this.bathGas.toString()}), ` + `pTs(${this.pTs.toString()}))`;
+     * @returns The bath gas.
+     */ getBathGas() {
+        return this.nodes.get(0);
     }
     /**
-     * @param padding The padding (optional).
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding1 = "";
-        if (pad != undefined && padding != undefined) padding1 = padding + pad;
-        let s = this.bathGas.toXML("me:bathGas", pad, padding1);
-        this.pTs.forEach((pt)=>{
-            s += pt.toTag("PTpair", padding1);
-        });
-        return (0, _xmlJs.getTag)(s, "me:conditions", undefined, undefined, undefined, padding, true);
+     * @returns The Pressure and Temperature pairs.
+     */ getPTs() {
+        return this.nodes.get(1);
     }
 }
 
-},{"./classes.js":"ikp7x","./reaction.js":"8grVN","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQHfz":[function(require,module,exports) {
+},{"./classes.js":"ikp7x","./reaction.js":"8grVN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQHfz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
  * A class for measures of grain size.
  */ parcelHelpers.export(exports, "GrainSize", ()=>GrainSize);
 /**
+ * A class for measures of grain size.
+ */ parcelHelpers.export(exports, "EnergyAboveTheTopHill", ()=>EnergyAboveTheTopHill);
+/**
  * A class for model parameters.
  */ parcelHelpers.export(exports, "ModelParameters", ()=>ModelParameters);
 var _classes = require("./classes");
-var _xml = require("./xml");
-class GrainSize extends (0, _classes.NumberWithAttributes) {
+class GrainSize extends (0, _classes.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:grainSize";
+    }
     /**
-     * @param {string} units The units.
+     * @param {string} value The value.
      */ constructor(attributes, value){
-        super(attributes, value);
+        super(attributes, GrainSize.tagName, value);
     }
     toString() {
         return `GrainSize(${super.toString()})`;
     }
 }
-class ModelParameters {
-    /**
-     * @param {GrainSize} grainSize The grain size.
-     * @param {number} energyAboveTheTopHill The energy above the top hill.
-     */ constructor(grainSize, energyAboveTheTopHill){
-        this.grainSize = grainSize;
-        this.energyAboveTheTopHill = energyAboveTheTopHill;
-    }
-    toString() {
-        return `ModelParameters(` + `grainSize(${this.grainSize.toString()}), ` + `energyAboveTheTopHill(${this.energyAboveTheTopHill.toString()}))`;
+class EnergyAboveTheTopHill extends (0, _classes.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:EnergyAboveTheTopHill";
     }
     /**
-     * Get the XML representation.
-     * @param {string} pad The pad (Optional).
-     * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding2 = "";
-        if (pad != undefined && padding != undefined) padding2 = padding + pad;
-        let s = this.grainSize.toXML("me:GrainSize", padding2);
-        s += (0, _xml.getTag)(this.energyAboveTheTopHill.toString(), "me:EnergyAboveTheTopHill", undefined, undefined, undefined, padding2, false);
-        return (0, _xml.getTag)(s, "me:modelParameters", undefined, undefined, undefined, padding, true);
+     * @param {string} value The value.
+     */ constructor(attributes, value){
+        super(attributes, EnergyAboveTheTopHill.tagName, value);
+    }
+}
+class ModelParameters extends (0, _classes.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:modelParameters";
+    }
+    constructor(grainSize, energyAboveTheTopHill){
+        super(new Map(), ModelParameters.tagName);
+        this.addNode(grainSize);
+        this.addNode(energyAboveTheTopHill);
+    }
+    /**
+     * @returns The grain size.
+     */ getGrainSize() {
+        return this.nodes.get(0);
+    }
+    /**
+     * @returns The energy above the top hill.
+     */ getEnergyAboveTheTopHill() {
+        return this.nodes.get(1);
     }
 }
 
-},{"./classes":"ikp7x","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"Qx5gu":[function(require,module,exports) {
+},{"./classes":"ikp7x","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"Qx5gu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * A class for the diagram energy offset.
+ * A class for me:testDOS.
+ */ parcelHelpers.export(exports, "TestDOS", ()=>TestDOS);
+/**
+ * A class for me:printSpeciesProfile.
+ */ parcelHelpers.export(exports, "PrintSpeciesProfile", ()=>PrintSpeciesProfile);
+/**
+ * A class for me:testMicroRates.
+ */ parcelHelpers.export(exports, "TestMicroRates", ()=>TestMicroRates);
+/**
+ * A class for me:testRateConstant.
+ */ parcelHelpers.export(exports, "TestRateConstant", ()=>TestRateConstant);
+/**
+ * A class for me:printGrainDOS.
+ */ parcelHelpers.export(exports, "PrintGrainDOS", ()=>PrintGrainDOS);
+/**
+ * A class for me:printCellDOS.
+ */ parcelHelpers.export(exports, "PrintCellDOS", ()=>PrintCellDOS);
+/**
+ * A class for me:printReactionOperatorColumnSums.
+ */ parcelHelpers.export(exports, "PrintReactionOperatorColumnSums", ()=>PrintReactionOperatorColumnSums);
+/**
+ * A class for me:printTunnellingCoefficients.
+ */ parcelHelpers.export(exports, "PrintTunnellingCoefficients", ()=>PrintTunnellingCoefficients);
+/**
+ * A class for me:printGrainkfE.
+ */ parcelHelpers.export(exports, "PrintGrainkfE", ()=>PrintGrainkfE);
+/**
+ * A class for me:printGrainBoltzmann.
+ */ parcelHelpers.export(exports, "PrintGrainBoltzmann", ()=>PrintGrainBoltzmann);
+/**
+ * A class for me:printGrainkbE.
+ */ parcelHelpers.export(exports, "PrintGrainkbE", ()=>PrintGrainkbE);
+/**
+ * A class for me:eigenvalues.
+ */ parcelHelpers.export(exports, "Eigenvalues", ()=>Eigenvalues);
+/**
+ * A class for me:hideInactive.
+ */ parcelHelpers.export(exports, "HideInactive", ()=>HideInactive);
+/**
+ * A class for me:diagramEnergyOffset.
  */ parcelHelpers.export(exports, "DiagramEnergyOffset", ()=>DiagramEnergyOffset);
 /**
  * A class for the control.
@@ -2994,15 +3268,152 @@ parcelHelpers.defineInteropFlag(exports);
 var _classes = require("./classes");
 var _html = require("./html");
 var _xml = require("./xml");
-class DiagramEnergyOffset extends (0, _classes.NumberWithAttributes) {
-    /**
-     * @param {Map<string, string>} attributes The attributes (ref refers to a particular reaction). 
-     * @param {number} value The value.
-     */ constructor(attributes, value){
-        super(attributes, value);
+class TestDOS extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testDOS";
+    }
+    constructor(){
+        super(TestDOS.tagName);
+    }
+}
+class PrintSpeciesProfile extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printSpeciesProfile";
+    }
+    constructor(){
+        super(PrintSpeciesProfile.tagName);
+    }
+}
+class TestMicroRates extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testMicroRates";
+    }
+    constructor(){
+        super(TestMicroRates.tagName);
+    }
+}
+class TestRateConstant extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testRateConstant";
+    }
+    constructor(){
+        super(TestRateConstant.tagName);
+    }
+}
+class PrintGrainDOS extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainDOS";
+    }
+    constructor(){
+        super(PrintGrainDOS.tagName);
+    }
+}
+class PrintCellDOS extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printCellDOS";
+    }
+    constructor(){
+        super(PrintCellDOS.tagName);
+    }
+}
+class PrintReactionOperatorColumnSums extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printReactionOperatorColumnSums";
+    }
+    constructor(){
+        super(PrintReactionOperatorColumnSums.tagName);
+    }
+}
+class PrintTunnellingCoefficients extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printTunnellingCoefficients";
+    }
+    constructor(){
+        super(PrintTunnellingCoefficients.tagName);
+    }
+}
+class PrintGrainkfE extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainkfE";
+    }
+    constructor(){
+        super(PrintGrainkfE.tagName);
+    }
+}
+class PrintGrainBoltzmann extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainBoltzmann";
+    }
+    constructor(){
+        super(PrintGrainBoltzmann.tagName);
+    }
+}
+class PrintGrainkbE extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainkbE";
+    }
+    constructor(){
+        super(PrintGrainkbE.tagName);
+    }
+}
+class Eigenvalues extends (0, _classes.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:eigenvalues";
+    }
+    constructor(attributes, value){
+        super(attributes, Eigenvalues.tagName, value);
+    }
+}
+class HideInactive extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:hideInactive";
+    }
+    constructor(){
+        super(HideInactive.tagName);
+    }
+}
+class DiagramEnergyOffset extends (0, _classes.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:diagramEnergyOffset";
+    }
+    constructor(attributes, value){
+        super(attributes, DiagramEnergyOffset.tagName, value);
     }
 }
 class Control {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "control";
+    }
     constructor(testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset){
         this.testDOS = testDOS;
         this.printSpeciesProfile = printSpeciesProfile;
@@ -3044,8 +3455,8 @@ class Control {
         s += padding1 + (0, _html.getSelfClosingTag)(null, "me:printGrainkbE") + "\n";
         s += padding1 + (0, _html.getSelfClosingTag)(null, "me:eigenvalues") + "\n";
         s += padding1 + (0, _html.getSelfClosingTag)(null, "me:hideInactive");
-        s += this.diagramEnergyOffset?.toXML("me:diagramEnergyOffset", padding1);
-        return (0, _xml.getTag)(s, "control", undefined, undefined, null, padding, true);
+        s += this.diagramEnergyOffset?.toXML(padding1);
+        return (0, _xml.getTag)(s, "control", undefined, padding, true);
     }
 }
 

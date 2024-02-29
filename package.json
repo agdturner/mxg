@@ -7,11 +7,19 @@
     "start": "parcel",
     "build": "parcel build"
   },
-  "compilerOptions": {
-    "sourceMap": true
-  },
   "targets": {
     "main": {
+      "context": "browser",
+      "includeNodeModules": true,
+      "sourceMap": true,
+      "engines": {
+        "browsers": [
+          "last 2 Chrome versions",
+          "last 2 Firefox versions",
+          "last 2 Safari versions",
+          "last 2 Edge versions"
+        ]
+      },
       "distDir": "./dist",
       "publicUrl": "/mxg-pwa/dist/main/"
     }

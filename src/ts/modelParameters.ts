@@ -1,18 +1,22 @@
 import {
-    NumberWithAttributes
+    NodeWithNodes, NumberNode
 } from "./classes";
-import { getEndTag, getStartTag, getTag } from "./xml";
 
 /**
  * A class for measures of grain size.
  */
-export class GrainSize extends NumberWithAttributes {
+export class GrainSize extends NumberNode {
 
     /**
-     * @param {string} units The units.
+     * The tag name.
+     */
+    static readonly tagName: string = "me:grainSize";
+
+    /**
+     * @param {string} value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, value);
+        super(attributes, GrainSize.tagName, value);
     }
     toString() {
         return `GrainSize(${super.toString()})`;
@@ -20,48 +24,50 @@ export class GrainSize extends NumberWithAttributes {
 }
 
 /**
+ * A class for measures of grain size.
+ */
+export class EnergyAboveTheTopHill extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:EnergyAboveTheTopHill";
+
+    /**
+     * @param {string} value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, EnergyAboveTheTopHill.tagName, value);
+    }
+}
+
+/**
  * A class for model parameters.
  */
-export class ModelParameters {
+export class ModelParameters extends NodeWithNodes {
 
     /**
-     * The grain size.
+     * The tag name.
      */
-    grainSize: GrainSize;
-    
-    /**
-     * The energy above the top hill.
-     */
-    energyAboveTheTopHill: number;
+    static readonly tagName: string = "me:modelParameters";
 
-    /**
-     * @param {GrainSize} grainSize The grain size.
-     * @param {number} energyAboveTheTopHill The energy above the top hill.
-     */
-    constructor(grainSize: GrainSize, energyAboveTheTopHill: number) {
-        this.grainSize = grainSize;
-        this.energyAboveTheTopHill = energyAboveTheTopHill;
-    }
-
-    toString() {
-        return `ModelParameters(` +
-            `grainSize(${this.grainSize.toString()}), ` +
-            `energyAboveTheTopHill(${this.energyAboveTheTopHill.toString()}))`;
+    constructor(grainSize: GrainSize, energyAboveTheTopHill: EnergyAboveTheTopHill) {
+        super(new Map<string, string>(), ModelParameters.tagName);
+        this.addNode(grainSize);
+        this.addNode(energyAboveTheTopHill);
     }
 
     /**
-     * Get the XML representation.
-     * @param {string} pad The pad (Optional).
-     * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
+     * @returns The grain size.
      */
-    toXML(pad?: string, padding?: string): string {
-        let padding2: string = "";
-        if (pad != undefined && padding != undefined) {
-            padding2 = padding + pad;
-        }
-        let s: string = this.grainSize.toXML("me:GrainSize", padding2);
-        s += getTag(this.energyAboveTheTopHill.toString(), "me:EnergyAboveTheTopHill", undefined, undefined, undefined, padding2, false);
-        return getTag(s, "me:modelParameters", undefined, undefined, undefined, padding, true);
+    getGrainSize(): GrainSize {
+        return this.nodes.get(0) as GrainSize;
+    }
+
+    /**
+     * @returns The energy above the top hill.
+     */
+    getEnergyAboveTheTopHill(): EnergyAboveTheTopHill {
+        return this.nodes.get(1) as EnergyAboveTheTopHill;
     }
 }

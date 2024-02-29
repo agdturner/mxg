@@ -1,20 +1,222 @@
 import { 
-    NumberWithAttributes
+    NumberNode
  } from "./classes";
-import { getSelfClosingTag } from "./html";
-import { getTag } from "./xml";
+
+import {
+    getSelfClosingTag
+} from "./html";
+
+import {
+    Tag, getTag
+} from "./xml";
 
 /**
- * A class for the diagram energy offset.
+ * A class for me:testDOS.
  */
-export class DiagramEnergyOffset extends NumberWithAttributes {
-    
+export class TestDOS extends Tag {
+
     /**
-     * @param {Map<string, string>} attributes The attributes (ref refers to a particular reaction). 
-     * @param {number} value The value.
+     * The tag name.
      */
+    static readonly tagName: string = "me:testDOS";
+
+    constructor() {
+        super(TestDOS.tagName);
+    }
+}
+
+/**
+ * A class for me:printSpeciesProfile.
+ */
+export class PrintSpeciesProfile extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printSpeciesProfile";
+
+    constructor() {
+        super(PrintSpeciesProfile.tagName);
+    }
+}
+
+/**
+ * A class for me:testMicroRates.
+ */
+export class TestMicroRates extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:testMicroRates";
+
+    constructor() {
+        super(TestMicroRates.tagName);
+    }
+}
+
+/**
+ * A class for me:testRateConstant.
+ */
+export class TestRateConstant extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:testRateConstant";
+
+    constructor() {
+        super(TestRateConstant.tagName);
+    }
+}
+
+/**
+ * A class for me:printGrainDOS.
+ */
+export class PrintGrainDOS extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainDOS";
+
+    constructor() {
+        super(PrintGrainDOS.tagName);
+    }
+}
+
+/**
+ * A class for me:printCellDOS.
+ */
+export class PrintCellDOS extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printCellDOS";
+
+    constructor() {
+        super(PrintCellDOS.tagName);
+    }
+}
+
+/**
+ * A class for me:printReactionOperatorColumnSums.
+ */
+export class PrintReactionOperatorColumnSums extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printReactionOperatorColumnSums";
+
+    constructor() {
+        super(PrintReactionOperatorColumnSums.tagName);
+    }
+}
+
+/**
+ * A class for me:printTunnellingCoefficients.
+ */
+export class PrintTunnellingCoefficients extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printTunnellingCoefficients";
+
+    constructor() {
+        super(PrintTunnellingCoefficients.tagName);
+    }
+}
+
+/**
+ * A class for me:printGrainkfE.
+ */
+export class PrintGrainkfE extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainkfE";
+
+    constructor() {
+        super(PrintGrainkfE.tagName);
+    }
+}
+
+/**
+ * A class for me:printGrainBoltzmann.
+ */
+export class PrintGrainBoltzmann extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainBoltzmann";
+
+    constructor() {
+        super(PrintGrainBoltzmann.tagName);
+    }
+}
+
+/**
+ * A class for me:printGrainkbE.
+ */
+export class PrintGrainkbE extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainkbE";
+
+    constructor() {
+        super(PrintGrainkbE.tagName);
+    }
+}
+
+/**
+ * A class for me:eigenvalues.
+ */
+export class Eigenvalues extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:eigenvalues";
+
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, value);
+        super(attributes, Eigenvalues.tagName, value);
+    }
+}
+
+/**
+ * A class for me:hideInactive.
+ */
+export class HideInactive extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:hideInactive";
+
+    constructor() {
+        super(HideInactive.tagName);
+    }
+}
+
+/**
+ * A class for me:diagramEnergyOffset.
+ */
+export class DiagramEnergyOffset extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:diagramEnergyOffset";
+
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, DiagramEnergyOffset.tagName, value);
     }
 }
 
@@ -22,24 +224,33 @@ export class DiagramEnergyOffset extends NumberWithAttributes {
  * A class for the control.
  */
 export class Control {
-    testDOS: boolean | undefined;
-    printSpeciesProfile: boolean | undefined;
-    testMicroRates: boolean | undefined;
-    testRateConstant: boolean | undefined;
-    printGrainDOS: boolean | undefined;
-    printCellDOS: boolean | undefined;
-    printReactionOperatorColumnSums: boolean | undefined;
-    printTunnellingCoefficients: boolean | undefined;
-    printGrainkfE: boolean | undefined;
-    printGrainBoltzmann: boolean | undefined;
-    printGrainkbE: boolean | undefined;
-    eigenvalues: number | undefined;
-    hideInactive: boolean | undefined;
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "control";
+
+    testDOS: TestDOS | undefined;
+    printSpeciesProfile: PrintSpeciesProfile | undefined;
+    testMicroRates: TestMicroRates | undefined;
+    testRateConstant: TestRateConstant | undefined;
+    printGrainDOS: PrintGrainDOS | undefined;
+    printCellDOS: PrintCellDOS | undefined;
+    printReactionOperatorColumnSums: PrintReactionOperatorColumnSums | undefined;
+    printTunnellingCoefficients: PrintTunnellingCoefficients | undefined;
+    printGrainkfE: PrintGrainkfE | undefined;
+    printGrainBoltzmann: PrintGrainBoltzmann | undefined;
+    printGrainkbE: PrintGrainkbE | undefined;
+    eigenvalues: Eigenvalues | undefined;
+    hideInactive: HideInactive | undefined;
     diagramEnergyOffset: DiagramEnergyOffset | undefined;
-    constructor(testDOS?: boolean, printSpeciesProfile?: boolean, testMicroRates?: boolean, testRateConstant?:
-        boolean, printGrainDOS?: boolean, printCellDOS?: boolean, printReactionOperatorColumnSums?:
-            boolean, printTunnellingCoefficients?: boolean, printGrainkfE?: boolean, printGrainBoltzmann?: boolean,
-        printGrainkbE?: boolean, eigenvalues?: number, hideInactive?: boolean, diagramEnergyOffset?: DiagramEnergyOffset) {
+    constructor(testDOS?: TestDOS, printSpeciesProfile?: PrintSpeciesProfile, testMicroRates?: TestMicroRates,
+        testRateConstant?: TestRateConstant, printGrainDOS?: PrintGrainDOS, printCellDOS?: PrintCellDOS, 
+        printReactionOperatorColumnSums?: PrintReactionOperatorColumnSums, 
+        printTunnellingCoefficients?: PrintTunnellingCoefficients,
+        printGrainkfE?: PrintGrainkfE, printGrainBoltzmann?: PrintGrainBoltzmann,
+        printGrainkbE?: PrintGrainkbE, eigenvalues?: Eigenvalues, hideInactive?: HideInactive,
+        diagramEnergyOffset?: DiagramEnergyOffset) {
         this.testDOS = testDOS;
         this.printSpeciesProfile = printSpeciesProfile;
         this.testMicroRates = testMicroRates;
@@ -97,7 +308,7 @@ export class Control {
         s += padding1 + getSelfClosingTag(null, "me:printGrainkbE") + "\n";
         s += padding1 + getSelfClosingTag(null, "me:eigenvalues") + "\n";
         s += padding1 + getSelfClosingTag(null, "me:hideInactive");
-        s += this.diagramEnergyOffset?.toXML("me:diagramEnergyOffset", padding1);
-        return getTag(s, "control", undefined, undefined, null, padding, true);
+        s += this.diagramEnergyOffset?.toXML(padding1);
+        return getTag(s, "control", undefined, padding, true);
     }
 }

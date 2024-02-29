@@ -1,131 +1,114 @@
-import {
-    TagWithAttributes, NodeWithNodes, NumberNode
-} from "./classes.js";
-
-import {
-    Molecule
-} from "./molecule.js";
-
-import {
-    ReactionMolecule
-} from "./reaction.js";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Conditions = exports.BathGas = exports.PTs = exports.PTpair = void 0;
+const classes_js_1 = require("./classes.js");
+const reaction_js_1 = require("./reaction.js");
 /**
  * A class for representing a Pressure and Temperature pair.
  */
-export class PTpair extends TagWithAttributes {
-
+class PTpair extends classes_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static tagName: string = "PTpair";
-
+    static tagName = "PTpair";
     /**
      * The pressure also stored as a string in the attributes.
      */
-    P: number;
-
+    P;
     /**
      * The temperature also stored as a string in the attributes.
      */
-    T: number;
-
+    T;
     /**
      * @param {Map<string, string>} attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, PTpair.tagName);
-        let p: string | undefined = attributes.get("P");
+        let p = attributes.get("P");
         if (p) {
             this.P = parseFloat(p);
-        } else {
+        }
+        else {
             throw new Error("P is undefined");
         }
-        let t: string | undefined = attributes.get("T");
+        let t = attributes.get("T");
         if (t) {
             this.T = parseFloat(t);
-        } else {
+        }
+        else {
             throw new Error("T is undefined");
         }
     }
 }
-
+exports.PTpair = PTpair;
 /**
  * A class for representing a set of Pressure and Temperature pairs.
  */
-export class PTs extends TagWithAttributes {
-
+class PTs extends classes_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:PTs";
-
+    static tagName = "me:PTs";
     /**
      * The PT pairs.
      */
-    PTpairs: PTpair[];
-
+    PTpairs;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PTpair[]} PTpairs The PT pairs.
      */
-    constructor(attributes: Map<string, string>, PTpairs: PTpair[]) {
+    constructor(attributes, PTpairs) {
         super(attributes, PTs.tagName);
         this.PTpairs = PTpairs;
     }
-
 }
-
+exports.PTs = PTs;
 /**
  * A class for representing a bath gas reaction molecule.
  */
-export class BathGas extends ReactionMolecule {
-
+class BathGas extends reaction_js_1.ReactionMolecule {
     /**
      * The tag name.
      */
-    static tagName: string = "me:bathGas";
-
+    static tagName = "me:bathGas";
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {Molecule} molecule The molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
+    constructor(attributes, molecule) {
         super(attributes, molecule);
     }
 }
-
+exports.BathGas = BathGas;
 /**
  * A class for representing the experiment conditions.
  */
-export class Conditions extends NodeWithNodes {
-
+class Conditions extends classes_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static tagName: string = "me:conditions";
-
+    static tagName = "me:conditions";
     /**
      * @param {BathGas} bathGas The bath gas.
      * @param {PTpair} pTs The Pressure and Temperature pairs.
      */
-    constructor(attributes: Map<string, string>, bathGas: BathGas, pTs: PTs) {
+    constructor(attributes, bathGas, pTs) {
         super(attributes, Conditions.tagName);
         this.addNode(bathGas);
         this.addNode(pTs);
     }
-
     /**
      * @returns The bath gas.
      */
-    getBathGas(): BathGas {
-        return this.nodes.get(0) as BathGas;
+    getBathGas() {
+        return this.nodes.get(0);
     }
-
     /**
      * @returns The Pressure and Temperature pairs.
      */
-    getPTs(): PTs {
-        return this.nodes.get(1) as PTs;
+    getPTs() {
+        return this.nodes.get(1);
     }
 }
+exports.Conditions = Conditions;
+//# sourceMappingURL=conditions.js.map
