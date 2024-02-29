@@ -10,7 +10,7 @@ A PWA is a type of application software delivered via the Web, built using commo
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
 Downloading and installing a PWA varies by Web browser. Here are links to instructions for some major Web browsers:
-- Chrome: https://support.google.com/chrome/answer/9658361?hl=en-GB&co=GENIE.Platform%3DDesktop
+- Chrome: https://support.google.com/chrome/answer/9658361
 - Firefox: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing
 - Edge: https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux
 
