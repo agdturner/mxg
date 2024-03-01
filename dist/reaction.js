@@ -4,8 +4,7 @@ exports.Reaction = exports.ZhuNakamuraCrossing = exports.MesmerILT = exports.MCR
 const molecule_js_1 = require("./molecule.js");
 const xml_js_1 = require("./xml.js");
 /**
- * A class for representing a reactant.
- * This is a molecule often with a role in a reaction.
+ * A class for representing a reactant - a molecule that reacts in a reaction.
  */
 class Reactant extends molecule_js_1.MoleculeRef {
     /**
@@ -23,8 +22,7 @@ class Reactant extends molecule_js_1.MoleculeRef {
 }
 exports.Reactant = Reactant;
 /**
- * A class for representing a product.
- * This is a molecule produced in a reaction.
+ * A class for representing a product - a molecule produced in a reaction.
  */
 class Product extends molecule_js_1.MoleculeRef {
     /**
@@ -42,7 +40,7 @@ class Product extends molecule_js_1.MoleculeRef {
 }
 exports.Product = Product;
 /**
- * A class for representing a transition state.
+ * A class for representing a transition state - a molecule that is a transition state in a reaction.
  */
 class TransitionState extends molecule_js_1.MoleculeRef {
     /**

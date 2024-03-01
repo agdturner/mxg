@@ -501,7 +501,8 @@ function initConditions(xml) {
     // BathGas
     let xml_bathGas = (0, xml_js_1.getSingularElement)(xml_conditions, conditions_js_1.BathGas.tagName);
     let attributes = (0, xml_js_1.getAttributes)(xml_bathGas);
-    let bathGas = new conditions_js_1.BathGas(attributes, (0, util_js_1.get)(molecules, xml_bathGas.childNodes[0].nodeValue), molecules);
+    let moleculeID = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_bathGas));
+    let bathGas = new conditions_js_1.BathGas(attributes, moleculeID, molecules);
     // PTs
     let xml_PTs = (0, xml_js_1.getSingularElement)(xml_conditions, 'me:PTs');
     let xml_PTPairs = xml_PTs.getElementsByTagName(conditions_js_1.PTpair.tagName);
@@ -734,8 +735,9 @@ function initReactions(xml) {
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for (let j = 0; j < xml_reactants.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
+                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
                 let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                reactants.set(moleculeID, new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules));
+                reactants.set(moleculeID, new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load products.
             let products = new Map([]);
@@ -743,8 +745,9 @@ function initReactions(xml) {
             //console.log("xml_products.length=" + xml_products.length);
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
+                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
                 let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                products.set(moleculeID, new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules));
+                products.set(moleculeID, new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -805,8 +808,9 @@ function initReactions(xml) {
             let transitionState;
             if (xml_transitionState.length > 0) {
                 let xml_molecule = xml_transitionState[0].getElementsByTagName('molecule')[0];
-                let moleculeID = xml_molecule.getAttribute("ref");
-                transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules);
+                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules);
+                //let moleculeID: string = getAttribute(xml_molecule, "ref");
                 //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
                 //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
@@ -1192,7 +1196,7 @@ function displayReactionsDiagram() {
 function displayConditions() {
     let bathGas_element = document.getElementById("bathGas");
     if (bathGas_element != null) {
-        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().getRef();
+        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     }
     let PTs_element = document.getElementById("PT_table");
     let table = (0, html_js_1.getTH)(["P", "T"]);

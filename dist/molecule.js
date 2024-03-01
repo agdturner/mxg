@@ -544,6 +544,7 @@ class MoleculeRef extends xml_js_1.NodeWithNodes {
     getRef() {
         let s = this.getMoleculeAbb().attributes.get("ref");
         if (s == null) {
+            console.log(this.getMoleculeAbb().toString());
             throw new Error('Attribute "ref" is undefined.');
         }
         return s;

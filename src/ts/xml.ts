@@ -96,7 +96,7 @@ export class Tag {
  * A class for representing A Tag with attributes.
  * @param {Map<string, string>} attributes The attributes.
  */
-export abstract class TagWithAttributes extends Tag {
+export class TagWithAttributes extends Tag {
 
     /**
      * The attributes.
@@ -140,6 +140,42 @@ export abstract class TagWithAttributes extends Tag {
             }
         }
         return s + ' />';
+    }
+}
+
+/**
+ * A class for representing a TagWithAttributes with a string as a value.
+ */
+export class StringNode extends TagWithAttributes {
+
+    /**
+     * The value.
+     */
+    value: string;
+
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} value The value.
+     */
+    constructor(attributes: Map<string, string>, tagName: string, value: string) {
+        super(attributes, tagName);
+        this.value = value;
+    }
+
+    /**
+     * @returns A string representation.
+     */
+    toString(): string {
+        return super.toString() + `, ${this.value.toString()})`;
+    }
+
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */
+    override toXML(padding?: string): string {
+        return getTag(this.value.trim(), this.tagName, this.attributes, padding, false);
     }
 }
 

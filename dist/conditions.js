@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Conditions = exports.BathGas = exports.PTs = exports.PTpair = void 0;
 const xml_js_1 = require("./xml.js");
-const molecule_js_1 = require("./molecule.js");
 /**
  * A class for representing a Pressure and Temperature pair.
  */
@@ -69,18 +68,26 @@ exports.PTs = PTs;
 /**
  * A class for representing a bath gas reaction molecule.
  */
-class BathGas extends molecule_js_1.MoleculeRef {
+class BathGas extends xml_js_1.StringNode {
     /**
      * The tag name.
      */
     static tagName = "me:bathGas";
     /**
+     * The molecules.
+     */
+    molecules;
+    /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {string} moleculeID The moleculeID.
      * @param {Map<string, Molecule>} molecules The molecules.
      */
-    constructor(attributes, molecule, molecules) {
-        super(attributes, BathGas.tagName, molecule, molecules);
+    constructor(attributes, moleculeID, molecules) {
+        super(attributes, BathGas.tagName, moleculeID);
+        this.molecules = molecules;
+    }
+    getMolecule() {
+        return this.molecules.get(this.value);
     }
 }
 exports.BathGas = BathGas;

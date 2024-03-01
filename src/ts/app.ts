@@ -4,11 +4,11 @@ import {
 
 import {
     getAttribute, getFirstElement, getFirstChildNode, getNodeValue, getTag, getEndTag,
-    getAttributes, toHTML, getSingularElement, NumberArrayNode, NumberNode
+    getAttributes, toHTML, getSingularElement, NumberArrayNode, NumberNode, TagWithAttributes
 } from './xml.js';
 
 import {
-    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property
+    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef
 } from './molecule.js';
 
 import {
@@ -601,7 +601,8 @@ function initConditions(xml: XMLDocument): void {
     // BathGas
     let xml_bathGas: Element = getSingularElement(xml_conditions, BathGas.tagName);
     let attributes: Map<string, string> = getAttributes(xml_bathGas);
-    let bathGas: BathGas = new BathGas(attributes, get(molecules, xml_bathGas.childNodes[0].nodeValue), molecules);
+    let moleculeID: string = getNodeValue(getFirstChildNode(xml_bathGas));
+    let bathGas: BathGas = new BathGas(attributes, moleculeID, molecules);
     // PTs
     let xml_PTs: Element = getSingularElement(xml_conditions, 'me:PTs');
     let xml_PTPairs: HTMLCollectionOf<Element> = xml_PTs.getElementsByTagName(PTpair.tagName);
@@ -828,10 +829,10 @@ function initReactions(xml: XMLDocument): void {
             let xml_reactants: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for (let j = 0; j < xml_reactants.length; j++) {
-                let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
+                let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);                
+                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
                 let moleculeID: string = getAttribute(xml_molecule, "ref");
-                reactants.set(moleculeID, new Reactant(getAttributes(xml_molecule),
-                    get(molecules, moleculeID), molecules));
+                reactants.set(moleculeID, new Reactant(getAttributes(xml_molecule), twa, molecules));
             }
             // Load products.
             let products: Map<string, Product> = new Map([]);
@@ -839,10 +840,9 @@ function initReactions(xml: XMLDocument): void {
             //console.log("xml_products.length=" + xml_products.length);
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = getFirstElement(xml_products[j], Molecule.tagName);
+                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
                 let moleculeID: string = getAttribute(xml_molecule, "ref");
-                products.set(moleculeID,
-                    new Product(getAttributes(xml_molecule),
-                        get(molecules, moleculeID), molecules));
+                products.set(moleculeID, new Product(getAttributes(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -903,8 +903,9 @@ function initReactions(xml: XMLDocument): void {
             let transitionState: TransitionState | undefined;
             if (xml_transitionState.length > 0) {
                 let xml_molecule: Element = xml_transitionState[0].getElementsByTagName('molecule')[0];
-                let moleculeID: string | null = xml_molecule.getAttribute("ref");
-                transitionState = new TransitionState(getAttributes(xml_molecule), get(molecules, moleculeID), molecules);
+                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                transitionState = new TransitionState(getAttributes(xml_molecule), twa, molecules);
+                //let moleculeID: string = getAttribute(xml_molecule, "ref");
                 //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
                 //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
@@ -1305,7 +1306,7 @@ function displayReactionsDiagram(): void {
 function displayConditions(): void {
     let bathGas_element: HTMLElement | null = document.getElementById("bathGas");
     if (bathGas_element != null) {
-        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().getRef();
+        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     }
     let PTs_element: HTMLElement | null = document.getElementById("PT_table");
     let table: string = getTH(["P", "T"]);

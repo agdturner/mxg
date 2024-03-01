@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toHTML = exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.TagWithAttributes = exports.Tag = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
+exports.toHTML = exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.StringNode = exports.TagWithAttributes = exports.Tag = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
 const html_1 = require("./html");
 /**
  * Get the attribute of an xml element.
@@ -136,6 +136,38 @@ class TagWithAttributes extends Tag {
     }
 }
 exports.TagWithAttributes = TagWithAttributes;
+/**
+ * A class for representing a TagWithAttributes with a string as a value.
+ */
+class StringNode extends TagWithAttributes {
+    /**
+     * The value.
+     */
+    value;
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} value The value.
+     */
+    constructor(attributes, tagName, value) {
+        super(attributes, tagName);
+        this.value = value;
+    }
+    /**
+     * @returns A string representation.
+     */
+    toString() {
+        return super.toString() + `, ${this.value.toString()})`;
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */
+    toXML(padding) {
+        return getTag(this.value.trim(), this.tagName, this.attributes, padding, false);
+    }
+}
+exports.StringNode = StringNode;
 /**
  * A class for representing a TagWithAttributes with a number as a value.
  */

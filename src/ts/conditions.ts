@@ -1,5 +1,5 @@
 import {
-    TagWithAttributes, NodeWithNodes, NumberNode
+    TagWithAttributes, NodeWithNodes, NumberNode, StringNode
 } from "./xml.js";
 
 import {
@@ -77,7 +77,7 @@ export class PTs extends NodeWithNodes {
 /**
  * A class for representing a bath gas reaction molecule.
  */
-export class BathGas extends MoleculeRef {
+export class BathGas extends StringNode {
 
     /**
      * The tag name.
@@ -85,13 +85,23 @@ export class BathGas extends MoleculeRef {
     static readonly tagName: string = "me:bathGas";
 
     /**
+     * The molecules.
+     */
+    molecules: Map<string, Molecule>
+
+    /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {string} moleculeID The moleculeID.
      * @param {Map<string, Molecule>} molecules The molecules.
      */
-    constructor(attributes: Map<string, string>, molecule: TagWithAttributes,
+    constructor(attributes: Map<string, string>, moleculeID: string,
         molecules: Map<string, Molecule>) {
-        super(attributes, BathGas.tagName, molecule, molecules);
+        super(attributes, BathGas.tagName, moleculeID);
+        this.molecules = molecules;
+    }
+
+    getMolecule(): Molecule {
+        return this.molecules.get(this.value) as Molecule;
     }
 }
 

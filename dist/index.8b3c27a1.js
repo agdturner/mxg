@@ -1004,7 +1004,8 @@ let conditions;
     // BathGas
     let xml_bathGas = (0, _xmlJs.getSingularElement)(xml_conditions, (0, _conditionsJs.BathGas).tagName);
     let attributes = (0, _xmlJs.getAttributes)(xml_bathGas);
-    let bathGas = new (0, _conditionsJs.BathGas)(attributes, (0, _utilJs.get)(molecules, xml_bathGas.childNodes[0].nodeValue), molecules);
+    let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGas));
+    let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID, molecules);
     // PTs
     let xml_PTs = (0, _xmlJs.getSingularElement)(xml_conditions, "me:PTs");
     let xml_PTPairs = xml_PTs.getElementsByTagName((0, _conditionsJs.PTpair).tagName);
@@ -1145,8 +1146,9 @@ let control;
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for(let j = 0; j < xml_reactants.length; j++){
                 let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _moleculeJs.Molecule).tagName);
+                let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
                 let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
-                reactants.set(moleculeID, new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_molecule), (0, _utilJs.get)(molecules, moleculeID), molecules));
+                reactants.set(moleculeID, new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load products.
             let products = new Map([]);
@@ -1154,8 +1156,9 @@ let control;
             //console.log("xml_products.length=" + xml_products.length);
             for(let j = 0; j < xml_products.length; j++){
                 let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
+                let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
                 let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
-                products.set(moleculeID, new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_molecule), (0, _utilJs.get)(molecules, moleculeID), molecules));
+                products.set(moleculeID, new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -1213,8 +1216,9 @@ let control;
             let transitionState;
             if (xml_transitionState.length > 0) {
                 let xml_molecule = xml_transitionState[0].getElementsByTagName("molecule")[0];
-                let moleculeID = xml_molecule.getAttribute("ref");
-                transitionState = new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_molecule), (0, _utilJs.get)(molecules, moleculeID), molecules);
+                let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
+                transitionState = new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules);
+            //let moleculeID: string = getAttribute(xml_molecule, "ref");
             //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
             //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
@@ -1567,7 +1571,7 @@ let control;
  * Display conditions.
  */ function displayConditions() {
     let bathGas_element = document.getElementById("bathGas");
-    if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().getRef();
+    if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     let PTs_element = document.getElementById("PT_table");
     let table = (0, _htmlJs.getTH)([
         "P",
@@ -1854,6 +1858,9 @@ parcelHelpers.defineInteropFlag(exports);
  * @param {Map<string, string>} attributes The attributes.
  */ parcelHelpers.export(exports, "TagWithAttributes", ()=>TagWithAttributes);
 /**
+ * A class for representing a TagWithAttributes with a string as a value.
+ */ parcelHelpers.export(exports, "StringNode", ()=>StringNode);
+/**
  * A class for representing a TagWithAttributes with a number as a value.
  */ parcelHelpers.export(exports, "NumberNode", ()=>NumberNode);
 /**
@@ -1968,6 +1975,27 @@ class TagWithAttributes extends Tag {
         s += "<" + this.tagName;
         if (this.attributes) for (let [k, v] of this.attributes)s += " " + k + '="' + v.toString() + '"';
         return s + " />";
+    }
+}
+class StringNode extends TagWithAttributes {
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} value The value.
+     */ constructor(attributes, tagName, value){
+        super(attributes, tagName);
+        this.value = value;
+    }
+    /**
+     * @returns A string representation.
+     */ toString() {
+        return super.toString() + `, ${this.value.toString()})`;
+    }
+    /**
+     * Get the XML representation.
+     * @param {string} padding The padding (Optional).
+     * @returns An XML representation.
+     */ toXML(padding) {
+        return getTag(this.value.trim(), this.tagName, this.attributes, padding, false);
     }
 }
 class NumberNode extends TagWithAttributes {
@@ -2596,7 +2624,10 @@ class MoleculeRef extends (0, _xmlJs.NodeWithNodes) {
      * @returns The ref of the transition state.
      */ getRef() {
         let s = this.getMoleculeAbb().attributes.get("ref");
-        if (s == null) throw new Error('Attribute "ref" is undefined.');
+        if (s == null) {
+            console.log(this.getMoleculeAbb().toString());
+            throw new Error('Attribute "ref" is undefined.');
+        }
         return s;
     }
     /**
@@ -2615,15 +2646,13 @@ class MoleculeRef extends (0, _xmlJs.NodeWithNodes) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * A class for representing a reactant.
- * This is a molecule often with a role in a reaction.
+ * A class for representing a reactant - a molecule that reacts in a reaction.
  */ parcelHelpers.export(exports, "Reactant", ()=>Reactant);
 /**
- * A class for representing a product.
- * This is a molecule produced in a reaction.
+ * A class for representing a product - a molecule produced in a reaction.
  */ parcelHelpers.export(exports, "Product", ()=>Product);
 /**
- * A class for representing a transition state.
+ * A class for representing a transition state - a molecule that is a transition state in a reaction.
  */ parcelHelpers.export(exports, "TransitionState", ()=>TransitionState);
 /**
  * A class for representing the Arrhenius pre-exponential factor.
@@ -3109,7 +3138,6 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for representing the experiment conditions.
  */ parcelHelpers.export(exports, "Conditions", ()=>Conditions);
 var _xmlJs = require("./xml.js");
-var _moleculeJs = require("./molecule.js");
 class PTpair extends (0, _xmlJs.TagWithAttributes) {
     static{
         /**
@@ -3145,7 +3173,7 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
         this.pTpairs = pTpairs;
     }
 }
-class BathGas extends (0, _moleculeJs.MoleculeRef) {
+class BathGas extends (0, _xmlJs.StringNode) {
     static{
         /**
      * The tag name.
@@ -3153,10 +3181,14 @@ class BathGas extends (0, _moleculeJs.MoleculeRef) {
     }
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {string} moleculeID The moleculeID.
      * @param {Map<string, Molecule>} molecules The molecules.
-     */ constructor(attributes, molecule, molecules){
-        super(attributes, BathGas.tagName, molecule, molecules);
+     */ constructor(attributes, moleculeID, molecules){
+        super(attributes, BathGas.tagName, moleculeID);
+        this.molecules = molecules;
+    }
+    getMolecule() {
+        return this.molecules.get(this.value);
     }
 }
 class Conditions extends (0, _xmlJs.NodeWithNodes) {
@@ -3185,7 +3217,7 @@ class Conditions extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./xml.js":"7znDa","./molecule.js":"ahQNx"}],"kQHfz":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./xml.js":"7znDa"}],"kQHfz":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**

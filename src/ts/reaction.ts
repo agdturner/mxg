@@ -13,8 +13,7 @@ import {
 
 
 /**
- * A class for representing a reactant.
- * This is a molecule often with a role in a reaction.
+ * A class for representing a reactant - a molecule that reacts in a reaction.
  */
 export class Reactant extends MoleculeRef {
 
@@ -35,8 +34,7 @@ export class Reactant extends MoleculeRef {
 }
 
 /**
- * A class for representing a product.
- * This is a molecule produced in a reaction.
+ * A class for representing a product - a molecule produced in a reaction.
  */
 export class Product extends MoleculeRef {
 
@@ -58,7 +56,7 @@ export class Product extends MoleculeRef {
 }
 
 /**
- * A class for representing a transition state.
+ * A class for representing a transition state - a molecule that is a transition state in a reaction.
  */
 export class TransitionState extends MoleculeRef {
 
