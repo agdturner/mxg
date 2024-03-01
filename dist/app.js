@@ -5,10 +5,9 @@ const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const molecule_js_1 = require("./molecule.js");
 const reaction_js_1 = require("./reaction.js");
-const functions_js_1 = require("./functions.js");
+const util_js_2 = require("./util.js");
 const html_js_1 = require("./html.js");
 const canvas_js_1 = require("./canvas.js");
-const classes_js_1 = require("./classes.js");
 const conditions_js_1 = require("./conditions.js");
 const modelParameters_js_1 = require("./modelParameters.js");
 const control_js_1 = require("./control.js");
@@ -210,7 +209,7 @@ function initMolecules(xml) {
             if (nodeName == "scalar") {
                 moleculeTagNames.delete("scalar");
                 let value = parseFloat(textContent);
-                properties.set(dictRef, new molecule_js_1.Property(attribs, new classes_js_1.NumberNode(nodeAttributes, nodeName, value)));
+                properties.set(dictRef, new molecule_js_1.Property(attribs, new xml_js_1.NumberNode(nodeAttributes, nodeName, value)));
                 if (dictRef === "me:ZPE") {
                     minMoleculeEnergy = Math.min(minMoleculeEnergy, value);
                     maxMoleculeEnergy = Math.max(maxMoleculeEnergy, value);
@@ -218,7 +217,7 @@ function initMolecules(xml) {
             }
             else if (nodeName == "array") {
                 moleculeTagNames.delete("array");
-                properties.set(dictRef, new molecule_js_1.Property(attribs, new classes_js_1.NumberArrayNode(nodeAttributes, nodeName, (0, functions_js_1.toNumberArray)(textContent.split(/\s+/)), " ")));
+                properties.set(dictRef, new molecule_js_1.Property(attribs, new xml_js_1.NumberArrayNode(nodeAttributes, nodeName, (0, util_js_2.toNumberArray)(textContent.split(/\s+/)), " ")));
             }
             else if (nodeName == "matrix") {
                 throw new Error("Unexpected nodeName: " + nodeName);
@@ -285,7 +284,7 @@ function initMolecules(xml) {
                 // Both ways have been kept for now as I don't know which way is better!
                 let eventTarget = event.target;
                 let inputValue = eventTarget.value;
-                if ((0, functions_js_1.isNumeric)(inputValue)) {
+                if ((0, util_js_2.isNumeric)(inputValue)) {
                     molecule.setEnergy(parseFloat(inputValue));
                     console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
                 }
@@ -502,7 +501,7 @@ function initConditions(xml) {
     // BathGas
     let xml_bathGas = (0, xml_js_1.getSingularElement)(xml_conditions, conditions_js_1.BathGas.tagName);
     let attributes = (0, xml_js_1.getAttributes)(xml_bathGas);
-    let bathGas = new conditions_js_1.BathGas(attributes, (0, util_js_1.get)(molecules, xml_bathGas.childNodes[0].nodeValue));
+    let bathGas = new conditions_js_1.BathGas(attributes, (0, util_js_1.get)(molecules, xml_bathGas.childNodes[0].nodeValue), molecules);
     // PTs
     let xml_PTs = (0, xml_js_1.getSingularElement)(xml_conditions, 'me:PTs');
     let xml_PTPairs = xml_PTs.getElementsByTagName(conditions_js_1.PTpair.tagName);
@@ -698,7 +697,7 @@ function initControl(xml) {
     else {
         console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
     }
-    control = new control_js_1.Control(testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
+    control = new control_js_1.Control((0, xml_js_1.getAttributes)(xml_control), testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
 }
 /**
  * Parses xml to initialise reactions.
@@ -736,7 +735,7 @@ function initReactions(xml) {
             for (let j = 0; j < xml_reactants.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
                 let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                reactants.set(moleculeID, new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID)));
+                reactants.set(moleculeID, new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules));
             }
             // Load products.
             let products = new Map([]);
@@ -745,7 +744,7 @@ function initReactions(xml) {
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
                 let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                products.set(moleculeID, new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID)));
+                products.set(moleculeID, new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -807,7 +806,7 @@ function initReactions(xml) {
             if (xml_transitionState.length > 0) {
                 let xml_molecule = xml_transitionState[0].getElementsByTagName('molecule')[0];
                 let moleculeID = xml_molecule.getAttribute("ref");
-                transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID));
+                transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), (0, util_js_1.get)(molecules, moleculeID), molecules);
                 //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
                 //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
@@ -865,7 +864,7 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
     let energyMax = Number.MIN_VALUE;
     reactions.forEach(function (reaction, id) {
         // Get TransitionState if there is one.
-        let transitionState = reaction.transitionState;
+        let transitionState = reaction.getTransitionState();
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         reactants.add(reactantsLabel);
@@ -900,7 +899,7 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
                 let tsn = transitionState.getRef();
                 transitionStates.add(tsn);
                 orders.set(tsn, i);
-                energy = transitionState.molecule.getEnergy();
+                energy = transitionState.getMolecule().getEnergy();
                 energyMin = Math.min(energyMin, energy);
                 energyMax = Math.max(energyMax, energy);
                 energies.set(tsn, energy);
@@ -914,7 +913,7 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
                 let tsn = transitionState.getRef();
                 transitionStates.add(tsn);
                 orders.set(tsn, i);
-                energy = transitionState.molecule.getEnergy();
+                energy = transitionState.getMolecule().getEnergy();
                 energyMin = Math.min(energyMin, energy);
                 energyMax = Math.max(energyMax, energy);
                 energies.set(tsn, energy);
@@ -1000,7 +999,7 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
         // Get TransitionState if there is one.
-        let transitionState = reaction.transitionState;
+        let transitionState = reaction.getTransitionState();
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         let productsLabel = reaction.getProductsLabel();
@@ -1082,12 +1081,12 @@ function displayMoleculesTable() {
         let rotationConstants = "";
         let rotConsts = molecule.getRotationConstants();
         if (rotConsts != undefined) {
-            rotationConstants = (0, functions_js_1.arrayToString)(rotConsts, " ");
+            rotationConstants = (0, util_js_2.arrayToString)(rotConsts, " ");
         }
         let vibrationFrequencies = "";
         let vibFreqs = molecule.getVibrationFrequencies();
         if (vibFreqs != undefined) {
-            vibrationFrequencies = (0, functions_js_1.arrayToString)(vibFreqs, " ");
+            vibrationFrequencies = (0, util_js_2.arrayToString)(vibFreqs, " ");
         }
         moleculesTable += (0, html_js_1.getTR)((0, html_js_1.getTD)(id)
             + (0, html_js_1.getTD)((0, html_js_1.getInput)("number", id + "_energy", "setEnergy(this)", energy))
@@ -1112,41 +1111,47 @@ function displayReactionsTable() {
     reactions.forEach(function (reaction, id) {
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
-        let reactants = (0, functions_js_1.arrayToString)(Array.from(reaction.reactants.keys()), " ");
-        let products = (0, functions_js_1.arrayToString)(Array.from(reaction.products.keys()), " ");
+        let reactants = (0, util_js_2.arrayToString)(Array.from(reaction.reactants.keys()), " ");
+        let products = (0, util_js_2.arrayToString)(Array.from(reaction.products.keys()), " ");
         let transitionState = "";
         let preExponential = "";
         let activationEnergy = "";
         let tInfinity = "";
         let nInfinity = "";
-        if (reaction.transitionState != undefined) {
-            let name = reaction.transitionState.attributes.get("name");
+        let ts = reaction.getTransitionState();
+        if (ts != undefined) {
+            let name = ts.attributes.get("name");
             if (name != null) {
                 transitionState = name;
             }
         }
-        if (reaction.mCRCMethod != undefined) {
-            if (reaction.mCRCMethod instanceof reaction_js_1.MesmerILT) {
-                if (reaction.mCRCMethod.preExponential != null) {
-                    preExponential = reaction.mCRCMethod.preExponential.value.toString() + " "
-                        + reaction.mCRCMethod.preExponential.attributes.get("units");
+        let mCRCMethod = reaction.getMCRCMethod();
+        if (mCRCMethod != undefined) {
+            if (mCRCMethod instanceof reaction_js_1.MesmerILT) {
+                let mp = mCRCMethod.getPreExponential();
+                if (mp != undefined) {
+                    preExponential = mp.value.toString() + " "
+                        + mp.attributes.get("units");
                 }
-                if (reaction.mCRCMethod.activationEnergy != null) {
-                    activationEnergy = reaction.mCRCMethod.activationEnergy.value.toString() + " "
-                        + reaction.mCRCMethod.activationEnergy.attributes.get("units");
+                let ae = mCRCMethod.getActivationEnergy();
+                if (ae != undefined) {
+                    activationEnergy = ae.value.toString() + " "
+                        + ae.attributes.get("units");
                 }
-                if (reaction.mCRCMethod.tInfinity != null) {
-                    tInfinity = reaction.mCRCMethod.tInfinity.toString();
+                let ti = mCRCMethod.getTInfinity();
+                if (ti != undefined) {
+                    tInfinity = ti.value.toString();
                 }
-                if (reaction.mCRCMethod.nInfinity != null) {
-                    nInfinity = reaction.mCRCMethod.nInfinity.value.toString();
+                let ni = mCRCMethod.getNInfinity();
+                if (ni != undefined) {
+                    nInfinity = ni.value.toString();
                 }
             }
             else {
-                if (reaction.mCRCMethod.attributes.get("name") == "RRKM") {
+                if (mCRCMethod.attributes.get("name") == "RRKM") {
                 }
                 else {
-                    throw new Error("Unexpected mCRCMethod: " + reaction.mCRCMethod);
+                    throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
                 }
             }
         }
@@ -1187,12 +1192,12 @@ function displayReactionsDiagram() {
 function displayConditions() {
     let bathGas_element = document.getElementById("bathGas");
     if (bathGas_element != null) {
-        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().molecule.getID();
+        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().getRef();
     }
     let PTs_element = document.getElementById("PT_table");
     let table = (0, html_js_1.getTH)(["P", "T"]);
     if (PTs_element != null) {
-        conditions.getPTs().PTpairs.forEach(function (pTpair) {
+        conditions.getPTs().pTpairs.forEach(function (pTpair) {
             table += (0, html_js_1.getTR)((0, html_js_1.getTD)(pTpair.P.toString()) + (0, html_js_1.getTD)(pTpair.T.toString()));
         });
         PTs_element.innerHTML = table;
@@ -1216,48 +1221,77 @@ function displayModelParameters() {
 function displayControl() {
     let control_table_element = document.getElementById("control_table");
     let table = (0, html_js_1.getTH)(["Control", "Value"]);
-    if (control.testDOS != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.testDOS") + (0, html_js_1.getTD)(""));
+    // TestDOS
+    let testDOS = control.getTestDOS();
+    if (testDOS != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.TestDOS.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printSpeciesProfile != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printSpeciesProfile") + (0, html_js_1.getTD)(""));
+    // PrintSpeciesProfile
+    let printSpeciesProfile = control.getPrintSpeciesProfile();
+    if (printSpeciesProfile != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintSpeciesProfile.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.testMicroRates != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.testMicroRates") + (0, html_js_1.getTD)(""));
+    // TestMicroRates
+    let testMicroRates = control.getTestMicroRates();
+    if (testMicroRates != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.TestMicroRates.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.testRateConstant != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.testRateConstant") + (0, html_js_1.getTD)(""));
+    // TestRateConstant
+    let testRateConstant = control.getTestRateConstant();
+    if (testRateConstant != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.TestRateConstant.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printGrainDOS != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printGrainDOS") + (0, html_js_1.getTD)(""));
+    // PrintGrainDOS
+    let printGrainDOS = control.getPrintGrainDOS();
+    if (printGrainDOS != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintGrainDOS.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printCellDOS != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printCellDOS") + (0, html_js_1.getTD)(""));
+    // PrintCellDOS
+    let printCellDOS = control.getPrintCellDOS();
+    if (printCellDOS != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintCellDOS.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printReactionOperatorColumnSums != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printReactionOperatorColumnSums") + (0, html_js_1.getTD)(""));
+    // PrintReactionOperatorColumnSums
+    let printReactionOperatorColumnSums = control.getPrintReactionOperatorColumnSums();
+    if (printReactionOperatorColumnSums != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintReactionOperatorColumnSums.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printTunnellingCoefficients != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printTunnellingCoefficients") + (0, html_js_1.getTD)(""));
+    // PrintTunnellingCoefficients
+    let printTunnellingCoefficients = control.getPrintTunnellingCoefficients();
+    if (printTunnellingCoefficients != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintTunnellingCoefficients.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printGrainkfE != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printGrainkfE") + (0, html_js_1.getTD)(""));
+    // PrintGrainkfE
+    let printGrainkfE = control.getPrintGrainkfE();
+    if (printGrainkfE != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintGrainkfE.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printGrainBoltzmann != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printGrainBoltzmann") + (0, html_js_1.getTD)(""));
+    // PrintGrainBoltzmann
+    let printGrainBoltzmann = control.getPrintGrainBoltzmann();
+    if (printGrainBoltzmann != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintGrainBoltzmann.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.printGrainkbE != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.printGrainkbE") + (0, html_js_1.getTD)(""));
+    // PrintGrainkbE
+    let printGrainkbE = control.getPrintGrainkbE();
+    if (printGrainkbE != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.PrintGrainkbE.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.eigenvalues != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.eigenvalues") + (0, html_js_1.getTD)(control.eigenvalues.toString()));
+    // Eigenvalues
+    let eigenvalues = control.getEigenvalues();
+    if (eigenvalues != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.Eigenvalues.tagName) + (0, html_js_1.getTD)(eigenvalues.value.toString()));
     }
-    if (control.hideInactive != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.hideInactive") + (0, html_js_1.getTD)(""));
+    // HideInactive
+    let hideInactive = control.getHideInactive();
+    if (hideInactive != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.HideInactive.tagName) + (0, html_js_1.getTD)(""));
     }
-    if (control.diagramEnergyOffset != undefined) {
-        table += (0, html_js_1.getTR)((0, html_js_1.getTD)("me.diagramEnergyOffset") + (0, html_js_1.getTD)(control.diagramEnergyOffset.value.toString()));
+    // DiagramEnergyOffset
+    let diagramEnergyOffset = control.getDiagramEnergyOffset();
+    if (diagramEnergyOffset != undefined) {
+        table += (0, html_js_1.getTR)((0, html_js_1.getTD)(control_js_1.DiagramEnergyOffset.tagName) + (0, html_js_1.getTD)(diagramEnergyOffset.value.toString()));
     }
+    // Set the table.
     if (control_table_element != null) {
         control_table_element.innerHTML = table;
     }
@@ -1307,7 +1341,8 @@ window.saveXML = function () {
     level = 2;
     let reactionList = "";
     reactions.forEach(function (reaction, id) {
-        reactionList += reaction.toXML("reaction", pad, level);
+        reactionList += reaction.toXML(pad, padding2);
+        //reactionList += reaction.toXML("reaction", pad, level);
     });
     reactionList = (0, xml_js_1.getTag)(reactionList, "reactionList", undefined, pad, true);
     // Create me.Conditions

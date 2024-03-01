@@ -29,12 +29,23 @@ class TagWithAttributes extends xml_1.Tag {
         return r;
     }
     /**
-     * Get the XML representation.
+     * Get an XML like representation that instead of having a closing tag is a self closing tag.
+     * These are allowed and perhaps expected in MESMER XML format.
      * @param {string} padding The padding (Optional).
-     * @returns An XML representation.
+     * @returns An XML like representation.
      */
     toXML(padding) {
-        return (0, xml_1.getTag)("", this.tagName, this.attributes, padding, false);
+        let s = "";
+        if (padding != undefined) {
+            s += "\n" + padding;
+        }
+        s += '<' + this.tagName;
+        if (this.attributes) {
+            for (let [k, v] of this.attributes) {
+                s += ' ' + k + '="' + v.toString() + '"';
+            }
+        }
+        return s + ' />';
     }
 }
 exports.TagWithAttributes = TagWithAttributes;
@@ -166,11 +177,11 @@ class NodeWithNodes extends TagWithAttributes {
         }
         let s = "";
         this.nodes.forEach((v) => {
-            if (v instanceof TagWithAttributes) {
-                s += v.toXML(padding1);
+            if (v instanceof NodeWithNodes) {
+                s += v.toXML(pad, padding1);
             }
             else {
-                s += v.toXML(pad, padding1);
+                s += v.toXML(padding1);
             }
             s += v.toXML(padding1);
         });

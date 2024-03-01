@@ -1,14 +1,10 @@
 import {
     TagWithAttributes, NodeWithNodes, NumberNode
-} from "./classes.js";
+} from "./xml.js";
 
 import {
-    Molecule
+    Molecule, MoleculeRef
 } from "./molecule.js";
-
-import {
-    ReactionMolecule
-} from "./reaction.js";
 
 /**
  * A class for representing a Pressure and Temperature pair.
@@ -53,7 +49,7 @@ export class PTpair extends TagWithAttributes {
 /**
  * A class for representing a set of Pressure and Temperature pairs.
  */
-export class PTs extends TagWithAttributes {
+export class PTs extends NodeWithNodes {
 
     /**
      * The tag name.
@@ -63,35 +59,39 @@ export class PTs extends TagWithAttributes {
     /**
      * The PT pairs.
      */
-    PTpairs: PTpair[];
+    pTpairs: PTpair[]
 
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PTpair[]} PTpairs The PT pairs.
      */
-    constructor(attributes: Map<string, string>, PTpairs: PTpair[]) {
+    constructor(attributes: Map<string, string>, pTpairs: PTpair[]) {
         super(attributes, PTs.tagName);
-        this.PTpairs = PTpairs;
+        pTpairs.forEach((v) => {
+            this.addNode(v);
+        });
+        this.pTpairs = pTpairs;
     }
-
 }
 
 /**
  * A class for representing a bath gas reaction molecule.
  */
-export class BathGas extends ReactionMolecule {
+export class BathGas extends MoleculeRef {
 
     /**
      * The tag name.
      */
-    static tagName: string = "me:bathGas";
+    static readonly tagName: string = "me:bathGas";
 
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {Molecule} molecule The molecule.
+     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {Map<string, Molecule>} molecules The molecules.
      */
-    constructor(attributes: Map<string, string>, molecule: Molecule) {
-        super(attributes, molecule);
+    constructor(attributes: Map<string, string>, molecule: TagWithAttributes,
+        molecules: Map<string, Molecule>) {
+        super(attributes, BathGas.tagName, molecule, molecules);
     }
 }
 

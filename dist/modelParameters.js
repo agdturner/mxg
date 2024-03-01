@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModelParameters = exports.EnergyAboveTheTopHill = exports.GrainSize = void 0;
-const classes_1 = require("./classes");
+const xml_js_1 = require("./xml.js");
 /**
  * A class for measures of grain size.
  */
-class GrainSize extends classes_1.NumberNode {
+class GrainSize extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
@@ -24,11 +24,11 @@ exports.GrainSize = GrainSize;
 /**
  * A class for measures of grain size.
  */
-class EnergyAboveTheTopHill extends classes_1.NumberNode {
+class EnergyAboveTheTopHill extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static tagName = "me:EnergyAboveTheTopHill";
+    static tagName = "me:energyAboveTheTopHill";
     /**
      * @param {string} value The value.
      */
@@ -40,7 +40,7 @@ exports.EnergyAboveTheTopHill = EnergyAboveTheTopHill;
 /**
  * A class for model parameters.
  */
-class ModelParameters extends classes_1.NodeWithNodes {
+class ModelParameters extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */

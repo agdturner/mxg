@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Conditions = exports.BathGas = exports.PTs = exports.PTpair = void 0;
-const classes_js_1 = require("./classes.js");
-const reaction_js_1 = require("./reaction.js");
+const xml_js_1 = require("./xml.js");
+const molecule_js_1 = require("./molecule.js");
 /**
  * A class for representing a Pressure and Temperature pair.
  */
-class PTpair extends classes_js_1.TagWithAttributes {
+class PTpair extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -44,7 +44,7 @@ exports.PTpair = PTpair;
 /**
  * A class for representing a set of Pressure and Temperature pairs.
  */
-class PTs extends classes_js_1.TagWithAttributes {
+class PTs extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
@@ -52,38 +52,42 @@ class PTs extends classes_js_1.TagWithAttributes {
     /**
      * The PT pairs.
      */
-    PTpairs;
+    pTpairs;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PTpair[]} PTpairs The PT pairs.
      */
-    constructor(attributes, PTpairs) {
+    constructor(attributes, pTpairs) {
         super(attributes, PTs.tagName);
-        this.PTpairs = PTpairs;
+        pTpairs.forEach((v) => {
+            this.addNode(v);
+        });
+        this.pTpairs = pTpairs;
     }
 }
 exports.PTs = PTs;
 /**
  * A class for representing a bath gas reaction molecule.
  */
-class BathGas extends reaction_js_1.ReactionMolecule {
+class BathGas extends molecule_js_1.MoleculeRef {
     /**
      * The tag name.
      */
     static tagName = "me:bathGas";
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {Molecule} molecule The molecule.
+     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {Map<string, Molecule>} molecules The molecules.
      */
-    constructor(attributes, molecule) {
-        super(attributes, molecule);
+    constructor(attributes, molecule, molecules) {
+        super(attributes, BathGas.tagName, molecule, molecules);
     }
 }
 exports.BathGas = BathGas;
 /**
  * A class for representing the experiment conditions.
  */
-class Conditions extends classes_js_1.NodeWithNodes {
+class Conditions extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */

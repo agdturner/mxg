@@ -1,6 +1,6 @@
 import {
     NodeWithNodes, NumberNode
-} from "./classes";
+} from "./xml.js";
 
 /**
  * A class for measures of grain size.
@@ -31,7 +31,7 @@ export class EnergyAboveTheTopHill extends NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:EnergyAboveTheTopHill";
+    static readonly tagName: string = "me:energyAboveTheTopHill";
 
     /**
      * @param {string} value The value.

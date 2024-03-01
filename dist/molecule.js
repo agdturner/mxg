@@ -1,15 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.ExtraDOSCMethod = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDown = exports.Property = exports.Bond = exports.Atom = void 0;
-const classes_js_1 = require("./classes.js");
-const functions_js_1 = require("./functions.js");
+exports.MoleculeRef = exports.Molecule = exports.ExtraDOSCMethod = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDown = exports.Property = exports.Bond = exports.Atom = void 0;
 const xml_js_1 = require("./xml.js");
+const util_js_1 = require("./util.js");
 /**
  * A class for representing an atom.
  * @param {Map<string, string>} attributes The attributes.
  * If there is no "id" or "elementType" key an error will be thrown.
  */
-class Atom extends classes_js_1.TagWithAttributes {
+class Atom extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -56,7 +55,7 @@ exports.Atom = Atom;
  * @param {Atom} atomB Another atom.
  * @param {string} order The order of the bond.
  */
-class Bond extends classes_js_1.TagWithAttributes {
+class Bond extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -79,7 +78,7 @@ exports.Bond = Bond;
 /**
  * A class for representing a property.
  */
-class Property extends classes_js_1.NodeWithNodes {
+class Property extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
@@ -120,7 +119,7 @@ exports.Property = Property;
 /**
  * Represents the deltaEDown class.
  */
-class DeltaEDown extends classes_js_1.NumberNode {
+class DeltaEDown extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
@@ -137,7 +136,7 @@ exports.DeltaEDown = DeltaEDown;
 /**
  * A class for representing an energy transfer model.
  */
-class EnergyTransferModel extends classes_js_1.TagWithAttributes {
+class EnergyTransferModel extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -182,7 +181,7 @@ exports.EnergyTransferModel = EnergyTransferModel;
 /**
  * A class for representing a method for calculating the density of states.
  */
-class DOSCMethod extends classes_js_1.TagWithAttributes {
+class DOSCMethod extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -195,7 +194,7 @@ exports.DOSCMethod = DOSCMethod;
 /**
  * A class for representing a bondRef.
  */
-class BondRef extends classes_js_1.TagWithAttributes {
+class BondRef extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
@@ -235,7 +234,7 @@ exports.BondRef = BondRef;
 /**
  * A class for representing a PotentialPoint.
  */
-class PotentialPoint extends classes_js_1.TagWithAttributes {
+class PotentialPoint extends xml_js_1.TagWithAttributes {
     static xmlTagName = "me:PotentialPoint";
     /**
      * @param attributes The attributes.
@@ -248,7 +247,7 @@ exports.PotentialPoint = PotentialPoint;
 /**
  * A class for representing a HinderedRotorPotential.
  */
-class HinderedRotorPotential extends classes_js_1.TagWithAttributes {
+class HinderedRotorPotential extends xml_js_1.TagWithAttributes {
     static xmlTagName = "me:HinderedRotorPotential";
     PotentialPoint;
     /**
@@ -264,7 +263,7 @@ exports.HinderedRotorPotential = HinderedRotorPotential;
 /**
  * A class for representing the extra DOSC method.
  */
-class ExtraDOSCMethod extends classes_js_1.TagWithAttributes {
+class ExtraDOSCMethod extends xml_js_1.TagWithAttributes {
     static xmlTagName = "me:ExtraDOSCMethod";
     /**
      * The bondRef.
@@ -289,7 +288,7 @@ exports.ExtraDOSCMethod = ExtraDOSCMethod;
 /**
  * A class for representing a molecule.
  */
-class Molecule extends classes_js_1.NodeWithNodes {
+class Molecule extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
@@ -343,13 +342,13 @@ class Molecule extends classes_js_1.NodeWithNodes {
             r += `active(${active}), `;
         }
         if (this.atoms.size > 0) {
-            r += `atoms(${(0, functions_js_1.mapToString)(this.atoms)}), `;
+            r += `atoms(${(0, util_js_1.mapToString)(this.atoms)}), `;
         }
         if (this.bonds.size > 0) {
-            r += `bonds(${(0, functions_js_1.mapToString)(this.bonds)}), `;
+            r += `bonds(${(0, util_js_1.mapToString)(this.bonds)}), `;
         }
         if (this.properties.size > 0) {
-            r += `properties(${(0, functions_js_1.mapToString)(this.properties)}), `;
+            r += `properties(${(0, util_js_1.mapToString)(this.properties)}), `;
         }
         if (this.energyTransferModel) {
             r += `energyTransferModel(${this.energyTransferModel.toString()}), `;
@@ -392,7 +391,7 @@ class Molecule extends classes_js_1.NodeWithNodes {
         if (zpe == undefined) {
             return 0;
         }
-        if (zpe.property instanceof classes_js_1.NumberNode) {
+        if (zpe.property instanceof xml_js_1.NumberNode) {
             return zpe.property.value;
         }
         else {
@@ -408,7 +407,7 @@ class Molecule extends classes_js_1.NodeWithNodes {
         if (property == undefined) {
             throw new Error("No me.ZPE property found");
         }
-        if (property.property instanceof classes_js_1.NumberArrayNode) {
+        if (property.property instanceof xml_js_1.NumberArrayNode) {
             throw new Error("Unexpected NumberArrayNode.");
         }
         else {
@@ -423,7 +422,7 @@ class Molecule extends classes_js_1.NodeWithNodes {
         let property = this.properties.get('me:rotConsts');
         if (property != undefined) {
             if (property.property != null) {
-                if (property.property instanceof classes_js_1.NumberNode) {
+                if (property.property instanceof xml_js_1.NumberNode) {
                     return [property.property.value];
                 }
                 else {
@@ -443,10 +442,10 @@ class Molecule extends classes_js_1.NodeWithNodes {
     getVibrationFrequencies() {
         let property = this.properties.get('me:vibFreqs');
         if (property != undefined) {
-            if (property.property instanceof classes_js_1.NumberNode) {
+            if (property.property instanceof xml_js_1.NumberNode) {
                 return [property.property.value];
             }
-            else if (property.property instanceof classes_js_1.NumberArrayNode) {
+            else if (property.property instanceof xml_js_1.NumberArrayNode) {
                 return property.property.values;
             }
             else {
@@ -476,7 +475,7 @@ class Molecule extends classes_js_1.NodeWithNodes {
         // Atoms
         let atoms_xml = "";
         for (let atom of this.atoms.values()) {
-            atoms_xml += atom.getSelfClosingTag(padding2);
+            atoms_xml += atom.toXML(padding2);
         }
         if (this.atoms.size > 1) {
             if (atoms_xml != "") {
@@ -486,7 +485,7 @@ class Molecule extends classes_js_1.NodeWithNodes {
         // Bonds
         let bonds_xml = "";
         for (let bond of this.bonds.values()) {
-            bonds_xml += bond.getSelfClosingTag(padding2);
+            bonds_xml += bond.toXML(padding2);
         }
         if (bonds_xml != "") {
             bonds_xml = (0, xml_js_1.getTag)(bonds_xml, "bondArray", undefined, padding1, true);
@@ -510,10 +509,58 @@ class Molecule extends classes_js_1.NodeWithNodes {
         // DOSCMethod
         let dOSCMethod_xml = "";
         if (this.dOSCMethod) {
-            dOSCMethod_xml = this.dOSCMethod.getSelfClosingTag(padding1);
+            dOSCMethod_xml = this.dOSCMethod.toXML(padding1);
         }
         return (0, xml_js_1.getTag)(atoms_xml + bonds_xml + properties_xml + energyTransferModel_xml + dOSCMethod_xml, tagName, this.attributes, padding0, true);
     }
 }
 exports.Molecule = Molecule;
+/**
+ * A class for representing a MoleculeRef.
+ */
+class MoleculeRef extends xml_js_1.NodeWithNodes {
+    /**
+     * A reference to the molecules.
+     */
+    molecules;
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} tagName The tag name.
+     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {Map<string, Molecule>} molecules The molecules.
+     */
+    constructor(attributes, tagName, molecule, molecules) {
+        super(attributes, tagName);
+        this.nodes.set(0, molecule);
+        this.molecules = molecules;
+    }
+    getMoleculeAbb() {
+        return this.nodes.get(0);
+    }
+    /**
+     * A convenience method to get the ref (the molecule ID) of the transition state.
+     * @returns The ref of the transition state.
+     */
+    getRef() {
+        let s = this.getMoleculeAbb().attributes.get("ref");
+        if (s == null) {
+            throw new Error('Attribute "ref" is undefined.');
+        }
+        return s;
+    }
+    /**
+     * A convenience method to get the molecule.
+     * @returns {Molecule} The molecule.
+     * @throws An error if the molecule is not found.
+     */
+    getMolecule() {
+        let ref = this.getRef();
+        let molecule = this.molecules.get(ref);
+        if (molecule == null) {
+            throw new Error(`Molecule with ref ${ref} not found in molecules`);
+        }
+        return molecule;
+    }
+}
+exports.MoleculeRef = MoleculeRef;
 //# sourceMappingURL=molecule.js.map

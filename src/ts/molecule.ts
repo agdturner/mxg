@@ -1,14 +1,10 @@
 import {
-    TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode
-} from './classes.js';
+    getEndTag, getStartTag, getTag, TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode
+} from './xml.js';
 
 import {
     mapToString
-} from './functions.js';
-
-import {
-    getEndTag, getStartTag, getTag
-} from './xml.js';
+} from './util.js';
 
 /**
  * A class for representing an atom.
@@ -534,7 +530,7 @@ export class Molecule extends NodeWithNodes {
         // Atoms
         let atoms_xml: string = "";
         for (let atom of this.atoms.values()) {
-            atoms_xml += atom.getSelfClosingTag(padding2);
+            atoms_xml += atom.toXML(padding2);
         }
         if (this.atoms.size > 1) {
             if (atoms_xml != "") {
@@ -544,7 +540,7 @@ export class Molecule extends NodeWithNodes {
         // Bonds
         let bonds_xml: string = "";
         for (let bond of this.bonds.values()) {
-            bonds_xml += bond.getSelfClosingTag(padding2);
+            bonds_xml += bond.toXML(padding2);
         }
         if (bonds_xml != "") {
             bonds_xml = getTag(bonds_xml, "bondArray", undefined, padding1, true);
@@ -568,9 +564,63 @@ export class Molecule extends NodeWithNodes {
         // DOSCMethod
         let dOSCMethod_xml: string = "";
         if (this.dOSCMethod) {
-            dOSCMethod_xml = this.dOSCMethod.getSelfClosingTag(padding1);
+            dOSCMethod_xml = this.dOSCMethod.toXML(padding1);
         }
         return getTag(atoms_xml + bonds_xml + properties_xml + energyTransferModel_xml + dOSCMethod_xml,
             tagName, this.attributes, padding0, true);
+    }
+}
+
+/**
+ * A class for representing a MoleculeRef.
+ */
+export class MoleculeRef extends NodeWithNodes {
+
+    /**
+     * A reference to the molecules.
+     */
+    molecules: Map<string, Molecule>
+
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {string} tagName The tag name.
+     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
+     * @param {Map<string, Molecule>} molecules The molecules.
+     */
+    constructor(attributes: Map<string, string>, tagName: string, molecule: TagWithAttributes,
+        molecules: Map<string, Molecule>) {
+        super(attributes, tagName);
+        this.nodes.set(0, molecule);
+        this.molecules = molecules;
+    }
+
+    getMoleculeAbb(): TagWithAttributes {
+        return this.nodes.get(0) as TagWithAttributes;
+    }
+
+    /**
+     * A convenience method to get the ref (the molecule ID) of the transition state.
+     * @returns The ref of the transition state.
+     */
+    getRef(): string {
+        let s: string | undefined = this.getMoleculeAbb().attributes.get("ref");
+        if (s == null) {
+            throw new Error('Attribute "ref" is undefined.');
+        }
+        return s;
+    }
+
+    /**
+     * A convenience method to get the molecule.
+     * @returns {Molecule} The molecule.
+     * @throws An error if the molecule is not found.
+     */
+    getMolecule(): Molecule {
+        let ref: string = this.getRef();
+        let molecule: Molecule | undefined = this.molecules.get(ref);
+        if (molecule == null) {
+            throw new Error(`Molecule with ref ${ref} not found in molecules`);
+        }
+        return molecule;
     }
 }
