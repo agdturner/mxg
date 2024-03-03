@@ -610,8 +610,9 @@ function initConditions(xml: XMLDocument): void {
     let pTs: PTpair[] = [];
     for (let i = 0; i < xml_PTPairs.length; i++) {
         pTs.push(new PTpair(getAttributes(xml_PTPairs[i])));
+        //console.log(pTs[i].toString()); // For debugging.
     }
-    conditions = new Conditions(getAttributes(xml_conditions), bathGas, new PTs(new Map<string, string>, pTs));
+    conditions = new Conditions(getAttributes(xml_conditions), bathGas, new PTs(getAttributes(xml_PTs), pTs));
 }
 
 let modelParameters: ModelParameters;
@@ -1308,13 +1309,13 @@ function displayConditions(): void {
     if (bathGas_element != null) {
         bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     }
-    let PTs_element: HTMLElement | null = document.getElementById("PT_table");
+    let pTs_element: HTMLElement | null = document.getElementById("PT_table");
     let table: string = getTH(["P", "T"]);
-    if (PTs_element != null) {
+    if (pTs_element != null) {
         conditions.getPTs().pTpairs.forEach(function (pTpair) {
             table += getTR(getTD(pTpair.P.toString()) + getTD(pTpair.T.toString()));
         });
-        PTs_element.innerHTML = table;
+        pTs_element.innerHTML = table;
     }
 }
 
@@ -1325,7 +1326,7 @@ function displayModelParameters(): void {
     let modelParameters_element: HTMLElement | null = document.getElementById("modelParameters_table");
     let table: string = getTH(["Parameter", "Value"]);
     table += getTR(getTD("Grain Size") + getTD(modelParameters.getGrainSize().value.toString()));
-    table += getTR(getTD("Energy Above The Top Hill") + getTD(modelParameters.getEnergyAboveTheTopHill().toString()));
+    table += getTR(getTD("Energy Above The Top Hill") + getTD(modelParameters.getEnergyAboveTheTopHill().value.toString()));
 
     if (modelParameters_element != null) {
         modelParameters_element.innerHTML = table;

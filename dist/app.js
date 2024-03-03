@@ -510,8 +510,9 @@ function initConditions(xml) {
     let pTs = [];
     for (let i = 0; i < xml_PTPairs.length; i++) {
         pTs.push(new conditions_js_1.PTpair((0, xml_js_1.getAttributes)(xml_PTPairs[i])));
+        //console.log(pTs[i].toString()); // For debugging.
     }
-    conditions = new conditions_js_1.Conditions((0, xml_js_1.getAttributes)(xml_conditions), bathGas, new conditions_js_1.PTs(new Map, pTs));
+    conditions = new conditions_js_1.Conditions((0, xml_js_1.getAttributes)(xml_conditions), bathGas, new conditions_js_1.PTs((0, xml_js_1.getAttributes)(xml_PTs), pTs));
 }
 let modelParameters;
 /**
@@ -1198,13 +1199,13 @@ function displayConditions() {
     if (bathGas_element != null) {
         bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     }
-    let PTs_element = document.getElementById("PT_table");
+    let pTs_element = document.getElementById("PT_table");
     let table = (0, html_js_1.getTH)(["P", "T"]);
-    if (PTs_element != null) {
+    if (pTs_element != null) {
         conditions.getPTs().pTpairs.forEach(function (pTpair) {
             table += (0, html_js_1.getTR)((0, html_js_1.getTD)(pTpair.P.toString()) + (0, html_js_1.getTD)(pTpair.T.toString()));
         });
-        PTs_element.innerHTML = table;
+        pTs_element.innerHTML = table;
     }
 }
 /**
@@ -1214,7 +1215,7 @@ function displayModelParameters() {
     let modelParameters_element = document.getElementById("modelParameters_table");
     let table = (0, html_js_1.getTH)(["Parameter", "Value"]);
     table += (0, html_js_1.getTR)((0, html_js_1.getTD)("Grain Size") + (0, html_js_1.getTD)(modelParameters.getGrainSize().value.toString()));
-    table += (0, html_js_1.getTR)((0, html_js_1.getTD)("Energy Above The Top Hill") + (0, html_js_1.getTD)(modelParameters.getEnergyAboveTheTopHill().toString()));
+    table += (0, html_js_1.getTR)((0, html_js_1.getTD)("Energy Above The Top Hill") + (0, html_js_1.getTD)(modelParameters.getEnergyAboveTheTopHill().value.toString()));
     if (modelParameters_element != null) {
         modelParameters_element.innerHTML = table;
     }

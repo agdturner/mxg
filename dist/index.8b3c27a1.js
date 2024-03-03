@@ -1012,7 +1012,7 @@ let conditions;
     // Process each PTpair.
     let pTs = [];
     for(let i = 0; i < xml_PTPairs.length; i++)pTs.push(new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i])));
-    conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions), bathGas, new (0, _conditionsJs.PTs)(new Map, pTs));
+    conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions), bathGas, new (0, _conditionsJs.PTs)((0, _xmlJs.getAttributes)(xml_PTs), pTs));
 }
 let modelParameters;
 /**
@@ -1572,16 +1572,16 @@ let control;
  */ function displayConditions() {
     let bathGas_element = document.getElementById("bathGas");
     if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
-    let PTs_element = document.getElementById("PT_table");
+    let pTs_element = document.getElementById("PT_table");
     let table = (0, _htmlJs.getTH)([
         "P",
         "T"
     ]);
-    if (PTs_element != null) {
+    if (pTs_element != null) {
         conditions.getPTs().pTpairs.forEach(function(pTpair) {
             table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)(pTpair.P.toString()) + (0, _htmlJs.getTD)(pTpair.T.toString()));
         });
-        PTs_element.innerHTML = table;
+        pTs_element.innerHTML = table;
     }
 }
 /**
@@ -1593,7 +1593,7 @@ let control;
         "Value"
     ]);
     table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Grain Size") + (0, _htmlJs.getTD)(modelParameters.getGrainSize().value.toString()));
-    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Energy Above The Top Hill") + (0, _htmlJs.getTD)(modelParameters.getEnergyAboveTheTopHill().toString()));
+    table += (0, _htmlJs.getTR)((0, _htmlJs.getTD)("Energy Above The Top Hill") + (0, _htmlJs.getTD)(modelParameters.getEnergyAboveTheTopHill().value.toString()));
     if (modelParameters_element != null) modelParameters_element.innerHTML = table;
 }
 /**
@@ -2966,15 +2966,15 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         this.products = products;
         if (mCRCMethod != undefined) {
             this.addNode(mCRCMethod);
-            this.index.set(mCRCMethod.tagName, this.index.size);
+            this.index.set(MCRCMethod.tagName, this.index.size);
         }
         if (transitionState) {
             this.addNode(transitionState);
-            this.index.set(transitionState.tagName, this.index.size);
+            this.index.set(TransitionState.tagName, this.index.size);
         }
         if (tunneling) {
             this.addNode(tunneling);
-            this.index.set(tunneling.tagName, this.index.size);
+            this.index.set(Tunneling.tagName, this.index.size);
         }
     }
     getTransitionState() {
@@ -3142,7 +3142,7 @@ class PTpair extends (0, _xmlJs.TagWithAttributes) {
     static{
         /**
      * The tag name.
-     */ this.tagName = "PTpair";
+     */ this.tagName = "me:PTpair";
     }
     /**
      * @param {Map<string, string>} attributes The attributes.
@@ -3167,8 +3167,8 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
      * @param {PTpair[]} PTpairs The PT pairs.
      */ constructor(attributes, pTpairs){
         super(attributes, PTs.tagName);
-        pTpairs.forEach((v)=>{
-            this.addNode(v);
+        pTpairs.forEach((pTpair)=>{
+            this.addNode(pTpair);
         });
         this.pTpairs = pTpairs;
     }

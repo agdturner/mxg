@@ -9,7 +9,7 @@ class PTpair extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static tagName = "PTpair";
+    static tagName = "me:PTpair";
     /**
      * The pressure also stored as a string in the attributes.
      */
@@ -58,8 +58,8 @@ class PTs extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, pTpairs) {
         super(attributes, PTs.tagName);
-        pTpairs.forEach((v) => {
-            this.addNode(v);
+        pTpairs.forEach((pTpair) => {
+            this.addNode(pTpair);
         });
         this.pTpairs = pTpairs;
     }

@@ -441,15 +441,15 @@ export class Reaction extends NodeWithNodes {
         this.products = products;
         if (mCRCMethod != undefined) {
             this.addNode(mCRCMethod);
-            this.index.set(mCRCMethod.tagName, this.index.size);
+            this.index.set(MCRCMethod.tagName, this.index.size);
         }
         if (transitionState) {
             this.addNode(transitionState);
-            this.index.set(transitionState.tagName, this.index.size);
+            this.index.set(TransitionState.tagName, this.index.size);
         }
         if (tunneling) {
             this.addNode(tunneling);
-            this.index.set(tunneling.tagName, this.index.size);
+            this.index.set(Tunneling.tagName, this.index.size);
         }
     }
 

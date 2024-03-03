@@ -14,7 +14,7 @@ export class PTpair extends TagWithAttributes {
     /**
      * The tag name.
      */
-    static tagName: string = "PTpair";
+    static tagName: string = "me:PTpair";
 
     /**
      * The pressure also stored as a string in the attributes.
@@ -67,8 +67,8 @@ export class PTs extends NodeWithNodes {
      */
     constructor(attributes: Map<string, string>, pTpairs: PTpair[]) {
         super(attributes, PTs.tagName);
-        pTpairs.forEach((v) => {
-            this.addNode(v);
+        pTpairs.forEach((pTpair) => {
+            this.addNode(pTpair);
         });
         this.pTpairs = pTpairs;
     }
