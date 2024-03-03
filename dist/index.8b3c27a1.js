@@ -2088,9 +2088,8 @@ class NodeWithNodes extends TagWithAttributes {
             if (v instanceof NodeWithNodes) s += v.toXML(pad, padding1);
             else if (v instanceof TagWithAttributes) s += v.toXML(padding1);
             else s += v.toXML(padding1);
-            s += v.toXML(padding1);
         });
-        return getTag(s, this.tagName, this.attributes, padding, false);
+        return getTag(s, this.tagName, this.attributes, padding, true);
     }
 }
 function getStartTag(tagName, attributes, padding) {

@@ -327,9 +327,8 @@ export class NodeWithNodes extends TagWithAttributes {
             } else {
                 s += (v as Tag).toXML(padding1);
             }
-            s += v.toXML(padding1);
         });
-        return getTag(s, this.tagName, this.attributes, padding, false);
+        return getTag(s, this.tagName, this.attributes, padding, true);
     }
 }
 
