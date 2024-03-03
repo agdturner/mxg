@@ -257,15 +257,6 @@ class ZhuNakamuraCrossing extends MCRCMethod {
         this.exponentialProductDiabat_B = exponentialProductDiabat_B;
         this.exponentialProductDiabat_DE = exponentialProductDiabat_DE;
     }
-    toString() {
-        return `ZhuNakamuraCrossing(${super.toString()}, ` +
-            `harmonicReactantDiabat_FC(${this.harmonicReactantDiabat_FC.toString()}), ` +
-            `harmonicReactantDiabat_XO(${this.harmonicReactantDiabat_XO.toString()}), ` +
-            `harmonicProductDiabat_DE(${this.harmonicProductDiabat_DE.toString()}), ` +
-            `exponentialProductDiabat_A(${this.exponentialProductDiabat_A.toString()}), ` +
-            `exponentialProductDiabat_B(${this.exponentialProductDiabat_B.toString()}), ` +
-            `exponentialProductDiabat_DE(${this.exponentialProductDiabat_DE.toString()}))`;
-    }
 }
 exports.ZhuNakamuraCrossing = ZhuNakamuraCrossing;
 /**
@@ -356,18 +347,18 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     id;
     /**
-     * The reactants in the reaction.
+     * The reactants.
      */
     reactants;
     /**
-     * The products of the reaction.
+     * The products.
      */
     products;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
-     * @param {Map<string, Reactant>} reactants The reactants in the reaction.
-     * @param {Map<string, Product>} products The products of the reaction.
+     * @param {Reactant[]} reactants The reactants in the reaction.
+     * @param {Product[]} products The products of the reaction.
      * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
      * @param {TransitionState | undefined} transitionState The transition state (optional).
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
@@ -377,7 +368,15 @@ class Reaction extends xml_js_1.NodeWithNodes {
         this.index = new Map();
         this.id = id;
         this.reactants = reactants;
+        reactants.forEach(reactant => {
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, this.index.size);
+        });
         this.products = products;
+        products.forEach(product => {
+            this.addNode(product);
+            this.addToIndex(Product.tagName, this.index.size);
+        });
         if (mCRCMethod != undefined) {
             this.addNode(mCRCMethod);
             this.index.set(MCRCMethod.tagName, this.index.size);
@@ -389,6 +388,26 @@ class Reaction extends xml_js_1.NodeWithNodes {
         if (tunneling) {
             this.addNode(tunneling);
             this.index.set(Tunneling.tagName, this.index.size);
+        }
+    }
+    /**
+     * Add a node to the index.
+     * @param {string} key The key.
+     * @param {number} value The value.
+     */
+    addToIndex(key, value) {
+        let value0 = this.index.get(key);
+        if (value0 == undefined) {
+            this.index.set(key, value);
+        }
+        else if (typeof value0 === 'number') {
+            let map = new Map();
+            map.set(key, value0);
+            map.set(key, value);
+            this.index.set(key, map);
+        }
+        else {
+            value0.set(key, value);
         }
     }
     getTransitionState() {
@@ -417,28 +436,28 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @returns The label of the reactants.
      */
     getReactantsLabel() {
-        return Array.from(this.reactants.values()).map(reactant => reactant.getRef()).join(' + ');
+        return this.reactants.map(reactant => reactant.getRef()).join(' + ');
     }
     /**
      * Get the combined energy of the reactants.
      * @returns The combined energy of the reactants.
      */
     getReactantsEnergy() {
-        return Array.from(this.reactants.values()).map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        return this.reactants.map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
     }
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */
     getProductsLabel() {
-        return Array.from(this.products.values()).map(product => product.getRef()).join(' + ');
+        return this.products.map(product => product.getRef()).join(' + ');
     }
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
     getProductsEnergy() {
-        return Array.from(this.products.values()).map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        return this.products.map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
     }
     /**
      * Get the label of the reaction.

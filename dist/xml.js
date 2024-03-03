@@ -303,7 +303,6 @@ class NodeWithNodes extends TagWithAttributes {
             else {
                 s += v.toXML(padding1);
             }
-            //s += v.toXML(padding1);
         });
         return getTag(s, this.tagName, this.attributes, padding, true);
     }

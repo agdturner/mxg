@@ -299,7 +299,7 @@ export class NodeWithNodes extends TagWithAttributes {
     /**
      * @returns A string representation.
      */
-    toString(): string {
+    override toString(): string {
         let s = super.toString();
         this.nodes.forEach((v, k) => {
             s += `, ${v.toString()}`;

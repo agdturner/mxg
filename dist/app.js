@@ -145,87 +145,94 @@ function initMolecules(xml) {
         //});
         //console.log("moleculeTagNames:");
         //moleculeTagNames.forEach(x => console.log(x));
-        // Set atoms.
-        const atoms = new Map();
-        // Sometimes there is an individual atom not in an atomArray.
-        //let xml_atomArray = xml_molecules[i].getElementsByTagName("atomArray")[0];
-        //if (xml_atomArray != null) {
+        // Init atomsNode.
+        let atomsNode;
+        // There can be an individual atom not in an atom array, or an attom array.
+        let xml_atomArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.AtomArray.tagName);
+        if (xml_atomArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
+        }
+        if (xml_atomArrays.length == 1) {
+            let xml_atomArray = xml_atomArrays[0];
+            let xml_atoms = xml_atomArray.getElementsByTagName(molecule_js_1.Atom.tagName);
+            if (xml_atoms.length < 2) {
+                throw new Error("Expecting 2 or more atoms in " + molecule_js_1.AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
+            }
+            let atoms = [];
+            for (let j = 0; j < xml_atoms.length; j++) {
+                atoms.push(new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j])));
+            }
+            atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray), atoms);
+            moleculeTagNames.delete(molecule_js_1.AtomArray.tagName);
+        }
+        else {
+            let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
+            if (xml_atoms.length == 1) {
+                atomsNode = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0]));
+            }
+            else if (xml_atoms.length > 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + molecule_js_1.AtomArray.tagName + "?");
+            }
+        }
         moleculeTagNames.delete(molecule_js_1.Atom.tagName);
-        moleculeTagNames.delete("atomArray");
-        let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
-        for (let j = 0; j < xml_atoms.length; j++) {
-            let attribs = (0, xml_js_1.getAttributes)(xml_atoms[j]);
-            let id = attribs.get("id");
-            if (id != undefined) {
-                let atom = new molecule_js_1.Atom(attribs);
-                //console.log(atom.toString());
-                atoms.set(id, atom);
+        // Init bondsNode.
+        let bondsNode;
+        // There can be an individual bond not in a bond array, or a bond array.
+        let xml_bondArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.BondArray.tagName);
+        if (xml_bondArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
+        }
+        if (xml_bondArrays.length == 1) {
+            let xml_bondArray = xml_bondArrays[0];
+            let xml_bonds = xml_bondArray.getElementsByTagName(molecule_js_1.Bond.tagName);
+            // There may be only 1 bond in a BondArray.
+            let bonds = [];
+            for (let j = 0; j < xml_bonds.length; j++) {
+                bonds.push(new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[j])));
+            }
+            bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArray), bonds);
+            moleculeTagNames.delete(molecule_js_1.BondArray.tagName);
+        }
+        else {
+            let xml_bonds = xml_molecules[i].getElementsByTagName(molecule_js_1.Bond.tagName);
+            if (xml_bonds.length == 1) {
+                bondsNode = new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[0]));
+            }
+            else if (xml_bonds.length > 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + molecule_js_1.BondArray.tagName + "?");
             }
         }
-        //}
-        // Read bondArray.
         moleculeTagNames.delete(molecule_js_1.Bond.tagName);
-        moleculeTagNames.delete("bondArray");
-        const bonds = new Map();
-        let xml_bonds = xml_molecules[i].getElementsByTagName(molecule_js_1.Bond.tagName);
-        for (let j = 0; j < xml_bonds.length; j++) {
-            let attribs = (0, xml_js_1.getAttributes)(xml_bonds[j]);
-            let id = attribs.get("atomRefs2");
-            if (id != undefined) {
-                let bond = new molecule_js_1.Bond(attribs);
-                //console.log(bond.toString());
-                bonds.set(id, bond);
-            }
+        // Init propertiesNode.
+        let propertiesNode;
+        // There can be an individual property not in a propertyList.
+        let xml_PLs = xml_molecules[i].getElementsByTagName(molecule_js_1.PropertyList.tagName);
+        if (xml_PLs.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.PropertyList.tagName + " but finding " + xml_PLs.length + "!");
         }
-        // Read propertyList.
-        const properties = new Map();
-        // Sometimes there is a single property not in propertyList!
-        //let xml_propertyList = xml_molecules[i].getElementsByTagName("propertyList")[0];
-        //if (xml_propertyList != null) {
-        //    let xml_properties = xml_propertyList.getElementsByTagName("property");
+        if (xml_PLs.length == 1) {
+            let xml_PL = xml_PLs[0];
+            let xml_Ps = xml_PL.getElementsByTagName(molecule_js_1.Property.tagName);
+            if (xml_Ps.length < 2) {
+                throw new Error("Expecting 2 or more " + molecule_js_1.Property.tagName + " in " + molecule_js_1.PropertyList.tagName + ", but finding " + xml_Ps.length + "!");
+            }
+            let properties = new Map();
+            for (let j = 0; j < xml_Ps.length; j++) {
+                let property = getProperty(xml_Ps[j]);
+                let dictRef = property.attributes.get("dictRef");
+                properties.set(dictRef, property);
+            }
+            propertiesNode = new molecule_js_1.PropertyList((0, xml_js_1.getAttributes)(xml_PL), properties);
+            moleculeTagNames.delete(molecule_js_1.PropertyList.tagName);
+        }
+        else {
+            let xml_Ps = xml_molecules[i].getElementsByTagName(molecule_js_1.Property.tagName);
+            if (xml_Ps.length > 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Property.tagName + " but finding " + xml_Ps.length + ". Should these be in a " + molecule_js_1.PropertyList.tagName + "?");
+            }
+            propertiesNode = getProperty(xml_Ps[0]);
+        }
         moleculeTagNames.delete(molecule_js_1.Property.tagName);
-        moleculeTagNames.delete("propertyList");
-        let xml_properties = xml_molecules[i].getElementsByTagName(molecule_js_1.Property.tagName);
-        for (let j = 0; j < xml_properties.length; j++) {
-            let attribs = (0, xml_js_1.getAttributes)(xml_properties[j]);
-            let children = xml_properties[j].children;
-            if (children.length != 1) {
-                throw new Error("Expecting 1 child but finding " + children.length);
-            }
-            let nodeAttributes = (0, xml_js_1.getAttributes)(children[0]);
-            let nodeName = children[0].nodeName; // Expecting scalar or array
-            let textContent = children[0].textContent;
-            if (textContent == null) {
-                console.error("nodeName");
-                throw new Error('textContent is null');
-            }
-            textContent = textContent.trim();
-            let dictRef = attribs.get("dictRef");
-            //console.log("dictRef=" + dictRef);
-            if (dictRef == null) {
-                throw new Error('dictRef is null');
-            }
-            //console.log("fcnn=" + fcnn);
-            if (nodeName == "scalar") {
-                moleculeTagNames.delete("scalar");
-                let value = parseFloat(textContent);
-                properties.set(dictRef, new molecule_js_1.Property(attribs, new xml_js_1.NumberNode(nodeAttributes, nodeName, value)));
-                if (dictRef === "me:ZPE") {
-                    minMoleculeEnergy = Math.min(minMoleculeEnergy, value);
-                    maxMoleculeEnergy = Math.max(maxMoleculeEnergy, value);
-                }
-            }
-            else if (nodeName == "array") {
-                moleculeTagNames.delete("array");
-                properties.set(dictRef, new molecule_js_1.Property(attribs, new xml_js_1.NumberArrayNode(nodeAttributes, nodeName, (0, util_js_2.toNumberArray)(textContent.split(/\s+/)), " ")));
-            }
-            else if (nodeName == "matrix") {
-                throw new Error("Unexpected nodeName: " + nodeName);
-            }
-            else {
-                throw new Error("Unexpected nodeName: " + nodeName);
-            }
-        }
         let els;
         // Read energyTransferModel
         moleculeTagNames.delete(molecule_js_1.EnergyTransferModel.tagName);
@@ -261,13 +268,11 @@ function initMolecules(xml) {
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
-            moleculeTagNames.forEach(x => console.log(x));
             console.warn("There are additional unexpected moleculeTagNames:");
-            moleculeTagNames.forEach(x => console.error(x));
-            console.error("Unexpected tags in molecule.");
+            moleculeTagNames.forEach(x => console.warn(x));
             //throw new Error("Unexpected tags in molecule.");
         }
-        let molecule = new molecule_js_1.Molecule(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod);
+        let molecule = new molecule_js_1.Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
@@ -298,6 +303,40 @@ function initMolecules(xml) {
             });
         }
     });
+}
+function getProperty(xml_property) {
+    let attribs = (0, xml_js_1.getAttributes)(xml_property);
+    let children = xml_property.children;
+    if (children.length != 1) {
+        throw new Error("Expecting 1 child but finding " + children.length);
+    }
+    let nodeAttributes = (0, xml_js_1.getAttributes)(children[0]);
+    let nodeName = children[0].nodeName; // Expecting scalar or array
+    let textContent = children[0].textContent;
+    if (textContent == null) {
+        console.error("nodeName");
+        throw new Error('textContent is null');
+    }
+    textContent = textContent.trim();
+    let dictRef = attribs.get("dictRef");
+    //console.log("dictRef=" + dictRef);
+    if (dictRef == null) {
+        throw new Error('dictRef is null');
+    }
+    //console.log("fcnn=" + fcnn);
+    if (nodeName == molecule_js_1.PropertyScalar.tagName) {
+        let value = parseFloat(textContent);
+        return new molecule_js_1.Property(attribs, new molecule_js_1.PropertyScalar(nodeAttributes, value));
+    }
+    else if (nodeName == molecule_js_1.PropertyArray.tagName) {
+        return new molecule_js_1.Property(attribs, new molecule_js_1.PropertyArray(nodeAttributes, (0, util_js_2.toNumberArray)(textContent.split(/\s+/)), " "));
+    }
+    else if (nodeName == "matrix") {
+        throw new Error("Unexpected nodeName: " + nodeName);
+    }
+    else {
+        throw new Error("Unexpected nodeName: " + nodeName);
+    }
 }
 let inputElement;
 //function reload() {
@@ -731,24 +770,22 @@ function initReactions(xml) {
         if (reactionID != null) {
             console.log("id=" + reactionID);
             // Load reactants.
-            let reactants = new Map([]);
+            let reactants = [];
             let xml_reactants = xml_reactions[i].getElementsByTagName(reaction_js_1.Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for (let j = 0; j < xml_reactants.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
                 let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
-                let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                reactants.set(moleculeID, new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
+                reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load products.
-            let products = new Map([]);
+            let products = [];
             let xml_products = xml_reactions[i].getElementsByTagName(reaction_js_1.Product.tagName);
             //console.log("xml_products.length=" + xml_products.length);
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
                 let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
-                let moleculeID = (0, xml_js_1.getAttribute)(xml_molecule, "ref");
-                products.set(moleculeID, new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
+                products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -780,7 +817,7 @@ function initReactions(xml) {
                                 }
                             }
                             let tInfinity;
-                            let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName("me:TInfinity");
+                            let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
                             if (xml_tInfinity != null) {
                                 if (xml_tInfinity[0] != null) {
                                     let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
@@ -788,7 +825,7 @@ function initReactions(xml) {
                                 }
                             }
                             let nInfinity;
-                            let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName("me:nInfinity");
+                            let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
                             if (xml_nInfinity != null) {
                                 if (xml_nInfinity[0] != null) {
                                     let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
@@ -805,10 +842,10 @@ function initReactions(xml) {
             }
             // Load transition state.
             //console.log("Load  transition state...");
-            let xml_transitionState = xml_reactions[i].getElementsByTagName('me:transitionState');
+            let xml_transitionState = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
             let transitionState;
             if (xml_transitionState.length > 0) {
-                let xml_molecule = xml_transitionState[0].getElementsByTagName('molecule')[0];
+                let xml_molecule = xml_transitionState[0].getElementsByTagName(molecule_js_1.Molecule.tagName)[0];
                 let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
                 transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules);
                 //let moleculeID: string = getAttribute(xml_molecule, "ref");
@@ -816,7 +853,7 @@ function initReactions(xml) {
                 //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
             // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName('me:tunneling');
+            let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
             let tunneling;
             if (xml_tunneling.length > 0) {
                 tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
@@ -1084,12 +1121,12 @@ function displayMoleculesTable() {
         }
         //console.log("energy=" + energy);
         let rotationConstants = "";
-        let rotConsts = molecule.getRotationConstants();
+        let rotConsts = molecule.getRotConsts();
         if (rotConsts != undefined) {
             rotationConstants = (0, util_js_2.arrayToString)(rotConsts, " ");
         }
         let vibrationFrequencies = "";
-        let vibFreqs = molecule.getVibrationFrequencies();
+        let vibFreqs = molecule.getVibFreqs();
         if (vibFreqs != undefined) {
             vibrationFrequencies = (0, util_js_2.arrayToString)(vibFreqs, " ");
         }
@@ -1156,6 +1193,7 @@ function displayReactionsTable() {
                 if (mCRCMethod.attributes.get("name") == "RRKM") {
                 }
                 else {
+                    console.log("Unexpected mCRCMethod: " + mCRCMethod);
                     throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
                 }
             }
@@ -1339,7 +1377,8 @@ window.saveXML = function () {
     level = 2;
     let moleculeList = "";
     molecules.forEach(function (molecule, id) {
-        moleculeList += molecule.toXML("molecule", pad, level);
+        moleculeList += molecule.toXML(pad, padding2);
+        //moleculeList += molecule.toXML("molecule", pad, level);
     });
     moleculeList = (0, xml_js_1.getTag)(moleculeList, "moleculeList", undefined, pad, true);
     // Create reactionList.

@@ -4,11 +4,11 @@ import {
 
 import {
     getAttribute, getFirstElement, getFirstChildNode, getNodeValue, getTag, getEndTag,
-    getAttributes, toHTML, getSingularElement, NumberArrayNode, NumberNode, TagWithAttributes
+    getAttributes, toHTML, getSingularElement, TagWithAttributes
 } from './xml.js';
 
 import {
-    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef
+    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef, AtomArray, BondArray, PropertyList, PropertyScalar, PropertyArray
 } from './molecule.js';
 
 import {
@@ -226,89 +226,93 @@ function initMolecules(xml: XMLDocument): void {
         //console.log("moleculeTagNames:");
         //moleculeTagNames.forEach(x => console.log(x));
 
-        // Set atoms.
-        const atoms: Map<string, Atom> = new Map();
-        // Sometimes there is an individual atom not in an atomArray.
-        //let xml_atomArray = xml_molecules[i].getElementsByTagName("atomArray")[0];
-        //if (xml_atomArray != null) {
+        // Init atomsNode.
+        let atomsNode: AtomArray | Atom | undefined;
+        // There can be an individual atom not in an atom array, or an attom array.
+        let xml_atomArrays = xml_molecules[i].getElementsByTagName(AtomArray.tagName);
+        if (xml_atomArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
+        }
+        if (xml_atomArrays.length == 1) {
+            let xml_atomArray = xml_atomArrays[0];
+            let xml_atoms: HTMLCollectionOf<Element> = xml_atomArray.getElementsByTagName(Atom.tagName);
+            if (xml_atoms.length < 2) {
+                throw new Error("Expecting 2 or more atoms in " + AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
+            }
+            let atoms: Atom[] = [];
+            for (let j = 0; j < xml_atoms.length; j++) {
+                atoms.push(new Atom(getAttributes(xml_atoms[j])));
+            }
+            atomsNode = new AtomArray(getAttributes(xml_atomArray), atoms);
+            moleculeTagNames.delete(AtomArray.tagName);
+        } else {
+            let xml_atoms: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Atom.tagName);
+            if (xml_atoms.length == 1) {
+                atomsNode = new Atom(getAttributes(xml_atoms[0]));
+            } else if (xml_atoms.length > 1) {
+                throw new Error("Expecting 1 " + Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + AtomArray.tagName + "?");
+            }
+        }
         moleculeTagNames.delete(Atom.tagName);
-        moleculeTagNames.delete("atomArray");
 
-        let xml_atoms: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Atom.tagName);
-        for (let j = 0; j < xml_atoms.length; j++) {
-            let attribs: Map<string, string> = getAttributes(xml_atoms[j]);
-            let id: string | undefined = attribs.get("id");
-            if (id != undefined) {
-                let atom = new Atom(attribs);
-                //console.log(atom.toString());
-                atoms.set(id, atom);
+        // Init bondsNode.
+        let bondsNode: BondArray | Bond | undefined;
+
+        // There can be an individual bond not in a bond array, or a bond array.
+        let xml_bondArrays = xml_molecules[i].getElementsByTagName(BondArray.tagName);
+        if (xml_bondArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
+        }
+        if (xml_bondArrays.length == 1) {
+            let xml_bondArray = xml_bondArrays[0];
+            let xml_bonds: HTMLCollectionOf<Element> = xml_bondArray.getElementsByTagName(Bond.tagName);
+            // There may be only 1 bond in a BondArray.
+            let bonds: Bond[] = [];
+            for (let j = 0; j < xml_bonds.length; j++) {
+                bonds.push(new Bond(getAttributes(xml_bonds[j])));
+            }
+            bondsNode = new BondArray(getAttributes(xml_bondArray), bonds);
+            moleculeTagNames.delete(BondArray.tagName);
+        } else {
+            let xml_bonds: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Bond.tagName);
+            if (xml_bonds.length == 1) {
+                bondsNode = new Bond(getAttributes(xml_bonds[0]));
+            } else if (xml_bonds.length > 1) {
+                throw new Error("Expecting 1 " + Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + BondArray.tagName + "?");
             }
         }
-        //}
-        // Read bondArray.
         moleculeTagNames.delete(Bond.tagName);
-        moleculeTagNames.delete("bondArray");
-        const bonds: Map<string, Bond> = new Map();
-        let xml_bonds: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Bond.tagName);
-        for (let j = 0; j < xml_bonds.length; j++) {
-            let attribs: Map<string, string> = getAttributes(xml_bonds[j]);
-            let id: string | undefined = attribs.get("atomRefs2");
-            if (id != undefined) {
-                let bond = new Bond(attribs);
-                //console.log(bond.toString());
-                bonds.set(id, bond);
-            }
-        }
-        // Read propertyList.
-        const properties: Map<string, Property> = new Map();
-        // Sometimes there is a single property not in propertyList!
-        //let xml_propertyList = xml_molecules[i].getElementsByTagName("propertyList")[0];
-        //if (xml_propertyList != null) {
-        //    let xml_properties = xml_propertyList.getElementsByTagName("property");
 
-        moleculeTagNames.delete(Property.tagName);
-        moleculeTagNames.delete("propertyList");
-        let xml_properties: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Property.tagName);
-        for (let j = 0; j < xml_properties.length; j++) {
-            let attribs: Map<string, string> = getAttributes(xml_properties[j]);
-            let children: HTMLCollectionOf<Element> = xml_properties[j].children;
-            if (children.length != 1) {
-                throw new Error("Expecting 1 child but finding " + children.length);
-            }
-            let nodeAttributes: Map<string, string> = getAttributes(children[0]);
-            let nodeName: string = children[0].nodeName; // Expecting scalar or array
-            let textContent: string | null = children[0].textContent;
-            if (textContent == null) {
-                console.error("nodeName");
-                throw new Error('textContent is null');
-            }
-            textContent = textContent.trim();
-            let dictRef: string | undefined = attribs.get("dictRef");
-            //console.log("dictRef=" + dictRef);
-            if (dictRef == null) {
-                throw new Error('dictRef is null');
-            }
-            //console.log("fcnn=" + fcnn);
-            if (nodeName == "scalar") {
-                moleculeTagNames.delete("scalar");
-                let value: number = parseFloat(textContent);
-                properties.set(dictRef, new Property(attribs,
-                    new NumberNode(nodeAttributes, nodeName, value)));
-                if (dictRef === "me:ZPE") {
-                    minMoleculeEnergy = Math.min(minMoleculeEnergy, value);
-                    maxMoleculeEnergy = Math.max(maxMoleculeEnergy, value);
-                }
-            } else if (nodeName == "array") {
-                moleculeTagNames.delete("array");
-                properties.set(dictRef, new Property(attribs,
-                    new NumberArrayNode(nodeAttributes, nodeName,
-                        toNumberArray(textContent.split(/\s+/)), " ")));
-            } else if (nodeName == "matrix") {
-                throw new Error("Unexpected nodeName: " + nodeName);
-            } else {
-                throw new Error("Unexpected nodeName: " + nodeName);
-            }
+        // Init propertiesNode.
+        let propertiesNode: PropertyList | Property | undefined;
+
+        // There can be an individual property not in a propertyList.
+        let xml_PLs = xml_molecules[i].getElementsByTagName(PropertyList.tagName);
+        if (xml_PLs.length > 1) {
+            throw new Error("Expecting 1 or 0 " + PropertyList.tagName + " but finding " + xml_PLs.length + "!");
         }
+        if (xml_PLs.length == 1) {
+            let xml_PL = xml_PLs[0];
+            let xml_Ps: HTMLCollectionOf<Element> = xml_PL.getElementsByTagName(Property.tagName);
+            if (xml_Ps.length < 2) {
+                throw new Error("Expecting 2 or more " + Property.tagName + " in " + PropertyList.tagName + ", but finding " + xml_Ps.length + "!");
+            }
+            let properties: Map<string, Property> = new Map();
+            for (let j = 0; j < xml_Ps.length; j++) {
+                let property: Property = getProperty(xml_Ps[j]);
+                let dictRef: string = property.attributes.get("dictRef") as string;
+                properties.set(dictRef, property);
+            }
+            propertiesNode = new PropertyList(getAttributes(xml_PL), properties);
+            moleculeTagNames.delete(PropertyList.tagName);
+        } else {
+            let xml_Ps: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(Property.tagName);
+            if (xml_Ps.length > 1) {
+                throw new Error("Expecting 1 " + Property.tagName + " but finding " + xml_Ps.length + ". Should these be in a " + PropertyList.tagName + "?");
+            }
+            propertiesNode = getProperty(xml_Ps[0]);
+        }
+        moleculeTagNames.delete(Property.tagName);
 
         let els: HTMLCollectionOf<Element> | null;
 
@@ -348,14 +352,12 @@ function initMolecules(xml: XMLDocument): void {
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
-            moleculeTagNames.forEach(x => console.log(x));
             console.warn("There are additional unexpected moleculeTagNames:");
-            moleculeTagNames.forEach(x => console.error(x));
-            console.error("Unexpected tags in molecule.");
+            moleculeTagNames.forEach(x => console.warn(x));
             //throw new Error("Unexpected tags in molecule.");
         }
 
-        let molecule = new Molecule(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod);
+        let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
@@ -385,6 +387,39 @@ function initMolecules(xml: XMLDocument): void {
             });
         }
     });
+}
+
+
+function getProperty(xml_property: Element): Property {
+    let attribs: Map<string, string> = getAttributes(xml_property);
+    let children: HTMLCollectionOf<Element> = xml_property.children;
+    if (children.length != 1) {
+        throw new Error("Expecting 1 child but finding " + children.length);
+    }
+    let nodeAttributes: Map<string, string> = getAttributes(children[0]);
+    let nodeName: string = children[0].nodeName; // Expecting scalar or array
+    let textContent: string | null = children[0].textContent;
+    if (textContent == null) {
+        console.error("nodeName");
+        throw new Error('textContent is null');
+    }
+    textContent = textContent.trim();
+    let dictRef: string | undefined = attribs.get("dictRef");
+    //console.log("dictRef=" + dictRef);
+    if (dictRef == null) {
+        throw new Error('dictRef is null');
+    }
+    //console.log("fcnn=" + fcnn);
+    if (nodeName == PropertyScalar.tagName) {
+        let value: number = parseFloat(textContent);
+        return new Property(attribs, new PropertyScalar(nodeAttributes, value));
+    } else if (nodeName == PropertyArray.tagName) {
+        return new Property(attribs, new PropertyArray(nodeAttributes, toNumberArray(textContent.split(/\s+/)), " "));
+    } else if (nodeName == "matrix") {
+        throw new Error("Unexpected nodeName: " + nodeName);
+    } else {
+        throw new Error("Unexpected nodeName: " + nodeName);
+    }
 }
 
 let inputElement: HTMLInputElement;
@@ -826,24 +861,22 @@ function initReactions(xml: XMLDocument): void {
         if (reactionID != null) {
             console.log("id=" + reactionID);
             // Load reactants.
-            let reactants: Map<string, Reactant> = new Map([]);
+            let reactants: Reactant[] = [];
             let xml_reactants: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for (let j = 0; j < xml_reactants.length; j++) {
-                let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);                
+                let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
                 let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
-                let moleculeID: string = getAttribute(xml_molecule, "ref");
-                reactants.set(moleculeID, new Reactant(getAttributes(xml_molecule), twa, molecules));
+                reactants.push(new Reactant(getAttributes(xml_molecule), twa, molecules));
             }
             // Load products.
-            let products: Map<string, Product> = new Map([]);
+            let products: Product[] = [];
             let xml_products: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Product.tagName);
             //console.log("xml_products.length=" + xml_products.length);
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = getFirstElement(xml_products[j], Molecule.tagName);
                 let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
-                let moleculeID: string = getAttribute(xml_molecule, "ref");
-                products.set(moleculeID, new Product(getAttributes(xml_molecule), twa, molecules));
+                products.push(new Product(getAttributes(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -875,7 +908,7 @@ function initReactions(xml: XMLDocument): void {
                                 }
                             }
                             let tInfinity: TInfinity | undefined;
-                            let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName("me:TInfinity");
+                            let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
                             if (xml_tInfinity != null) {
                                 if (xml_tInfinity[0] != null) {
                                     let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_tInfinity[0])));
@@ -883,7 +916,7 @@ function initReactions(xml: XMLDocument): void {
                                 }
                             }
                             let nInfinity: NInfinity | undefined;
-                            let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName("me:nInfinity");
+                            let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
                             if (xml_nInfinity != null) {
                                 if (xml_nInfinity[0] != null) {
                                     let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_nInfinity[0])));
@@ -899,11 +932,10 @@ function initReactions(xml: XMLDocument): void {
             }
             // Load transition state.
             //console.log("Load  transition state...");
-            let xml_transitionState: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(
-                'me:transitionState');
+            let xml_transitionState: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(TransitionState.tagName);
             let transitionState: TransitionState | undefined;
             if (xml_transitionState.length > 0) {
-                let xml_molecule: Element = xml_transitionState[0].getElementsByTagName('molecule')[0];
+                let xml_molecule: Element = xml_transitionState[0].getElementsByTagName(Molecule.tagName)[0];
                 let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
                 transitionState = new TransitionState(getAttributes(xml_molecule), twa, molecules);
                 //let moleculeID: string = getAttribute(xml_molecule, "ref");
@@ -911,7 +943,7 @@ function initReactions(xml: XMLDocument): void {
                 //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
             // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName('me:tunneling');
+            let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
             let tunneling: Tunneling | undefined;
             if (xml_tunneling.length > 0) {
                 tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
@@ -1193,12 +1225,12 @@ function displayMoleculesTable(): void {
         }
         //console.log("energy=" + energy);
         let rotationConstants: string = "";
-        let rotConsts: number[] | undefined = molecule.getRotationConstants();
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
         if (rotConsts != undefined) {
             rotationConstants = arrayToString(rotConsts, " ");
         }
         let vibrationFrequencies: string = "";
-        let vibFreqs: number[] | undefined = molecule.getVibrationFrequencies();
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
         if (vibFreqs != undefined) {
             vibrationFrequencies = arrayToString(vibFreqs, " ");
         }
@@ -1264,6 +1296,7 @@ function displayReactionsTable(): void {
             } else {
                 if (mCRCMethod.attributes.get("name") == "RRKM") {
                 } else {
+                    console.log("Unexpected mCRCMethod: " + mCRCMethod);
                     throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
                 }
             }
@@ -1456,7 +1489,8 @@ window.saveXML = function () {
     level = 2;
     let moleculeList: string = "";
     molecules.forEach(function (molecule, id) {
-        moleculeList += molecule.toXML("molecule", pad, level);
+        moleculeList += molecule.toXML(pad, padding2);
+        //moleculeList += molecule.toXML("molecule", pad, level);
     });
     moleculeList = getTag(moleculeList, "moleculeList", undefined, pad, true);
 

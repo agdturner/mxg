@@ -699,77 +699,67 @@ let xml_text;
         //});
         //console.log("moleculeTagNames:");
         //moleculeTagNames.forEach(x => console.log(x));
-        // Set atoms.
-        const atoms = new Map();
-        // Sometimes there is an individual atom not in an atomArray.
-        //let xml_atomArray = xml_molecules[i].getElementsByTagName("atomArray")[0];
-        //if (xml_atomArray != null) {
+        // Init atomsNode.
+        let atomsNode;
+        // There can be an individual atom not in an atom array, or an attom array.
+        let xml_atomArrays = xml_molecules[i].getElementsByTagName((0, _moleculeJs.AtomArray).tagName);
+        if (xml_atomArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.AtomArray).tagName + " but finding " + xml_atomArrays.length + "!");
+        if (xml_atomArrays.length == 1) {
+            let xml_atomArray = xml_atomArrays[0];
+            let xml_atoms = xml_atomArray.getElementsByTagName((0, _moleculeJs.Atom).tagName);
+            if (xml_atoms.length < 2) throw new Error("Expecting 2 or more atoms in " + (0, _moleculeJs.AtomArray).tagName + ", but finding " + xml_atoms.length + "!");
+            let atoms = [];
+            for(let j = 0; j < xml_atoms.length; j++)atoms.push(new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[j])));
+            atomsNode = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_atomArray), atoms);
+            moleculeTagNames.delete((0, _moleculeJs.AtomArray).tagName);
+        } else {
+            let xml_atoms = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
+            if (xml_atoms.length == 1) atomsNode = new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[0]));
+            else if (xml_atoms.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Atom).tagName + " but finding " + xml_atoms.length + ". Should these be in an " + (0, _moleculeJs.AtomArray).tagName + "?");
+        }
         moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
-        moleculeTagNames.delete("atomArray");
-        let xml_atoms = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
-        for(let j = 0; j < xml_atoms.length; j++){
-            let attribs = (0, _xmlJs.getAttributes)(xml_atoms[j]);
-            let id = attribs.get("id");
-            if (id != undefined) {
-                let atom = new (0, _moleculeJs.Atom)(attribs);
-                //console.log(atom.toString());
-                atoms.set(id, atom);
-            }
+        // Init bondsNode.
+        let bondsNode;
+        // There can be an individual bond not in a bond array, or a bond array.
+        let xml_bondArrays = xml_molecules[i].getElementsByTagName((0, _moleculeJs.BondArray).tagName);
+        if (xml_bondArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.BondArray).tagName + " but finding " + xml_bondArrays.length + "!");
+        if (xml_bondArrays.length == 1) {
+            let xml_bondArray = xml_bondArrays[0];
+            let xml_bonds = xml_bondArray.getElementsByTagName((0, _moleculeJs.Bond).tagName);
+            // There may be only 1 bond in a BondArray.
+            let bonds = [];
+            for(let j = 0; j < xml_bonds.length; j++)bonds.push(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[j])));
+            bondsNode = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArray), bonds);
+            moleculeTagNames.delete((0, _moleculeJs.BondArray).tagName);
+        } else {
+            let xml_bonds = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Bond).tagName);
+            if (xml_bonds.length == 1) bondsNode = new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[0]));
+            else if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _moleculeJs.BondArray).tagName + "?");
         }
-        //}
-        // Read bondArray.
         moleculeTagNames.delete((0, _moleculeJs.Bond).tagName);
-        moleculeTagNames.delete("bondArray");
-        const bonds = new Map();
-        let xml_bonds = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Bond).tagName);
-        for(let j = 0; j < xml_bonds.length; j++){
-            let attribs = (0, _xmlJs.getAttributes)(xml_bonds[j]);
-            let id = attribs.get("atomRefs2");
-            if (id != undefined) {
-                let bond = new (0, _moleculeJs.Bond)(attribs);
-                //console.log(bond.toString());
-                bonds.set(id, bond);
+        // Init propertiesNode.
+        let propertiesNode;
+        // There can be an individual property not in a propertyList.
+        let xml_PLs = xml_molecules[i].getElementsByTagName((0, _moleculeJs.PropertyList).tagName);
+        if (xml_PLs.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.PropertyList).tagName + " but finding " + xml_PLs.length + "!");
+        if (xml_PLs.length == 1) {
+            let xml_PL = xml_PLs[0];
+            let xml_Ps = xml_PL.getElementsByTagName((0, _moleculeJs.Property).tagName);
+            if (xml_Ps.length < 2) throw new Error("Expecting 2 or more " + (0, _moleculeJs.Property).tagName + " in " + (0, _moleculeJs.PropertyList).tagName + ", but finding " + xml_Ps.length + "!");
+            let properties = new Map();
+            for(let j = 0; j < xml_Ps.length; j++){
+                let property = getProperty(xml_Ps[j]);
+                let dictRef = property.attributes.get("dictRef");
+                properties.set(dictRef, property);
             }
+            propertiesNode = new (0, _moleculeJs.PropertyList)((0, _xmlJs.getAttributes)(xml_PL), properties);
+            moleculeTagNames.delete((0, _moleculeJs.PropertyList).tagName);
+        } else {
+            let xml_Ps = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Property).tagName);
+            if (xml_Ps.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Property).tagName + " but finding " + xml_Ps.length + ". Should these be in a " + (0, _moleculeJs.PropertyList).tagName + "?");
+            propertiesNode = getProperty(xml_Ps[0]);
         }
-        // Read propertyList.
-        const properties = new Map();
-        // Sometimes there is a single property not in propertyList!
-        //let xml_propertyList = xml_molecules[i].getElementsByTagName("propertyList")[0];
-        //if (xml_propertyList != null) {
-        //    let xml_properties = xml_propertyList.getElementsByTagName("property");
         moleculeTagNames.delete((0, _moleculeJs.Property).tagName);
-        moleculeTagNames.delete("propertyList");
-        let xml_properties = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Property).tagName);
-        for(let j = 0; j < xml_properties.length; j++){
-            let attribs = (0, _xmlJs.getAttributes)(xml_properties[j]);
-            let children = xml_properties[j].children;
-            if (children.length != 1) throw new Error("Expecting 1 child but finding " + children.length);
-            let nodeAttributes = (0, _xmlJs.getAttributes)(children[0]);
-            let nodeName = children[0].nodeName; // Expecting scalar or array
-            let textContent = children[0].textContent;
-            if (textContent == null) {
-                console.error("nodeName");
-                throw new Error("textContent is null");
-            }
-            textContent = textContent.trim();
-            let dictRef = attribs.get("dictRef");
-            //console.log("dictRef=" + dictRef);
-            if (dictRef == null) throw new Error("dictRef is null");
-            //console.log("fcnn=" + fcnn);
-            if (nodeName == "scalar") {
-                moleculeTagNames.delete("scalar");
-                let value = parseFloat(textContent);
-                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _xmlJs.NumberNode)(nodeAttributes, nodeName, value)));
-                if (dictRef === "me:ZPE") {
-                    minMoleculeEnergy = Math.min(minMoleculeEnergy, value);
-                    maxMoleculeEnergy = Math.max(maxMoleculeEnergy, value);
-                }
-            } else if (nodeName == "array") {
-                moleculeTagNames.delete("array");
-                properties.set(dictRef, new (0, _moleculeJs.Property)(attribs, new (0, _xmlJs.NumberArrayNode)(nodeAttributes, nodeName, (0, _utilJs.toNumberArray)(textContent.split(/\s+/)), " ")));
-            } else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
-            else throw new Error("Unexpected nodeName: " + nodeName);
-        }
         let els;
         // Read energyTransferModel
         moleculeTagNames.delete((0, _moleculeJs.EnergyTransferModel).tagName);
@@ -801,13 +791,11 @@ let xml_text;
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
-            moleculeTagNames.forEach((x)=>console.log(x));
             console.warn("There are additional unexpected moleculeTagNames:");
-            moleculeTagNames.forEach((x)=>console.error(x));
-            console.error("Unexpected tags in molecule.");
+            moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
-        let molecule = new (0, _moleculeJs.Molecule)(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod);
+        let molecule = new (0, _moleculeJs.Molecule)(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
@@ -835,6 +823,29 @@ let xml_text;
             }
         });
     });
+}
+function getProperty(xml_property) {
+    let attribs = (0, _xmlJs.getAttributes)(xml_property);
+    let children = xml_property.children;
+    if (children.length != 1) throw new Error("Expecting 1 child but finding " + children.length);
+    let nodeAttributes = (0, _xmlJs.getAttributes)(children[0]);
+    let nodeName = children[0].nodeName; // Expecting scalar or array
+    let textContent = children[0].textContent;
+    if (textContent == null) {
+        console.error("nodeName");
+        throw new Error("textContent is null");
+    }
+    textContent = textContent.trim();
+    let dictRef = attribs.get("dictRef");
+    //console.log("dictRef=" + dictRef);
+    if (dictRef == null) throw new Error("dictRef is null");
+    //console.log("fcnn=" + fcnn);
+    if (nodeName == (0, _moleculeJs.PropertyScalar).tagName) {
+        let value = parseFloat(textContent);
+        return new (0, _moleculeJs.Property)(attribs, new (0, _moleculeJs.PropertyScalar)(nodeAttributes, value));
+    } else if (nodeName == (0, _moleculeJs.PropertyArray).tagName) return new (0, _moleculeJs.Property)(attribs, new (0, _moleculeJs.PropertyArray)(nodeAttributes, (0, _utilJs.toNumberArray)(textContent.split(/\s+/)), " "));
+    else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
+    else throw new Error("Unexpected nodeName: " + nodeName);
 }
 let inputElement;
 //function reload() {
@@ -1141,24 +1152,22 @@ let control;
         if (reactionID != null) {
             console.log("id=" + reactionID);
             // Load reactants.
-            let reactants = new Map([]);
+            let reactants = [];
             let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             for(let j = 0; j < xml_reactants.length; j++){
                 let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _moleculeJs.Molecule).tagName);
                 let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
-                let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
-                reactants.set(moleculeID, new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
+                reactants.push(new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load products.
-            let products = new Map([]);
+            let products = [];
             let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
             //console.log("xml_products.length=" + xml_products.length);
             for(let j = 0; j < xml_products.length; j++){
                 let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
                 let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
-                let moleculeID = (0, _xmlJs.getAttribute)(xml_molecule, "ref");
-                products.set(moleculeID, new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
+                products.push(new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
@@ -1190,7 +1199,7 @@ let control;
                                 }
                             }
                             let tInfinity;
-                            let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName("me:TInfinity");
+                            let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.TInfinity).tagName);
                             if (xml_tInfinity != null) {
                                 if (xml_tInfinity[0] != null) {
                                     let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_tInfinity[0])));
@@ -1198,7 +1207,7 @@ let control;
                                 }
                             }
                             let nInfinity;
-                            let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName("me:nInfinity");
+                            let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.NInfinity).tagName);
                             if (xml_nInfinity != null) {
                                 if (xml_nInfinity[0] != null) {
                                     let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_nInfinity[0])));
@@ -1212,10 +1221,10 @@ let control;
             }
             // Load transition state.
             //console.log("Load  transition state...");
-            let xml_transitionState = xml_reactions[i].getElementsByTagName("me:transitionState");
+            let xml_transitionState = xml_reactions[i].getElementsByTagName((0, _reactionJs.TransitionState).tagName);
             let transitionState;
             if (xml_transitionState.length > 0) {
-                let xml_molecule = xml_transitionState[0].getElementsByTagName("molecule")[0];
+                let xml_molecule = xml_transitionState[0].getElementsByTagName((0, _moleculeJs.Molecule).tagName)[0];
                 let twa = new (0, _xmlJs.TagWithAttributes)((0, _xmlJs.getAttributes)(xml_molecule), (0, _moleculeJs.Molecule).tagName);
                 transitionState = new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_molecule), twa, molecules);
             //let moleculeID: string = getAttribute(xml_molecule, "ref");
@@ -1223,7 +1232,7 @@ let control;
             //console.log("transitionState role=" + transitionState.attributes.get("role"));
             }
             // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName("me:tunneling");
+            let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _reactionJs.Tunneling).tagName);
             let tunneling;
             if (xml_tunneling.length > 0) tunneling = new (0, _reactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
             let reaction = new (0, _reactionJs.Reaction)(attributes, reactionID, reactants, products, mCRCMethod, transitionState, tunneling);
@@ -1487,10 +1496,10 @@ let control;
         else energy = energyNumber.toString();
         //console.log("energy=" + energy);
         let rotationConstants = "";
-        let rotConsts = molecule.getRotationConstants();
+        let rotConsts = molecule.getRotConsts();
         if (rotConsts != undefined) rotationConstants = (0, _utilJs.arrayToString)(rotConsts, " ");
         let vibrationFrequencies = "";
-        let vibFreqs = molecule.getVibrationFrequencies();
+        let vibFreqs = molecule.getVibFreqs();
         if (vibFreqs != undefined) vibrationFrequencies = (0, _utilJs.arrayToString)(vibFreqs, " ");
         moleculesTable += (0, _htmlJs.getTR)((0, _htmlJs.getTD)(id) + (0, _htmlJs.getTD)((0, _htmlJs.getInput)("number", id + "_energy", "setEnergy(this)", energy)) + (0, _htmlJs.getTD)(rotationConstants, true) + (0, _htmlJs.getTD)(vibrationFrequencies, true));
     });
@@ -1540,7 +1549,10 @@ let control;
                 if (ni != undefined) nInfinity = ni.value.toString();
             } else {
                 if (mCRCMethod.attributes.get("name") == "RRKM") ;
-                else throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
+                else {
+                    console.log("Unexpected mCRCMethod: " + mCRCMethod);
+                    throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
+                }
             }
         }
         reactionsTable += (0, _htmlJs.getTR)((0, _htmlJs.getTD)(id) + (0, _htmlJs.getTD)(reactants) + (0, _htmlJs.getTD)(products) + (0, _htmlJs.getTD)(transitionState) + (0, _htmlJs.getTD)(preExponential, true) + (0, _htmlJs.getTD)(activationEnergy, true) + (0, _htmlJs.getTD)(tInfinity, true) + (0, _htmlJs.getTD)(nInfinity, true));
@@ -1680,7 +1692,8 @@ window.setEnergy = setEnergy;
     level = 2;
     let moleculeList = "";
     molecules.forEach(function(molecule, id) {
-        moleculeList += molecule.toXML("molecule", pad, level);
+        moleculeList += molecule.toXML(pad, padding2);
+    //moleculeList += molecule.toXML("molecule", pad, level);
     });
     moleculeList = (0, _xmlJs.getTag)(moleculeList, "moleculeList", undefined, pad, true);
     // Create reactionList.
@@ -2218,6 +2231,9 @@ parcelHelpers.defineInteropFlag(exports);
  * If there is no "id" or "elementType" key an error will be thrown.
  */ parcelHelpers.export(exports, "Atom", ()=>Atom);
 /**
+ * A class for representing an atomArray.
+ */ parcelHelpers.export(exports, "AtomArray", ()=>AtomArray);
+/**
  * A class for representing an atomic bond - a bond beteen two atoms.
  * @param {Map<string, string>} attributes The attributes.
  * @param {Atom} atomA One atom.
@@ -2225,8 +2241,20 @@ parcelHelpers.defineInteropFlag(exports);
  * @param {string} order The order of the bond.
  */ parcelHelpers.export(exports, "Bond", ()=>Bond);
 /**
+ * A class for representing a bondArray.
+ */ parcelHelpers.export(exports, "BondArray", ()=>BondArray);
+/**
+ * A class for representing a property scalar.
+ */ parcelHelpers.export(exports, "PropertyScalar", ()=>PropertyScalar);
+/**
+ * A class for representing an property array.
+ */ parcelHelpers.export(exports, "PropertyArray", ()=>PropertyArray);
+/**
  * A class for representing a property.
  */ parcelHelpers.export(exports, "Property", ()=>Property);
+/**
+ * A class for representing a propertyArray.
+ */ parcelHelpers.export(exports, "PropertyList", ()=>PropertyList);
 /**
  * Represents the deltaEDown class.
  */ parcelHelpers.export(exports, "DeltaEDown", ()=>DeltaEDown);
@@ -2255,7 +2283,6 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for representing a MoleculeRef.
  */ parcelHelpers.export(exports, "MoleculeRef", ()=>MoleculeRef);
 var _xmlJs = require("./xml.js");
-var _utilJs = require("./util.js");
 class Atom extends (0, _xmlJs.TagWithAttributes) {
     static{
         /**
@@ -2267,15 +2294,9 @@ class Atom extends (0, _xmlJs.TagWithAttributes) {
      */ constructor(attributes){
         super(attributes, Atom.tagName);
         let id = attributes.get("id");
-        if (id == undefined) throw new Error("id is undefined");
+        if (id == undefined) console.warn("id is undefined");
         let elementType = attributes.get("elementType");
-        if (elementType == undefined) throw new Error("elementType is undefined");
-    }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        let s = super.toString();
-        return s + `)`;
+        if (elementType == undefined) console.warn("elementType is undefined");
     }
     /**
      * @returns The id of the atom.
@@ -2286,6 +2307,23 @@ class Atom extends (0, _xmlJs.TagWithAttributes) {
      * @returns The element type of the atom.
      */ get elementType() {
         return this.attributes.get("elementType");
+    }
+}
+class AtomArray extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+    * The tag name.
+    */ this.tagName = "atomArray";
+    }
+    /**
+     * 
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {Atom[]} atoms The atoms.
+     */ constructor(attributes, atoms){
+        super(attributes, AtomArray.tagName);
+        atoms.forEach((atom)=>{
+            this.nodes.set(this.nodes.size, atom);
+        });
     }
 }
 class Bond extends (0, _xmlJs.TagWithAttributes) {
@@ -2299,11 +2337,48 @@ class Bond extends (0, _xmlJs.TagWithAttributes) {
      */ constructor(attributes){
         super(attributes, Bond.tagName);
     }
+}
+class BondArray extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "bondArray";
+    }
     /**
-     * @returns A string representation.
-     */ toString() {
-        let s = super.toString();
-        return s + `)`;
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {Map<string, Bond>} bonds A Map of bonds with keys as ids.
+     */ constructor(attributes, bonds){
+        super(attributes, BondArray.tagName);
+        bonds.forEach((bond)=>{
+            this.nodes.set(this.nodes.size, bond);
+        });
+    }
+}
+class PropertyScalar extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "scalar";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, PropertyScalar.tagName, value);
+    }
+}
+class PropertyArray extends (0, _xmlJs.NumberArrayNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "array";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param values The values.
+     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     */ constructor(attributes, values, delimiter){
+        super(attributes, PropertyArray.tagName, values, delimiter);
     }
 }
 class Property extends (0, _xmlJs.NodeWithNodes) {
@@ -2314,25 +2389,32 @@ class Property extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {NumberNode | NumberArrayWithAttributes} property The property.
+     * @param {PropertyScalar | PropertyArray} property The property.
      */ constructor(attributes, property){
         super(attributes, Property.tagName);
-        this.property = property;
+        this.nodes.set(0, property);
     }
     /**
-     * @returns A string representation.
-     */ toString() {
-        return super.toString() + ` (${this.property.toString()}))`;
+     * @returns The property.
+     */ getProperty() {
+        return this.nodes.get(0);
+    }
+}
+class PropertyList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "propertyList";
     }
     /**
-     * @param padding The padding (Optional).
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding1 = undefined;
-        if (pad != undefined) {
-            if (padding != undefined) padding1 = padding + pad;
-        }
-        return (0, _xmlJs.getTag)(this.property.toXML(padding1), Property.tagName, this.attributes, padding, true);
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {Map<string, Property>} properties A Map of properties with keys as dictRefs.
+     */ constructor(attributes, properties){
+        super(attributes, PropertyList.tagName);
+        this.properties = properties;
+        properties.forEach((property)=>{
+            this.nodes.set(this.nodes.size, property);
+        });
     }
 }
 class DeltaEDown extends (0, _xmlJs.NumberNode) {
@@ -2348,7 +2430,7 @@ class DeltaEDown extends (0, _xmlJs.NumberNode) {
         super(attributes, DeltaEDown.tagName, value);
     }
 }
-class EnergyTransferModel extends (0, _xmlJs.TagWithAttributes) {
+class EnergyTransferModel extends (0, _xmlJs.NodeWithNodes) {
     static{
         /**
      * The tag name.
@@ -2359,23 +2441,9 @@ class EnergyTransferModel extends (0, _xmlJs.TagWithAttributes) {
      * @param {DeltaEDown[]} deltaEDowns The DeltaEDowns.
      */ constructor(attributes, deltaEDowns){
         super(attributes, EnergyTransferModel.tagName);
-        this.deltaEDowns = deltaEDowns;
-    }
-    /**
-     * @param padding - Optional padding string for formatting the XML output.
-     * @returns An XML representation.
-     */ toXML(pad, padding) {
-        let padding1 = "";
-        if (padding != undefined) {
-            if (pad != undefined) padding1 = padding + pad;
-        }
-        // deltaEDowns
-        let deltaEDowns_xml = "";
-        this.deltaEDowns.forEach((d)=>{
-            deltaEDowns_xml += d.toXML(padding1);
+        deltaEDowns.forEach((deltaEDown)=>{
+            this.nodes.set(this.nodes.size, deltaEDown);
         });
-        if (pad == undefined) return (0, _xmlJs.getTag)(deltaEDowns_xml, EnergyTransferModel.tagName, this.attributes, padding, false);
-        else return (0, _xmlJs.getTag)(deltaEDowns_xml, EnergyTransferModel.tagName, this.attributes, padding, true);
     }
 }
 class DOSCMethod extends (0, _xmlJs.TagWithAttributes) {
@@ -2401,20 +2469,6 @@ class BondRef extends (0, _xmlJs.TagWithAttributes) {
         super(attributes, BondRef.xmlTagName);
         this.bondRef = bondRef;
     }
-    /**
-     * @returns A string representation.
-     */ toString() {
-        return super.toString + ` (${this.bondRef}))`;
-    }
-    /**
-     * @param padding The padding (Optional).
-     * @returns A tag representation.
-     */ toXML(padding) {
-        let s = (0, _xmlJs.getStartTag)(BondRef.xmlTagName);
-        if (padding) return "\n" + padding + s;
-        s += this.bondRef;
-        return s + (0, _xmlJs.getEndTag)(BondRef.xmlTagName);
-    }
 }
 class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
     static{
@@ -2426,7 +2480,7 @@ class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
         super(attributes, PotentialPoint.xmlTagName);
     }
 }
-class HinderedRotorPotential extends (0, _xmlJs.TagWithAttributes) {
+class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
     static{
         this.xmlTagName = "me:HinderedRotorPotential";
     }
@@ -2435,10 +2489,12 @@ class HinderedRotorPotential extends (0, _xmlJs.TagWithAttributes) {
      * @param PotentialPoint The PotentialPoint.
      */ constructor(attributes, PotentialPoint){
         super(attributes, HinderedRotorPotential.xmlTagName);
-        this.PotentialPoint = PotentialPoint;
+        PotentialPoint.forEach((PotentialPoint)=>{
+            this.nodes.set(this.nodes.size, PotentialPoint);
+        });
     }
 }
-class ExtraDOSCMethod extends (0, _xmlJs.TagWithAttributes) {
+class ExtraDOSCMethod extends (0, _xmlJs.NodeWithNodes) {
     static{
         this.xmlTagName = "me:ExtraDOSCMethod";
     }
@@ -2448,8 +2504,8 @@ class ExtraDOSCMethod extends (0, _xmlJs.TagWithAttributes) {
      * @param HinderedRotorPotential The HinderedRotorPotential.
      */ constructor(attributes, bondRef, HinderedRotorPotential){
         super(attributes, ExtraDOSCMethod.xmlTagName);
-        this.bondRef = bondRef;
-        this.hinderedRotorPotential = HinderedRotorPotential;
+        this.nodes.set(0, bondRef);
+        this.nodes.set(1, HinderedRotorPotential);
     }
 }
 class Molecule extends (0, _xmlJs.NodeWithNodes) {
@@ -2458,40 +2514,68 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "molecule";
     }
+    static{
+        /**
+     * The energy dictRef.
+     */ this.energyDictRef = "me:ZPE";
+    }
+    static{
+        /**
+     * The rotation constants dictRef.
+     */ this.rotConstsDictRef = "me:rotConsts";
+    }
+    static{
+        /**
+     * The vibration frequencies dictRef.
+     */ this.vibFreqsDictRef = "me:vibFreqs";
+    }
     /**
      * Create a molecule.
      * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
      * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param {Map<string, Atom>} atoms A Map of atoms with keys as ids.
-     * @param {Map<string, Bond>} bonds A Map of bonds with. The keys combine the ids of the two bonded atoms.
-     * @param {Map<string, Property>} properties A map of properties.
-     * @param {EnergyTransferModel | null} energyTransferModel The energy transfer model.
-     * @param {DOSCMethod | null} dOSCMethod The method for calculating density of states.
+     * @param {Atom | AtomArray | undefined} atoms The atoms.
+     * @param {Bond | undefined} bonds The bonds.
+     * @param {PropertyList | Property | undefined} properties The properties.
+     * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
+     * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
      */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod){
         super(attributes, Molecule.tagName);
+        /**
+     * The index.
+     */ this.index = new Map();
         let id = this.attributes.get("id");
         if (id == undefined) throw new Error("id is undefined");
         this.id = id;
-        this.atoms = atoms;
-        this.bonds = bonds;
-        this.properties = properties;
-        this.energyTransferModel = energyTransferModel;
-        this.dOSCMethod = dOSCMethod;
-    }
-    /** 
-     * @returns A string representation.
-     */ toString() {
-        let r = `Molecule(id(${this.getID()}), `;
-        let description = this.getDescription();
-        if (description != undefined) r += `description(${description}), `;
-        let active = this.getActive();
-        if (active != undefined) r += `active(${active}), `;
-        if (this.atoms.size > 0) r += `atoms(${(0, _utilJs.mapToString)(this.atoms)}), `;
-        if (this.bonds.size > 0) r += `bonds(${(0, _utilJs.mapToString)(this.bonds)}), `;
-        if (this.properties.size > 0) r += `properties(${(0, _utilJs.mapToString)(this.properties)}), `;
-        if (this.energyTransferModel) r += `energyTransferModel(${this.energyTransferModel.toString()}), `;
-        if (this.dOSCMethod) r += `dOSCMethod(${this.dOSCMethod.toString()}), `;
-        return r + `)`;
+        let i = 0;
+        // Atoms
+        if (atoms) {
+            this.nodes.set(i, atoms);
+            if (atoms instanceof Atom) this.index.set(Atom.tagName, i);
+            else this.index.set(AtomArray.tagName, i);
+            i++;
+        }
+        // Bonds
+        if (bonds) {
+            this.nodes.set(i, bonds);
+            this.index.set(BondArray.tagName, i);
+            i++;
+        }
+        // Properties
+        if (properties == undefined) throw new Error("properties is undefined");
+        this.nodes.set(i, properties);
+        this.index.set(PropertyList.tagName, i);
+        i++;
+        // EnergyTransferModel
+        if (energyTransferModel) {
+            this.nodes.set(i, energyTransferModel);
+            this.index.set(EnergyTransferModel.tagName, i);
+            i++;
+        }
+        // DOSCMethod
+        if (dOSCMethod) {
+            this.nodes.set(i, dOSCMethod);
+            this.index.set(DOSCMethod.tagName, i);
+        }
     }
     /**
      * @return The id of the molecule.
@@ -2513,95 +2597,111 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         return active;
     }
     /**
-     * @returns {number} The energy of the molecule or zero if the energy is not set.
-     * @throws An error if "me.ZPE" is a property, but is not mapped to a PropertyScalar.
+     * @returns The properties of the molecule.
+     */ getProperties() {
+        let i = this.index.get(PropertyList.tagName);
+        if (i == undefined) {
+            i = this.index.get(Property.tagName);
+            if (i == undefined) return undefined;
+            else return this.nodes.get(i);
+        } else return this.nodes.get(i);
+    }
+    /**
+     * Get a property scalar.
+     * @param {string} dictRef The dictRef of the property.
+     * @returns {number | undefined} The scalar property.
+     */ getPropertyScalar(dictRef) {
+        let properties = this.getProperties();
+        if (properties == undefined) return undefined;
+        else if (properties instanceof PropertyList) {
+            let property = properties.properties.get(dictRef);
+            if (property == undefined) return undefined;
+            return property.getProperty().value;
+        } else {
+            let scalar = properties.getProperty();
+            if (scalar == undefined) return undefined;
+            return scalar.value;
+        }
+    }
+    /**
+     * @returns {number} The energy of the molecule or zero if the energy is not set or defined.
      */ getEnergy() {
-        let zpe = this.properties.get("me:ZPE");
-        if (zpe == undefined) return 0;
-        if (zpe.property instanceof (0, _xmlJs.NumberNode)) return zpe.property.value;
-        else throw new Error("Expected a PropertyScalar but got a PropertyArray and not sure how to handle that.");
+        let energy = this.getPropertyScalar(Molecule.energyDictRef);
+        if (energy == undefined) return 0;
+        return energy;
+    }
+    /**
+     * Set the scalar property.
+     * @param {string} dictRef The dictRef of the property.
+     * @param {number} value The value of the property.
+     * @param {string} units The units of the property.
+     */ setPropertyScalar(dictRef, value, units) {
+        let properties = this.getProperties();
+        if (properties == undefined) {
+            this.nodes.set(this.nodes.size, this.createPropertyScalar(dictRef, value, units));
+            this.index.set(Property.tagName, this.nodes.size);
+        } else if (properties instanceof Property) {
+            if (properties.getProperty().attributes.get(dictRef)) properties.getProperty().value = value;
+            else {
+                let plmap = new Map();
+                plmap.set(dictRef, properties);
+                plmap.set(dictRef, this.createPropertyScalar(dictRef, value, units));
+                properties = new PropertyList(new Map(), plmap);
+            }
+        } else {
+            let scalarProperty = properties.properties.get(dictRef);
+            if (scalarProperty == undefined) properties.properties.set(dictRef, this.createPropertyScalar(dictRef, value, units));
+            else scalarProperty.getProperty().value = value;
+        }
+    }
+    /**
+     * @param dictRef The dictRef of the property.
+     * @param value The value of the property.
+     * @param units The units of the property.
+     * @returns A scalar property.
+     */ createPropertyScalar(dictRef, value, units) {
+        let propertyAttributes = new Map();
+        propertyAttributes.set("dictRef", Molecule.energyDictRef);
+        let scalarAttributes = new Map();
+        if (units) scalarAttributes.set("units", units);
+        return new Property(propertyAttributes, new PropertyScalar(scalarAttributes, value));
     }
     /**
      * Set the Energy of the molecule.
      * @param {number} energy The energy of the molecule in kcal/mol.
      */ setEnergy(energy) {
-        let property = this.properties.get("me:ZPE");
-        if (property == undefined) throw new Error("No me.ZPE property found");
-        if (property.property instanceof (0, _xmlJs.NumberArrayNode)) throw new Error("Unexpected NumberArrayNode.");
-        else property.property.value = energy;
+        this.setPropertyScalar(Molecule.energyDictRef, energy);
+    }
+    /**
+     * Get a property array.
+     * @param {string} dictRef The dictRef of the property.
+     * @returns {number[] | undefined} The array property.
+     */ getPropertyArray(dictRef) {
+        let properties = this.getProperties();
+        if (properties == undefined) return undefined;
+        else if (properties instanceof PropertyList) {
+            let property = properties.properties.get(dictRef);
+            if (property == undefined) return undefined;
+            return property.getProperty().values;
+        } else {
+            if (properties.getProperty().tagName == dictRef) {
+                let rotConsts = properties.getProperty();
+                if (rotConsts == undefined) return undefined;
+                return rotConsts.values;
+            } else return undefined;
+        }
     }
     /**
      * Get the RotationConstants of the molecule.
      * @returns The RotationConstants of the molecule.
-     */ getRotationConstants() {
-        let property = this.properties.get("me:rotConsts");
-        if (property != undefined) {
-            if (property.property != null) {
-                if (property.property instanceof (0, _xmlJs.NumberNode)) return [
-                    property.property.value
-                ];
-                else return property.property.values;
-            } else return undefined;
-        }
-        return property;
+     */ getRotConsts() {
+        return this.getPropertyArray(Molecule.rotConstsDictRef);
     }
     /**
-     * Get the VibrationFrequencies of the molecule.
-     * @returns The VibrationFrequencies of the molecule.
-     */ getVibrationFrequencies() {
-        let property = this.properties.get("me:vibFreqs");
-        if (property != undefined) {
-            if (property.property instanceof (0, _xmlJs.NumberNode)) return [
-                property.property.value
-            ];
-            else if (property.property instanceof (0, _xmlJs.NumberArrayNode)) return property.property.values;
-            else return undefined;
-        }
-        return property;
-    }
-    /**
-     * @param {string} tagName The tag name.
-     * @param {string} pad The pad (Optional).
-     * @param {number} level The level of padding (Optional).
-     * @returns An XML representation.
-     */ toXML(tagName, pad, level) {
-        // Padding
-        let padding0 = "";
-        let padding1 = "";
-        let padding2 = "";
-        let padding3 = "";
-        if (pad != undefined && level != undefined) {
-            padding0 = pad.repeat(level);
-            padding1 = padding0 + pad;
-            padding2 = padding1 + pad;
-            padding3 = padding2 + pad;
-        }
-        // Atoms
-        let atoms_xml = "";
-        for (let atom of this.atoms.values())atoms_xml += atom.toXML(padding2);
-        if (this.atoms.size > 1) {
-            if (atoms_xml != "") atoms_xml = (0, _xmlJs.getTag)(atoms_xml, "atomArray", undefined, padding1, true);
-        }
-        // Bonds
-        let bonds_xml = "";
-        for (let bond of this.bonds.values())bonds_xml += bond.toXML(padding2);
-        if (bonds_xml != "") bonds_xml = (0, _xmlJs.getTag)(bonds_xml, "bondArray", undefined, padding1, true);
-        // Properties
-        let properties_xml = "";
-        this.properties.forEach((property)=>{
-            let property_xml = property.property.toXML(padding3);
-            properties_xml += (0, _xmlJs.getTag)(property_xml, Property.tagName, property.attributes, padding2, true);
-        });
-        if (this.properties.size > 1) {
-            if (properties_xml != "") properties_xml = (0, _xmlJs.getTag)(properties_xml, "propertyList", undefined, padding1, true);
-        }
-        // EnergyTransferModel
-        let energyTransferModel_xml = "";
-        if (this.energyTransferModel) energyTransferModel_xml = this.energyTransferModel.toXML(pad, padding1);
-        // DOSCMethod
-        let dOSCMethod_xml = "";
-        if (this.dOSCMethod) dOSCMethod_xml = this.dOSCMethod.toXML(padding1);
-        return (0, _xmlJs.getTag)(atoms_xml + bonds_xml + properties_xml + energyTransferModel_xml + dOSCMethod_xml, tagName, this.attributes, padding0, true);
+     * Get the vibration frequencies of the molecule.
+     * @returns The vibration frequencies of the molecule.
+     */ getVibFreqs() {
+        return this.getPropertyArray(Molecule.vibFreqsDictRef);
     }
 }
 class MoleculeRef extends (0, _xmlJs.NodeWithNodes) {
@@ -2641,7 +2741,7 @@ class MoleculeRef extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./util.js":"f0Rnl"}],"8grVN":[function(require,module,exports) {
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8grVN":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -2939,9 +3039,6 @@ class ZhuNakamuraCrossing extends MCRCMethod {
         this.exponentialProductDiabat_B = exponentialProductDiabat_B;
         this.exponentialProductDiabat_DE = exponentialProductDiabat_DE;
     }
-    toString() {
-        return `ZhuNakamuraCrossing(${super.toString()}, ` + `harmonicReactantDiabat_FC(${this.harmonicReactantDiabat_FC.toString()}), ` + `harmonicReactantDiabat_XO(${this.harmonicReactantDiabat_XO.toString()}), ` + `harmonicProductDiabat_DE(${this.harmonicProductDiabat_DE.toString()}), ` + `exponentialProductDiabat_A(${this.exponentialProductDiabat_A.toString()}), ` + `exponentialProductDiabat_B(${this.exponentialProductDiabat_B.toString()}), ` + `exponentialProductDiabat_DE(${this.exponentialProductDiabat_DE.toString()}))`;
-    }
 }
 class Reaction extends (0, _xmlJs.NodeWithNodes) {
     static{
@@ -2952,8 +3049,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
-     * @param {Map<string, Reactant>} reactants The reactants in the reaction.
-     * @param {Map<string, Product>} products The products of the reaction.
+     * @param {Reactant[]} reactants The reactants in the reaction.
+     * @param {Product[]} products The products of the reaction.
      * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
      * @param {TransitionState | undefined} transitionState The transition state (optional).
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
@@ -2962,7 +3059,15 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         this.index = new Map();
         this.id = id;
         this.reactants = reactants;
+        reactants.forEach((reactant)=>{
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, this.index.size);
+        });
         this.products = products;
+        products.forEach((product)=>{
+            this.addNode(product);
+            this.addToIndex(Product.tagName, this.index.size);
+        });
         if (mCRCMethod != undefined) {
             this.addNode(mCRCMethod);
             this.index.set(MCRCMethod.tagName, this.index.size);
@@ -2975,6 +3080,20 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
             this.addNode(tunneling);
             this.index.set(Tunneling.tagName, this.index.size);
         }
+    }
+    /**
+     * Add a node to the index.
+     * @param {string} key The key.
+     * @param {number} value The value.
+     */ addToIndex(key, value) {
+        let value0 = this.index.get(key);
+        if (value0 == undefined) this.index.set(key, value);
+        else if (typeof value0 === "number") {
+            let map = new Map();
+            map.set(key, value0);
+            map.set(key, value);
+            this.index.set(key, map);
+        } else value0.set(key, value);
     }
     getTransitionState() {
         let i = this.index.get(TransitionState.tagName);
@@ -2995,25 +3114,25 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */ getReactantsLabel() {
-        return Array.from(this.reactants.values()).map((reactant)=>reactant.getRef()).join(" + ");
+        return this.reactants.map((reactant)=>reactant.getRef()).join(" + ");
     }
     /**
      * Get the combined energy of the reactants.
      * @returns The combined energy of the reactants.
      */ getReactantsEnergy() {
-        return Array.from(this.reactants.values()).map((reactant)=>reactant.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
+        return this.reactants.map((reactant)=>reactant.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
     }
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */ getProductsLabel() {
-        return Array.from(this.products.values()).map((product)=>product.getRef()).join(" + ");
+        return this.products.map((product)=>product.getRef()).join(" + ");
     }
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */ getProductsEnergy() {
-        return Array.from(this.products.values()).map((product)=>product.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
+        return this.products.map((product)=>product.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
     }
     /**
      * Get the label of the reaction.

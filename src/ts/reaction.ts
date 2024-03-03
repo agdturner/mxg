@@ -1,8 +1,4 @@
 import {
-    mapToString
-} from './util.js';
-
-import {
     Molecule, MoleculeRef
 } from './molecule.js';
 
@@ -75,7 +71,6 @@ export class TransitionState extends MoleculeRef {
         super(attributes, Product.tagName, molecule, molecules);
     }
 }
-
 
 /**
  * A class for representing the Arrhenius pre-exponential factor.
@@ -305,15 +300,6 @@ export class ZhuNakamuraCrossing extends MCRCMethod {
         this.exponentialProductDiabat_B = exponentialProductDiabat_B;
         this.exponentialProductDiabat_DE = exponentialProductDiabat_DE;
     }
-    toString() {
-        return `ZhuNakamuraCrossing(${super.toString()}, ` +
-            `harmonicReactantDiabat_FC(${this.harmonicReactantDiabat_FC.toString()}), ` +
-            `harmonicReactantDiabat_XO(${this.harmonicReactantDiabat_XO.toString()}), ` +
-            `harmonicProductDiabat_DE(${this.harmonicProductDiabat_DE.toString()}), ` +
-            `exponentialProductDiabat_A(${this.exponentialProductDiabat_A.toString()}), ` +
-            `exponentialProductDiabat_B(${this.exponentialProductDiabat_B.toString()}), ` +
-            `exponentialProductDiabat_DE(${this.exponentialProductDiabat_DE.toString()}))`;
-    }
 }
 
 /**
@@ -403,7 +389,7 @@ export class Reaction extends NodeWithNodes {
     /**
      * The index for the nodes. 
      */
-    index : Map<string, number>;
+    index : Map<string, number | Map<string, number>>;
     
     /**
      * The id of the reaction. This is also stored in the attributes, but is hee for convenience...
@@ -411,26 +397,26 @@ export class Reaction extends NodeWithNodes {
     id: string;
 
     /**
-     * The reactants in the reaction.
+     * The reactants.
      */
-    reactants: Map<string, Reactant>;
+    reactants: Reactant[];
 
     /**
-     * The products of the reaction.
+     * The products.
      */
-    products: Map<string, Product>;
+    products: Product[];
 
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
-     * @param {Map<string, Reactant>} reactants The reactants in the reaction.
-     * @param {Map<string, Product>} products The products of the reaction.
+     * @param {Reactant[]} reactants The reactants in the reaction.
+     * @param {Product[]} products The products of the reaction.
      * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
      * @param {TransitionState | undefined} transitionState The transition state (optional).
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
      */
     constructor(attributes: Map<string, string>, id: string,
-        reactants: Map<string, Reactant>, products: Map<string, Product>,
+        reactants: Reactant[], products: Product[],
         mCRCMethod?: MCRCMethod | undefined,
         transitionState?: TransitionState | undefined,
         tunneling?: Tunneling | undefined) {
@@ -438,7 +424,15 @@ export class Reaction extends NodeWithNodes {
         this.index = new Map<string, number>();
         this.id = id;
         this.reactants = reactants;
+        reactants.forEach(reactant => {
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, this.index.size);
+        });
         this.products = products;
+        products.forEach(product => {
+            this.addNode(product);
+            this.addToIndex(Product.tagName, this.index.size);
+        });
         if (mCRCMethod != undefined) {
             this.addNode(mCRCMethod);
             this.index.set(MCRCMethod.tagName, this.index.size);
@@ -453,28 +447,47 @@ export class Reaction extends NodeWithNodes {
         }
     }
 
+    /**
+     * Add a node to the index.
+     * @param {string} key The key.
+     * @param {number} value The value.
+     */
+    addToIndex(key: string, value: number) {
+        let value0: Map<string, number> | number | undefined = this.index.get(key);
+        if (value0 == undefined) {
+            this.index.set(key, value);
+        } else if (typeof value0 === 'number') {
+            let map: Map<string, number> = new Map<string, number>();
+            map.set(key, value0);
+            map.set(key, value);
+            this.index.set(key, map);
+        } else {
+            value0.set(key, value);
+        }
+    }
+
     getTransitionState(): TransitionState | undefined {
-        let i: number | undefined = this.index.get(TransitionState.tagName);
+        let i: Map<string, number> | number | undefined = this.index.get(TransitionState.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as TransitionState;
+        return this.nodes.get(i as number) as TransitionState;
     }
 
     getMCRCMethod(): MCRCMethod | undefined {
-        let i: number | undefined = this.index.get(MCRCMethod.tagName);
+        let i: Map<string, number> | number | undefined = this.index.get(MCRCMethod.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as MCRCMethod;
+        return this.nodes.get(i as number) as MCRCMethod;
     }
 
     getTunneling(): Tunneling | undefined {
-        let i: number | undefined = this.index.get(Tunneling.tagName);
+        let i: Map<string, number> | number | undefined = this.index.get(Tunneling.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as Tunneling;
+        return this.nodes.get(i as number) as Tunneling;
     }
 
     /**
@@ -482,7 +495,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The label of the reactants.
      */
     getReactantsLabel(): string {
-        return Array.from(this.reactants.values()).map(reactant => reactant.getRef()).join(' + ');
+        return this.reactants.map(reactant => reactant.getRef()).join(' + ');
     }
 
     /**
@@ -490,7 +503,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The combined energy of the reactants.
      */
     getReactantsEnergy(): number {
-        return Array.from(this.reactants.values()).map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        return this.reactants.map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
     }
 
     /**
@@ -498,7 +511,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The label for the products.
      */
     getProductsLabel(): string {
-        return Array.from(this.products.values()).map(product => product.getRef()).join(' + ');
+        return this.products.map(product => product.getRef()).join(' + ');
     }
 
     /**
@@ -506,7 +519,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The total energy of all products.
      */
     getProductsEnergy(): number {
-        return Array.from(this.products.values()).map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        return this.products.map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
     }
 
     /**
