@@ -387,7 +387,7 @@ export class Reaction extends NodeWithNodes {
     static readonly tagName: string = "reaction";
 
     /**
-     * The index for the nodes. 
+     * The index for the nodes. The key is the type of node, the value is the index of the node in the nodes array.
      */
     index : Map<string, number | Map<string, number>>;
     
@@ -421,12 +421,12 @@ export class Reaction extends NodeWithNodes {
         transitionState?: TransitionState | undefined,
         tunneling?: Tunneling | undefined) {
         super(attributes, Reaction.tagName);
-        this.index = new Map<string, number>();
+        this.index = new Map();
         this.id = id;
         this.reactants = reactants;
         reactants.forEach(reactant => {
             this.addNode(reactant);
-            this.addToIndex(Reactant.tagName, this.index.size);
+            this.addToIndex(reactant);
         });
         this.products = products;
         products.forEach(product => {
@@ -449,23 +449,25 @@ export class Reaction extends NodeWithNodes {
 
     /**
      * Add a node to the index.
-     * @param {string} key The key.
-     * @param {number} value The value.
+     * @returns 0 or 1 depeding on if the index has a new entry.
      */
-    addToIndex(key: string, value: number) {
-        let value0: Map<string, number> | number | undefined = this.index.get(key);
+    addToIndex(reactant: Reactant) {
+        let value0: Map<string, number> | number | undefined = this.index.get(Reactant.tagName);
         if (value0 == undefined) {
-            this.index.set(key, value);
+            this.index.set(Reactant.tagName, this.index.size);
         } else if (typeof value0 === 'number') {
             let map: Map<string, number> = new Map<string, number>();
-            map.set(key, value0);
-            map.set(key, value);
-            this.index.set(key, map);
+            map.set((this.nodes.get(value0) as Reactant).getRef(), value0 as number);
+            map.set(reactant.getRef(), this.index.size);
+            this.index.set(Reactant.tagName, map);
         } else {
-            value0.set(key, value);
+            (value0 as Map<string, number>).set(reactant.getRef(), this.index.size);
         }
     }
 
+    /**
+     * @returns The tranistionState node or undefined if it does not exist.
+     */
     getTransitionState(): TransitionState | undefined {
         let i: Map<string, number> | number | undefined = this.index.get(TransitionState.tagName);
         if (i == undefined) {
@@ -474,6 +476,9 @@ export class Reaction extends NodeWithNodes {
         return this.nodes.get(i as number) as TransitionState;
     }
 
+    /**
+     * @returns The MCRCMethod node or undefined if it does not exist.
+     */
     getMCRCMethod(): MCRCMethod | undefined {
         let i: Map<string, number> | number | undefined = this.index.get(MCRCMethod.tagName);
         if (i == undefined) {
@@ -482,6 +487,9 @@ export class Reaction extends NodeWithNodes {
         return this.nodes.get(i as number) as MCRCMethod;
     }
 
+    /**
+     * @returns The tunneling node or undefined if it does not exist.
+     */
     getTunneling(): Tunneling | undefined {
         let i: Map<string, number> | number | undefined = this.index.get(Tunneling.tagName);
         if (i == undefined) {

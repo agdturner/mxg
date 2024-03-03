@@ -641,8 +641,8 @@ export class MoleculeRef extends NodeWithNodes {
     }
 
     /**
-     * A convenience method to get the ref (the molecule ID) of the transition state.
-     * @returns The ref of the transition state.
+     * A convenience method to get the ref (the molecule ID) of the molecule.
+     * @returns The ref of the molecule.
      */
     getRef(): string {
         let s: string | undefined = this.getMoleculeAbb().attributes.get("ref");
