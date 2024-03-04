@@ -1,0 +1,10 @@
+table, th, td {
+  border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+th, td {
+  padding: 5px;
+}
+
+/*# sourceMappingURL=index.68443b75.css.map */

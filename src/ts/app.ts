@@ -29,7 +29,7 @@ import {
 } from './canvas.js';
 
 import {
-    BathGas, Conditions, PTpair, PTs
+    BathGas, Conditions, ExperimentRate, PTpair, PTs
 } from './conditions.js';
 
 import {
@@ -395,7 +395,7 @@ function initMolecules(xml: XMLDocument): void {
         }
 
         // Read reservoirSize.
-        moleculeTagNames.delete("reservoirSize");
+        moleculeTagNames.delete(ReservoirSize.tagName);
         let reservoirSize: ReservoirSize | undefined;
         els = xml_molecules[i].getElementsByTagName(ReservoirSize.tagName);
         if (els.length > 0) {
@@ -691,7 +691,7 @@ function initConditions(xml: XMLDocument): void {
         conditions_title.innerHTML = "Conditions";
     }
     // BathGas
-    let xml_bathGas: Element = getSingularElement(xml_conditions, BathGas.tagName);
+    let xml_bathGas: Element = getFirstElement(xml_conditions, BathGas.tagName);
     let attributes: Map<string, string> = getAttributes(xml_bathGas);
     let moleculeID: string = getNodeValue(getFirstChildNode(xml_bathGas));
     let bathGas: BathGas = new BathGas(attributes, moleculeID, molecules);
@@ -701,7 +701,27 @@ function initConditions(xml: XMLDocument): void {
     // Process each PTpair.
     let pTs: PTpair[] = [];
     for (let i = 0; i < xml_PTPairs.length; i++) {
-        pTs.push(new PTpair(getAttributes(xml_PTPairs[i])));
+        // Add optional BathGas
+        let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
+        let pTBathGas: BathGas | undefined; 
+        if (xml_bathGass.length > 0) {
+            if (xml_bathGass.length > 1) {
+                console.warn("xml_bathGass.length=" + xml_bathGass.length);
+            }
+            pTBathGas = new BathGas(getAttributes(xml_bathGass[0]), getNodeValue(getFirstChildNode(xml_bathGass[0])), molecules);
+            console.log("pTBathGas" + pTBathGas.toString());
+        }
+        // Add optional ExperimentRate
+        let xml_experimentRates: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(ExperimentRate.tagName);
+        let experimentRate: ExperimentRate | undefined;
+        if (xml_experimentRates.length > 0) {
+            if (xml_experimentRates.length > 1) {
+                console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
+            }
+            experimentRate = new ExperimentRate(getAttributes(xml_experimentRates[0]), parseFloat(getNodeValue(getFirstChildNode(xml_experimentRates[0]))));
+            console.log("experimentRate" + experimentRate.toString());
+        }
+        pTs.push(new PTpair(getAttributes(xml_PTPairs[i]), pTBathGas, experimentRate));
         //console.log(pTs[i].toString()); // For debugging.
     }
     conditions = new Conditions(getAttributes(xml_conditions), bathGas, new PTs(getAttributes(xml_PTs), pTs));
@@ -977,7 +997,7 @@ function initReactions(xml: XMLDocument): void {
                     }
                 }
             }
-            console.log("transitionStates=" + transitionStates);
+            //console.log("transitionStates=" + transitionStates);
 
             // Load tunneling.
             let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
@@ -994,19 +1014,19 @@ function initReactions(xml: XMLDocument): void {
             let mCRCMethod: MCRCMethod | undefined;
             let xml_MCRCMethod: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(MCRCMethod.tagName);
             //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-            console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
             if (xml_MCRCMethod.length > 0) {
                 if (xml_MCRCMethod.length > 1) {
                     throw new Error("Expecting 1 " + MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
                 } else {
                     let mCRCMethodAttributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
                     let name: string | undefined = mCRCMethodAttributes.get("name");
-                    console.log(MCRCMethod.tagName + " name=" + name);
-                    if (name == undefined) {
+                    //console.log(MCRCMethod.tagName + " name=" + name);
+                    if (name == undefined || name == MesmerILT.xsiType2) {
                         let type: string | undefined = mCRCMethodAttributes.get("xsi:type");
-                        console.log(MCRCMethod.tagName + "xsi:type=" + type);
+                        //console.log(MCRCMethod.tagName + "xsi:type=" + type);
                         if (type != undefined) {
-                            if (type == MesmerILT.xsiType) {
+                            if (type == MesmerILT.xsiType || type == MesmerILT.xsiType2) {
                                 let preExponential: PreExponential | undefined;
                                 let xml_preExponential: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
                                 if (xml_preExponential != null) {
@@ -1015,7 +1035,7 @@ function initReactions(xml: XMLDocument): void {
                                         preExponential = new PreExponential(getAttributes(xml_preExponential[0]), value);
                                     }
                                 }
-                                console.log("preExponential " + preExponential);
+                                //console.log("preExponential " + preExponential);
                                 let activationEnergy: ActivationEnergy | undefined;
                                 let xml_activationEnergy: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
                                 if (xml_activationEnergy != null) {
@@ -1024,6 +1044,7 @@ function initReactions(xml: XMLDocument): void {
                                         activationEnergy = new ActivationEnergy(getAttributes(xml_activationEnergy[0]), value);
                                     }
                                 }
+                                //console.log("activationEnergy " + activationEnergy);
                                 let tInfinity: TInfinity | undefined;
                                 let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
                                 if (xml_tInfinity != null) {
@@ -1032,6 +1053,7 @@ function initReactions(xml: XMLDocument): void {
                                         tInfinity = new NInfinity(getAttributes(xml_tInfinity[0]), value);
                                     }
                                 }
+                                //console.log("tInfinity " + tInfinity);
                                 let nInfinity: NInfinity | undefined;
                                 let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
                                 if (xml_nInfinity != null) {
@@ -1040,6 +1062,7 @@ function initReactions(xml: XMLDocument): void {
                                         nInfinity = new NInfinity(getAttributes(xml_nInfinity[0]), value);
                                     }
                                 }
+                                //console.log("nInfinity " + nInfinity);
                                 mCRCMethod = new MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
                             }
                         }
@@ -1416,7 +1439,7 @@ function displayReactionsTable(): void {
         "PreExponential", "Activation Energy", "TInfinity", "NInfinity"]);
     reactions.forEach(function (reaction, id) {
         //console.log("id=" + id);
-        console.log("reaction=" + reaction);
+        //console.log("reaction=" + reaction);
         let reactants: string = reaction.getReactantsLabel() || "";
         let products: string = reaction.getProductsLabel() || "";
         let transitionState: string = "";
@@ -1425,9 +1448,7 @@ function displayReactionsTable(): void {
         let tInfinity: string = "";
         let nInfinity: string = "";
         let tSs: Map<string, TransitionState> | TransitionState | undefined = reaction.transitionStates;
-
-        console.log("tSs=" + tSs);
-
+        //console.log("tSs=" + tSs);
         if (tSs != undefined) {
             if (tSs instanceof Map) {
                 // Join all names together.
@@ -1447,6 +1468,7 @@ function displayReactionsTable(): void {
         }
         let mCRCMethod: MCRCMethod | undefined = reaction.getMCRCMethod();
         //console.log("mCRCMethod=" + mCRCMethod);
+        //console.log("typeof mCRCMethod=" + typeof mCRCMethod);
         if (mCRCMethod != undefined) {
             if (mCRCMethod instanceof MesmerILT) {
                 let mp: PreExponential | undefined = mCRCMethod.getPreExponential();
@@ -1518,10 +1540,31 @@ function displayConditions(): void {
         bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
     }
     let pTs_element: HTMLElement | null = document.getElementById("PT_table");
-    let table: string = getTH(["P", "T"]);
+    let th: string[] = ["P", "T"];
+    // If PTs contain BathGas
+    let hasBathGas: boolean = conditions.getPTs().pTpairs.some(pair => {
+        return pair.getBathGas() != undefined;
+    });
+    if (hasBathGas) {
+        th.push("BathGas");
+    }    
+    // Check if PTs contain ExperimentRate
+    let hasExperimentRate: boolean = conditions.getPTs().pTpairs.some(pair => {
+        return pair.getExperimentRate() != undefined;
+    });
+    if (hasExperimentRate) {
+        th.push("ExperimentRate");
+    }
+    let table: string = getTH(th);
     if (pTs_element != null) {
         conditions.getPTs().pTpairs.forEach(function (pTpair) {
-            table += getTR(getTD(pTpair.P.toString()) + getTD(pTpair.T.toString()));
+            table += getTR(getTD(pTpair.getP().toString()) + getTD(pTpair.getT().toString()));
+            if (hasBathGas) {
+                table += getTD(pTpair.getBathGas()?.toString() ?? '');
+            }
+            if (hasExperimentRate) {
+                table += getTD(pTpair.getExperimentRate()?.toString() ?? '');
+            }
         });
         pTs_element.innerHTML = table;
     }

@@ -1,5 +1,5 @@
 // The version of the cache.
-const VERSION = "v1";
+const VERSION = "v0.1.0";
 // The name of the cache
 const CACHE_NAME = `mxg-${VERSION}`;
 // The static resources that the app needs to function.
@@ -14,10 +14,8 @@ const APP_STATIC_RESOURCES = [
     "src/style.css",
     "src/ts/app.js",
     "src/ts/canvas.ts",
-    "src/ts/classes.ts",
     "src/ts/conditions.ts",
     "src/ts/control.ts",
-    "src/ts/functions.ts",
     "src/ts/html.ts",
     "src/ts/modelParameters.ts",
     "src/ts/molecule.ts",

@@ -21,11 +21,11 @@ export class Atom extends TagWithAttributes {
         super(attributes, Atom.tagName);
         let id: string | undefined = attributes.get("id");
         if (id == undefined) {
-            console.warn('id is undefined');
+            console.warn(Atom.tagName + ' id attribute is undefined');
         }
         let elementType: string | undefined = attributes.get("elementType");
         if (elementType == undefined) {
-            console.warn('elementType is undefined');
+            console.warn(Atom.tagName + ' elementType attribute is undefined');
         }
     }
 
@@ -488,7 +488,7 @@ export class Molecule extends NodeWithNodes {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
         }
-        
+
     }
 
     /**

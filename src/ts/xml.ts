@@ -1,6 +1,7 @@
 import {
-    getSelfClosingTag }
-from "./html";
+    getSelfClosingTag
+}
+    from "./html";
 
 /**
  * Get the attribute of an xml element.
@@ -89,7 +90,7 @@ export class Tag {
             return "\n" + padding + s;
         }
         return s;
-    }    
+    }
 }
 
 /**
@@ -319,16 +320,24 @@ export class NodeWithNodes extends TagWithAttributes {
             padding1 = padding + pad;
         }
         let s: string = "";
-        this.nodes.forEach((v) => {
-            if (v instanceof NodeWithNodes) {
-                s += (v as NodeWithNodes).toXML(pad, padding1);
-            } else if (v instanceof TagWithAttributes) {
-                s += (v as TagWithAttributes).toXML(padding1);
-            } else {
-                s += (v as Tag).toXML(padding1);
+        if (this.nodes.size > 0) {
+            this.nodes.forEach((v) => {
+                if (v instanceof NodeWithNodes) {
+                    s += (v as NodeWithNodes).toXML(pad, padding1);
+                } else if (v instanceof TagWithAttributes) {
+                    s += (v as TagWithAttributes).toXML(padding1);
+                } else {
+                    s += (v as Tag).toXML(padding1);
+                }
+            });
+            return getTag(s, this.tagName, this.attributes, padding, true);
+        } else {
+            let s: string = getSelfClosingTag(this.attributes, this.tagName);
+            if (padding != undefined) {
+                return "\n" + padding + s;
             }
-        });
-        return getTag(s, this.tagName, this.attributes, padding, true);
+            return s;
+        }
     }
 }
 
@@ -412,7 +421,8 @@ export function getAttributes(element: Element): Map<string, string> {
  * @returns {Element} The element.
  * @throws An error if there is not exactly one element with the given tag name.
  */
-export function getSingularElement(xml: XMLDocument | Element, tagName: string): Element {;
+export function getSingularElement(xml: XMLDocument | Element, tagName: string): Element {
+    ;
     let e: HTMLCollectionOf<Element> = xml.getElementsByTagName(tagName);
     if (e.length != 1) {
         throw new Error("Expecting 1 " + tagName + " but finding " + e.length);

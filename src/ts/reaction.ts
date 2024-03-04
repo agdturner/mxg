@@ -170,7 +170,7 @@ export class Tunneling extends TagWithAttributes {
  * A class for representing the MCRCMethod specifications.
  * Extended classes indicate how microcanonical rate constant is to be treated.
  */
-export class MCRCMethod extends TagWithAttributes {
+export class MCRCMethod extends NodeWithNodes {
 
     /**
      * The tag name.
@@ -188,12 +188,17 @@ export class MCRCMethod extends TagWithAttributes {
 /**
  * A class for representing the inverse Laplace transform (ILT) type of microcanonical rate constant.
  */
-export class MesmerILT extends NodeWithNodes {
+export class MesmerILT extends MCRCMethod {
+
+    /**
+     * The xsiType.
+     */
+    static readonly xsiType: string = "me:MesmerILT";
 
     /**
      * The tag name.
      */
-    static readonly xsiType: string = "me:MesmerILT";
+    static readonly xsiType2: string = "MesmerILT";
 
     /**
      * The index for the nodes. 
@@ -210,7 +215,7 @@ export class MesmerILT extends NodeWithNodes {
     constructor(attributes: Map<string, string>, preExponential: PreExponential | undefined,
         activationEnergy: ActivationEnergy | undefined, tInfinity: TInfinity | undefined,
         nInfinity: NInfinity | undefined) {
-        super(attributes, MCRCMethod.tagName);
+        super(attributes);
         this.index = new Map<string, number>();
         if (preExponential != undefined) {
             this.index.set(PreExponential.tagName, this.index.size);
@@ -452,9 +457,9 @@ export class Reaction extends NodeWithNodes {
         super(attributes, Reaction.tagName);
         this.index = new Map();
         this.reactants = reactants;
-        console.log("Construct reaction:");
+        //console.log("Construct reaction:");
         if (reactants instanceof Map) {
-            console.log("Map of reactants");
+            //console.log("Map of reactants");
             reactants.forEach(reactant => {
                 this.addToIndex(Reactant.tagName, reactant);
                 this.addNode(reactant);
@@ -463,7 +468,7 @@ export class Reaction extends NodeWithNodes {
                 //console.log("nodes.size: " + this.nodes.size);
             });
         } else {
-            console.log("Individual reactant");
+            //console.log("Individual reactant");
             if (reactants != undefined) {
                 //this.addToIndex(Reactant.tagName, reactants);
                 this.index.set(Reactant.tagName, this.nodes.size);
@@ -475,7 +480,7 @@ export class Reaction extends NodeWithNodes {
         }
         this.products = products;
         if (products instanceof Map) {
-            console.log("Map of products");
+            //console.log("Map of products");
             products.forEach(product => {
                 this.addToIndex(Product.tagName, product);
                 this.addNode(product);
@@ -485,7 +490,7 @@ export class Reaction extends NodeWithNodes {
             });
         } else {
             if (products != undefined) {
-                console.log("Individual product");
+                //console.log("Individual product");
                 //this.addToIndex(Product.tagName, products);
                 this.index.set(Product.tagName, this.nodes.size);
                 this.addNode(products);
@@ -500,7 +505,7 @@ export class Reaction extends NodeWithNodes {
         }
         this.transitionStates = transitionStates;
         if (transitionStates instanceof Map) {
-            console.log("Map of transition states");
+            //console.log("Map of transition states");
             transitionStates.forEach(transitionState => {
                 this.addToIndex(TransitionState.tagName, transitionState);
                 this.addNode(transitionState);
@@ -510,7 +515,7 @@ export class Reaction extends NodeWithNodes {
             });
         } else {
             if (transitionStates != undefined) {
-                console.log("Individual transition state");
+                //console.log("Individual transition state");
                 //this.addToIndex(TransitionState.tagName, transitionStates);
                 this.index.set(TransitionState.tagName, this.nodes.size);
                 this.addNode(transitionStates);
