@@ -1,5 +1,5 @@
 import {
-    getEndTag, getStartTag, getTag, TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode
+    getEndTag, getStartTag, getTag, TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
 } from './xml.js';
 
 /**
@@ -264,25 +264,19 @@ export class DOSCMethod extends TagWithAttributes {
 /**
  * A class for representing a bondRef.
  */
-export class BondRef extends TagWithAttributes {
+export class BondRef extends StringNode {
 
     /**
      * The tag name.
      */
-    static readonly xmlTagName: string = "me:bondRef";
-
-    /**
-     * For storing the bondRef.
-     */
-    bondRef: string;
+    static readonly tagName: string = "me:bondRef";
 
     /**
      * @param attributes The attributes.
      * @param bondRef The bondRef.
      */
     constructor(attributes: Map<string, string>, bondRef: string) {
-        super(attributes, BondRef.xmlTagName);
-        this.bondRef = bondRef;
+        super(attributes, BondRef.tagName, bondRef);
     }
 }
 
@@ -291,13 +285,13 @@ export class BondRef extends TagWithAttributes {
  */
 export class PotentialPoint extends TagWithAttributes {
 
-    static readonly xmlTagName: string = "me:PotentialPoint";
+    static readonly tagName: string = "me:PotentialPoint";
 
     /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
-        super(attributes, PotentialPoint.xmlTagName);
+        super(attributes, PotentialPoint.tagName);
     }
 }
 
@@ -306,41 +300,68 @@ export class PotentialPoint extends TagWithAttributes {
  */
 export class HinderedRotorPotential extends NodeWithNodes {
 
-    static readonly xmlTagName: string = "me:HinderedRotorPotential";
+    static readonly tagName: string = "me:HinderedRotorPotential";
 
     /**
-     * @param attributes The attributes.
-     * @param PotentialPoint The PotentialPoint.
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */
-    constructor(attributes: Map<string, string>, PotentialPoint: PotentialPoint[]) {
-        super(attributes, HinderedRotorPotential.xmlTagName);
-        PotentialPoint.forEach(PotentialPoint => {
-            this.nodes.set(this.nodes.size, PotentialPoint);
+    constructor(attributes: Map<string, string>, potentialPoints: PotentialPoint[]) {
+        super(attributes, HinderedRotorPotential.tagName);
+        potentialPoints.forEach(p => {
+            this.nodes.set(this.nodes.size, p);
         });
     }
 
 }
 
+/**
+ * A class for representing a Periodicity.
+ */
+export class Periodicity extends NumberNode {
+
+    static readonly tagName: string = "me:periodicity";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Periodicity.tagName, value);
+    }
+}
 
 /**
  * A class for representing the extra DOSC method.
  */
 export class ExtraDOSCMethod extends NodeWithNodes {
 
-    static readonly xmlTagName: string = "me:ExtraDOSCMethod";
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:ExtraDOSCMethod";
 
     /**
      * @param attributes The attributes.
-     * @param bondRef The bondRef.
-     * @param HinderedRotorPotential The HinderedRotorPotential.
+     * @param {BondRef | undefined} bondRef The bondRef.
+     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
+     * @param {Periodicity | undefined} periodicity The Periodicity.
      */
-    constructor(attributes: Map<string, string>, bondRef: BondRef, HinderedRotorPotential: HinderedRotorPotential) {
-        super(attributes, ExtraDOSCMethod.xmlTagName);
-        this.nodes.set(0, bondRef);
-        this.nodes.set(1, HinderedRotorPotential);
+    constructor(attributes: Map<string, string>, bondRef: BondRef | undefined, 
+        hinderedRotorPotential: HinderedRotorPotential | undefined, 
+        periodicity: Periodicity | undefined) {
+        super(attributes, ExtraDOSCMethod.tagName);
+        if (bondRef) {
+            this.nodes.set(this.nodes.size, bondRef);
+        }
+        if (hinderedRotorPotential) {
+            this.nodes.set(this.nodes.size, hinderedRotorPotential);
+        }
+        if (periodicity) {
+            this.nodes.set(this.nodes.size, periodicity);
+        }
     }
 }
-
 
 /**
  * A class for representing a molecule.
@@ -391,7 +412,8 @@ export class Molecule extends NodeWithNodes {
         bonds: Bond | undefined,
         properties: PropertyList | Property | undefined,
         energyTransferModel?: EnergyTransferModel,
-        dOSCMethod?: DOSCMethod) {
+        dOSCMethod?: DOSCMethod,
+        extraDOSCMethod?: ExtraDOSCMethod) {
         super(attributes, Molecule.tagName);
         let id: string | undefined = this.attributes.get("id");
         if (id == undefined) {

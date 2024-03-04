@@ -8,7 +8,7 @@ import {
 } from './xml.js';
 
 import {
-    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef, AtomArray, BondArray, PropertyList, PropertyScalar, PropertyArray
+    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef, AtomArray, BondArray, PropertyList, PropertyScalar, PropertyArray, ExtraDOSCMethod, BondRef, HinderedRotorPotential, PotentialPoint, Periodicity
 } from './molecule.js';
 
 import {
@@ -347,6 +347,52 @@ function initMolecules(xml: XMLDocument): void {
             if (el != null) {
                 dOSCMethod = new DOSCMethod(getAttributes(el));
             }
+        }
+
+        // Read ExtraDOSCMethod.
+        moleculeTagNames.delete(ExtraDOSCMethod.tagName);
+        let extraDOSCMethod: ExtraDOSCMethod | undefined = undefined;
+        els = xml_molecules[i].getElementsByTagName(ExtraDOSCMethod.tagName);
+        if (els.length > 0) {
+            if (els.length != 1) {
+                throw new Error("Expecting only 1 extra DOSCMethod, but there are " + els.length);
+            }
+            let attributes: Map<string, string> = getAttributes(els[0]);
+            // Read bondRef.
+            let bondRefs: HTMLCollectionOf<Element> = els[0].getElementsByTagName(BondRef.tagName);
+            let bondRef: BondRef | undefined;
+            if (bondRefs.length > 0) {
+                if (bondRefs.length != 1) {
+                    throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
+                }
+                bondRef = new BondRef(getAttributes(bondRefs[0]), getNodeValue(getFirstChildNode(bondRefs[0])));
+            }
+            // Read hunderedRotorPotential.
+            let hinderedRotorPotentials: HTMLCollectionOf<Element> = els[0].getElementsByTagName(HinderedRotorPotential.tagName);
+            let hinderedRotorPotential: HinderedRotorPotential | undefined;
+            if (hinderedRotorPotentials.length > 0) {
+                if (hinderedRotorPotentials.length != 1) {
+                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+                }
+                // Load PotentialPoints.
+                let potentialPoints: PotentialPoint[] = [];
+                let xml_potentialPoints: HTMLCollectionOf<Element> = hinderedRotorPotentials[0].getElementsByTagName(PotentialPoint.tagName);
+                for (let k = 0; k < xml_potentialPoints.length; k++) {
+                    potentialPoints.push(new PotentialPoint(getAttributes(xml_potentialPoints[k])));
+                }
+                hinderedRotorPotential = new HinderedRotorPotential(getAttributes(hinderedRotorPotentials[0]), potentialPoints);
+            }
+            // Read periodicities.
+            let xml_periodicities: HTMLCollectionOf<Element> = els[0].getElementsByTagName(Periodicity.tagName);
+            let periodicity: Periodicity | undefined;
+            if (xml_periodicities.length > 0) {
+                if (xml_periodicities.length != 1) {
+                    throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
+                }
+                periodicity = new Periodicity(getAttributes(xml_periodicities[0]),
+                    parseFloat(getNodeValue(getFirstChildNode(xml_periodicities[0]))));
+            }
+            extraDOSCMethod = new ExtraDOSCMethod(attributes, bondRef, hinderedRotorPotential, periodicity);
         }
 
         // Check for unexpected tags.
