@@ -788,6 +788,47 @@ let xml_text;
             let el = els[0];
             if (el != null) dOSCMethod = new (0, _moleculeJs.DOSCMethod)((0, _xmlJs.getAttributes)(el));
         }
+        // Read ExtraDOSCMethod.
+        moleculeTagNames.delete((0, _moleculeJs.ExtraDOSCMethod).tagName);
+        let extraDOSCMethod = undefined;
+        els = xml_molecules[i].getElementsByTagName((0, _moleculeJs.ExtraDOSCMethod).tagName);
+        if (els.length > 0) {
+            if (els.length != 1) throw new Error("Expecting only 1 extra DOSCMethod, but there are " + els.length);
+            // Read bondRef.
+            let bondRefs = els[0].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
+            let bondRef;
+            if (bondRefs.length > 0) {
+                if (bondRefs.length != 1) throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
+                bondRef = new (0, _moleculeJs.BondRef)((0, _xmlJs.getAttributes)(bondRefs[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(bondRefs[0])));
+            }
+            // Read hunderedRotorPotential.
+            let hinderedRotorPotentials = els[0].getElementsByTagName((0, _moleculeJs.HinderedRotorPotential).tagName);
+            let hinderedRotorPotential;
+            if (hinderedRotorPotentials.length > 0) {
+                if (hinderedRotorPotentials.length != 1) throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+                // Load PotentialPoints.
+                let potentialPoints = [];
+                let xml_potentialPoints = hinderedRotorPotentials[0].getElementsByTagName((0, _moleculeJs.PotentialPoint).tagName);
+                for(let k = 0; k < xml_potentialPoints.length; k++)potentialPoints.push(new (0, _moleculeJs.PotentialPoint)((0, _xmlJs.getAttributes)(xml_potentialPoints[k])));
+                hinderedRotorPotential = new (0, _moleculeJs.HinderedRotorPotential)((0, _xmlJs.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
+            }
+            // Read periodicities.
+            let xml_periodicities = els[0].getElementsByTagName((0, _moleculeJs.Periodicity).tagName);
+            let periodicity;
+            if (xml_periodicities.length > 0) {
+                if (xml_periodicities.length != 1) throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
+                periodicity = new (0, _moleculeJs.Periodicity)((0, _xmlJs.getAttributes)(xml_periodicities[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_periodicities[0]))));
+            }
+            extraDOSCMethod = new (0, _moleculeJs.ExtraDOSCMethod)((0, _xmlJs.getAttributes)(els[0]), bondRef, hinderedRotorPotential, periodicity);
+        }
+        // Read reservoirSize.
+        moleculeTagNames.delete("reservoirSize");
+        let reservoirSize;
+        els = xml_molecules[i].getElementsByTagName((0, _moleculeJs.ReservoirSize).tagName);
+        if (els.length > 0) {
+            if (els.length != 1) throw new Error("Expecting only 1 reservoirSize, but there are " + els.length);
+            reservoirSize = new (0, _moleculeJs.ReservoirSize)((0, _xmlJs.getAttributes)(els[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(els[0]))));
+        }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
@@ -795,7 +836,7 @@ let xml_text;
             moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
-        let molecule = new (0, _moleculeJs.Molecule)(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod);
+        let molecule = new (0, _moleculeJs.Molecule)(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
@@ -2371,8 +2412,14 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for representing a HinderedRotorPotential.
  */ parcelHelpers.export(exports, "HinderedRotorPotential", ()=>HinderedRotorPotential);
 /**
+ * A class for representing a Periodicity.
+ */ parcelHelpers.export(exports, "Periodicity", ()=>Periodicity);
+/**
  * A class for representing the extra DOSC method.
  */ parcelHelpers.export(exports, "ExtraDOSCMethod", ()=>ExtraDOSCMethod);
+/**
+ * A class for representing a reservoir size.
+ */ parcelHelpers.export(exports, "ReservoirSize", ()=>ReservoirSize);
 /**
  * A class for representing a molecule.
  */ parcelHelpers.export(exports, "Molecule", ()=>Molecule);
@@ -2553,56 +2600,83 @@ class DOSCMethod extends (0, _xmlJs.TagWithAttributes) {
         super(attributes, DOSCMethod.tagName);
     }
 }
-class BondRef extends (0, _xmlJs.TagWithAttributes) {
+class BondRef extends (0, _xmlJs.StringNode) {
     static{
         /**
      * The tag name.
-     */ this.xmlTagName = "me:bondRef";
+     */ this.tagName = "me:bondRef";
     }
     /**
      * @param attributes The attributes.
      * @param bondRef The bondRef.
      */ constructor(attributes, bondRef){
-        super(attributes, BondRef.xmlTagName);
-        this.bondRef = bondRef;
+        super(attributes, BondRef.tagName, bondRef);
     }
 }
 class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
     static{
-        this.xmlTagName = "me:PotentialPoint";
+        this.tagName = "me:PotentialPoint";
     }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
-        super(attributes, PotentialPoint.xmlTagName);
+        super(attributes, PotentialPoint.tagName);
     }
 }
 class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
     static{
-        this.xmlTagName = "me:HinderedRotorPotential";
+        this.tagName = "me:HinderedRotorPotential";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
+     */ constructor(attributes, potentialPoints){
+        super(attributes, HinderedRotorPotential.tagName);
+        potentialPoints.forEach((p)=>{
+            this.nodes.set(this.nodes.size, p);
+        });
+    }
+}
+class Periodicity extends (0, _xmlJs.NumberNode) {
+    static{
+        this.tagName = "me:periodicity";
     }
     /**
      * @param attributes The attributes.
-     * @param PotentialPoint The PotentialPoint.
-     */ constructor(attributes, PotentialPoint){
-        super(attributes, HinderedRotorPotential.xmlTagName);
-        PotentialPoint.forEach((PotentialPoint)=>{
-            this.nodes.set(this.nodes.size, PotentialPoint);
-        });
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, Periodicity.tagName, value);
     }
 }
 class ExtraDOSCMethod extends (0, _xmlJs.NodeWithNodes) {
     static{
-        this.xmlTagName = "me:ExtraDOSCMethod";
+        /**
+     * The tag name.
+     */ this.tagName = "me:ExtraDOSCMethod";
     }
     /**
      * @param attributes The attributes.
-     * @param bondRef The bondRef.
-     * @param HinderedRotorPotential The HinderedRotorPotential.
-     */ constructor(attributes, bondRef, HinderedRotorPotential){
-        super(attributes, ExtraDOSCMethod.xmlTagName);
-        this.nodes.set(0, bondRef);
-        this.nodes.set(1, HinderedRotorPotential);
+     * @param {BondRef | undefined} bondRef The bondRef.
+     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
+     * @param {Periodicity | undefined} periodicity The Periodicity.
+     */ constructor(attributes, bondRef, hinderedRotorPotential, periodicity){
+        super(attributes, ExtraDOSCMethod.tagName);
+        if (bondRef) this.nodes.set(this.nodes.size, bondRef);
+        if (hinderedRotorPotential) this.nodes.set(this.nodes.size, hinderedRotorPotential);
+        if (periodicity) this.nodes.set(this.nodes.size, periodicity);
+    }
+}
+class ReservoirSize extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:reservoirSize";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ReservoirSize.tagName, value);
     }
 }
 class Molecule extends (0, _xmlJs.NodeWithNodes) {
@@ -2635,7 +2709,9 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param {PropertyList | Property | undefined} properties The properties.
      * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
      * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
-     */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod){
+     * @param {ExtraDOSCMethod | undefined} extraDOSCMethod The extra method for calculating density of states.
+     * @param {ReservoirSize | undefined} reservoirSize The reservoir size.
+     */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, Molecule.tagName);
         /**
      * The index.
@@ -2672,6 +2748,16 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         if (dOSCMethod) {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
+        }
+        // ExtraDOSCMethod
+        if (extraDOSCMethod) {
+            this.nodes.set(i, extraDOSCMethod);
+            this.index.set(ExtraDOSCMethod.tagName, i);
+        }
+        // ReservoirSize
+        if (reservoirSize) {
+            this.nodes.set(i, reservoirSize);
+            this.index.set(ReservoirSize.tagName, i);
         }
     }
     /**

@@ -265,6 +265,50 @@ function initMolecules(xml) {
                 dOSCMethod = new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(el));
             }
         }
+        // Read ExtraDOSCMethod.
+        moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
+        let extraDOSCMethod = undefined;
+        els = xml_molecules[i].getElementsByTagName(molecule_js_1.ExtraDOSCMethod.tagName);
+        if (els.length > 0) {
+            if (els.length != 1) {
+                throw new Error("Expecting only 1 extra DOSCMethod, but there are " + els.length);
+            }
+            let attributes = (0, xml_js_1.getAttributes)(els[0]);
+            // Read bondRef.
+            let bondRefs = els[0].getElementsByTagName(molecule_js_1.BondRef.tagName);
+            let bondRef;
+            if (bondRefs.length > 0) {
+                if (bondRefs.length != 1) {
+                    throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
+                }
+                bondRef = new molecule_js_1.BondRef((0, xml_js_1.getAttributes)(bondRefs[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(bondRefs[0])));
+            }
+            // Read hunderedRotorPotential.
+            let hinderedRotorPotentials = els[0].getElementsByTagName(molecule_js_1.HinderedRotorPotential.tagName);
+            let hinderedRotorPotential;
+            if (hinderedRotorPotentials.length > 0) {
+                if (hinderedRotorPotentials.length != 1) {
+                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+                }
+                // Load PotentialPoints.
+                let potentialPoints = [];
+                let xml_potentialPoints = hinderedRotorPotentials[0].getElementsByTagName(molecule_js_1.PotentialPoint.tagName);
+                for (let k = 0; k < xml_potentialPoints.length; k++) {
+                    potentialPoints.push(new molecule_js_1.PotentialPoint((0, xml_js_1.getAttributes)(xml_potentialPoints[k])));
+                }
+                hinderedRotorPotential = new molecule_js_1.HinderedRotorPotential((0, xml_js_1.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
+            }
+            // Read periodicities.
+            let xml_periodicities = els[0].getElementsByTagName(molecule_js_1.Periodicity.tagName);
+            let periodicity;
+            if (xml_periodicities.length > 0) {
+                if (xml_periodicities.length != 1) {
+                    throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
+                }
+                periodicity = new molecule_js_1.Periodicity((0, xml_js_1.getAttributes)(xml_periodicities[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_periodicities[0]))));
+            }
+            extraDOSCMethod = new molecule_js_1.ExtraDOSCMethod(attributes, bondRef, hinderedRotorPotential, periodicity);
+        }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {

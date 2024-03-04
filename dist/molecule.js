@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MoleculeRef = exports.Molecule = exports.ExtraDOSCMethod = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDown = exports.PropertyList = exports.Property = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.MoleculeRef = exports.Molecule = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDown = exports.PropertyList = exports.Property = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
 const xml_js_1 = require("./xml.js");
 /**
  * A class for representing an atom.
@@ -238,22 +238,17 @@ exports.DOSCMethod = DOSCMethod;
 /**
  * A class for representing a bondRef.
  */
-class BondRef extends xml_js_1.TagWithAttributes {
+class BondRef extends xml_js_1.StringNode {
     /**
      * The tag name.
      */
-    static xmlTagName = "me:bondRef";
-    /**
-     * For storing the bondRef.
-     */
-    bondRef;
+    static tagName = "me:bondRef";
     /**
      * @param attributes The attributes.
      * @param bondRef The bondRef.
      */
     constructor(attributes, bondRef) {
-        super(attributes, BondRef.xmlTagName);
-        this.bondRef = bondRef;
+        super(attributes, BondRef.tagName, bondRef);
     }
 }
 exports.BondRef = BondRef;
@@ -261,12 +256,12 @@ exports.BondRef = BondRef;
  * A class for representing a PotentialPoint.
  */
 class PotentialPoint extends xml_js_1.TagWithAttributes {
-    static xmlTagName = "me:PotentialPoint";
+    static tagName = "me:PotentialPoint";
     /**
      * @param attributes The attributes.
      */
     constructor(attributes) {
-        super(attributes, PotentialPoint.xmlTagName);
+        super(attributes, PotentialPoint.tagName);
     }
 }
 exports.PotentialPoint = PotentialPoint;
@@ -274,33 +269,58 @@ exports.PotentialPoint = PotentialPoint;
  * A class for representing a HinderedRotorPotential.
  */
 class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
-    static xmlTagName = "me:HinderedRotorPotential";
+    static tagName = "me:HinderedRotorPotential";
     /**
-     * @param attributes The attributes.
-     * @param PotentialPoint The PotentialPoint.
+     * @param {Map<string, string>} attributes The attributes.
+     * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */
-    constructor(attributes, PotentialPoint) {
-        super(attributes, HinderedRotorPotential.xmlTagName);
-        PotentialPoint.forEach(PotentialPoint => {
-            this.nodes.set(this.nodes.size, PotentialPoint);
+    constructor(attributes, potentialPoints) {
+        super(attributes, HinderedRotorPotential.tagName);
+        potentialPoints.forEach(p => {
+            this.nodes.set(this.nodes.size, p);
         });
     }
 }
 exports.HinderedRotorPotential = HinderedRotorPotential;
 /**
+ * A class for representing a Periodicity.
+ */
+class Periodicity extends xml_js_1.NumberNode {
+    static tagName = "me:periodicity";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Periodicity.tagName, value);
+    }
+}
+exports.Periodicity = Periodicity;
+/**
  * A class for representing the extra DOSC method.
  */
 class ExtraDOSCMethod extends xml_js_1.NodeWithNodes {
-    static xmlTagName = "me:ExtraDOSCMethod";
+    /**
+     * The tag name.
+     */
+    static tagName = "me:ExtraDOSCMethod";
     /**
      * @param attributes The attributes.
-     * @param bondRef The bondRef.
-     * @param HinderedRotorPotential The HinderedRotorPotential.
+     * @param {BondRef | undefined} bondRef The bondRef.
+     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
+     * @param {Periodicity | undefined} periodicity The Periodicity.
      */
-    constructor(attributes, bondRef, HinderedRotorPotential) {
-        super(attributes, ExtraDOSCMethod.xmlTagName);
-        this.nodes.set(0, bondRef);
-        this.nodes.set(1, HinderedRotorPotential);
+    constructor(attributes, bondRef, hinderedRotorPotential, periodicity) {
+        super(attributes, ExtraDOSCMethod.tagName);
+        if (bondRef) {
+            this.nodes.set(this.nodes.size, bondRef);
+        }
+        if (hinderedRotorPotential) {
+            this.nodes.set(this.nodes.size, hinderedRotorPotential);
+        }
+        if (periodicity) {
+            this.nodes.set(this.nodes.size, periodicity);
+        }
     }
 }
 exports.ExtraDOSCMethod = ExtraDOSCMethod;
@@ -340,7 +360,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
      * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
      */
-    constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod) {
+    constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod) {
         super(attributes, Molecule.tagName);
         let id = this.attributes.get("id");
         if (id == undefined) {

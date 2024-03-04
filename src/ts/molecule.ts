@@ -364,6 +364,26 @@ export class ExtraDOSCMethod extends NodeWithNodes {
 }
 
 /**
+ * A class for representing a reservoir size.
+ */
+export class ReservoirSize extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:reservoirSize";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, ReservoirSize.tagName, value);
+    }
+}
+
+
+/**
  * A class for representing a molecule.
  */
 export class Molecule extends NodeWithNodes {
@@ -405,6 +425,8 @@ export class Molecule extends NodeWithNodes {
      * @param {PropertyList | Property | undefined} properties The properties.
      * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
      * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
+     * @param {ExtraDOSCMethod | undefined} extraDOSCMethod The extra method for calculating density of states.
+     * @param {ReservoirSize | undefined} reservoirSize The reservoir size.
      */
     constructor(
         attributes: Map<string, string>,
@@ -413,7 +435,8 @@ export class Molecule extends NodeWithNodes {
         properties: PropertyList | Property | undefined,
         energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod,
-        extraDOSCMethod?: ExtraDOSCMethod) {
+        extraDOSCMethod?: ExtraDOSCMethod,
+        reservoirSize?: ReservoirSize) {
         super(attributes, Molecule.tagName);
         let id: string | undefined = this.attributes.get("id");
         if (id == undefined) {
@@ -455,6 +478,17 @@ export class Molecule extends NodeWithNodes {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
         }
+        // ExtraDOSCMethod
+        if (extraDOSCMethod) {
+            this.nodes.set(i, extraDOSCMethod);
+            this.index.set(ExtraDOSCMethod.tagName, i);
+        }
+        // ReservoirSize
+        if (reservoirSize) {
+            this.nodes.set(i, reservoirSize);
+            this.index.set(ReservoirSize.tagName, i);
+        }
+        
     }
 
     /**

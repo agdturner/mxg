@@ -8,7 +8,7 @@ import {
 } from './xml.js';
 
 import {
-    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef, AtomArray, BondArray, PropertyList, PropertyScalar, PropertyArray, ExtraDOSCMethod, BondRef, HinderedRotorPotential, PotentialPoint, Periodicity
+    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, MoleculeRef, AtomArray, BondArray, PropertyList, PropertyScalar, PropertyArray, ExtraDOSCMethod, BondRef, HinderedRotorPotential, PotentialPoint, Periodicity, ReservoirSize
 } from './molecule.js';
 
 import {
@@ -357,7 +357,6 @@ function initMolecules(xml: XMLDocument): void {
             if (els.length != 1) {
                 throw new Error("Expecting only 1 extra DOSCMethod, but there are " + els.length);
             }
-            let attributes: Map<string, string> = getAttributes(els[0]);
             // Read bondRef.
             let bondRefs: HTMLCollectionOf<Element> = els[0].getElementsByTagName(BondRef.tagName);
             let bondRef: BondRef | undefined;
@@ -392,7 +391,18 @@ function initMolecules(xml: XMLDocument): void {
                 periodicity = new Periodicity(getAttributes(xml_periodicities[0]),
                     parseFloat(getNodeValue(getFirstChildNode(xml_periodicities[0]))));
             }
-            extraDOSCMethod = new ExtraDOSCMethod(attributes, bondRef, hinderedRotorPotential, periodicity);
+            extraDOSCMethod = new ExtraDOSCMethod(getAttributes(els[0]), bondRef, hinderedRotorPotential, periodicity);
+        }
+
+        // Read reservoirSize.
+        moleculeTagNames.delete("reservoirSize");
+        let reservoirSize: ReservoirSize | undefined;
+        els = xml_molecules[i].getElementsByTagName(ReservoirSize.tagName);
+        if (els.length > 0) {
+            if (els.length != 1) {
+                throw new Error("Expecting only 1 reservoirSize, but there are " + els.length);
+            }
+            reservoirSize = new ReservoirSize(getAttributes(els[0]), parseFloat(getNodeValue(getFirstChildNode(els[0]))));
         }
 
         // Check for unexpected tags.
@@ -403,7 +413,8 @@ function initMolecules(xml: XMLDocument): void {
             //throw new Error("Unexpected tags in molecule.");
         }
 
-        let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod);
+        let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod, 
+            extraDOSCMethod, reservoirSize);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
