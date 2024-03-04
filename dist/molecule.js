@@ -581,12 +581,16 @@ class MoleculeRef extends xml_js_1.NodeWithNodes {
         this.nodes.set(0, molecule);
         this.molecules = molecules;
     }
+    /**
+     * A convenience method to get the molecule abbreviation.
+     * @returns The molecule abbreviation.
+     */
     getMoleculeAbb() {
         return this.nodes.get(0);
     }
     /**
-     * A convenience method to get the ref (the molecule ID) of the transition state.
-     * @returns The ref of the transition state.
+     * A convenience method to get the ref (the molecule ID) of the molecule.
+     * @returns The ref of the molecule.
      */
     getRef() {
         let s = this.getMoleculeAbb().attributes.get("ref");

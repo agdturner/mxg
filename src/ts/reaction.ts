@@ -6,8 +6,6 @@ import {
     TagWithAttributes, NodeWithNodes, NumberNode, getTag
 } from './xml.js';
 
-
-
 /**
  * A class for representing a reactant - a molecule that reacts in a reaction.
  */
@@ -68,7 +66,7 @@ export class TransitionState extends MoleculeRef {
      */
     constructor(attributes: Map<string, string>, molecule: TagWithAttributes,
         molecules: Map<string, Molecule>) {
-        super(attributes, Product.tagName, molecule, molecules);
+        super(attributes, TransitionState.tagName, molecule, molecules);
     }
 }
 
@@ -172,7 +170,7 @@ export class Tunneling extends TagWithAttributes {
  * A class for representing the MCRCMethod specifications.
  * Extended classes indicate how microcanonical rate constant is to be treated.
  */
-export class MCRCMethod extends NodeWithNodes {
+export class MCRCMethod extends TagWithAttributes {
 
     /**
      * The tag name.
@@ -195,7 +193,7 @@ export class MesmerILT extends NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:MesmerILT";
+    static readonly xsiType: string = "me:MesmerILT";
 
     /**
      * The index for the nodes. 
@@ -212,26 +210,29 @@ export class MesmerILT extends NodeWithNodes {
     constructor(attributes: Map<string, string>, preExponential: PreExponential | undefined,
         activationEnergy: ActivationEnergy | undefined, tInfinity: TInfinity | undefined,
         nInfinity: NInfinity | undefined) {
-        super(attributes, "me:MesmerILT");
+        super(attributes, MCRCMethod.tagName);
         this.index = new Map<string, number>();
         if (preExponential != undefined) {
-            this.index.set(preExponential.tagName, this.index.size);
+            this.index.set(PreExponential.tagName, this.index.size);
             this.addNode(preExponential);
         }
         if (activationEnergy != undefined) {
-            this.index.set(activationEnergy.tagName, this.index.size);
+            this.index.set(ActivationEnergy.tagName, this.index.size);
             this.addNode(activationEnergy);
         }
         if (tInfinity != undefined) {
-            this.index.set(tInfinity.tagName, this.index.size);
+            this.index.set(TInfinity.tagName, this.index.size);
             this.addNode(tInfinity);
         }
         if (nInfinity != undefined) {
-            this.index.set(nInfinity.tagName, this.index.size);
+            this.index.set(NInfinity.tagName, this.index.size);
             this.addNode(nInfinity);
         }
     }
 
+    /**
+     * @returns The pre-exponential factor or undefined if it does not exist.
+     */
     getPreExponential(): PreExponential | undefined {
         let i: number | undefined = this.index.get(PreExponential.tagName);
         if (i == undefined) {
@@ -240,6 +241,9 @@ export class MesmerILT extends NodeWithNodes {
         return this.nodes.get(i) as PreExponential;
     }
 
+    /**
+     * @returns The activation energy or undefined if it does not exist.
+     */
     getActivationEnergy(): ActivationEnergy | undefined {
         let i: number | undefined = this.index.get(ActivationEnergy.tagName);
         if (i == undefined) {
@@ -248,6 +252,9 @@ export class MesmerILT extends NodeWithNodes {
         return this.nodes.get(i) as ActivationEnergy;
     }
 
+    /**
+     * @returns The TInfinity or undefined if it does not exist.
+     */
     getTInfinity(): TInfinity | undefined {
         let i: number | undefined = this.index.get(TInfinity.tagName);
         if (i == undefined) {
@@ -256,6 +263,9 @@ export class MesmerILT extends NodeWithNodes {
         return this.nodes.get(i) as TInfinity;
     }
 
+    /**
+     * @returns The NInfinity or undefined if it does not exist.
+     */
     getNInfinity(): NInfinity | undefined {
         let i: number | undefined = this.index.get(NInfinity.tagName);
         if (i == undefined) {
@@ -376,6 +386,22 @@ export class DefinedSumOfStates extends MCRCMethod {
 }
 */
 
+export class ExcessReactantConc extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:excessReactantConc";
+
+    /**
+     * @param {Map<string, string>} attributes The attributes. 
+     * @param {number} value The value of the factor.
+     */ 
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, ExcessReactantConc.tagName, value);
+    }
+}
+
 /**
  * A class for representing a reaction.
  */
@@ -389,61 +415,117 @@ export class Reaction extends NodeWithNodes {
     /**
      * The index for the nodes. The key is the type of node, the value is the index of the node in the nodes array.
      */
-    index : Map<string, number | Map<string, number>>;
-    
-    /**
-     * The id of the reaction. This is also stored in the attributes, but is hee for convenience...
-     */
-    id: string;
+    index: Map<string, number | Map<string, number>>;
 
     /**
      * The reactants.
      */
-    reactants: Reactant[];
+    reactants: Map<string, Reactant> | Reactant | undefined;
 
     /**
      * The products.
      */
-    products: Product[];
+    products: Map<string, Product> | Product | undefined;
+
+    /**
+     * The transition states.
+     */
+    transitionStates: Map<string, TransitionState> | TransitionState | undefined;
 
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {string} id The id of the reaction.
-     * @param {Reactant[]} reactants The reactants in the reaction.
-     * @param {Product[]} products The products of the reaction.
-     * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
-     * @param {TransitionState | undefined} transitionState The transition state (optional).
+     * @param {Map<string, Reactant> | Reactant | undefined} reactants The reactants in the reaction.
+     * @param {Map<string, Product> | Product | undefined} products The products of the reaction.
      * @param {Tunneling | undefined} tunneling The tunneling (optional).
+     * @param {Map<string, TransitionState> | TransitionState | undefined} transitionStates The transition states (optional).
+     * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
+     * @param {ExcessReactantConc | undefined} excessReactantConc The excess reactant concentration (optional).
      */
     constructor(attributes: Map<string, string>, id: string,
-        reactants: Reactant[], products: Product[],
+        reactants: Map<string, Reactant> | Reactant | undefined,
+        products: Map<string, Product> | Product | undefined,
+        tunneling?: Tunneling | undefined,
+        transitionStates?: Map<string, TransitionState> | TransitionState | undefined,
         mCRCMethod?: MCRCMethod | undefined,
-        transitionState?: TransitionState | undefined,
-        tunneling?: Tunneling | undefined) {
+        excessReactantConc?: ExcessReactantConc | undefined) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
-        this.id = id;
         this.reactants = reactants;
-        reactants.forEach(reactant => {
-            this.addNode(reactant);
-            this.addToIndex(reactant);
-        });
-        this.products = products;
-        products.forEach(product => {
-            this.addNode(product);
-            this.addToIndex(Product.tagName, this.index.size);
-        });
-        if (mCRCMethod != undefined) {
-            this.addNode(mCRCMethod);
-            this.index.set(MCRCMethod.tagName, this.index.size);
+        console.log("Construct reaction:");
+        if (reactants instanceof Map) {
+            console.log("Map of reactants");
+            reactants.forEach(reactant => {
+                this.addToIndex(Reactant.tagName, reactant);
+                this.addNode(reactant);
+                //console.log("Added reactant " + reactant);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            });
+        } else {
+            console.log("Individual reactant");
+            if (reactants != undefined) {
+                //this.addToIndex(Reactant.tagName, reactants);
+                this.index.set(Reactant.tagName, this.nodes.size);
+                this.addNode(reactants);
+                //console.log("Added reactant " + reactants);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            }
         }
-        if (transitionState) {
-            this.addNode(transitionState);
-            this.index.set(TransitionState.tagName, this.index.size);
+        this.products = products;
+        if (products instanceof Map) {
+            console.log("Map of products");
+            products.forEach(product => {
+                this.addToIndex(Product.tagName, product);
+                this.addNode(product);
+                //console.log("Added product " + product);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            });
+        } else {
+            if (products != undefined) {
+                console.log("Individual product");
+                //this.addToIndex(Product.tagName, products);
+                this.index.set(Product.tagName, this.nodes.size);
+                this.addNode(products);
+                //console.log("Added product " + products);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            }
         }
         if (tunneling) {
+            this.index.set(Tunneling.tagName, this.nodes.size);
             this.addNode(tunneling);
-            this.index.set(Tunneling.tagName, this.index.size);
+        }
+        this.transitionStates = transitionStates;
+        if (transitionStates instanceof Map) {
+            console.log("Map of transition states");
+            transitionStates.forEach(transitionState => {
+                this.addToIndex(TransitionState.tagName, transitionState);
+                this.addNode(transitionState);
+                //console.log("Added transition state " + transitionState);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            });
+        } else {
+            if (transitionStates != undefined) {
+                console.log("Individual transition state");
+                //this.addToIndex(TransitionState.tagName, transitionStates);
+                this.index.set(TransitionState.tagName, this.nodes.size);
+                this.addNode(transitionStates);
+                //console.log("Added transition state " + transitionStates);
+                //console.log("index.size: " + this.index.size);
+                //console.log("nodes.size: " + this.nodes.size);
+            }
+        }
+        if (mCRCMethod != undefined) {
+            this.index.set(MCRCMethod.tagName, this.nodes.size);
+            this.addNode(mCRCMethod);
+        }
+        if (excessReactantConc) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
         }
     }
 
@@ -451,29 +533,25 @@ export class Reaction extends NodeWithNodes {
      * Add a node to the index.
      * @returns 0 or 1 depeding on if the index has a new entry.
      */
-    addToIndex(reactant: Reactant) {
-        let value0: Map<string, number> | number | undefined = this.index.get(Reactant.tagName);
+    addToIndex(tagName: string, moleculeRef: MoleculeRef) {
+        let value0: Map<string, number> | number | undefined = this.index.get(tagName);
         if (value0 == undefined) {
-            this.index.set(Reactant.tagName, this.index.size);
-        } else if (typeof value0 === 'number') {
-            let map: Map<string, number> = new Map<string, number>();
-            map.set((this.nodes.get(value0) as Reactant).getRef(), value0 as number);
-            map.set(reactant.getRef(), this.index.size);
-            this.index.set(Reactant.tagName, map);
+            this.index.set(tagName, this.nodes.size);
+        } else if (value0 instanceof Map) {
+            (value0 as Map<string, number>).set(moleculeRef.getRef(), this.nodes.size);
         } else {
-            (value0 as Map<string, number>).set(reactant.getRef(), this.index.size);
+            let map: Map<string, number> = new Map<string, number>();
+            map.set((this.nodes.get(value0) as MoleculeRef).getRef(), value0 as number);
+            map.set(moleculeRef.getRef(), this.nodes.size);
+            this.index.set(tagName, map);
         }
     }
 
     /**
-     * @returns The tranistionState node or undefined if it does not exist.
+     * @returns The id of the reaction.
      */
-    getTransitionState(): TransitionState | undefined {
-        let i: Map<string, number> | number | undefined = this.index.get(TransitionState.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        return this.nodes.get(i as number) as TransitionState;
+    getID(): string {
+        return this.attributes.get("id") as string;
     }
 
     /**
@@ -499,11 +577,28 @@ export class Reaction extends NodeWithNodes {
     }
 
     /**
+     * @returns The excess reactant concentration or undefined if it does not exist.
+     */
+    getExcessReactantConc(): ExcessReactantConc | undefined {
+        let i: Map<string, number> | number | undefined = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i as number) as ExcessReactantConc;
+    }
+
+    /**
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */
-    getReactantsLabel(): string {
-        return this.reactants.map(reactant => reactant.getRef()).join(' + ');
+    getReactantsLabel(): string | undefined {
+        if (this.reactants == undefined) {
+            return undefined;
+        } else if (this.reactants instanceof Map) {
+            return Array.from(this.reactants.keys()).join(' + ');
+        } else {
+            return this.reactants.getRef();
+        }
     }
 
     /**
@@ -511,15 +606,24 @@ export class Reaction extends NodeWithNodes {
      * @returns The combined energy of the reactants.
      */
     getReactantsEnergy(): number {
-        return this.reactants.map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        if (this.reactants instanceof Map) {
+            return Array.from(this.reactants.values()).map(reactant => reactant.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        }
+        return 0;
     }
 
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */
-    getProductsLabel(): string {
-        return this.products.map(product => product.getRef()).join(' + ');
+    getProductsLabel(): string | undefined {
+        if (this.products == undefined) {
+            return undefined;
+        } else if (this.products instanceof Map) {
+            return Array.from(this.products.keys()).join(' + ');
+        } else {
+            return this.products.getRef();
+        }
     }
 
     /**
@@ -527,7 +631,10 @@ export class Reaction extends NodeWithNodes {
      * @returns The total energy of all products.
      */
     getProductsEnergy(): number {
-        return this.products.map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        if (this.products instanceof Map) {
+            return Array.from(this.products.values()).map(product => product.getMolecule().getEnergy()).reduce((a, b) => a + b, 0);
+        }
+        return 0;
     }
 
     /**

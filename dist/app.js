@@ -28,7 +28,7 @@ let mesmerEndTag;
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */
-let molecules = new Map([]);
+let molecules = new Map();
 /**
  * For storing the maximum molecule energy in a reaction.
  */
@@ -40,7 +40,7 @@ let minMoleculeEnergy = Infinity;
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
-let reactions = new Map([]);
+let reactions = new Map();
 /**
  * The header of the XML file.
  */
@@ -770,95 +770,148 @@ function initReactions(xml) {
         if (reactionID != null) {
             console.log("id=" + reactionID);
             // Load reactants.
-            let reactants = [];
+            let reactants;
             let xml_reactants = xml_reactions[i].getElementsByTagName(reaction_js_1.Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
-            for (let j = 0; j < xml_reactants.length; j++) {
-                let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
-                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
-                reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
+            if (xml_reactants.length > 0) {
+                if (xml_reactants.length < 2) {
+                    let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[0], molecule_js_1.Molecule.tagName);
+                    let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                    reactants = new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[0]), twa, molecules);
+                }
+                else {
+                    reactants = new Map();
+                    for (let j = 0; j < xml_reactants.length; j++) {
+                        let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
+                        let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                        let reactant = new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[j]), twa, molecules);
+                        reactants.set(reactant.getRef(), reactant);
+                    }
+                }
             }
             // Load products.
-            let products = [];
+            let products;
             let xml_products = xml_reactions[i].getElementsByTagName(reaction_js_1.Product.tagName);
             //console.log("xml_products.length=" + xml_products.length);
-            for (let j = 0; j < xml_products.length; j++) {
-                let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
-                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
-                products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules));
+            if (xml_products.length > 0) {
+                if (xml_products.length < 2) {
+                    let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[0], molecule_js_1.Molecule.tagName);
+                    let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                    products = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[0]), twa, molecules);
+                }
+                else {
+                    products = new Map();
+                    for (let j = 0; j < xml_products.length; j++) {
+                        let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
+                        let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                        let product = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), twa, molecules);
+                        products.set(product.getRef(), product);
+                    }
+                }
+            }
+            // Load transition states.
+            //console.log("Load  transition states...");
+            let xml_transitionState = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
+            let transitionStates;
+            if (xml_transitionState.length > 0) {
+                if (xml_transitionState.length < 2) {
+                    let xml_molecule = xml_transitionState[0].getElementsByTagName(molecule_js_1.Molecule.tagName)[0];
+                    let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                    transitionStates = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionState[0]), twa, molecules);
+                }
+                else {
+                    transitionStates = new Map();
+                    for (let j = 0; j < xml_transitionState.length; j++) {
+                        let xml_molecule = xml_transitionState[j].getElementsByTagName(molecule_js_1.Molecule.tagName)[0];
+                        let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
+                        let transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionState[j]), twa, molecules);
+                        transitionStates.set(transitionState.getRef(), transitionState);
+                    }
+                }
+            }
+            console.log("transitionStates=" + transitionStates);
+            // Load tunneling.
+            let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
+            let tunneling;
+            if (xml_tunneling.length > 0) {
+                if (xml_tunneling.length > 1) {
+                    throw new Error("Expecting 1 " + reaction_js_1.Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
+                }
+                tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
             }
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
             let mCRCMethod;
             let xml_MCRCMethod = xml_reactions[i].getElementsByTagName(reaction_js_1.MCRCMethod.tagName);
             //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+            console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
             if (xml_MCRCMethod.length > 0) {
-                let attributes = (0, xml_js_1.getAttributes)(xml_MCRCMethod[0]);
-                let name = attributes.get("name");
-                if (name == null) {
-                    let type = attributes.get("xsi:type");
-                    if (type != null) {
-                        if (type === reaction_js_1.MesmerILT.tagName) {
-                            let preExponential;
-                            let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.PreExponential.tagName);
-                            if (xml_preExponential != null) {
-                                if (xml_preExponential[0] != null) {
-                                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_preExponential[0])));
-                                    preExponential = new reaction_js_1.PreExponential((0, xml_js_1.getAttributes)(xml_preExponential[0]), value);
-                                }
-                            }
-                            let activationEnergy;
-                            let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.ActivationEnergy.tagName);
-                            if (xml_activationEnergy != null) {
-                                if (xml_activationEnergy[0] != null) {
-                                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_activationEnergy[0])));
-                                    activationEnergy = new reaction_js_1.ActivationEnergy((0, xml_js_1.getAttributes)(xml_activationEnergy[0]), value);
-                                }
-                            }
-                            let tInfinity;
-                            let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
-                            if (xml_tInfinity != null) {
-                                if (xml_tInfinity[0] != null) {
-                                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
-                                    tInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_tInfinity[0]), value);
-                                }
-                            }
-                            let nInfinity;
-                            let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
-                            if (xml_nInfinity != null) {
-                                if (xml_nInfinity[0] != null) {
-                                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
-                                    nInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_nInfinity[0]), value);
-                                }
-                            }
-                            mCRCMethod = new reaction_js_1.MesmerILT(attributes, preExponential, activationEnergy, tInfinity, nInfinity);
-                        }
-                    }
+                if (xml_MCRCMethod.length > 1) {
+                    throw new Error("Expecting 1 " + reaction_js_1.MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
                 }
                 else {
-                    mCRCMethod = new reaction_js_1.MCRCMethod(attributes);
+                    let mCRCMethodAttributes = (0, xml_js_1.getAttributes)(xml_MCRCMethod[0]);
+                    let name = mCRCMethodAttributes.get("name");
+                    console.log(reaction_js_1.MCRCMethod.tagName + " name=" + name);
+                    if (name == undefined) {
+                        let type = mCRCMethodAttributes.get("xsi:type");
+                        console.log(reaction_js_1.MCRCMethod.tagName + "xsi:type=" + type);
+                        if (type != undefined) {
+                            if (type == reaction_js_1.MesmerILT.xsiType) {
+                                let preExponential;
+                                let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.PreExponential.tagName);
+                                if (xml_preExponential != null) {
+                                    if (xml_preExponential[0] != null) {
+                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_preExponential[0])));
+                                        preExponential = new reaction_js_1.PreExponential((0, xml_js_1.getAttributes)(xml_preExponential[0]), value);
+                                    }
+                                }
+                                console.log("preExponential " + preExponential);
+                                let activationEnergy;
+                                let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.ActivationEnergy.tagName);
+                                if (xml_activationEnergy != null) {
+                                    if (xml_activationEnergy[0] != null) {
+                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_activationEnergy[0])));
+                                        activationEnergy = new reaction_js_1.ActivationEnergy((0, xml_js_1.getAttributes)(xml_activationEnergy[0]), value);
+                                    }
+                                }
+                                let tInfinity;
+                                let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
+                                if (xml_tInfinity != null) {
+                                    if (xml_tInfinity[0] != null) {
+                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
+                                        tInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_tInfinity[0]), value);
+                                    }
+                                }
+                                let nInfinity;
+                                let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
+                                if (xml_nInfinity != null) {
+                                    if (xml_nInfinity[0] != null) {
+                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
+                                        nInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_nInfinity[0]), value);
+                                    }
+                                }
+                                mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                            }
+                        }
+                    }
+                    else {
+                        mCRCMethod = new reaction_js_1.MCRCMethod(mCRCMethodAttributes);
+                    }
                 }
             }
-            // Load transition state.
-            //console.log("Load  transition state...");
-            let xml_transitionState = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
-            let transitionState;
-            if (xml_transitionState.length > 0) {
-                let xml_molecule = xml_transitionState[0].getElementsByTagName(molecule_js_1.Molecule.tagName)[0];
-                let twa = new xml_js_1.TagWithAttributes((0, xml_js_1.getAttributes)(xml_molecule), molecule_js_1.Molecule.tagName);
-                transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_molecule), twa, molecules);
-                //let moleculeID: string = getAttribute(xml_molecule, "ref");
-                //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
-                //console.log("transitionState role=" + transitionState.attributes.get("role"));
+            // Load excessReactantConc
+            let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
+            let excessReactantConc;
+            if (xml_excessReactantConc.length > 0) {
+                if (xml_excessReactantConc.length > 1) {
+                    throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
+                }
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_excessReactantConc[0])));
+                excessReactantConc = new reaction_js_1.ExcessReactantConc((0, xml_js_1.getAttributes)(xml_excessReactantConc[0]), value);
             }
-            // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
-            let tunneling;
-            if (xml_tunneling.length > 0) {
-                tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
-            }
-            let reaction = new reaction_js_1.Reaction(attributes, reactionID, reactants, products, mCRCMethod, transitionState, tunneling);
+            // Create reaction.
+            let reaction = new reaction_js_1.Reaction(attributes, reactionID, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc);
             reactions.set(reactionID, reaction);
             //console.log("reaction=" + reaction);
         }
@@ -905,64 +958,98 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
     let energyMin = Number.MAX_VALUE;
     let energyMax = Number.MIN_VALUE;
     reactions.forEach(function (reaction, id) {
-        // Get TransitionState if there is one.
-        let transitionState = reaction.getTransitionState();
+        // Get TransitionStates.
+        let reactionTransitionStates = reaction.transitionStates;
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
-        reactants.add(reactantsLabel);
-        if (products.has(reactantsLabel)) {
-            intProducts.add(reactantsLabel);
+        if (reactantsLabel != undefined) {
+            reactants.add(reactantsLabel);
+            if (products.has(reactantsLabel)) {
+                intProducts.add(reactantsLabel);
+            }
+            let energy = reaction.getReactantsEnergy();
+            energyMin = Math.min(energyMin, energy);
+            energyMax = Math.max(energyMax, energy);
+            energies.set(reactantsLabel, energy);
+            if (!orders.has(reactantsLabel)) {
+                orders.set(reactantsLabel, i);
+                i++;
+            }
         }
-        let energy = reaction.getReactantsEnergy();
-        energyMin = Math.min(energyMin, energy);
-        energyMax = Math.max(energyMax, energy);
-        energies.set(reactantsLabel, energy);
         let productsLabel = reaction.getProductsLabel();
-        products.add(productsLabel);
-        energy = reaction.getProductsEnergy();
-        energyMin = Math.min(energyMin, energy);
-        energyMax = Math.max(energyMax, energy);
-        energies.set(productsLabel, energy);
-        if (!orders.has(reactantsLabel)) {
-            orders.set(reactantsLabel, i);
-            i++;
-        }
-        if (orders.has(productsLabel)) {
-            i--;
-            let j = (0, util_js_1.get)(orders, productsLabel);
-            // Move product to end and shift everything back.
-            orders.forEach(function (value, key) {
-                if (value > j) {
-                    orders.set(key, value - 1);
+        if (productsLabel != undefined) {
+            products.add(productsLabel);
+            let energy = reaction.getProductsEnergy();
+            energyMin = Math.min(energyMin, energy);
+            energyMax = Math.max(energyMax, energy);
+            energies.set(productsLabel, energy);
+            if (orders.has(productsLabel)) {
+                i--;
+                let j = (0, util_js_1.get)(orders, productsLabel);
+                // Move product to end and shift everything back.
+                orders.forEach(function (value, key) {
+                    if (value > j) {
+                        orders.set(key, value - 1);
+                    }
+                });
+                // Insert transition states.
+                if (reactionTransitionStates != undefined) {
+                    if (reactionTransitionStates instanceof Map) {
+                        reactionTransitionStates.forEach(function (ts, id) {
+                            let tsn = ts.getRef();
+                            transitionStates.add(tsn);
+                            orders.set(tsn, i);
+                            energy = ts.getMolecule().getEnergy();
+                            energyMin = Math.min(energyMin, energy);
+                            energyMax = Math.max(energyMax, energy);
+                            energies.set(tsn, energy);
+                            i++;
+                        });
+                    }
+                    else {
+                        let ts = reactionTransitionStates;
+                        let tsn = ts.getRef();
+                        transitionStates.add(tsn);
+                        orders.set(tsn, i);
+                        energy = ts.getMolecule().getEnergy();
+                        energyMin = Math.min(energyMin, energy);
+                        energyMax = Math.max(energyMax, energy);
+                        energies.set(tsn, energy);
+                        i++;
+                    }
+                    orders.set(productsLabel, i);
+                    i++;
                 }
-            });
-            // Insert transition state.
-            if (transitionState != undefined) {
-                let tsn = transitionState.getRef();
-                transitionStates.add(tsn);
-                orders.set(tsn, i);
-                energy = transitionState.getMolecule().getEnergy();
-                energyMin = Math.min(energyMin, energy);
-                energyMax = Math.max(energyMax, energy);
-                energies.set(tsn, energy);
+            }
+            else {
+                if (reactionTransitionStates != undefined) {
+                    if (reactionTransitionStates instanceof Map) {
+                        reactionTransitionStates.forEach(function (ts, id) {
+                            let tsn = ts.getRef();
+                            transitionStates.add(tsn);
+                            orders.set(tsn, i);
+                            energy = ts.getMolecule().getEnergy();
+                            energyMin = Math.min(energyMin, energy);
+                            energyMax = Math.max(energyMax, energy);
+                            energies.set(tsn, energy);
+                            i++;
+                        });
+                    }
+                    else {
+                        let ts = reactionTransitionStates;
+                        let tsn = ts.getRef();
+                        transitionStates.add(tsn);
+                        orders.set(tsn, i);
+                        energy = ts.getMolecule().getEnergy();
+                        energyMin = Math.min(energyMin, energy);
+                        energyMax = Math.max(energyMax, energy);
+                        energies.set(tsn, energy);
+                        i++;
+                    }
+                }
+                orders.set(productsLabel, i);
                 i++;
             }
-            orders.set(productsLabel, i);
-            i++;
-        }
-        else {
-            if (transitionState != undefined) {
-                let tsn = transitionState.getRef();
-                transitionStates.add(tsn);
-                orders.set(tsn, i);
-                energy = transitionState.getMolecule().getEnergy();
-                energyMin = Math.min(energyMin, energy);
-                energyMax = Math.max(energyMax, energy);
-                energies.set(tsn, energy);
-                i++;
-            }
-            orders.set(productsLabel, i);
-            i++;
         }
     });
     //console.log("orders=" + mapToString(orders));
@@ -1041,18 +1128,31 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
         // Get TransitionState if there is one.
-        let transitionState = reaction.getTransitionState();
+        let reactionTransitionStates = reaction.transitionStates;
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         let productsLabel = reaction.getProductsLabel();
         let reactantOutXY = (0, util_js_1.get)(reactantsOutXY, reactantsLabel);
         let productInXY = (0, util_js_1.get)(productsInXY, productsLabel);
-        if (transitionState != undefined) {
-            let transitionStateLabel = transitionState.getRef();
-            let transitionStateInXY = (0, util_js_1.get)(transitionStatesInXY, transitionStateLabel);
-            (0, canvas_js_1.drawLine)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
-            let transitionStateOutXY = (0, util_js_1.get)(transitionStatesOutXY, transitionStateLabel);
-            (0, canvas_js_1.drawLine)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
+        if (reactionTransitionStates != undefined) {
+            if (reactionTransitionStates instanceof Map) {
+                reactionTransitionStates.forEach(function (ts, id) {
+                    let transitionState = ts;
+                    let transitionStateLabel = transitionState.getRef();
+                    let transitionStateInXY = (0, util_js_1.get)(transitionStatesInXY, transitionStateLabel);
+                    (0, canvas_js_1.drawLine)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
+                    let transitionStateOutXY = (0, util_js_1.get)(transitionStatesOutXY, transitionStateLabel);
+                    (0, canvas_js_1.drawLine)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
+                });
+            }
+            else {
+                let transitionState = reactionTransitionStates;
+                let transitionStateLabel = transitionState.getRef();
+                let transitionStateInXY = (0, util_js_1.get)(transitionStatesInXY, transitionStateLabel);
+                (0, canvas_js_1.drawLine)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
+                let transitionStateOutXY = (0, util_js_1.get)(transitionStatesOutXY, transitionStateLabel);
+                (0, canvas_js_1.drawLine)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
+            }
         }
         else {
             (0, canvas_js_1.drawLine)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
@@ -1152,22 +1252,36 @@ function displayReactionsTable() {
         "PreExponential", "Activation Energy", "TInfinity", "NInfinity"]);
     reactions.forEach(function (reaction, id) {
         //console.log("id=" + id);
-        //console.log("reaction=" + reaction);
-        let reactants = (0, util_js_2.arrayToString)(Array.from(reaction.reactants.keys()), " ");
-        let products = (0, util_js_2.arrayToString)(Array.from(reaction.products.keys()), " ");
+        console.log("reaction=" + reaction);
+        let reactants = reaction.getReactantsLabel() || "";
+        let products = reaction.getProductsLabel() || "";
         let transitionState = "";
         let preExponential = "";
         let activationEnergy = "";
         let tInfinity = "";
         let nInfinity = "";
-        let ts = reaction.getTransitionState();
-        if (ts != undefined) {
-            let name = ts.attributes.get("name");
-            if (name != null) {
-                transitionState = name;
+        let tSs = reaction.transitionStates;
+        console.log("tSs=" + tSs);
+        if (tSs != undefined) {
+            if (tSs instanceof Map) {
+                // Join all names together.
+                tSs.forEach(function (ts) {
+                    let name = ts.getRef();
+                    if (name != null) {
+                        transitionState = name + " ";
+                    }
+                });
+            }
+            else {
+                let ts = tSs;
+                let name = ts.getRef();
+                if (name != null) {
+                    transitionState = name;
+                }
             }
         }
         let mCRCMethod = reaction.getMCRCMethod();
+        //console.log("mCRCMethod=" + mCRCMethod);
         if (mCRCMethod != undefined) {
             if (mCRCMethod instanceof reaction_js_1.MesmerILT) {
                 let mp = mCRCMethod.getPreExponential();

@@ -13,7 +13,7 @@ import {
 
 import {
     Reaction, TransitionState, Reactant, Product, MCRCMethod, MesmerILT,
-    PreExponential, ActivationEnergy, NInfinity, ZhuNakamuraCrossing, Tunneling, TInfinity
+    PreExponential, ActivationEnergy, NInfinity, ZhuNakamuraCrossing, Tunneling, TInfinity, ExcessReactantConc
 } from './reaction.js';
 
 import {
@@ -99,7 +99,7 @@ let mesmerEndTag: string;
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */
-let molecules: Map<string, Molecule> = new Map([]);
+let molecules: Map<string, Molecule> = new Map();
 
 /**
  * For storing the maximum molecule energy in a reaction.
@@ -114,7 +114,7 @@ let minMoleculeEnergy: number = Infinity;
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
-let reactions: Map<string, Reaction> = new Map([]);
+let reactions: Map<string, Reaction> = new Map();
 
 /**
  * The header of the XML file.
@@ -860,96 +860,152 @@ function initReactions(xml: XMLDocument): void {
         }
         if (reactionID != null) {
             console.log("id=" + reactionID);
+
             // Load reactants.
-            let reactants: Reactant[] = [];
+            let reactants: Map<string, Reactant> | Reactant | undefined;
             let xml_reactants: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
-            for (let j = 0; j < xml_reactants.length; j++) {
-                let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
-                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
-                reactants.push(new Reactant(getAttributes(xml_molecule), twa, molecules));
+            if (xml_reactants.length > 0) {
+                if (xml_reactants.length < 2) {
+                    let xml_molecule: Element = getFirstElement(xml_reactants[0], Molecule.tagName);
+                    let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                    reactants = new Reactant(getAttributes(xml_reactants[0]), twa, molecules);
+                } else {
+                    reactants = new Map();
+                    for (let j = 0; j < xml_reactants.length; j++) {
+                        let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
+                        let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                        let reactant = new Reactant(getAttributes(xml_reactants[j]), twa, molecules);
+                        reactants.set(reactant.getRef(), reactant);
+                    }
+                }
             }
+
             // Load products.
-            let products: Product[] = [];
+            let products: Map<string, Product> | Product | undefined;
             let xml_products: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Product.tagName);
             //console.log("xml_products.length=" + xml_products.length);
-            for (let j = 0; j < xml_products.length; j++) {
-                let xml_molecule = getFirstElement(xml_products[j], Molecule.tagName);
-                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
-                products.push(new Product(getAttributes(xml_molecule), twa, molecules));
+            if (xml_products.length > 0) {
+                if (xml_products.length < 2) {
+                    let xml_molecule: Element = getFirstElement(xml_products[0], Molecule.tagName);
+                    let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                    products = new Product(getAttributes(xml_products[0]), twa, molecules);
+                } else {
+                    products = new Map();
+                    for (let j = 0; j < xml_products.length; j++) {
+                        let xml_molecule: Element = getFirstElement(xml_products[j], Molecule.tagName);
+                        let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                        let product = new Product(getAttributes(xml_products[j]), twa, molecules);
+                        products.set(product.getRef(), product);
+                    }
+                }
             }
+
+            // Load transition states.
+            //console.log("Load  transition states...");
+            let xml_transitionState: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(TransitionState.tagName);
+            let transitionStates: Map<string, TransitionState> | TransitionState | undefined;
+            if (xml_transitionState.length > 0) {
+                if (xml_transitionState.length < 2) {
+                    let xml_molecule: Element = xml_transitionState[0].getElementsByTagName(Molecule.tagName)[0];
+                    let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                    transitionStates = new TransitionState(getAttributes(xml_transitionState[0]), twa, molecules);
+                } else {
+                    transitionStates = new Map();
+                    for (let j = 0; j < xml_transitionState.length; j++) {
+                        let xml_molecule: Element = xml_transitionState[j].getElementsByTagName(Molecule.tagName)[0];
+                        let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
+                        let transitionState = new TransitionState(getAttributes(xml_transitionState[j]), twa, molecules);
+                        transitionStates.set(transitionState.getRef(), transitionState);
+                    }
+                }
+            }
+            console.log("transitionStates=" + transitionStates);
+
+            // Load tunneling.
+            let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
+            let tunneling: Tunneling | undefined;
+            if (xml_tunneling.length > 0) {
+                if (xml_tunneling.length > 1) {
+                    throw new Error("Expecting 1 " + Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
+                }
+                tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
+            }
+
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
             let mCRCMethod: MCRCMethod | undefined;
             let xml_MCRCMethod: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(MCRCMethod.tagName);
             //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+            console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
             if (xml_MCRCMethod.length > 0) {
-                let attributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
-                let name: string | undefined = attributes.get("name");
-                if (name == null) {
-                    let type = attributes.get("xsi:type");
-                    if (type != null) {
-                        if (type === MesmerILT.tagName) {
-                            let preExponential: PreExponential | undefined;
-                            let xml_preExponential: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
-                            if (xml_preExponential != null) {
-                                if (xml_preExponential[0] != null) {
-                                    let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_preExponential[0])));
-                                    preExponential = new PreExponential(getAttributes(xml_preExponential[0]), value);
-                                }
-                            }
-                            let activationEnergy: ActivationEnergy | undefined;
-                            let xml_activationEnergy: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
-                            if (xml_activationEnergy != null) {
-                                if (xml_activationEnergy[0] != null) {
-                                    let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_activationEnergy[0])));
-                                    activationEnergy = new ActivationEnergy(getAttributes(xml_activationEnergy[0]), value);
-                                }
-                            }
-                            let tInfinity: TInfinity | undefined;
-                            let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
-                            if (xml_tInfinity != null) {
-                                if (xml_tInfinity[0] != null) {
-                                    let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_tInfinity[0])));
-                                    tInfinity = new NInfinity(getAttributes(xml_tInfinity[0]), value);
-                                }
-                            }
-                            let nInfinity: NInfinity | undefined;
-                            let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
-                            if (xml_nInfinity != null) {
-                                if (xml_nInfinity[0] != null) {
-                                    let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_nInfinity[0])));
-                                    nInfinity = new NInfinity(getAttributes(xml_nInfinity[0]), value);
-                                }
-                            }
-                            mCRCMethod = new MesmerILT(attributes, preExponential, activationEnergy, tInfinity, nInfinity);
-                        }
-                    }
+                if (xml_MCRCMethod.length > 1) {
+                    throw new Error("Expecting 1 " + MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
                 } else {
-                    mCRCMethod = new MCRCMethod(attributes);
+                    let mCRCMethodAttributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
+                    let name: string | undefined = mCRCMethodAttributes.get("name");
+                    console.log(MCRCMethod.tagName + " name=" + name);
+                    if (name == undefined) {
+                        let type: string | undefined = mCRCMethodAttributes.get("xsi:type");
+                        console.log(MCRCMethod.tagName + "xsi:type=" + type);
+                        if (type != undefined) {
+                            if (type == MesmerILT.xsiType) {
+                                let preExponential: PreExponential | undefined;
+                                let xml_preExponential: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
+                                if (xml_preExponential != null) {
+                                    if (xml_preExponential[0] != null) {
+                                        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_preExponential[0])));
+                                        preExponential = new PreExponential(getAttributes(xml_preExponential[0]), value);
+                                    }
+                                }
+                                console.log("preExponential " + preExponential);
+                                let activationEnergy: ActivationEnergy | undefined;
+                                let xml_activationEnergy: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
+                                if (xml_activationEnergy != null) {
+                                    if (xml_activationEnergy[0] != null) {
+                                        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_activationEnergy[0])));
+                                        activationEnergy = new ActivationEnergy(getAttributes(xml_activationEnergy[0]), value);
+                                    }
+                                }
+                                let tInfinity: TInfinity | undefined;
+                                let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
+                                if (xml_tInfinity != null) {
+                                    if (xml_tInfinity[0] != null) {
+                                        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_tInfinity[0])));
+                                        tInfinity = new NInfinity(getAttributes(xml_tInfinity[0]), value);
+                                    }
+                                }
+                                let nInfinity: NInfinity | undefined;
+                                let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
+                                if (xml_nInfinity != null) {
+                                    if (xml_nInfinity[0] != null) {
+                                        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_nInfinity[0])));
+                                        nInfinity = new NInfinity(getAttributes(xml_nInfinity[0]), value);
+                                    }
+                                }
+                                mCRCMethod = new MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                            }
+                        }
+                    } else {
+                        mCRCMethod = new MCRCMethod(mCRCMethodAttributes);
+                    }
                 }
             }
-            // Load transition state.
-            //console.log("Load  transition state...");
-            let xml_transitionState: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(TransitionState.tagName);
-            let transitionState: TransitionState | undefined;
-            if (xml_transitionState.length > 0) {
-                let xml_molecule: Element = xml_transitionState[0].getElementsByTagName(Molecule.tagName)[0];
-                let twa = new TagWithAttributes(getAttributes(xml_molecule), Molecule.tagName);
-                transitionState = new TransitionState(getAttributes(xml_molecule), twa, molecules);
-                //let moleculeID: string = getAttribute(xml_molecule, "ref");
-                //console.log("transitionState moleculeID=" + transitionState.molecule.getID());
-                //console.log("transitionState role=" + transitionState.attributes.get("role"));
+
+            // Load excessReactantConc
+            let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(ExcessReactantConc.tagName);
+            let excessReactantConc: ExcessReactantConc | undefined;
+            if (xml_excessReactantConc.length > 0) {
+                if (xml_excessReactantConc.length > 1) {
+                    throw new Error("Expecting 1 " + ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
+                }
+                let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_excessReactantConc[0])));
+                excessReactantConc = new ExcessReactantConc(getAttributes(xml_excessReactantConc[0]), value);
             }
-            // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
-            let tunneling: Tunneling | undefined;
-            if (xml_tunneling.length > 0) {
-                tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
-            }
-            let reaction = new Reaction(attributes, reactionID, reactants, products,
-                mCRCMethod, transitionState, tunneling);
+
+            // Create reaction.
+            let reaction = new Reaction(attributes, reactionID, reactants, products, tunneling, transitionStates,
+                mCRCMethod, excessReactantConc);
             reactions.set(reactionID, reaction);
             //console.log("reaction=" + reaction);
         }
@@ -1000,63 +1056,95 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
     let energyMin: number = Number.MAX_VALUE;
     let energyMax: number = Number.MIN_VALUE;
     reactions.forEach(function (reaction, id) {
-        // Get TransitionState if there is one.
-        let transitionState: TransitionState | undefined = reaction.getTransitionState();
+        // Get TransitionStates.
+        let reactionTransitionStates: Map<string, TransitionState> | TransitionState | undefined = reaction.transitionStates;
         //console.log("reactant=" + reactant);
-        let reactantsLabel: string = reaction.getReactantsLabel();
-        reactants.add(reactantsLabel);
-        if (products.has(reactantsLabel)) {
-            intProducts.add(reactantsLabel);
+        let reactantsLabel: string | undefined = reaction.getReactantsLabel();
+        if (reactantsLabel != undefined) {
+            reactants.add(reactantsLabel);
+            if (products.has(reactantsLabel)) {
+                intProducts.add(reactantsLabel);
+            }
+            let energy: number = reaction.getReactantsEnergy();
+            energyMin = Math.min(energyMin, energy);
+            energyMax = Math.max(energyMax, energy);
+            energies.set(reactantsLabel, energy);
+            if (!orders.has(reactantsLabel)) {
+                orders.set(reactantsLabel, i);
+                i++;
+            }
         }
-        let energy: number = reaction.getReactantsEnergy();
-        energyMin = Math.min(energyMin, energy);
-        energyMax = Math.max(energyMax, energy);
-        energies.set(reactantsLabel, energy);
-        let productsLabel: string = reaction.getProductsLabel();
-        products.add(productsLabel);
-        energy = reaction.getProductsEnergy();
-        energyMin = Math.min(energyMin, energy);
-        energyMax = Math.max(energyMax, energy);
-        energies.set(productsLabel, energy);
-        if (!orders.has(reactantsLabel)) {
-            orders.set(reactantsLabel, i);
-            i++;
-        }
-        if (orders.has(productsLabel)) {
-            i--;
-            let j: number = get(orders, productsLabel);
-            // Move product to end and shift everything back.
-            orders.forEach(function (value, key) {
-                if (value > j) {
-                    orders.set(key, value - 1);
+        let productsLabel: string | undefined = reaction.getProductsLabel();
+        if (productsLabel != undefined) {
+            products.add(productsLabel);
+            let energy = reaction.getProductsEnergy();
+            energyMin = Math.min(energyMin, energy);
+            energyMax = Math.max(energyMax, energy);
+            energies.set(productsLabel, energy);
+            if (orders.has(productsLabel)) {
+                i--;
+                let j: number = get(orders, productsLabel);
+                // Move product to end and shift everything back.
+                orders.forEach(function (value, key) {
+                    if (value > j) {
+                        orders.set(key, value - 1);
+                    }
+                });
+                // Insert transition states.
+                if (reactionTransitionStates != undefined) {
+                    if (reactionTransitionStates instanceof Map) {
+                        reactionTransitionStates.forEach(function (ts, id) {
+                            let tsn: string = ts.getRef();
+                            transitionStates.add(tsn);
+                            orders.set(tsn, i);
+                            energy = ts.getMolecule().getEnergy();
+                            energyMin = Math.min(energyMin, energy);
+                            energyMax = Math.max(energyMax, energy);
+                            energies.set(tsn, energy);
+                            i++;
+                        });
+                    } else {
+                        let ts: TransitionState = reactionTransitionStates as TransitionState;
+                        let tsn: string = ts.getRef();
+                        transitionStates.add(tsn);
+                        orders.set(tsn, i);
+                        energy = ts.getMolecule().getEnergy();
+                        energyMin = Math.min(energyMin, energy);
+                        energyMax = Math.max(energyMax, energy);
+                        energies.set(tsn, energy);
+                        i++;
+                    }
+                    orders.set(productsLabel, i);
+                    i++
                 }
-            });
-            // Insert transition state.
-            if (transitionState != undefined) {
-                let tsn: string = transitionState.getRef();
-                transitionStates.add(tsn);
-                orders.set(tsn, i);
-                energy = transitionState.getMolecule().getEnergy();
-                energyMin = Math.min(energyMin, energy);
-                energyMax = Math.max(energyMax, energy);
-                energies.set(tsn, energy);
+            } else {
+                if (reactionTransitionStates != undefined) {
+                    if (reactionTransitionStates instanceof Map) {
+                        reactionTransitionStates.forEach(function (ts, id) {
+                            let tsn: string = ts.getRef();
+                            transitionStates.add(tsn);
+                            orders.set(tsn, i);
+                            energy = ts.getMolecule().getEnergy();
+                            energyMin = Math.min(energyMin, energy);
+                            energyMax = Math.max(energyMax, energy);
+                            energies.set(tsn, energy);
+                            i++;
+                        });
+                    } else {
+                        let ts: TransitionState = reactionTransitionStates as TransitionState;
+                        let tsn: string = ts.getRef();
+                        transitionStates.add(tsn);
+                        orders.set(tsn, i);
+                        energy = ts.getMolecule().getEnergy();
+                        energyMin = Math.min(energyMin, energy);
+                        energyMax = Math.max(energyMax, energy);
+                        energies.set(tsn, energy);
+                        i++;
+                    }
+                }
+                orders.set(productsLabel, i);
                 i++;
             }
-            orders.set(productsLabel, i);
-            i++
-        } else {
-            if (transitionState != undefined) {
-                let tsn: string = transitionState.getRef();
-                transitionStates.add(tsn);
-                orders.set(tsn, i);
-                energy = transitionState.getMolecule().getEnergy();
-                energyMin = Math.min(energyMin, energy);
-                energyMax = Math.max(energyMax, energy);
-                energies.set(tsn, energy);
-                i++;
-            }
-            orders.set(productsLabel, i);
-            i++;
         }
     });
     //console.log("orders=" + mapToString(orders));
@@ -1144,20 +1232,34 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
         // Get TransitionState if there is one.
-        let transitionState: TransitionState | undefined = reaction.getTransitionState();
+        let reactionTransitionStates: Map<string, TransitionState> | TransitionState | undefined = reaction.transitionStates;
         //console.log("reactant=" + reactant);
-        let reactantsLabel: string = reaction.getReactantsLabel();
-        let productsLabel: string = reaction.getProductsLabel();
+        let reactantsLabel: string | undefined = reaction.getReactantsLabel();
+        let productsLabel: string | undefined = reaction.getProductsLabel();
         let reactantOutXY: number[] = get(reactantsOutXY, reactantsLabel);
         let productInXY: number[] = get(productsInXY, productsLabel);
-        if (transitionState != undefined) {
-            let transitionStateLabel: string = transitionState.getRef();
-            let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
-            drawLine(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0],
-                transitionStateInXY[1]);
-            let transitionStateOutXY: number[] = get(transitionStatesOutXY, transitionStateLabel);
-            drawLine(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1],
-                productInXY[0], productInXY[1]);
+        if (reactionTransitionStates != undefined) {
+            if (reactionTransitionStates instanceof Map) {
+                reactionTransitionStates.forEach(function (ts, id) {
+                    let transitionState: TransitionState = ts;
+                    let transitionStateLabel: string = transitionState.getRef();
+                    let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
+                    drawLine(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0],
+                        transitionStateInXY[1]);
+                    let transitionStateOutXY: number[] = get(transitionStatesOutXY, transitionStateLabel);
+                    drawLine(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1],
+                        productInXY[0], productInXY[1]);
+                });
+            } else {
+                let transitionState: TransitionState = reactionTransitionStates as TransitionState;
+                let transitionStateLabel: string = transitionState.getRef();
+                let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
+                drawLine(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0],
+                    transitionStateInXY[1]);
+                let transitionStateOutXY: number[] = get(transitionStatesOutXY, transitionStateLabel);
+                drawLine(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1],
+                    productInXY[0], productInXY[1]);
+            }
         } else {
             drawLine(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1],
                 productInXY[0], productInXY[1]);
@@ -1257,22 +1359,37 @@ function displayReactionsTable(): void {
         "PreExponential", "Activation Energy", "TInfinity", "NInfinity"]);
     reactions.forEach(function (reaction, id) {
         //console.log("id=" + id);
-        //console.log("reaction=" + reaction);
-        let reactants: string = arrayToString(Array.from(reaction.reactants.keys()), " ");
-        let products: string = arrayToString(Array.from(reaction.products.keys()), " ");
+        console.log("reaction=" + reaction);
+        let reactants: string = reaction.getReactantsLabel() || "";
+        let products: string = reaction.getProductsLabel() || "";
         let transitionState: string = "";
         let preExponential: string = "";
         let activationEnergy: string = "";
         let tInfinity: string = "";
         let nInfinity: string = "";
-        let ts: TransitionState | undefined = reaction.getTransitionState();
-        if (ts != undefined) {
-            let name: string | undefined = ts.attributes.get("name");
-            if (name != null) {
-                transitionState = name;
+        let tSs: Map<string, TransitionState> | TransitionState | undefined = reaction.transitionStates;
+
+        console.log("tSs=" + tSs);
+
+        if (tSs != undefined) {
+            if (tSs instanceof Map) {
+                // Join all names together.
+                tSs.forEach(function (ts) {
+                    let name: string | undefined = ts.getRef();
+                    if (name != null) {
+                        transitionState = name + " ";
+                    }
+                });
+            } else {
+                let ts: TransitionState = tSs as TransitionState;
+                let name: string | undefined = ts.getRef();
+                if (name != null) {
+                    transitionState = name;
+                }
             }
         }
         let mCRCMethod: MCRCMethod | undefined = reaction.getMCRCMethod();
+        //console.log("mCRCMethod=" + mCRCMethod);
         if (mCRCMethod != undefined) {
             if (mCRCMethod instanceof MesmerILT) {
                 let mp: PreExponential | undefined = mCRCMethod.getPreExponential();
@@ -1301,6 +1418,7 @@ function displayReactionsTable(): void {
                 }
             }
         }
+
         reactionsTable += getTR(getTD(id) + getTD(reactants) + getTD(products) + getTD(transitionState)
             + getTD(preExponential, true) + getTD(activationEnergy, true) + getTD(tInfinity, true)
             + getTD(nInfinity, true));

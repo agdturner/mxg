@@ -636,6 +636,10 @@ export class MoleculeRef extends NodeWithNodes {
         this.molecules = molecules;
     }
 
+    /**
+     * A convenience method to get the molecule abbreviation.
+     * @returns The molecule abbreviation.
+     */
     getMoleculeAbb(): TagWithAttributes {
         return this.nodes.get(0) as TagWithAttributes;
     }
