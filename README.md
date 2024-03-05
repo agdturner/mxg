@@ -69,7 +69,7 @@ MXG development began at the end of January 2024. A community release is coming 
 - The aim is to facilitate community contribution in due course...
 
 
-## Developer
+## Developer Guide
 - This section contains instructions for getting set up with a development environment and some detals about development for developers.
 - [Microsoft Visual Studio Code](https://code.visualstudio.com/) with the [Copilot Extension](https://code.visualstudio.com/docs/copilot/overview) provides a helpful code development environment, but the choice is up to you.
 
@@ -82,24 +82,24 @@ MXG development began at the end of January 2024. A community release is coming 
 `npm install`
   - The main dependency is the build tool [Parcel](https://parceljs.org/)
 
-
 ### Forks
 - To get GitHub Pages and PWA deployment working: ensure that GitHub Pages is enabled for your fork. Then the Web application and PWA should be available from:
   - `https://<github_username>.github.io/<forked_repository_name>/dist/main/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
 
+### Compile
+- To transpile the TypeScript run:
+`npm run compile`
+
 ### Build
-- run:
-`parcel build`
+- To build using Parcel run:
+`npm run build`
 
 ### Launch
 - run:
-`npx parcel --dist-dir dist/main src/index.html`
-- By default a Web server will run on the local host on port 1234. To use a different port for example 2345 run:
-`npx parcel --dist-dir dist/main src/index.html -p 2345`
-- Open http://localhost:1234/ (or the equivalent specifying a different port) to test the application.
+`npm run start`
+- By default a Web server will run on the local host on port 3458.
 
-### Deploy a new version
-
+### Deploy
 - To deploy to a new version, update the `package.json` file and change the version target. For example, to change from releasing version 0.1 to 0.2 the following was changed:
 ```
     "0.1": {
@@ -136,8 +136,8 @@ To:
       "publicUrl": "/mxg-pwa/dist/0.2"
     }
 ```
-After adding, committing and pushing `dist/0.2`, the online version and PWA were available at:
-https://agdturner.github.io/mxg-pwa/dist/0.2
+After adding, committing and pushing `dist/0.2`, the online version and PWA are automatically (but perhaps not instantaneously) made available at:
+[https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
 
 
 ## Acknowledgements
