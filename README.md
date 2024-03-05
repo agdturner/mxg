@@ -47,14 +47,15 @@ MXG development began at the end of January 2024. A community release is coming 
 - Version 0.2 Sprint (due by 2024-03-07)
   - This will build on Version 0.1
   - Enhancements:
-    - Display all XML details in HTML
-      - Include details not exposed already in Molecules and Reactions tables
+    - Display all [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) details in HTML
+      - Include details not exposed already in Molecules and Reactions tables.
+        - No need to include atoms or bonds for molecules.
       - Create tables for: Conditions, Model Parameters, and Control.
-    - Make all details editable
+    - Make all details editable.
 - Version 0.3 Sprint (due by 2024-03-21)
+  - Test loading of other XML files.
   - Allow users to add molecules and reactions from scratch and using an existing XML file as a template.
  
-
 
 ## Testing
 - Please ensure you are testing the right version.
