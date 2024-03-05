@@ -158,7 +158,7 @@ To:
 After adding, committing and pushing `dist/0.2`, the online version and PWA were automatically (but perhaps not instantaneously) became available at:
 [https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
 
-### Trouble shooting
+### Trouble Shooting Guide
 - Try deleting the `node_modules` directory and the `.parcel-cache` and building and launching again.
   - This will recreate these things which are built and puposefully not contained in the repository.
     - They should be built/installed for your particular set up... 
