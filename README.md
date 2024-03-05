@@ -1,49 +1,68 @@
 # MESMER XML GUI (MXG) Progressive Web App 
 
-MESMER|https://sourceforge.net/projects/mesmer/ is a Master Equation Solver for Multi Energy-well Reactions. It inputs and outputs data in an XML format. This is a Graphical User Interface development for visualising and generating new XML for MESMER.
+[MESMER](https://sourceforge.net/projects/mesmer) is a Master Equation Solver for Multi Energy-well Reactions that inputs and outputs data in an XML format. MXG provides a Graphical User Interface (GUI) for visualising and generating MESMER XML. MXG has been developed independently of another MESMER XML GUI: http://www.mesmergui.cn/ 
 
-An online version (from where a Progressive Web App (PWA) can be dowloaded for installation on your device) is available via:
-https://agdturner.github.io/mxg-pwa/dist/main/
+MXG can be used online served from GitHub Pages or dowloaded and installed onto your device as a Progressive Web Application (PWA):
+ - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
+   - See [GUI User Instructions](#GUI_User_Instructions) 
+ - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
 
 A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details about what a PWA is please see:
 - https://en.wikipedia.org/wiki/Progressive_web_app
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
 How to download and install a PWA varies by Web browser. Here are links to instructions for some major Web browsers:
-- Chrome: https://support.google.com/chrome/answer/9658361
-- Firefox: https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing
-- Edge: https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux
+- [Chrome](https://support.google.com/chrome/answer/9658361)
+- [Firefox](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing)
+- [Edge](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux)
 
-## GUI user instructions
-- Currently, the GUI starts with a single button called `load`.
-- When actioned, a `save` button should appear and a file input is requested.
-- The user is expected to locate and select a MESMER XML file.
- - The program then attempts to load the XML file and present it in the GUI.
-   - If the interface does not change, then most likely there is an issue with loading that particular XML.
-- There are ways for the user to input and change values that will be saved in a new XML file when the `save` button is actioned.
-- Actioning the `save` button will download a new XML file to the usual place where files are downloaded on the users device. 
-- It is expected that in future releases there will be a way to compile a MESMER XML file from scratch without having first to load an existing XML file.
+The online version and PWA are built and deployed. The main source code is [TypeScript](https://www.typescriptlang.org/). There are also [JSON](https://www.json.org/json-en.html) configuration files and a [Web Worker](https://en.wikipedia.org/wiki/Web_worker) [JavaScript](https://en.wikipedia.org/wiki/JavaScript) file. The source files are built and packaged using [Node](https://nodejs.org/) and [Parcel](https://parceljs.org/).  
+
+
+## GUI User Instructions
+
+### Version 0.1
+- MXG 0.1 starts with a single button called `load`.
+- The user is expected to:
+  1. Action `load`:
+    - A File Input Dialogue should appear and a `save` button should appear.
+    - The user should locate and select [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
+    - A portrayal of the XML should appear.
+      - This is similar to the portrayal provided by the XML Style Layer Transform (XSLT) provided with MESMER. 
+  2. Change the energy of one or more Molecules using the Inputs in the Molecules table section.
+    - Only the values in the table will change, the changes will not be reflected in the reactions diagram.  
+  3. Action the `save` button.
+    - This should download a new XML file to the usual place where files are downloaded on the users device.
+
 
 ## Development RoadMap
-- Development is currently in a pre-alpha prototype phase.
-- A first phase of alpha testing is expected to be done by the developers with selected user testers in March 2024.
-- Beta testing will follow this and release candidates and a first release is planned in April 2024.
-
-## Alpha testing
-- Alpha testers are encouraged to report issues using the agreed protocol.
-- The version at the following URL is always the latest version:
-https://agdturner.github.io/mxg-pwa/dist/main/
-- If using an installed PWA, you can update to the latest version by uninstalling and reinstalling the PWA. (Uninstalling can be done with the PWA running via the menu (three dots).)
-- Please test using the latest version before reporting an issue.
-
-## Support
-Once Version 1 is realeased, it is expected that the MESMER team will support development and use with issues reported in the usual way.
+- Development is currently in an alpha release phase.
+- Alpha testing with version 0.1 is in process.
+- Alpha testing will continue throughout March 2024.
+- Beta testing will follow...
+- Release candidates and a first release is planned for the end of April 2024.
 
 
-## Instructions for developers/contributors
+## Alpha Testing
+- Please make sure you are testing the latest alpha release.
+  - If you are testing with an installed PWA, please ensure you have uninstalled any previous version and have the correct version for testing installed.
+    -  Uninstalling the PWA can be done with the PWA running via the menu (three dots).
+- Please report any issues encountered using agreed protocols.
 
-Currently, contributions are only welome from those involved directly in the onlgoing MXG development project that started in January 2024. Following release of Version 1 contributions from the community will be welcomed in the usual way and more detailed guidance on how best to contribute will be released.
 
+## Contribution
+- Currently, contributions are only welome from those involved directly in the ongoing MXG development project that started in January 2024.
+
+
+## Developer
+- This section contains instructions for getting set up with a development environment and provides some advice about troubleshooting.
+
+### Set Up
+- The recommended developer environment is the latest [Microsoft Visual Studio Code](https://code.visualstudio.com/) (VSCode) and the latest LTS release of [Node](https://nodejs.org/).
+- Please set this up on your platform of choice.
+
+
+-   and Parcel based on ##
 Microsoft Visual Studio Code with the Copilot extension has been used to develop the code which is mostly TypeScript.
 
 Node and Parcel2 are used to bundle everything together.
