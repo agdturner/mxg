@@ -1,31 +1,30 @@
 # MESMER XML GUI (MXG)
 
-MXG provides a Graphical User Interface (GUI) for visualising and generating MESMER XML. The [Master Equation Solver for Multi Energy-well Reactions (MESEMR)](https://sourceforge.net/projects/mesmer) inputs and outputs data in an [XML](https://en.wikipedia.org/wiki/XML) format. MXG has been developed independently of other MESMER XML GUI development efforts (e.g. http://www.mesmergui.cn/). 
+## Introduction
 
-MXG can be used online, and can be installed on your device as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages and from these pages the respective PWA can be installed:
+MESMER XML GUI (MXG) provides a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESEMR)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) input and output data. MXG has been developed independently of other MESMER XML GUI development efforts (e.g. http://www.mesmergui.cn/). 
+
+MXG can be used online and installed onto your devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages and from these pages the respective PWA can be installed:
  - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
 
-[Usage instructions provided below](#GUI-User-Instructions) 
+[MXG User Guide](#User-Guide) 
 
 A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details about what a PWA is please see:
 - https://en.wikipedia.org/wiki/Progressive_web_app
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app
 
-How to install a PWA varies by Web browser. Here are links to instructions for:
-- [Chrome](https://support.google.com/chrome/answer/9658361)
-- [Firefox](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing)
-- [Edge](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux)
+PWA installation varies by Web browser (instructions: [Chrome](https://support.google.com/chrome/answer/9658361), [Firefox](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Installing), [Edge](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux)).
 
-The online versions and PWAs are built and deployed. The main source code is [TypeScript](https://www.typescriptlang.org/). There are also [JSON](https://www.json.org/json-en.html) configuration files and a [Web Worker](https://en.wikipedia.org/wiki/Web_worker) [JavaScript](https://en.wikipedia.org/wiki/JavaScript) file. The source files are built and packaged using [Node](https://nodejs.org/) and [Parcel](https://parceljs.org/).  
+MXG is built, packaged and deployed using [Node](https://nodejs.org/) and [Parcel](https://parceljs.org/). The main source code is [TypeScript](https://www.typescriptlang.org/). There are also [JSON](https://www.json.org/json-en.html) configuration files and a [Web Worker](https://en.wikipedia.org/wiki/Web_worker) [JavaScript](https://en.wikipedia.org/wiki/JavaScript) file.
 
-MXG development began at the end of January 2024. A community release is scheduled for the end of April 2024.
+MXG development began at the end of January 2024. A community release is coming soon and tentatively scheduled for the end of April 2024...
 
 
-## GUI User Instructions
+## User Guide
 
 ### Version 0.1
-- MXG 0.1 starts with a single button called `load`.
+- A single `load` button should appear on the interface.
 - The user is expected to:
   1. Action `load`:
     - A File Input Dialogue should appear and a `save` button should appear.
@@ -39,13 +38,22 @@ MXG development began at the end of January 2024. A community release is schedul
 - The saved XML file should be very similar to the input XML file, but there are some differences:
   - Comments are not preserved.
   - Additonal spaces are removed.
-  - Numbers may be format differently, so `1.2e3` may appear as `1200`.
+  - Numbers may format differently, for example `2.25E16` appears as `22500000000000000`.
 
 
 ## Development RoadMap
-- Development is currently in an alpha testing and Version 0.1 is being tested.
-- Alpha testing will continue throughout March 2024.
+- Development is currently in an alpha/prototyping phase which is scheduled to continue throughout March 2024...
 - Beta testing will follow...
+- Version 0.2 Sprint (due by 2024-03-07)
+  - This will build on Version 0.1
+  - Enhancements:
+    - Display all XML details in HTML
+      - Include details not exposed already in Molecules and Reactions tables
+      - Create tables for: Conditions, Model Parameters, and Control.
+    - Make all details editable
+- Version 0.3 Sprint (due by 2024-03-21)
+  - Allow users to add molecules and reactions from scratch and using an existing XML file as a template.
+ 
 
 
 ## Testing
@@ -61,29 +69,22 @@ MXG development began at the end of January 2024. A community release is schedul
 
 
 ## Developer
-- This section contains instructions for getting set up with a development environment and provides some advice about troubleshooting.
+- This section contains instructions for getting set up with a development environment and some detals about development for developers.
+- [Microsoft Visual Studio Code](https://code.visualstudio.com/) with the [Copilot Extension](https://code.visualstudio.com/docs/copilot/overview) provides a helpful code development environment, but the choice is up to you.
 
 ### Set Up
-- The recommended developer environment is the latest [Microsoft Visual Studio Code](https://code.visualstudio.com/) (VSCode) and the latest LTS release of [Node](https://nodejs.org/).
-- Please set this up on your platform of choice.
-
-
--   and Parcel based on ##
-Microsoft Visual Studio Code with the Copilot extension has been used to develop the code which is mostly TypeScript.
-
-Node and Parcel2 are used to bundle everything together.
-
-To test things out, then please fork this repository. To get your own GitHub Pages version and PWA deployment working, then ensure that GitHub Pages is enabled for your forked repository and this should be available via:
-`https://<github_username>.github.io/<forked_repository_name>/dist/main/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
-
-### Dependencies:
-- Node > 20.11.0
-
-# Installation
-1. Clone the repository
-2. cd into the repository
-3. Install dependencies:
+- Install the latest LTS release of [Node](https://nodejs.org/)
+  - Currently 20.x
+- Clone this repository.
+- cd into the repository
+- Install dependencies:
 `npm install`
+  - The main dependency is the build tool [Parcel](https://parceljs.org/)
+
+
+### Forks
+- To get GitHub Pages and PWA deployment working: ensure that GitHub Pages is enabled for your fork. Then the Web application and PWA should be available from:
+  - `https://<github_username>.github.io/<forked_repository_name>/dist/main/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
 
 ### Build
 - run:
@@ -91,33 +92,52 @@ To test things out, then please fork this repository. To get your own GitHub Pag
 
 ### Launch
 - run:
-`npx parcel src/index.html`
-- By default this will run on port 1234. To use a different port for example 2345 run: `npx parcel src/index.html -p 2345`
+`npx parcel --dist-dir dist/main src/index.html`
+- By default a Web server will run on the local host on port 1234. To use a different port for example 2345 run:
+`npx parcel --dist-dir dist/main src/index.html -p 2345`
+- Open http://localhost:1234/ (or the equivalent specifying a different port) to test the application.
 
-Once launched, then open http://localhost:1234/ to test the GUI (change the url to match a different port if one was specified).
+### Deploy a new version
 
-### Update and redeploy
-- Changes need committing and pushing to the repository for deployment.
-- To deploy a branch called `branch1`, edit the `package.json` file and change:
+- To deploy to a new version, update the `package.json` file and change the version target. For example, to change from releasing version 0.1 to 0.2 the following was changed:
 ```
-  "targets": {
-    "main": {
-      "distDir": "./dist",
-      "publicUrl": "/pwa-parcel-test/dist/main/"
+    "0.1": {
+      "context": "browser",
+      "includeNodeModules": true,
+      "sourceMap": true,
+      "engines": {
+        "browsers": [
+          "last 2 Chrome versions",
+          "last 2 Firefox versions",
+          "last 2 Safari versions",
+          "last 2 Edge versions"
+        ]
+      },
+      "distDir": "dist/0.1",
+      "publicUrl": "/mxg-pwa/dist/0.1"
     }
-  },
 ```
 To:
 ```
-  "targets": {
-    "branch1": {
-      "distDir": "./dist",
-      "publicUrl": "/pwa-parcel-test/dist/branch1/"
+    "0.2": {
+      "context": "browser",
+      "includeNodeModules": true,
+      "sourceMap": true,
+      "engines": {
+        "browsers": [
+          "last 2 Chrome versions",
+          "last 2 Firefox versions",
+          "last 2 Safari versions",
+          "last 2 Edge versions"
+        ]
+      },
+      "distDir": "dist/0.2",
+      "publicUrl": "/mxg-pwa/dist/0.2"
     }
-  },
 ```
-This new branch should deploy to:
-`https://<github_username>.github.io/<forked_repository_name>/dist/branch1/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
+After adding, committing and pushing `dist/0.2`, the online version and PWA were available at:
+https://agdturner.github.io/mxg-pwa/dist/0.2
+
 
 ## Acknowledgements
-- This work is being funded by EPSRC and the University of Leeds.
+- This work is being funded and supported by EPSRC and the University of Leeds.
