@@ -22,7 +22,7 @@ MXG is built, packaged and deployed using [Node](https://nodejs.org/) and [Parce
 
 
 ## Contributing
-- Community contribution will be facilitated in future, but for the time being development and testing is being done by a closed group...
+- Community contribution will be facilitated in future, but for the time being developing and testing is being done by a closed group...
 
 
 ## User Guide
