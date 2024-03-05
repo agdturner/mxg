@@ -5,8 +5,8 @@
 MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESEMR)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) input and output data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and should be ongoing until the end of April 2024. 
 
 Versions of MXG can be used online and each can be installed onto devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
- - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
+ - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
 
 For details on use please see the [MXG User Guide Section](#User-Guide) 
 
