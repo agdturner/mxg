@@ -4,7 +4,7 @@
 
 MXG can be used online served from GitHub Pages or dowloaded and installed onto your device as a Progressive Web Application (PWA):
  - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
-   - See [GUI User Instructions](#GUI_User_Instructions) 
+   - See [GUI User Instructions](#GUI-User-Instructions) 
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
 
 A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details about what a PWA is please see:
