@@ -75,7 +75,7 @@ MXG development began at the end of January 2024. A community release is coming 
 
 ### Set Up
 - Install the latest LTS release of [Node](https://nodejs.org/)
-  - Currently 20.x
+  - Current development is tested with Node 20.11.1
 - Clone this repository.
 - cd into the repository
 - Install dependencies:
@@ -87,7 +87,7 @@ MXG development began at the end of January 2024. A community release is coming 
   - `https://<github_username>.github.io/<forked_repository_name>/dist/main/` where `<github_username>` is your username and `<forked_repository_name>` is the name of your forked repository.
 
 ### Compile
-- To transpile the TypeScript run:
+- To transpile TypeScript run:
 `npm run compile`
 
 ### Build
@@ -95,11 +95,13 @@ MXG development began at the end of January 2024. A community release is coming 
 `npm run build`
 
 ### Launch
-- run:
+- To launch run:
 `npm run start`
-- By default a Web server will run on the local host on port 3458.
+- A Web server should run on the local host on port 3458:
+[localhost:3458/](http://localhost:3458/)
 
 ### Deploy
+- To deploy over the current version push changes to the GitHub repository.
 - To deploy to a new version, update the `package.json` file and change the version target. For example, to change from releasing version 0.1 to 0.2 the following was changed:
 ```
     "0.1": {
@@ -136,7 +138,7 @@ To:
       "publicUrl": "/mxg-pwa/dist/0.2"
     }
 ```
-After adding, committing and pushing `dist/0.2`, the online version and PWA are automatically (but perhaps not instantaneously) made available at:
+After adding, committing and pushing `dist/0.2`, the online version and PWA were automatically (but perhaps not instantaneously) made available at:
 [https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
 
 
