@@ -35,15 +35,15 @@ This section is mainly for users involved in alpha testing...
 ### Version 0.1
 - A single `load` button should appear on the interface.
 - The user is expected to:
-  1. Action `load`:
-    - A File Input Dialogue should appear and a `save` button should appear.
-    - The user should locate and select [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
-    - A portrayal of the XML should appear.
-      - This is similar to the portrayal provided by Extensible Stylesheet Language Transformation (XSLT) files that come with the main MESMER software. 
-  2. Change the energy of one or more Molecules using the Inputs in the Molecules table section.
-    - Only the values in the table will change, the changes will not be reflected in the reactions diagram.  
-  3. Action the `save` button.
-    - This should download a new XML file to the downloads location on the user device.
+1. Action `load`:
+  - A File Input Dialogue should appear and a `save` button should appear.
+  - The user should locate and select [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
+  - A portrayal of the XML should appear.
+    - This is similar to the portrayal provided by Extensible Stylesheet Language Transformation (XSLT) files that come with the main MESMER software. 
+2. Change the energy of one or more Molecules using the Inputs in the Molecules table section.
+  - Only the values in the table will change, the changes will not be reflected in the reactions diagram.  
+3. Action the `save` button.
+  - This should download a new XML file to the downloads location on the user device.
 - Notes
   - Any saved XML file should be very similar to the input XML file, but there are some differences:
     - Comments are not preserved.
@@ -71,7 +71,7 @@ This section is mainly for users involved in alpha testing...
 
  
 ## Developer Guide
-- This section contains instructions for getting set up with a development environment and compiling and deploying new versions.
+- This section contains instructions for setting up a development environment, and compiling and deploying new versions. There are also some trouble shooting hints.
 - [Microsoft Visual Studio Code](https://code.visualstudio.com/) with the [Copilot Extension](https://code.visualstudio.com/docs/copilot/overview) provides a helpful code development environment, but the choice is up to you.
 
 
@@ -155,3 +155,11 @@ To:
 ```
 After adding, committing and pushing `dist/0.2`, the online version and PWA were automatically (but perhaps not instantaneously) became available at:
 [https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
+
+### Trouble shooting
+- Try deleting the `node_modules` directory and the `.parcel-cache` and building and launching again.
+  - This will recreate these things which are built and puposefully not contained in the repository.
+    - They should be built/installed for your particular set up... 
+- A machine reboot may help...
+- If issues persist, please do not struggle and communicate with the main developer...
+  - The set up for users and developers is intended to be a simple process with a minimal set of steps...
