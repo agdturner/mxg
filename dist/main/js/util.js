@@ -1,17 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isNumeric = exports.toNumberArray = exports.arrayToString = exports.mapToString = exports.rescale = exports.get = void 0;
 /**
  * Thow an error if the key is not in the map otherwise return the value mapped to the key.
- * @param map The map to search in. 
+ * @param map The map to search in.
  * @param key The key to search for.
  * @returns The value mapped to the key.
  * @throws An error if the key is not in the map.
  */
-export function get(map: Map<any, any>, key: any): any {
+function get(map, key) {
     if (!map.has(key)) {
         throw new Error(`Key ${key} not found in map`);
     }
     return map.get(key);
 }
-
+exports.get = get;
 /**
  * Linearly rescale a value from one range to another.
  * @param min The minimum value of the original range.
@@ -21,67 +24,59 @@ export function get(map: Map<any, any>, key: any): any {
  * @param value The value to rescale.
  * @returns The rescaled value.
  */
-export function rescale(min: number, range: number, newMin: number, newRange: number, value: number): number {
+function rescale(min, range, newMin, newRange, value) {
     // The + 0.0 is to force the division to be a floating point division.
     //return (((value - min) / (range + 0.0)) * (newRange)) + newMin;
-    return ((value - min) * (newRange) / (range + 0.0) ) + newMin;
+    return ((value - min) * (newRange) / (range + 0.0)) + newMin;
 }
-
+exports.rescale = rescale;
 /**
  * For convertina a map to a string.
  * @param map The map to convert to a string.
  * @returns A string representation of all the entries in the map.
  */
-export function mapToString(map: Map<any, any>): string {
+function mapToString(map) {
     if (map == null) {
         return "";
     }
-    return Array.from(map.entries()).map(([key, value]) =>
-        `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(', ');
+    return Array.from(map.entries()).map(([key, value]) => `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(', ');
 }
-
+exports.mapToString = mapToString;
 /**
  * For converting an array to a string.
  * @param {any[]} array The array to convert to a string.
  * @param {string} delimiter The (optional) delimiter.
  */
-export function arrayToString(array: any[], delimiter?: string): string {
-    if (delimiter == undefined) {
+function arrayToString(array, delimiter) {
+    if (array == null) {
+        return "";
+    }
+    if (delimiter == null) {
         delimiter = ', ';
     }
     return array.map((value) => value == null ? "null" : value.toString()).join(delimiter);
 }
-
-/**
- * For converting an array to a string.
- * @param {any[]} set The set to convert to a string.
- * @param {string} delimiter The (optional) delimiter.
- */
-export function setToString(set: Set<any>, delimiter?: string): string {
-    if (delimiter == undefined) {
-        delimiter = ', ';
-    }
-    return Array.from(set).map((value) => value == null ? "null" : value.toString()).join(delimiter);
-}
-
+exports.arrayToString = arrayToString;
 /**
  * For converting a string array to a number array.
  * @param {string[]} s The string to convert to a number array.
  * @returns A number array.
  */
-export function toNumberArray(s: string[]): number[] {
-    let r: number[] = [];
+function toNumberArray(s) {
+    let r = [];
     for (let i = 0; i < s.length; i++) {
         r.push(parseFloat(s[i]));
     }
     return r;
 }
-
+exports.toNumberArray = toNumberArray;
 /**
  * Is the string numeric in that it can be parsed as a float that is not a NaN?
  * @param {string} s The string.
  * @returns True if the string can be parsed as a float that is not a NaN and false otherwise.
  */
-export function isNumeric(s: string): boolean {
+function isNumeric(s) {
     return !isNaN(parseFloat(s));
 }
+exports.isNumeric = isNumeric;
+//# sourceMappingURL=util.js.map

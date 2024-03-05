@@ -1982,6 +1982,8 @@ let $7e68913db756e51f$var$xml_text;
         //console.log(molecule.toString());
         $7e68913db756e51f$var$molecules.set(molecule.id, molecule);
     }
+}
+function $7e68913db756e51f$var$addEventListenersToMoleculesTable() {
     // Add event listeners to molecules table.
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
         let energyKey = id + "_energy";
@@ -2166,6 +2168,7 @@ function $7e68913db756e51f$var$loadXML() {
     /**
      * Generate molecules table.
      */ $7e68913db756e51f$var$initMolecules(xml);
+    $7e68913db756e51f$var$addEventListenersToMoleculesTable();
     $7e68913db756e51f$var$displayMoleculesTable();
     /**
      * Generate reactions table.
@@ -2773,6 +2776,14 @@ let $7e68913db756e51f$var$control;
  */ function $7e68913db756e51f$var$displayMoleculesTable() {
     if ($7e68913db756e51f$var$molecules.size == 0) return;
     // Prepare table headings.
+    let th = "";
+    let attributeKeys = new Set();
+    $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
+        molecule.attributes.forEach(function(value, key) {
+            attributeKeys.add(key);
+        });
+    });
+    console.log("attributeKeys=" + attributeKeys);
     let moleculesTable = (0, $f0396edd0a5c99f7$export$3359980f21752184)([
         "Name",
         "Energy<br>kJ/mol",
@@ -3056,4 +3067,4 @@ window.setEnergy = $7e68913db756e51f$export$afc96e5ea6df45fd;
 
 
 export {$7e68913db756e51f$export$afc96e5ea6df45fd as setEnergy};
-//# sourceMappingURL=index.d2312b7d.js.map
+//# sourceMappingURL=index.8f1fc100.js.map

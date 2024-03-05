@@ -1,12 +1,13 @@
 {
-  "name": "MXG",
-  "description": "MESMER XML GUI.",
+  "name": "mxg-pwa",
+  "description": "MESMER XML GUI PWA.",
   "source": "src/index.html",
-  "version": "0.1",
-  "license": "(MIT OR Apache-2.0)",
+  "version": "0.2",
+  "license": "MIT",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build"
+    "compile": "tsc -p tsconfig.json",
+    "build": "parcel build",
+    "start": "npx parcel --dist-dir dist/main src/index.html -p 3458"
   },
   "targets": {
     "main": {

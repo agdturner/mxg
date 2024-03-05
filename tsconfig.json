@@ -6,7 +6,7 @@
             "ES2021",
             "dom"
         ],
-        "outDir": "./dist",
+        "outDir": "./dist/main/js",
         "strict": true,
         "sourceMap": true
     }

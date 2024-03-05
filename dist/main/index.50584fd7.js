@@ -840,6 +840,8 @@ let xml_text;
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
+}
+function addEventListenersToMoleculesTable() {
     // Add event listeners to molecules table.
     molecules.forEach(function(molecule, id) {
         let energyKey = id + "_energy";
@@ -1024,6 +1026,7 @@ function loadXML() {
     /**
      * Generate molecules table.
      */ initMolecules(xml);
+    addEventListenersToMoleculesTable();
     displayMoleculesTable();
     /**
      * Generate reactions table.
@@ -1631,6 +1634,14 @@ let control;
  */ function displayMoleculesTable() {
     if (molecules.size == 0) return;
     // Prepare table headings.
+    let th = "";
+    let attributeKeys = new Set();
+    molecules.forEach(function(molecule, id) {
+        molecule.attributes.forEach(function(value, key) {
+            attributeKeys.add(key);
+        });
+    });
+    console.log("attributeKeys=" + (0, _utilJs.setToString)(attributeKeys, " "));
     let moleculesTable = (0, _htmlJs.getTH)([
         "Name",
         "Energy<br>kJ/mol",
@@ -1942,6 +1953,11 @@ parcelHelpers.export(exports, "get", ()=>get);
  * @param {string} delimiter The (optional) delimiter.
  */ parcelHelpers.export(exports, "arrayToString", ()=>arrayToString);
 /**
+ * For converting an array to a string.
+ * @param {any[]} set The set to convert to a string.
+ * @param {string} delimiter The (optional) delimiter.
+ */ parcelHelpers.export(exports, "setToString", ()=>setToString);
+/**
  * For converting a string array to a number array.
  * @param {string[]} s The string to convert to a number array.
  * @returns A number array.
@@ -1965,9 +1981,12 @@ function mapToString(map) {
     return Array.from(map.entries()).map(([key, value])=>`${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(", ");
 }
 function arrayToString(array, delimiter) {
-    if (array == null) return "";
-    if (delimiter == null) delimiter = ", ";
+    if (delimiter == undefined) delimiter = ", ";
     return array.map((value)=>value == null ? "null" : value.toString()).join(delimiter);
+}
+function setToString(set, delimiter) {
+    if (delimiter == undefined) delimiter = ", ";
+    return Array.from(set).map((value)=>value == null ? "null" : value.toString()).join(delimiter);
 }
 function toNumberArray(s) {
     let r = [];
@@ -4117,6 +4136,6 @@ class Control extends (0, _xml.NodeWithNodes) {
     }
 }
 
-},{"./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire8ad3")
+},{"./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
 
 //# sourceMappingURL=index.50584fd7.js.map

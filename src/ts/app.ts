@@ -1,5 +1,5 @@
 import {
-    get, rescale
+    get, rescale, setToString
 } from './util.js';
 
 import {
@@ -418,6 +418,9 @@ function initMolecules(xml: XMLDocument): void {
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
+}
+
+function addEventListenersToMoleculesTable(): void {
     // Add event listeners to molecules table.
     molecules.forEach(function (molecule, id) {
         let energyKey = id + "_energy";
@@ -648,6 +651,7 @@ function parse(xml: XMLDocument) {
      * Generate molecules table.
      */
     initMolecules(xml);
+    addEventListenersToMoleculesTable();
     displayMoleculesTable();
 
     /**
@@ -1390,6 +1394,17 @@ function displayMoleculesTable(): void {
         return;
     }
     // Prepare table headings.
+    let th: string = "";
+    let attributeKeys: Set<string> = new Set();
+    molecules.forEach(function (molecule, id) {
+        molecule.attributes.forEach(function (value, key) {
+            attributeKeys.add(key);
+        });
+    });
+
+    console.log("attributeKeys=" + setToString(attributeKeys, " "));
+
+
     let moleculesTable = getTH([
         "Name",
         "Energy<br>kJ/mol",
