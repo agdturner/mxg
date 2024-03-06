@@ -76,12 +76,3 @@ export function toNumberArray(s: string[]): number[] {
     }
     return r;
 }
-
-/**
- * Is the string numeric in that it can be parsed as a float that is not a NaN?
- * @param {string} s The string.
- * @returns True if the string can be parsed as a float that is not a NaN and false otherwise.
- */
-export function isNumeric(s: string): boolean {
-    return !isNaN(parseFloat(s));
-}

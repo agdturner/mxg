@@ -17,7 +17,7 @@ import {
 } from './reaction.js';
 
 import {
-    arrayToString, toNumberArray, isNumeric
+    arrayToString, toNumberArray
 } from './util.js';
 
 import {
@@ -503,11 +503,9 @@ function getProperty(xml_property: Element): Property {
     }
 }
 
-let inputElement: HTMLInputElement;
-
 //function reload() {
 function loadXML() {
-    inputElement = document.createElement('input');
+    let inputElement: HTMLInputElement = document.createElement('input');
     inputElement.type = 'file';
     inputElement.onchange = function () {
         if (inputElement.files) {
@@ -1727,10 +1725,10 @@ export function setEnergy(input: HTMLInputElement): void {
     let moleculeID: string = id_energy.split("_")[0];
     let molecule: Molecule | undefined = molecules.get(moleculeID);
     if (molecule) {
-        let inputValue: number = parseFloat(input.value);
-        if (!isNaN(inputValue)) {
-            molecule.setEnergy(inputValue);
-            console.log("Energy of " + moleculeID + " set to " + inputValue);
+        let inputNumber: number = parseFloat(input.value);
+        if (!isNaN(inputNumber)) {
+            molecule.setEnergy(inputNumber);
+            console.log("Energy of " + moleculeID + " set to " + inputNumber);
         } else {
             alert("Energy input for " + moleculeID + " is not a number");
             let inputElement = document.getElementById(id_energy) as HTMLInputElement;
@@ -1751,32 +1749,36 @@ export function setRotConst(input: HTMLInputElement): void {
     let moleculeID: string = id_rotConst.split("_")[0];
     let molecule: Molecule | undefined = molecules.get(moleculeID);
     if (molecule) {
-        let inputValue: string = input.value;
-        let values: string[] = inputValue.split(/\s+/);
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
         let rotConsts: number[] | undefined = molecule.getRotConsts();
         //console.log("rotConsts=" + rotConsts);
         if (rotConsts) {
             let nRotConsts = rotConsts.length;
-            let success: boolean = true;
+            let success: boolean = true; 
             values.forEach(function (value) {
-                if (!isNumeric(value)) {
-                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                    let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
-                    inputElement.value = arrayToString(rotConsts as number[], " ");
+                let inputNumber: number = parseFloat(value);
+                if (!isNaN(inputNumber)) {
                     success = false;
+                } else {
+                    console.log("value=" + value);
                 }
             });
-            if (success) {
-                if (values.length == nRotConsts) {
-                    let rotConstsNew: number[] = inputValue.split(" ").map(Number);
-                    molecule.setRotConsts(rotConstsNew);
-                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
-                    //console.log("molecule=" + molecule);
-                } else {
-                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                    let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
-                    inputElement.value = arrayToString(rotConsts as number[], " ");
-                }
+            if (!success) {
+                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
+                return;
+            }
+            if (values.length == nRotConsts) {
+                let rotConstsNew: number[] = inputString.split(" ").map(Number);
+                molecule.setRotConsts(rotConstsNew);
+                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+                //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
             }
         }
     }

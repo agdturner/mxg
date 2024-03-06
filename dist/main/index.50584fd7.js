@@ -912,10 +912,9 @@ function getProperty(xml_property) {
     else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
     else throw new Error("Unexpected nodeName: " + nodeName);
 }
-let inputElement;
 //function reload() {
 function loadXML() {
-    inputElement = document.createElement("input");
+    let inputElement = document.createElement("input");
     inputElement.type = "file";
     inputElement.onchange = function() {
         if (inputElement.files) {
@@ -1882,10 +1881,10 @@ function setEnergy(input) {
     let moleculeID = id_energy.split("_")[0];
     let molecule = molecules.get(moleculeID);
     if (molecule) {
-        let inputValue = parseFloat(input.value);
-        if (!isNaN(inputValue)) {
-            molecule.setEnergy(inputValue);
-            console.log("Energy of " + moleculeID + " set to " + inputValue);
+        let inputNumber = parseFloat(input.value);
+        if (!isNaN(inputNumber)) {
+            molecule.setEnergy(inputNumber);
+            console.log("Energy of " + moleculeID + " set to " + inputNumber);
         } else {
             alert("Energy input for " + moleculeID + " is not a number");
             let inputElement = document.getElementById(id_energy);
@@ -1900,32 +1899,33 @@ function setRotConst(input) {
     let moleculeID = id_rotConst.split("_")[0];
     let molecule = molecules.get(moleculeID);
     if (molecule) {
-        let inputValue = input.value;
-        let values = inputValue.split(/\s+/);
+        let inputString = input.value;
+        let values = inputString.split(/\s+/);
         let rotConsts = molecule.getRotConsts();
         //console.log("rotConsts=" + rotConsts);
         if (rotConsts) {
             let nRotConsts = rotConsts.length;
             let success = true;
             values.forEach(function(value) {
-                if (!(0, _utilJs.isNumeric)(value)) {
-                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                    let inputElement = document.getElementById(id_rotConst);
-                    inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
-                    success = false;
-                }
+                let inputNumber = parseFloat(value);
+                if (!isNaN(inputNumber)) success = false;
+                else console.log("value=" + value);
             });
-            if (success) {
-                if (values.length == nRotConsts) {
-                    let rotConstsNew = inputValue.split(" ").map(Number);
-                    molecule.setRotConsts(rotConstsNew);
-                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
-                //console.log("molecule=" + molecule);
-                } else {
-                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                    let inputElement = document.getElementById(id_rotConst);
-                    inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
-                }
+            if (!success) {
+                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_rotConst);
+                inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
+                return;
+            }
+            if (values.length == nRotConsts) {
+                let rotConstsNew = inputString.split(" ").map(Number);
+                molecule.setRotConsts(rotConstsNew);
+                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+            //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_rotConst);
+                inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
             }
         }
     }
@@ -2029,11 +2029,6 @@ parcelHelpers.export(exports, "get", ()=>get);
  * @param {string[]} s The string to convert to a number array.
  * @returns A number array.
  */ parcelHelpers.export(exports, "toNumberArray", ()=>toNumberArray);
-/**
- * Is the string numeric in that it can be parsed as a float that is not a NaN?
- * @param {string} s The string.
- * @returns True if the string can be parsed as a float that is not a NaN and false otherwise.
- */ parcelHelpers.export(exports, "isNumeric", ()=>isNumeric);
 function get(map, key) {
     if (!map.has(key)) throw new Error(`Key ${key} not found in map`);
     return map.get(key);
@@ -2059,9 +2054,6 @@ function toNumberArray(s) {
     let r = [];
     for(let i = 0; i < s.length; i++)r.push(parseFloat(s[i]));
     return r;
-}
-function isNumeric(s) {
-    return !isNaN(parseFloat(s));
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {

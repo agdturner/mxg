@@ -30,9 +30,6 @@ function $134d19e749bf0414$export$8cfbaad830aa9e0a(s) {
     for(let i = 0; i < s.length; i++)r.push(parseFloat(s[i]));
     return r;
 }
-function $134d19e749bf0414$export$e90fb89750dba83f(s) {
-    return !isNaN(parseFloat(s));
-}
 
 
 /**
@@ -2146,15 +2143,14 @@ function $7e68913db756e51f$var$getProperty(xml_property) {
     else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
     else throw new Error("Unexpected nodeName: " + nodeName);
 }
-let $7e68913db756e51f$var$inputElement;
 //function reload() {
 function $7e68913db756e51f$var$loadXML() {
-    $7e68913db756e51f$var$inputElement = document.createElement("input");
-    $7e68913db756e51f$var$inputElement.type = "file";
-    $7e68913db756e51f$var$inputElement.onchange = function() {
-        if ($7e68913db756e51f$var$inputElement.files) {
-            for(let i = 0; i < $7e68913db756e51f$var$inputElement.files.length; i++)console.log("inputElement.files[" + i + "]=" + $7e68913db756e51f$var$inputElement.files[i]);
-            let file = $7e68913db756e51f$var$inputElement.files[0];
+    let inputElement = document.createElement("input");
+    inputElement.type = "file";
+    inputElement.onchange = function() {
+        if (inputElement.files) {
+            for(let i = 0; i < inputElement.files.length; i++)console.log("inputElement.files[" + i + "]=" + inputElement.files[i]);
+            let file = inputElement.files[0];
             //console.log("file=" + file);
             console.log(file.name);
             $7e68913db756e51f$var$input_xml_filename = file.name;
@@ -2211,7 +2207,7 @@ function $7e68913db756e51f$var$loadXML() {
             }
         }
     };
-    $7e68913db756e51f$var$inputElement.click();
+    inputElement.click();
     // Add event listener to load button.
     $7e68913db756e51f$var$loadButton = document.getElementById("load_button");
     if ($7e68913db756e51f$var$loadButton != null) //loadButton.addEventListener('click', reload);
@@ -3116,10 +3112,10 @@ function $7e68913db756e51f$export$afc96e5ea6df45fd(input) {
     let moleculeID = id_energy.split("_")[0];
     let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
     if (molecule) {
-        let inputValue = parseFloat(input.value);
-        if (!isNaN(inputValue)) {
-            molecule.setEnergy(inputValue);
-            console.log("Energy of " + moleculeID + " set to " + inputValue);
+        let inputNumber = parseFloat(input.value);
+        if (!isNaN(inputNumber)) {
+            molecule.setEnergy(inputNumber);
+            console.log("Energy of " + moleculeID + " set to " + inputNumber);
         } else {
             alert("Energy input for " + moleculeID + " is not a number");
             let inputElement = document.getElementById(id_energy);
@@ -3134,32 +3130,33 @@ function $7e68913db756e51f$export$89b14b349130d1de(input) {
     let moleculeID = id_rotConst.split("_")[0];
     let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
     if (molecule) {
-        let inputValue = input.value;
-        let values = inputValue.split(/\s+/);
+        let inputString = input.value;
+        let values = inputString.split(/\s+/);
         let rotConsts = molecule.getRotConsts();
         //console.log("rotConsts=" + rotConsts);
         if (rotConsts) {
             let nRotConsts = rotConsts.length;
             let success = true;
             values.forEach(function(value) {
-                if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) {
-                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                    let inputElement = document.getElementById(id_rotConst);
-                    inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
-                    success = false;
-                }
+                let inputNumber = parseFloat(value);
+                if (!isNaN(inputNumber)) success = false;
+                else console.log("value=" + value);
             });
-            if (success) {
-                if (values.length == nRotConsts) {
-                    let rotConstsNew = inputValue.split(" ").map(Number);
-                    molecule.setRotConsts(rotConstsNew);
-                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
-                //console.log("molecule=" + molecule);
-                } else {
-                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                    let inputElement = document.getElementById(id_rotConst);
-                    inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
-                }
+            if (!success) {
+                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_rotConst);
+                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
+                return;
+            }
+            if (values.length == nRotConsts) {
+                let rotConstsNew = inputString.split(" ").map(Number);
+                molecule.setRotConsts(rotConstsNew);
+                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+            //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_rotConst);
+                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
             }
         }
     }
@@ -3226,4 +3223,4 @@ window.setRotConst = $7e68913db756e51f$export$89b14b349130d1de;
 
 
 export {$7e68913db756e51f$export$afc96e5ea6df45fd as setEnergy, $7e68913db756e51f$export$89b14b349130d1de as setRotConst};
-//# sourceMappingURL=index.aaedc07d.js.map
+//# sourceMappingURL=index.5a4e1d91.js.map
