@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isNumeric = exports.toNumberArray = exports.arrayToString = exports.mapToString = exports.rescale = exports.get = void 0;
+exports.isNumeric = exports.toNumberArray = exports.setToString = exports.arrayToString = exports.mapToString = exports.rescale = exports.get = void 0;
 /**
  * Thow an error if the key is not in the map otherwise return the value mapped to the key.
  * @param map The map to search in.
@@ -48,15 +48,24 @@ exports.mapToString = mapToString;
  * @param {string} delimiter The (optional) delimiter.
  */
 function arrayToString(array, delimiter) {
-    if (array == null) {
-        return "";
-    }
-    if (delimiter == null) {
+    if (delimiter == undefined) {
         delimiter = ', ';
     }
     return array.map((value) => value == null ? "null" : value.toString()).join(delimiter);
 }
 exports.arrayToString = arrayToString;
+/**
+ * For converting an array to a string.
+ * @param {any[]} set The set to convert to a string.
+ * @param {string} delimiter The (optional) delimiter.
+ */
+function setToString(set, delimiter) {
+    if (delimiter == undefined) {
+        delimiter = ', ';
+    }
+    return Array.from(set).map((value) => value == null ? "null" : value.toString()).join(delimiter);
+}
+exports.setToString = setToString;
 /**
  * For converting a string array to a number array.
  * @param {string[]} s The string to convert to a number array.

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setEnergy = void 0;
+exports.setRotConst = exports.setEnergy = void 0;
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const molecule_js_1 = require("./molecule.js");
@@ -64,7 +64,7 @@ let saveButton;
  */
 let me_title;
 let molecules_title;
-let molecules_table;
+let moleculesDiv;
 let reactions_title;
 let reactions_table;
 let reactions_diagram_title;
@@ -330,31 +330,50 @@ function initMolecules(xml) {
         molecules.set(molecule.id, molecule);
     }
 }
-function addEventListenersToMoleculesTable() {
-    // Add event listeners to molecules table.
+function addEventListenersToMolecules() {
+    // Add event listeners to molecules.
     molecules.forEach(function (molecule, id) {
+        // Energy input.
         let energyKey = id + "_energy";
-        let inputElement = document.getElementById(energyKey);
-        if (inputElement) {
-            inputElement.addEventListener('change', (event) => {
-                // The input is set up to call the function setEnergy(HTMLInputElement),
-                // so the following commented code is not used. As the input was setup 
-                // as a number type. The any non numbers were It seems that there are two 
-                // ways to get and store the value of the input element.
-                // Both ways have been kept for now as I don't know which way is better!
+        let energyInput = document.getElementById(energyKey);
+        if (energyInput) {
+            energyInput.addEventListener('change', (event) => {
                 let eventTarget = event.target;
                 let inputValue = eventTarget.value;
-                if ((0, util_js_2.isNumeric)(inputValue)) {
-                    molecule.setEnergy(parseFloat(inputValue));
-                    console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                }
-                else {
-                    alert("Energy input for " + id + " is not a number");
-                    let inputElement = document.getElementById(energyKey);
-                    inputElement.value = molecule.getEnergy().toString();
-                    console.log("inputValue=" + inputValue);
-                    console.log("Type of inputValue: " + typeof inputValue);
-                }
+                //if (isNumeric(inputValue)) {
+                molecule.setEnergy(parseFloat(inputValue));
+                console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
+                //} else {
+                //    alert("Energy input for " + id + " is not a number");
+                //    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
+                //    inputElement.value = molecule.getEnergy().toString();
+                //    console.log("inputValue=" + inputValue);
+                //    console.log("Type of inputValue: " + typeof inputValue);
+                //}
+            });
+        }
+        // RotConsts input.
+        let rotConstsKey = id + "_rotConsts";
+        let rotConstsInput = document.getElementById(rotConstsKey);
+        if (rotConstsInput) {
+            rotConstsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target;
+                let inputValue = eventTarget.value;
+                let rotConsts = [];
+                let values = inputValue.split(/\s+/);
+                //let nRotConsts = molecule.getRotConsts()?.length ?? 0;
+                //console.log("nRotConsts=" + nRotConsts);
+                //if (values.length != nRotConsts) {
+                //    alert("Expecting " + nRotConsts + " rotation constant values for " + id + " but finding " + values.length);
+                // }
+                values.forEach(function (value) {
+                    //if (!isNumeric(value)) {
+                    //    alert("A rotation constant for " + id + " is not a number");
+                    //}
+                    rotConsts.push(parseFloat(value));
+                });
+                molecule.setRotConsts(rotConsts);
+                console.log("Set rotConsts of " + id + " to " + inputValue);
             });
         }
     });
@@ -556,8 +575,8 @@ function parse(xml) {
      * Generate molecules table.
      */
     initMolecules(xml);
-    addEventListenersToMoleculesTable();
-    displayMoleculesTable();
+    displayMolecules();
+    addEventListenersToMolecules();
     /**
      * Generate reactions table.
      */
@@ -1274,28 +1293,15 @@ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) 
     });
 }
 /**
- * Display molecules table.
+ * Display molecules.
  */
-function displayMoleculesTable() {
+function displayMolecules() {
     if (molecules.size == 0) {
         return;
     }
     // Prepare table headings.
-    let th = "";
-    let attributeKeys = new Set();
     molecules.forEach(function (molecule, id) {
-        molecule.attributes.forEach(function (value, key) {
-            attributeKeys.add(key);
-        });
-    });
-    console.log("attributeKeys=" + attributeKeys);
-    let moleculesTable = (0, html_js_1.getTH)([
-        "Name",
-        "Energy<br>kJ/mol",
-        "Rotation constants<br>cm<sup>-1</sup>",
-        "Vibration frequencies<br>cm<sup>-1</sup>"
-    ]);
-    molecules.forEach(function (molecule, id) {
+        let moleculeDiv = "";
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
         let energyNumber = molecule.getEnergy();
@@ -1317,15 +1323,39 @@ function displayMoleculesTable() {
         if (vibFreqs != undefined) {
             vibrationFrequencies = (0, util_js_2.arrayToString)(vibFreqs, " ");
         }
-        moleculesTable += (0, html_js_1.getTR)((0, html_js_1.getTD)(id)
-            + (0, html_js_1.getTD)((0, html_js_1.getInput)("number", id + "_energy", "setEnergy(this)", energy))
-            + (0, html_js_1.getTD)(rotationConstants, true)
-            + (0, html_js_1.getTD)(vibrationFrequencies, true));
+        let energyInputDiv = (0, html_js_1.getInput)("number", id + "_energy", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setEnergy(event.target);
+            }
+        }, energy, "Energy");
+        let rotConstsDiv = (0, html_js_1.getInput)("text", id + "_rotConst", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setRotConst(event.target);
+            }
+        }, rotationConstants, "Rotation Constants");
+        let div = document.createElement("div");
+        div.appendChild(energyInputDiv);
+        div.appendChild(rotConstsDiv);
+        //let moleculeDetailDiv = getCollapsibleDiv(energyInputDiv, id + "_details", "collapsible");
+        //moleculeDetailDiv.appendChild(energyInputDiv);
+        let moleculeDetailDiv = (0, html_js_1.getCollapsibleDiv)(div, id + "_details", "collapsible");
+        moleculeDetailDiv.appendChild(div);
+        //moleculeDiv += moleculeDetailDiv.innerHTML;
+        moleculesDiv = document.getElementById("moleculesList");
+        if (moleculesDiv !== null) {
+            let parentElement = document.getElementById('molecules');
+            if (parentElement) {
+                parentElement.appendChild(moleculeDetailDiv);
+            }
+        }
+        /*
+        moleculesDiv += getTR(getTD(id)
+            + getTD(getInput("number", id + "_energy", "setEnergy(this)", energy))
+            + getTD(rotationConstants, true)
+            + getTD(vibrationFrequencies, true));
+        */
     });
-    molecules_table = document.getElementById("molecules_table");
-    if (molecules_table !== null) {
-        molecules_table.innerHTML = moleculesTable;
-    }
+    (0, html_js_1.makeCollapsible)();
 }
 /**
  * Display reactions table.
@@ -1570,7 +1600,7 @@ function setEnergy(input) {
     let id_energy = input.id;
     let moleculeID = id_energy.split("_")[0];
     let molecule = molecules.get(moleculeID);
-    if (molecule != undefined) {
+    if (molecule) {
         let inputValue = parseFloat(input.value);
         if (!isNaN(inputValue)) {
             molecule.setEnergy(inputValue);
@@ -1586,6 +1616,48 @@ function setEnergy(input) {
 }
 exports.setEnergy = setEnergy;
 window.setEnergy = setEnergy;
+/**
+ * Set the rotation constants of a molecule when the rotation constants input value is changed.
+ * @param input The input element.
+ */
+function setRotConst(input) {
+    let id_rotConst = input.id;
+    let moleculeID = id_rotConst.split("_")[0];
+    let molecule = molecules.get(moleculeID);
+    if (molecule) {
+        let inputValue = input.value;
+        let values = inputValue.split(/\s+/);
+        let rotConsts = molecule.getRotConsts();
+        //console.log("rotConsts=" + rotConsts);
+        if (rotConsts) {
+            let nRotConsts = rotConsts.length;
+            let success = true;
+            values.forEach(function (value) {
+                if (!(0, util_js_2.isNumeric)(value)) {
+                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                    let inputElement = document.getElementById(id_rotConst);
+                    inputElement.value = (0, util_js_2.arrayToString)(rotConsts, " ");
+                    success = false;
+                }
+            });
+            if (success) {
+                if (values.length == nRotConsts) {
+                    let rotConstsNew = inputValue.split(" ").map(Number);
+                    molecule.setRotConsts(rotConstsNew);
+                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+                    //console.log("molecule=" + molecule);
+                }
+                else {
+                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                    let inputElement = document.getElementById(id_rotConst);
+                    inputElement.value = (0, util_js_2.arrayToString)(rotConsts, " ");
+                }
+            }
+        }
+    }
+}
+exports.setRotConst = setRotConst;
+window.setRotConst = setRotConst;
 /**
  * Save to XML file.
  */

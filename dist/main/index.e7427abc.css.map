@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;;;;AAOA;;;;AAKA","sources":["src/style.css"],"sourcesContent":["table,\nth,\ntd {\n  border: 1px solid black;\n  border-collapse: collapse;\n}\n\nth,\ntd {\n  padding: 5px;\n}\n\n.collapsible + * {\n  display: none;\n}"],"names":[],"version":3,"file":"index.e7427abc.css.map"}

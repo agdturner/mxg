@@ -1,4 +1,44 @@
 /**
+ * Create a heading.
+ * @param {string} text The text.
+ * @param {number} level The level of the heading e.g. 1 for h1.
+ * @param {string | undefined} id The id of the div.
+ * @param {string | undefined} _class The class of the div.
+ * @returns {string} Heading element.
+ */
+export function getHeading(text: string, level: number, id?: string, _class?: string): string {
+    let heading: string = "<h" + level;
+    if (id) {
+        heading += " id=\"" + id + "\"";
+    }
+    if (_class) {
+        heading += " class=\"" + _class + "\"";
+    }
+    return heading + ">" + text + "</h" + level + ">";
+}
+
+/**
+ * @param {string} text The text.
+ * @param {string | undefined} id The id of the button.
+ * @param {string | undefined} _class The class of the button.
+ * @param {string | undefined} func The function called on a click.
+ * @returns The button.
+ */
+export function getButton(text: string, id?: string, _class?: string, func?: string): string {
+    let button: string = "<button";
+    if (id) {
+        button += " id=\"" + id + "\"";
+    }
+    if (_class) {
+        button += " class=\"" + _class + "\"";
+    }
+    if (func) {
+        button += " onclick=\"" + func + "\"";
+    }
+    return button + ">" + text + "</button>";
+}
+
+/**
  * Create a table header row.
  * @param {string[]} headings The headings.
  * @returns {string} Table row with headings.
@@ -45,44 +85,67 @@ export function getTable(x: string): string {
 }
 
 /**
- * Create a div.
- * @param {string} x The content of the div.
- * @param {string | null} id The id of the div.
- * @param {string | null} html_class The class of the div.
- * @returns {string} x wrapped in div tags.
+ * Create a collapsible div.
+ * @param content The content of the div.
+ * @param id The id of the div.
+ * @param className The class of the div.
+ * @returns A collapsible div.
  */
-export function getDiv(x: string, id: string | null, html_class: string | null): string {
-    let r: string = "<div";
-    if (id !== null) {
-        r += " id=\"" + id + "\"";
+export function getCollapsibleDiv(content: HTMLElement, buttonLabel?: string, id?: string, className?: string): HTMLDivElement {
+    let div: HTMLDivElement = document.createElement('div');
+    if (id) {
+        div.id = id;
     }
-    if (html_class !== null) {
-        r += " class=\"" + html_class + "\"";
+    if (className) {
+        div.className = className;
     }
-    return r + ">" + x + "</div>";
+    // Create a button.
+    let button: HTMLButtonElement = document.createElement('button');
+    button.className = 'collapsible';
+    if (buttonLabel) {
+        button.innerText = buttonLabel;
+    } else {
+        button.innerText = 'Show/Hide Details';
+    }
+    // Append the button and the content.
+    div.appendChild(button);
+    div.appendChild(content);
+
+    makeCollapsible();
+    return div;
 }
 
 /**
  * Create a input.
- * @param {string} type The input type (e.g. text, number).
- * @param {string | null} id The id of the button.
- * @param {string | null} func The function called on a change.
- * @param {string | null} value The value of the input.
- * @returns {string} An input HTML element.
+ * @param type The input type (e.g. "text", "number").
+ * @param id The id of the input.
+ * @param func The function called on a change.
+ * @param value The value of the input.
+ * @param labelText The label text.
+ * @returns An input HTML element.
  */
-export function getInput(type: string, id: string | null, func: string | null,
-    value : string | null): string {
-    let r: string = "<input type=\"" + type + "\"";
-    if (id !== null) {
-        r += " id=\"" + id + "\"";
+//export function getInput(type: string, id: string, func: (event: Event) => void, value: string, labelText?: string): HTMLInputElement {
+export function getInput(type: string, id: string, func: (event: Event) => void, value: string, labelText?: string): HTMLDivElement {
+        let input: HTMLInputElement = document.createElement('input');
+    input.type = type;
+    input.id = id;
+    input.onchange = func;
+    input.value = value;
+
+    let label: HTMLLabelElement = document.createElement('label');
+    label.htmlFor = id;
+    if (labelText) {
+        label.textContent = labelText + ": ";
+    } else {
+        label.textContent = "";
     }
-    if (func !== null) {
-        r += " onchange=\"" + func + "\"";
-    }
-    if (value !== null) {
-        r += " value=\"" + value + "\"";
-    }
-    return r + ">";
+
+    let container: HTMLDivElement = document.createElement('div');
+    container.appendChild(label);
+    container.appendChild(input);
+
+    //return input;
+    return container;
 }
 
 /**
@@ -98,4 +161,30 @@ export function getSelfClosingTag(attributes: Map<string, string> | null, tagNam
         }
     }
     return s + " />";
+}
+
+/**
+ * For making elements with the class "collapsible" collapsible.
+ */
+export function makeCollapsible(): void {
+    var coll = document.getElementsByClassName("collapsible");
+    for (var i = 0; i < coll.length; i++) {
+        // Remove existing event listener
+        coll[i].removeEventListener("click", toggleCollapsible);
+        // Add new event listener
+        coll[i].addEventListener("click", toggleCollapsible);
+    }
+}
+
+/**
+ * For toggling the collapsible content.
+ */
+function toggleCollapsible(this: HTMLElement): void {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling as HTMLElement;
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
 }

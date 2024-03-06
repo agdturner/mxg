@@ -585,6 +585,10 @@ parcelHelpers.defineInteropFlag(exports);
  * Set the energy of a molecule when the energy input value is changed.
  * @param input The input element. 
  */ parcelHelpers.export(exports, "setEnergy", ()=>setEnergy);
+/**
+ * Set the rotation constants of a molecule when the rotation constants input value is changed.
+ * @param input The input element. 
+ */ parcelHelpers.export(exports, "setRotConst", ()=>setRotConst);
 var _utilJs = require("./util.js");
 var _xmlJs = require("./xml.js");
 var _moleculeJs = require("./molecule.js");
@@ -635,7 +639,7 @@ let me_title_s = "me:title";
  * The XML text element.
  */ let me_title;
 let molecules_title;
-let molecules_table;
+let moleculesDiv;
 let reactions_title;
 let reactions_table;
 let reactions_diagram_title;
@@ -841,29 +845,47 @@ let xml_text;
         molecules.set(molecule.id, molecule);
     }
 }
-function addEventListenersToMoleculesTable() {
-    // Add event listeners to molecules table.
+function addEventListenersToMolecules() {
+    // Add event listeners to molecules.
     molecules.forEach(function(molecule, id) {
+        // Energy input.
         let energyKey = id + "_energy";
-        let inputElement = document.getElementById(energyKey);
-        if (inputElement) inputElement.addEventListener("change", (event)=>{
-            // The input is set up to call the function setEnergy(HTMLInputElement),
-            // so the following commented code is not used. As the input was setup 
-            // as a number type. The any non numbers were It seems that there are two 
-            // ways to get and store the value of the input element.
-            // Both ways have been kept for now as I don't know which way is better!
+        let energyInput = document.getElementById(energyKey);
+        if (energyInput) energyInput.addEventListener("change", (event)=>{
             let eventTarget = event.target;
             let inputValue = eventTarget.value;
-            if ((0, _utilJs.isNumeric)(inputValue)) {
-                molecule.setEnergy(parseFloat(inputValue));
-                console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-            } else {
-                alert("Energy input for " + id + " is not a number");
-                let inputElement = document.getElementById(energyKey);
-                inputElement.value = molecule.getEnergy().toString();
-                console.log("inputValue=" + inputValue);
-                console.log("Type of inputValue: " + typeof inputValue);
-            }
+            //if (isNumeric(inputValue)) {
+            molecule.setEnergy(parseFloat(inputValue));
+            console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
+        //} else {
+        //    alert("Energy input for " + id + " is not a number");
+        //    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
+        //    inputElement.value = molecule.getEnergy().toString();
+        //    console.log("inputValue=" + inputValue);
+        //    console.log("Type of inputValue: " + typeof inputValue);
+        //}
+        });
+        // RotConsts input.
+        let rotConstsKey = id + "_rotConsts";
+        let rotConstsInput = document.getElementById(rotConstsKey);
+        if (rotConstsInput) rotConstsInput.addEventListener("change", (event)=>{
+            let eventTarget = event.target;
+            let inputValue = eventTarget.value;
+            let rotConsts = [];
+            let values = inputValue.split(/\s+/);
+            //let nRotConsts = molecule.getRotConsts()?.length ?? 0;
+            //console.log("nRotConsts=" + nRotConsts);
+            //if (values.length != nRotConsts) {
+            //    alert("Expecting " + nRotConsts + " rotation constant values for " + id + " but finding " + values.length);
+            // }
+            values.forEach(function(value) {
+                //if (!isNumeric(value)) {
+                //    alert("A rotation constant for " + id + " is not a number");
+                //}
+                rotConsts.push(parseFloat(value));
+            });
+            molecule.setRotConsts(rotConsts);
+            console.log("Set rotConsts of " + id + " to " + inputValue);
         });
     });
 }
@@ -1026,8 +1048,8 @@ function loadXML() {
     /**
      * Generate molecules table.
      */ initMolecules(xml);
-    addEventListenersToMoleculesTable();
-    displayMoleculesTable();
+    displayMolecules();
+    addEventListenersToMolecules();
     /**
      * Generate reactions table.
      */ initReactions(xml);
@@ -1630,25 +1652,12 @@ let control;
     });
 }
 /**
- * Display molecules table.
- */ function displayMoleculesTable() {
+ * Display molecules.
+ */ function displayMolecules() {
     if (molecules.size == 0) return;
     // Prepare table headings.
-    let th = "";
-    let attributeKeys = new Set();
     molecules.forEach(function(molecule, id) {
-        molecule.attributes.forEach(function(value, key) {
-            attributeKeys.add(key);
-        });
-    });
-    console.log("attributeKeys=" + (0, _utilJs.setToString)(attributeKeys, " "));
-    let moleculesTable = (0, _htmlJs.getTH)([
-        "Name",
-        "Energy<br>kJ/mol",
-        "Rotation constants<br>cm<sup>-1</sup>",
-        "Vibration frequencies<br>cm<sup>-1</sup>"
-    ]);
-    molecules.forEach(function(molecule, id) {
+        let moleculeDiv = "";
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
         let energyNumber = molecule.getEnergy();
@@ -1662,10 +1671,32 @@ let control;
         let vibrationFrequencies = "";
         let vibFreqs = molecule.getVibFreqs();
         if (vibFreqs != undefined) vibrationFrequencies = (0, _utilJs.arrayToString)(vibFreqs, " ");
-        moleculesTable += (0, _htmlJs.getTR)((0, _htmlJs.getTD)(id) + (0, _htmlJs.getTD)((0, _htmlJs.getInput)("number", id + "_energy", "setEnergy(this)", energy)) + (0, _htmlJs.getTD)(rotationConstants, true) + (0, _htmlJs.getTD)(vibrationFrequencies, true));
-    });
-    molecules_table = document.getElementById("molecules_table");
-    if (molecules_table !== null) molecules_table.innerHTML = moleculesTable;
+        let energyInputDiv = (0, _htmlJs.getInput)("number", id + "_energy", (event)=>{
+            if (event.target instanceof HTMLInputElement) setEnergy(event.target);
+        }, energy, "Energy");
+        let rotConstsDiv = (0, _htmlJs.getInput)("text", id + "_rotConst", (event)=>{
+            if (event.target instanceof HTMLInputElement) setRotConst(event.target);
+        }, rotationConstants, "Rotation Constants");
+        let div = document.createElement("div");
+        div.appendChild(energyInputDiv);
+        div.appendChild(rotConstsDiv);
+        //let moleculeDetailDiv = getCollapsibleDiv(energyInputDiv, id + "_details", "collapsible");
+        //moleculeDetailDiv.appendChild(energyInputDiv);
+        let moleculeDetailDiv = (0, _htmlJs.getCollapsibleDiv)(div, id + "_details", "collapsible");
+        moleculeDetailDiv.appendChild(div);
+        //moleculeDiv += moleculeDetailDiv.innerHTML;
+        moleculesDiv = document.getElementById("moleculesList");
+        if (moleculesDiv !== null) {
+            let parentElement = document.getElementById("molecules");
+            if (parentElement) parentElement.appendChild(moleculeDetailDiv);
+        }
+    /*
+        moleculesDiv += getTR(getTD(id)
+            + getTD(getInput("number", id + "_energy", "setEnergy(this)", energy))
+            + getTD(rotationConstants, true)
+            + getTD(vibrationFrequencies, true));
+        */ });
+    (0, _htmlJs.makeCollapsible)();
 }
 /**
  * Display reactions table.
@@ -1850,7 +1881,7 @@ function setEnergy(input) {
     let id_energy = input.id;
     let moleculeID = id_energy.split("_")[0];
     let molecule = molecules.get(moleculeID);
-    if (molecule != undefined) {
+    if (molecule) {
         let inputValue = parseFloat(input.value);
         if (!isNaN(inputValue)) {
             molecule.setEnergy(inputValue);
@@ -1864,6 +1895,42 @@ function setEnergy(input) {
     }
 }
 window.setEnergy = setEnergy;
+function setRotConst(input) {
+    let id_rotConst = input.id;
+    let moleculeID = id_rotConst.split("_")[0];
+    let molecule = molecules.get(moleculeID);
+    if (molecule) {
+        let inputValue = input.value;
+        let values = inputValue.split(/\s+/);
+        let rotConsts = molecule.getRotConsts();
+        //console.log("rotConsts=" + rotConsts);
+        if (rotConsts) {
+            let nRotConsts = rotConsts.length;
+            let success = true;
+            values.forEach(function(value) {
+                if (!(0, _utilJs.isNumeric)(value)) {
+                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                    let inputElement = document.getElementById(id_rotConst);
+                    inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
+                    success = false;
+                }
+            });
+            if (success) {
+                if (values.length == nRotConsts) {
+                    let rotConstsNew = inputValue.split(" ").map(Number);
+                    molecule.setRotConsts(rotConstsNew);
+                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+                //console.log("molecule=" + molecule);
+                } else {
+                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                    let inputElement = document.getElementById(id_rotConst);
+                    inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
+                }
+            }
+        }
+    }
+}
+window.setRotConst = setRotConst;
 /**
  * Save to XML file.
  */ window.saveXML = function() {
@@ -2343,12 +2410,27 @@ function toHTML(text) {
 
 },{"./html":"aLPSL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aLPSL":[function(require,module,exports) {
 /**
+ * Create a heading.
+ * @param {string} text The text.
+ * @param {number} level The level of the heading e.g. 1 for h1.
+ * @param {string | undefined} id The id of the div.
+ * @param {string | undefined} _class The class of the div.
+ * @returns {string} Heading element.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getHeading", ()=>getHeading);
+/**
+ * @param {string} text The text.
+ * @param {string | undefined} id The id of the button.
+ * @param {string | undefined} _class The class of the button.
+ * @param {string | undefined} func The function called on a click.
+ * @returns The button.
+ */ parcelHelpers.export(exports, "getButton", ()=>getButton);
+/**
  * Create a table header row.
  * @param {string[]} headings The headings.
  * @returns {string} Table row with headings.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getTH", ()=>getTH);
+ */ parcelHelpers.export(exports, "getTH", ()=>getTH);
 /**
  * Create a table cell.
  * @param {string} x A cell for a table row.
@@ -2366,25 +2448,43 @@ parcelHelpers.export(exports, "getTH", ()=>getTH);
  * @returns {string} x wrapped in table tags.
  */ parcelHelpers.export(exports, "getTable", ()=>getTable);
 /**
- * Create a div.
- * @param {string} x The content of the div.
- * @param {string | null} id The id of the div.
- * @param {string | null} html_class The class of the div.
- * @returns {string} x wrapped in div tags.
- */ parcelHelpers.export(exports, "getDiv", ()=>getDiv);
+ * Create a collapsible div.
+ * @param content The content of the div.
+ * @param id The id of the div.
+ * @param className The class of the div.
+ * @returns A collapsible div.
+ */ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
 /**
  * Create a input.
- * @param {string} type The input type (e.g. text, number).
- * @param {string | null} id The id of the button.
- * @param {string | null} func The function called on a change.
- * @param {string | null} value The value of the input.
- * @returns {string} An input HTML element.
- */ parcelHelpers.export(exports, "getInput", ()=>getInput);
+ * @param type The input type (e.g. "text", "number").
+ * @param id The id of the input.
+ * @param func The function called on a change.
+ * @param value The value of the input.
+ * @param labelText The label text.
+ * @returns An input HTML element.
+ */ //export function getInput(type: string, id: string, func: (event: Event) => void, value: string, labelText?: string): HTMLInputElement {
+parcelHelpers.export(exports, "getInput", ()=>getInput);
 /**
  * Create a self closing tag.
  * @param {Map<string, string> | null} attributes The attributes.
  * @param {string} tagName The tag name.
  */ parcelHelpers.export(exports, "getSelfClosingTag", ()=>getSelfClosingTag);
+/**
+ * For making elements with the class "collapsible" collapsible.
+ */ parcelHelpers.export(exports, "makeCollapsible", ()=>makeCollapsible);
+function getHeading(text, level, id, _class) {
+    let heading = "<h" + level;
+    if (id) heading += ' id="' + id + '"';
+    if (_class) heading += ' class="' + _class + '"';
+    return heading + ">" + text + "</h" + level + ">";
+}
+function getButton(text, id, _class, func) {
+    let button = "<button";
+    if (id) button += ' id="' + id + '"';
+    if (_class) button += ' class="' + _class + '"';
+    if (func) button += ' onclick="' + func + '"';
+    return button + ">" + text + "</button>";
+}
 function getTH(headings) {
     var th = "";
     for(let i = 0; i < headings.length; i++)th += "<th>" + headings[i] + "</th>";
@@ -2402,23 +2502,58 @@ function getTR(x) {
 function getTable(x) {
     return "<table>" + x + "</table>";
 }
-function getDiv(x, id, html_class) {
-    let r = "<div";
-    if (id !== null) r += ' id="' + id + '"';
-    if (html_class !== null) r += ' class="' + html_class + '"';
-    return r + ">" + x + "</div>";
+function getCollapsibleDiv(content, buttonLabel, id, className) {
+    let div = document.createElement("div");
+    if (id) div.id = id;
+    if (className) div.className = className;
+    // Create a button.
+    let button = document.createElement("button");
+    button.className = "collapsible";
+    if (buttonLabel) button.innerText = buttonLabel;
+    else button.innerText = "Show/Hide Details";
+    // Append the button and the content.
+    div.appendChild(button);
+    div.appendChild(content);
+    makeCollapsible();
+    return div;
 }
-function getInput(type, id, func, value) {
-    let r = '<input type="' + type + '"';
-    if (id !== null) r += ' id="' + id + '"';
-    if (func !== null) r += ' onchange="' + func + '"';
-    if (value !== null) r += ' value="' + value + '"';
-    return r + ">";
+function getInput(type, id, func, value, labelText) {
+    let input = document.createElement("input");
+    input.type = type;
+    input.id = id;
+    input.onchange = func;
+    input.value = value;
+    let label = document.createElement("label");
+    label.htmlFor = id;
+    if (labelText) label.textContent = labelText + ": ";
+    else label.textContent = "";
+    let container = document.createElement("div");
+    container.appendChild(label);
+    container.appendChild(input);
+    //return input;
+    return container;
 }
 function getSelfClosingTag(attributes, tagName) {
     let s = "<" + tagName;
     if (attributes) for (let [key, value] of attributes)s += " " + key + '="' + value + '"';
     return s + " />";
+}
+function makeCollapsible() {
+    var coll = document.getElementsByClassName("collapsible");
+    for(var i = 0; i < coll.length; i++){
+        // Remove existing event listener
+        coll[i].removeEventListener("click", toggleCollapsible);
+        // Add new event listener
+        coll[i].addEventListener("click", toggleCollapsible);
+    }
+}
+/**
+ * For toggling the collapsible content.
+ */ function toggleCollapsible() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") content.style.display = "none";
+    else content.style.display = "block";
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ahQNx":[function(require,module,exports) {
@@ -2870,15 +3005,15 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @returns {number} The energy of the molecule or zero if the energy is not set or defined.
      */ getEnergy() {
-        let energy = this.getPropertyScalar(Molecule.energyDictRef);
-        if (energy == undefined) return 0;
-        return energy;
+        let p = this.getPropertyScalar(Molecule.energyDictRef);
+        if (p == undefined) return 0;
+        return p;
     }
     /**
      * Set the scalar property.
-     * @param {string} dictRef The dictRef of the property.
-     * @param {number} value The value of the property.
-     * @param {string} units The units of the property.
+     * @param dictRef The dictRef of the property.
+     * @param value The value of the property.
+     * @param units The units of the property (optional).
      */ setPropertyScalar(dictRef, value, units) {
         let properties = this.getProperties();
         if (properties == undefined) {
@@ -2905,21 +3040,63 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @returns A scalar property.
      */ createPropertyScalar(dictRef, value, units) {
         let propertyAttributes = new Map();
-        propertyAttributes.set("dictRef", Molecule.energyDictRef);
-        let scalarAttributes = new Map();
-        if (units) scalarAttributes.set("units", units);
-        return new Property(propertyAttributes, new PropertyScalar(scalarAttributes, value));
+        propertyAttributes.set("dictRef", dictRef);
+        let attribs = new Map();
+        if (units) attribs.set("units", units);
+        return new Property(propertyAttributes, new PropertyScalar(attribs, value));
+    }
+    /**
+      * Set the scalar property.
+      * @param dictRef The dictRef of the property.
+      * @param values The values of the property.
+      * @param units The units of the property.
+      */ setPropertyArray(dictRef, values, units) {
+        let properties = this.getProperties();
+        if (properties == undefined) {
+            this.nodes.set(this.nodes.size, this.createPropertyArray(dictRef, values, units));
+            this.index.set(Property.tagName, this.nodes.size);
+        } else if (properties instanceof Property) {
+            if (properties.getProperty().attributes.get(dictRef)) properties.getProperty().values = values;
+            else {
+                let plmap = new Map();
+                plmap.set(dictRef, properties);
+                plmap.set(dictRef, this.createPropertyArray(dictRef, values, units));
+                properties = new PropertyList(new Map(), plmap);
+            }
+        } else {
+            let scalarProperty = properties.properties.get(dictRef);
+            if (scalarProperty == undefined) properties.properties.set(dictRef, this.createPropertyArray(dictRef, values, units));
+            else scalarProperty.getProperty().values = values;
+        }
+    }
+    /**
+     * @param dictRef The dictRef of the property.
+     * @param values The values of the property.
+     * @param units The units of the property.
+     * @returns A scalar property.
+     */ createPropertyArray(dictRef, values, units) {
+        let propertyAttributes = new Map();
+        propertyAttributes.set("dictRef", dictRef);
+        let attribs = new Map();
+        if (units) attribs.set("units", units);
+        return new Property(propertyAttributes, new PropertyArray(attribs, values));
     }
     /**
      * Set the Energy of the molecule.
-     * @param {number} energy The energy of the molecule in kcal/mol.
+     * @param energy The energy of the molecule in kcal/mol.
      */ setEnergy(energy) {
         this.setPropertyScalar(Molecule.energyDictRef, energy);
     }
     /**
+     * Set the RotationConstants of the molecule.
+     * @param rotConsts The rotation constants of the molecule.
+     */ setRotConsts(rotConsts) {
+        this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
+    }
+    /**
      * Get a property array.
-     * @param {string} dictRef The dictRef of the property.
-     * @returns {number[] | undefined} The array property.
+     * @param dictRef The dictRef of the property.
+     * @returns The array property.
      */ getPropertyArray(dictRef) {
         let properties = this.getProperties();
         if (properties == undefined) return undefined;

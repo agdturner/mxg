@@ -1,9 +1,9 @@
 import {
-    get, rescale, setToString
+    get, mapToString, rescale, setToString
 } from './util.js';
 
 import {
-    getAttribute, getFirstElement, getFirstChildNode, getNodeValue, getTag, getEndTag,
+    getFirstElement, getFirstChildNode, getNodeValue, getTag, getEndTag,
     getAttributes, toHTML, getSingularElement, TagWithAttributes
 } from './xml.js';
 
@@ -21,7 +21,7 @@ import {
 } from './util.js';
 
 import {
-    getTD, getTH, getTR, getInput
+    getTD, getTH, getTR, getInput, getHeading, getButton, makeCollapsible, getCollapsibleDiv
 } from './html.js';
 
 import {
@@ -143,7 +143,7 @@ let saveButton: HTMLElement | null;
  */
 let me_title: HTMLCollectionOf<Element> | null;
 let molecules_title: HTMLElement | null;
-let molecules_table: HTMLElement | null;
+let moleculesDiv: HTMLElement | null;
 let reactions_title: HTMLElement | null;
 let reactions_table: HTMLElement | null;
 let reactions_diagram_title: HTMLElement | null;
@@ -413,39 +413,60 @@ function initMolecules(xml: XMLDocument): void {
             //throw new Error("Unexpected tags in molecule.");
         }
 
-        let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod, 
+        let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod,
             extraDOSCMethod, reservoirSize);
         //console.log(molecule.toString());
         molecules.set(molecule.id, molecule);
     }
 }
 
-function addEventListenersToMoleculesTable(): void {
-    // Add event listeners to molecules table.
+function addEventListenersToMolecules(): void {
+    // Add event listeners to molecules.
     molecules.forEach(function (molecule, id) {
+        // Energy input.
         let energyKey = id + "_energy";
-        let inputElement = document.getElementById(energyKey) as HTMLInputElement;
-        if (inputElement) {
-            inputElement.addEventListener('change', (event) => {
-                // The input is set up to call the function setEnergy(HTMLInputElement),
-                // so the following commented code is not used. As the input was setup 
-                // as a number type. The any non numbers were It seems that there are two 
-                // ways to get and store the value of the input element.
-                // Both ways have been kept for now as I don't know which way is better!
+        let energyInput = document.getElementById(energyKey) as HTMLInputElement;
+        if (energyInput) {
+            energyInput.addEventListener('change', (event) => {
                 let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                if (isNumeric(inputValue)) {
-                    molecule.setEnergy(parseFloat(inputValue));
-                    console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                } else {
-                    alert("Energy input for " + id + " is not a number");
-                    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
-                    inputElement.value = molecule.getEnergy().toString();
-                    console.log("inputValue=" + inputValue);
-                    console.log("Type of inputValue: " + typeof inputValue);
-                }
+                //if (isNumeric(inputValue)) {
+                molecule.setEnergy(parseFloat(inputValue));
+                console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
+                //} else {
+                //    alert("Energy input for " + id + " is not a number");
+                //    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
+                //    inputElement.value = molecule.getEnergy().toString();
+                //    console.log("inputValue=" + inputValue);
+                //    console.log("Type of inputValue: " + typeof inputValue);
+                //}
             });
         }
+        // RotConsts input.
+        let rotConstsKey = id + "_rotConsts";
+        let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
+        if (rotConstsInput) {
+            rotConstsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
+                let inputValue = eventTarget.value;
+                let rotConsts: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                //let nRotConsts = molecule.getRotConsts()?.length ?? 0;
+                //console.log("nRotConsts=" + nRotConsts);
+                //if (values.length != nRotConsts) {
+                //    alert("Expecting " + nRotConsts + " rotation constant values for " + id + " but finding " + values.length);
+                // }
+                values.forEach(function (value) {
+                    //if (!isNumeric(value)) {
+                    //    alert("A rotation constant for " + id + " is not a number");
+                    //}
+                    rotConsts.push(parseFloat(value));
+                });
+                molecule.setRotConsts(rotConsts);
+                console.log("Set rotConsts of " + id + " to " + inputValue);
+            });
+        }
+
     });
 }
 
@@ -651,8 +672,8 @@ function parse(xml: XMLDocument) {
      * Generate molecules table.
      */
     initMolecules(xml);
-    addEventListenersToMoleculesTable();
-    displayMoleculesTable();
+    displayMolecules();
+    addEventListenersToMolecules();
 
     /**
      * Generate reactions table.
@@ -707,7 +728,7 @@ function initConditions(xml: XMLDocument): void {
     for (let i = 0; i < xml_PTPairs.length; i++) {
         // Add optional BathGas
         let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
-        let pTBathGas: BathGas | undefined; 
+        let pTBathGas: BathGas | undefined;
         if (xml_bathGass.length > 0) {
             if (xml_bathGass.length > 1) {
                 console.warn("xml_bathGass.length=" + xml_bathGass.length);
@@ -1387,30 +1408,16 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
 }
 
 /**
- * Display molecules table.
+ * Display molecules.
  */
-function displayMoleculesTable(): void {
+function displayMolecules(): void {
     if (molecules.size == 0) {
         return;
     }
     // Prepare table headings.
-    let th: string = "";
-    let attributeKeys: Set<string> = new Set();
     molecules.forEach(function (molecule, id) {
-        molecule.attributes.forEach(function (value, key) {
-            attributeKeys.add(key);
-        });
-    });
+        let moleculeDiv: string = "";
 
-    console.log("attributeKeys=" + setToString(attributeKeys, " "));
-
-
-    let moleculesTable = getTH([
-        "Name",
-        "Energy<br>kJ/mol",
-        "Rotation constants<br>cm<sup>-1</sup>",
-        "Vibration frequencies<br>cm<sup>-1</sup>"]);
-    molecules.forEach(function (molecule, id) {
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
         let energyNumber: number = molecule.getEnergy();
@@ -1431,15 +1438,45 @@ function displayMoleculesTable(): void {
         if (vibFreqs != undefined) {
             vibrationFrequencies = arrayToString(vibFreqs, " ");
         }
-        moleculesTable += getTR(getTD(id)
+        let energyInputDiv: HTMLDivElement = getInput("number", id + "_energy", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setEnergy(event.target);
+            }
+        }, energy, "Energy");
+
+        let rotConstsDiv: HTMLDivElement = getInput("text", id + "_rotConst", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setRotConst(event.target);
+            }
+        }, rotationConstants, "Rotation Constants");
+
+        let div = document.createElement("div");
+        div.appendChild(energyInputDiv);
+        div.appendChild(rotConstsDiv);
+
+        //let moleculeDetailDiv = getCollapsibleDiv(energyInputDiv, id + "_details", "collapsible");
+        //moleculeDetailDiv.appendChild(energyInputDiv);
+        let moleculeDetailDiv = getCollapsibleDiv(div, id + "_details", "collapsible");
+        moleculeDetailDiv.appendChild(div);
+
+
+        //moleculeDiv += moleculeDetailDiv.innerHTML;
+        moleculesDiv = document.getElementById("moleculesList");
+        if (moleculesDiv !== null) {
+            let parentElement = document.getElementById('molecules');
+            if (parentElement) {
+                parentElement.appendChild(moleculeDetailDiv);
+            }
+        }
+
+        /*
+        moleculesDiv += getTR(getTD(id)
             + getTD(getInput("number", id + "_energy", "setEnergy(this)", energy))
             + getTD(rotationConstants, true)
             + getTD(vibrationFrequencies, true));
+        */
     });
-    molecules_table = document.getElementById("molecules_table");
-    if (molecules_table !== null) {
-        molecules_table.innerHTML = moleculesTable;
-    }
+    makeCollapsible();
 }
 
 /**
@@ -1562,7 +1599,7 @@ function displayConditions(): void {
     });
     if (hasBathGas) {
         th.push("BathGas");
-    }    
+    }
     // Check if PTs contain ExperimentRate
     let hasExperimentRate: boolean = conditions.getPTs().pTpairs.some(pair => {
         return pair.getExperimentRate() != undefined;
@@ -1689,7 +1726,7 @@ export function setEnergy(input: HTMLInputElement): void {
     let id_energy: string = input.id;
     let moleculeID: string = id_energy.split("_")[0];
     let molecule: Molecule | undefined = molecules.get(moleculeID);
-    if (molecule != undefined) {
+    if (molecule) {
         let inputValue: number = parseFloat(input.value);
         if (!isNaN(inputValue)) {
             molecule.setEnergy(inputValue);
@@ -1705,6 +1742,47 @@ export function setEnergy(input: HTMLInputElement): void {
 
 (window as any).setEnergy = setEnergy;
 
+/**
+ * Set the rotation constants of a molecule when the rotation constants input value is changed.
+ * @param input The input element. 
+ */
+export function setRotConst(input: HTMLInputElement): void {
+    let id_rotConst: string = input.id;
+    let moleculeID: string = id_rotConst.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
+    if (molecule) {
+        let inputValue: string = input.value;
+        let values: string[] = inputValue.split(/\s+/);
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
+        //console.log("rotConsts=" + rotConsts);
+        if (rotConsts) {
+            let nRotConsts = rotConsts.length;
+            let success: boolean = true;
+            values.forEach(function (value) {
+                if (!isNumeric(value)) {
+                    alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                    let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                    inputElement.value = arrayToString(rotConsts as number[], " ");
+                    success = false;
+                }
+            });
+            if (success) {
+                if (values.length == nRotConsts) {
+                    let rotConstsNew: number[] = inputValue.split(" ").map(Number);
+                    molecule.setRotConsts(rotConstsNew);
+                    console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+                    //console.log("molecule=" + molecule);
+                } else {
+                    alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                    let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                    inputElement.value = arrayToString(rotConsts as number[], " ");
+                }
+            }
+        }
+    }
+}
+
+(window as any).setRotConst = setRotConst;
 /**
  * Save to XML file.
  */

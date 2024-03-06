@@ -504,17 +504,17 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @returns {number} The energy of the molecule or zero if the energy is not set or defined.
      */
     getEnergy() {
-        let energy = this.getPropertyScalar(Molecule.energyDictRef);
-        if (energy == undefined) {
+        let p = this.getPropertyScalar(Molecule.energyDictRef);
+        if (p == undefined) {
             return 0;
         }
-        return energy;
+        return p;
     }
     /**
      * Set the scalar property.
-     * @param {string} dictRef The dictRef of the property.
-     * @param {number} value The value of the property.
-     * @param {string} units The units of the property.
+     * @param dictRef The dictRef of the property.
+     * @param value The value of the property.
+     * @param units The units of the property (optional).
      */
     setPropertyScalar(dictRef, value, units) {
         let properties = this.getProperties();
@@ -551,24 +551,79 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     createPropertyScalar(dictRef, value, units) {
         let propertyAttributes = new Map();
-        propertyAttributes.set("dictRef", Molecule.energyDictRef);
-        let scalarAttributes = new Map();
+        propertyAttributes.set("dictRef", dictRef);
+        let attribs = new Map();
         if (units) {
-            scalarAttributes.set("units", units);
+            attribs.set("units", units);
         }
-        return new Property(propertyAttributes, new PropertyScalar(scalarAttributes, value));
+        return new Property(propertyAttributes, new PropertyScalar(attribs, value));
+    }
+    /**
+      * Set the scalar property.
+      * @param dictRef The dictRef of the property.
+      * @param values The values of the property.
+      * @param units The units of the property.
+      */
+    setPropertyArray(dictRef, values, units) {
+        let properties = this.getProperties();
+        if (properties == undefined) {
+            this.nodes.set(this.nodes.size, this.createPropertyArray(dictRef, values, units));
+            this.index.set(Property.tagName, this.nodes.size);
+        }
+        else if (properties instanceof Property) {
+            if (properties.getProperty().attributes.get(dictRef)) {
+                properties.getProperty().values = values;
+            }
+            else {
+                let plmap = new Map();
+                plmap.set(dictRef, properties);
+                plmap.set(dictRef, this.createPropertyArray(dictRef, values, units));
+                properties = new PropertyList(new Map(), plmap);
+            }
+        }
+        else {
+            let scalarProperty = properties.properties.get(dictRef);
+            if (scalarProperty == undefined) {
+                properties.properties.set(dictRef, this.createPropertyArray(dictRef, values, units));
+            }
+            else {
+                scalarProperty.getProperty().values = values;
+            }
+        }
+    }
+    /**
+     * @param dictRef The dictRef of the property.
+     * @param values The values of the property.
+     * @param units The units of the property.
+     * @returns A scalar property.
+     */
+    createPropertyArray(dictRef, values, units) {
+        let propertyAttributes = new Map();
+        propertyAttributes.set("dictRef", dictRef);
+        let attribs = new Map();
+        if (units) {
+            attribs.set("units", units);
+        }
+        return new Property(propertyAttributes, new PropertyArray(attribs, values));
     }
     /**
      * Set the Energy of the molecule.
-     * @param {number} energy The energy of the molecule in kcal/mol.
+     * @param energy The energy of the molecule in kcal/mol.
      */
     setEnergy(energy) {
         this.setPropertyScalar(Molecule.energyDictRef, energy);
     }
     /**
+     * Set the RotationConstants of the molecule.
+     * @param rotConsts The rotation constants of the molecule.
+     */
+    setRotConsts(rotConsts) {
+        this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
+    }
+    /**
      * Get a property array.
-     * @param {string} dictRef The dictRef of the property.
-     * @returns {number[] | undefined} The array property.
+     * @param dictRef The dictRef of the property.
+     * @returns The array property.
      */
     getPropertyArray(dictRef) {
         let properties = this.getProperties();
