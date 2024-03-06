@@ -621,6 +621,13 @@ class Molecule extends xml_js_1.NodeWithNodes {
         this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
     }
     /**
+     * Set the vibration frequencies of the molecule.
+     * @param vibFreqs The vibration frequencies of the molecule.
+     */
+    setVibFreqs(vibFreqs) {
+        this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
+    }
+    /**
      * Get a property array.
      * @param dictRef The dictRef of the property.
      * @returns The array property.
@@ -639,11 +646,11 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
         else {
             if (properties.getProperty().tagName == dictRef) {
-                let rotConsts = properties.getProperty();
-                if (rotConsts == undefined) {
+                let pA = properties.getProperty();
+                if (pA == undefined) {
                     return undefined;
                 }
-                return rotConsts.values;
+                return pA.values;
             }
             else {
                 return undefined;

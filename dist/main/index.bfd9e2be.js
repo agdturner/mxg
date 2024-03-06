@@ -30,6 +30,10 @@ function $134d19e749bf0414$export$8cfbaad830aa9e0a(s) {
     for(let i = 0; i < s.length; i++)r.push(parseFloat(s[i]));
     return r;
 }
+function $134d19e749bf0414$export$e90fb89750dba83f(s) {
+    if (s === "") return false;
+    return !isNaN(Number(s));
+}
 
 
 /**
@@ -121,6 +125,10 @@ function $f0396edd0a5c99f7$export$2883f21c1f82e07d() {
     var content = this.nextElementSibling;
     if (content.style.display === "block") content.style.display = "none";
     else content.style.display = "block";
+}
+function $f0396edd0a5c99f7$export$4b454580398e92d5(input, minSize) {
+    if (minSize == undefined) minSize = 4;
+    input.style.width = input.value.length + minSize + "ch";
 }
 
 
@@ -821,6 +829,12 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
         this.setPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.rotConstsDictRef, rotConsts);
     }
     /**
+     * Set the vibration frequencies of the molecule.
+     * @param vibFreqs The vibration frequencies of the molecule.
+     */ setVibFreqs(vibFreqs) {
+        this.setPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.vibFreqsDictRef, vibFreqs);
+    }
+    /**
      * Get a property array.
      * @param dictRef The dictRef of the property.
      * @returns The array property.
@@ -833,9 +847,9 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
             return property.getProperty().values;
         } else {
             if (properties.getProperty().tagName == dictRef) {
-                let rotConsts = properties.getProperty();
-                if (rotConsts == undefined) return undefined;
-                return rotConsts.values;
+                let pA = properties.getProperty();
+                if (pA == undefined) return undefined;
+                return pA.values;
             } else return undefined;
         }
     }
@@ -2071,6 +2085,7 @@ let $7e68913db756e51f$var$xml_text;
             moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
+        // Create molecule.
         let molecule = new (0, $ef5b9341e5193b70$export$3da9759ad07746a3)(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize);
         //console.log(molecule.toString());
         $7e68913db756e51f$var$molecules.set(molecule.id, molecule);
@@ -2082,45 +2097,52 @@ function $7e68913db756e51f$var$addEventListenersToMolecules() {
         // Energy input.
         let energyKey = id + "_energy";
         let energyInput = document.getElementById(energyKey);
+        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(energyInput);
         if (energyInput) energyInput.addEventListener("change", (event)=>{
             let eventTarget = event.target;
             let inputValue = eventTarget.value;
-            //if (isNumeric(inputValue)) {
             molecule.setEnergy(parseFloat(inputValue));
             console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-        //} else {
-        //    alert("Energy input for " + id + " is not a number");
-        //    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
-        //    inputElement.value = molecule.getEnergy().toString();
-        //    console.log("inputValue=" + inputValue);
-        //    console.log("Type of inputValue: " + typeof inputValue);
-        //}
+            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(energyInput);
         });
         // RotConsts input.
         let rotConstsKey = id + "_rotConsts";
         let rotConstsInput = document.getElementById(rotConstsKey);
+        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(rotConstsInput);
         if (rotConstsInput) rotConstsInput.addEventListener("change", (event)=>{
             let eventTarget = event.target;
             let inputValue = eventTarget.value;
             let rotConsts = [];
             let values = inputValue.split(/\s+/);
-            //let nRotConsts = molecule.getRotConsts()?.length ?? 0;
-            //console.log("nRotConsts=" + nRotConsts);
-            //if (values.length != nRotConsts) {
-            //    alert("Expecting " + nRotConsts + " rotation constant values for " + id + " but finding " + values.length);
-            // }
             values.forEach(function(value) {
-                //if (!isNumeric(value)) {
-                //    alert("A rotation constant for " + id + " is not a number");
-                //}
                 rotConsts.push(parseFloat(value));
             });
             molecule.setRotConsts(rotConsts);
             console.log("Set rotConsts of " + id + " to " + inputValue);
+            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(rotConstsInput);
+        });
+        // VibFreqs input.
+        let vibFreqsKey = id + "_vibFreqs";
+        let vibFreqsInput = document.getElementById(vibFreqsKey);
+        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(vibFreqsInput);
+        if (vibFreqsInput) vibFreqsInput.addEventListener("change", (event)=>{
+            let eventTarget = event.target;
+            let inputValue = eventTarget.value;
+            let vibFreqs = [];
+            let values = inputValue.split(/\s+/);
+            values.forEach(function(value) {
+                vibFreqs.push(parseFloat(value));
+            });
+            molecule.setVibFreqs(vibFreqs);
+            console.log("Set vibFreqs of " + id + " to " + inputValue);
+            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(vibFreqsInput);
         });
     });
 }
-function $7e68913db756e51f$var$getProperty(xml_property) {
+/**
+ * @param xml_property The XML property element.
+ * @returns The property.
+ */ function $7e68913db756e51f$var$getProperty(xml_property) {
     let attribs = (0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_property);
     let children = xml_property.children;
     if (children.length != 1) throw new Error("Expecting 1 child but finding " + children.length);
@@ -2143,8 +2165,9 @@ function $7e68913db756e51f$var$getProperty(xml_property) {
     else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
     else throw new Error("Unexpected nodeName: " + nodeName);
 }
-//function reload() {
-function $7e68913db756e51f$var$loadXML() {
+/**
+ * Load the XML file.
+ */ function $7e68913db756e51f$var$loadXML() {
     let inputElement = document.createElement("input");
     inputElement.type = "file";
     inputElement.onchange = function() {
@@ -2222,6 +2245,7 @@ function $7e68913db756e51f$var$loadXML() {
     // Initialise elements
     $7e68913db756e51f$var$xml_title = document.getElementById("xml_title");
     $7e68913db756e51f$var$xml_text = document.getElementById("xml_text");
+    // Set up for XML loading.
     window.loadXML = function() {
         $7e68913db756e51f$var$loadXML();
     //reload();
@@ -2773,8 +2797,8 @@ let $7e68913db756e51f$var$control;
         y0 = energyRescaled + lw;
         y1 = y0;
         // Draw horizontal line and add label.
-        // (The drawing is now not done here but done later so labels are on top of lines.)
-        // The code is left here commented out for reference.
+        // (The drawing is now not done here but done later so labels are on top of lines, but
+        // the code is left here commented out for code comprehension.)
         //drawLevel(ctx, green, 4, x0, y0, x1, y1, th, value);
         reactantsInXY.set(value, [
             x0,
@@ -2885,47 +2909,48 @@ let $7e68913db756e51f$var$control;
  * Display molecules.
  */ function $7e68913db756e51f$var$displayMolecules() {
     if ($7e68913db756e51f$var$molecules.size == 0) return;
-    // Prepare table headings.
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
-        let moleculeDiv = "";
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
+        // Energy.
         let energyNumber = molecule.getEnergy();
         let energy;
         if (energyNumber == null) energy = "";
         else energy = energyNumber.toString();
-        //console.log("energy=" + energy);
-        let rotationConstants = "";
-        let rotConsts = molecule.getRotConsts();
-        if (rotConsts != undefined) rotationConstants = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
-        let vibrationFrequencies = "";
-        let vibFreqs = molecule.getVibFreqs();
-        if (vibFreqs != undefined) vibrationFrequencies = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
         let energyInputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_energy", (event)=>{
             if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$afc96e5ea6df45fd(event.target);
         }, energy, "Energy");
+        //console.log("energy=" + energy);
+        // Rotation Constants.
+        let rotationConstants = "";
+        let rotConsts = molecule.getRotConsts();
+        if (rotConsts != undefined) rotationConstants = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
         let rotConstsDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_rotConst", (event)=>{
             if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$89b14b349130d1de(event.target);
         }, rotationConstants, "Rotation Constants");
+        //console.log("rotationConstants=" + rotationConstants);
+        // Vibration Frequencies.
+        let vibrationFrequencies = "";
+        let vibFreqs = molecule.getVibFreqs();
+        if (vibFreqs != undefined) vibrationFrequencies = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
+        let vibFreqsDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_vibFreqs", (event)=>{
+            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$1950ad01e0241ba8(event.target);
+        }, vibrationFrequencies, "Vibration Frequencies");
+        //console.log("vibrationFrequencies=" + vibrationFrequencies);
+        // Create molecule detail div.
         let div = document.createElement("div");
         div.appendChild(energyInputDiv);
         div.appendChild(rotConstsDiv);
-        //let moleculeDetailDiv = getCollapsibleDiv(energyInputDiv, id + "_details", "collapsible");
-        //moleculeDetailDiv.appendChild(energyInputDiv);
-        let moleculeDetailDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(div, id + "_details", "collapsible");
-        moleculeDetailDiv.appendChild(div);
-        //moleculeDiv += moleculeDetailDiv.innerHTML;
+        div.appendChild(vibFreqsDiv);
+        let moleculeDetailDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(div, id, id + "_details", "molecule");
+        //let div2 = document.createElement("div");
+        //moleculeDetailDiv.appendChild(div2);
         $7e68913db756e51f$var$moleculesDiv = document.getElementById("moleculesList");
         if ($7e68913db756e51f$var$moleculesDiv !== null) {
             let parentElement = document.getElementById("molecules");
             if (parentElement) parentElement.appendChild(moleculeDetailDiv);
         }
-    /*
-        moleculesDiv += getTR(getTD(id)
-            + getTD(getInput("number", id + "_energy", "setEnergy(this)", energy))
-            + getTD(rotationConstants, true)
-            + getTD(vibrationFrequencies, true));
-        */ });
+    });
     (0, $f0396edd0a5c99f7$export$2883f21c1f82e07d)();
 }
 /**
@@ -2988,6 +3013,7 @@ let $7e68913db756e51f$var$control;
                 }
             }
         }
+        // Complete table creation.
         reactionsTable += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)(id) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(reactants) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(products) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(transitionState) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(preExponential, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(activationEnergy, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(tInfinity, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(nInfinity, true));
         $7e68913db756e51f$var$reactions_table = document.getElementById("reactions_table");
         if ($7e68913db756e51f$var$reactions_table !== null) $7e68913db756e51f$var$reactions_table.innerHTML = reactionsTable;
@@ -3112,16 +3138,15 @@ function $7e68913db756e51f$export$afc96e5ea6df45fd(input) {
     let moleculeID = id_energy.split("_")[0];
     let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
     if (molecule) {
-        let inputNumber = parseFloat(input.value);
-        if (!isNaN(inputNumber)) {
+        if ((0, $134d19e749bf0414$export$e90fb89750dba83f)(input.value)) {
+            let inputNumber = parseFloat(input.value);
             molecule.setEnergy(inputNumber);
             console.log("Energy of " + moleculeID + " set to " + inputNumber);
         } else {
-            alert("Energy input for " + moleculeID + " is not a number");
+            alert("Energy input for " + moleculeID + " is not numeric, resetting...");
             let inputElement = document.getElementById(id_energy);
             inputElement.value = molecule.getEnergy().toString();
         }
-    //console.log("molecule=" + molecule);
     }
 }
 window.setEnergy = $7e68913db756e51f$export$afc96e5ea6df45fd;
@@ -3138,9 +3163,7 @@ function $7e68913db756e51f$export$89b14b349130d1de(input) {
             let nRotConsts = rotConsts.length;
             let success = true;
             values.forEach(function(value) {
-                let inputNumber = parseFloat(value);
-                if (!isNaN(inputNumber)) success = false;
-                else console.log("value=" + value);
+                if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
             });
             if (!success) {
                 alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
@@ -3162,6 +3185,41 @@ function $7e68913db756e51f$export$89b14b349130d1de(input) {
     }
 }
 window.setRotConst = $7e68913db756e51f$export$89b14b349130d1de;
+function $7e68913db756e51f$export$1950ad01e0241ba8(input) {
+    let id_vibFreqs = input.id;
+    let moleculeID = id_vibFreqs.split("_")[0];
+    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
+    if (molecule) {
+        let inputString = input.value;
+        let values = inputString.split(/\s+/);
+        let vibFreqs = molecule.getVibFreqs();
+        //console.log("vibFreqs=" + vibFreqs);
+        if (vibFreqs) {
+            let nVibFreqs = vibFreqs.length;
+            let success = true;
+            values.forEach(function(value) {
+                if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
+            });
+            if (!success) {
+                alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_vibFreqs);
+                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
+                return;
+            }
+            if (values.length == nVibFreqs) {
+                let vibFreqsNew = inputString.split(" ").map(Number);
+                molecule.setVibFreqs(vibFreqsNew);
+                console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
+            //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_vibFreqs);
+                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
+            }
+        }
+    }
+}
+window.setVibFreqs = $7e68913db756e51f$export$1950ad01e0241ba8;
 /**
  * Save to XML file.
  */ window.saveXML = function() {
@@ -3222,5 +3280,5 @@ window.setRotConst = $7e68913db756e51f$export$89b14b349130d1de;
 };
 
 
-export {$7e68913db756e51f$export$afc96e5ea6df45fd as setEnergy, $7e68913db756e51f$export$89b14b349130d1de as setRotConst};
-//# sourceMappingURL=index.5a4e1d91.js.map
+export {$7e68913db756e51f$export$afc96e5ea6df45fd as setEnergy, $7e68913db756e51f$export$89b14b349130d1de as setRotConst, $7e68913db756e51f$export$1950ad01e0241ba8 as setVibFreqs};
+//# sourceMappingURL=index.bfd9e2be.js.map

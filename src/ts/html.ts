@@ -188,3 +188,15 @@ function toggleCollapsible(this: HTMLElement): void {
         content.style.display = "block";
     }
 }
+
+/**
+ * For resizing an input to the width of what it contains.
+ * @param input The input to resize.
+ * @param minSize The minimum size of the input.
+ */
+export function resizeInput(input: HTMLInputElement, minSize?: number) {
+    if (minSize == undefined) {
+        minSize = 4;
+    }
+    input.style.width = (input.value.length + minSize) + "ch";
+}

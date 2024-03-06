@@ -76,3 +76,14 @@ export function toNumberArray(s: string[]): number[] {
     }
     return r;
 }
+
+/**
+ * @param s The string to check.
+ * @returns true iff s is a number.
+ */
+export function isNumeric(s: string) : boolean {
+    if (s === "") {
+      return false;
+    }
+    return !isNaN(Number(s))
+}

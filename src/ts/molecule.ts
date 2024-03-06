@@ -1,5 +1,5 @@
 import {
-    getEndTag, getStartTag, getTag, TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
+    TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
 } from './xml.js';
 
 /**
@@ -679,6 +679,14 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
+     * Set the vibration frequencies of the molecule.
+     * @param vibFreqs The vibration frequencies of the molecule.
+     */
+    setVibFreqs(vibFreqs: number[]): void {
+        this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
+    }
+
+    /**
      * Get a property array.
      * @param dictRef The dictRef of the property.
      * @returns The array property.
@@ -695,11 +703,11 @@ export class Molecule extends NodeWithNodes {
             return (property.getProperty() as PropertyArray).values;
         } else {
             if ((properties as Property).getProperty().tagName == dictRef) {
-                let rotConsts: PropertyArray | undefined = (properties as Property).getProperty() as PropertyArray;
-                if (rotConsts == undefined) {
+                let pA: PropertyArray | undefined = (properties as Property).getProperty() as PropertyArray;
+                if (pA == undefined) {
                     return undefined;
                 }
-                return rotConsts.values;
+                return pA.values;
             } else {
                 return undefined;
             }

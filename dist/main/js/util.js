@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toNumberArray = exports.setToString = exports.arrayToString = exports.mapToString = exports.rescale = exports.get = void 0;
+exports.isNumeric = exports.toNumberArray = exports.setToString = exports.arrayToString = exports.mapToString = exports.rescale = exports.get = void 0;
 /**
  * Thow an error if the key is not in the map otherwise return the value mapped to the key.
  * @param map The map to search in.
@@ -79,4 +79,15 @@ function toNumberArray(s) {
     return r;
 }
 exports.toNumberArray = toNumberArray;
+/**
+ * @param s The string to check.
+ * @returns true iff s is a number.
+ */
+function isNumeric(s) {
+    if (s === "") {
+        return false;
+    }
+    return !isNaN(Number(s));
+}
+exports.isNumeric = isNumeric;
 //# sourceMappingURL=util.js.map

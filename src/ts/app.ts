@@ -1,5 +1,5 @@
 import {
-    get, mapToString, rescale, setToString
+    get, isNumeric, mapToString, rescale, setToString
 } from './util.js';
 
 import {
@@ -21,7 +21,7 @@ import {
 } from './util.js';
 
 import {
-    getTD, getTH, getTR, getInput, getHeading, getButton, makeCollapsible, getCollapsibleDiv
+    getTD, getTH, getTR, getInput, getHeading, getButton, makeCollapsible, getCollapsibleDiv, resizeInput
 } from './html.js';
 
 import {
@@ -225,7 +225,6 @@ function initMolecules(xml: XMLDocument): void {
         //});
         //console.log("moleculeTagNames:");
         //moleculeTagNames.forEach(x => console.log(x));
-
         // Init atomsNode.
         let atomsNode: AtomArray | Atom | undefined;
         // There can be an individual atom not in an atom array, or an attom array.
@@ -254,10 +253,8 @@ function initMolecules(xml: XMLDocument): void {
             }
         }
         moleculeTagNames.delete(Atom.tagName);
-
         // Init bondsNode.
         let bondsNode: BondArray | Bond | undefined;
-
         // There can be an individual bond not in a bond array, or a bond array.
         let xml_bondArrays = xml_molecules[i].getElementsByTagName(BondArray.tagName);
         if (xml_bondArrays.length > 1) {
@@ -282,10 +279,8 @@ function initMolecules(xml: XMLDocument): void {
             }
         }
         moleculeTagNames.delete(Bond.tagName);
-
         // Init propertiesNode.
         let propertiesNode: PropertyList | Property | undefined;
-
         // There can be an individual property not in a propertyList.
         let xml_PLs = xml_molecules[i].getElementsByTagName(PropertyList.tagName);
         if (xml_PLs.length > 1) {
@@ -313,9 +308,7 @@ function initMolecules(xml: XMLDocument): void {
             propertiesNode = getProperty(xml_Ps[0]);
         }
         moleculeTagNames.delete(Property.tagName);
-
         let els: HTMLCollectionOf<Element> | null;
-
         // Read energyTransferModel
         moleculeTagNames.delete(EnergyTransferModel.tagName);
         let energyTransferModel: EnergyTransferModel | undefined = undefined;
@@ -337,7 +330,6 @@ function initMolecules(xml: XMLDocument): void {
                 }
             }
         }
-
         // Read DOSCMethod
         moleculeTagNames.delete(DOSCMethod.tagName);
         let dOSCMethod: DOSCMethod | undefined = undefined;
@@ -348,7 +340,6 @@ function initMolecules(xml: XMLDocument): void {
                 dOSCMethod = new DOSCMethod(getAttributes(el));
             }
         }
-
         // Read ExtraDOSCMethod.
         moleculeTagNames.delete(ExtraDOSCMethod.tagName);
         let extraDOSCMethod: ExtraDOSCMethod | undefined = undefined;
@@ -393,7 +384,6 @@ function initMolecules(xml: XMLDocument): void {
             }
             extraDOSCMethod = new ExtraDOSCMethod(getAttributes(els[0]), bondRef, hinderedRotorPotential, periodicity);
         }
-
         // Read reservoirSize.
         moleculeTagNames.delete(ReservoirSize.tagName);
         let reservoirSize: ReservoirSize | undefined;
@@ -404,7 +394,6 @@ function initMolecules(xml: XMLDocument): void {
             }
             reservoirSize = new ReservoirSize(getAttributes(els[0]), parseFloat(getNodeValue(getFirstChildNode(els[0]))));
         }
-
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
@@ -412,7 +401,7 @@ function initMolecules(xml: XMLDocument): void {
             moleculeTagNames.forEach(x => console.warn(x));
             //throw new Error("Unexpected tags in molecule.");
         }
-
+        // Create molecule.
         let molecule = new Molecule(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod,
             extraDOSCMethod, reservoirSize);
         //console.log(molecule.toString());
@@ -427,50 +416,58 @@ function addEventListenersToMolecules(): void {
         let energyKey = id + "_energy";
         let energyInput = document.getElementById(energyKey) as HTMLInputElement;
         if (energyInput) {
+            resizeInput(energyInput);
             energyInput.addEventListener('change', (event) => {
                 let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                //if (isNumeric(inputValue)) {
                 molecule.setEnergy(parseFloat(inputValue));
                 console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                //} else {
-                //    alert("Energy input for " + id + " is not a number");
-                //    let inputElement = document.getElementById(energyKey) as HTMLInputElement;
-                //    inputElement.value = molecule.getEnergy().toString();
-                //    console.log("inputValue=" + inputValue);
-                //    console.log("Type of inputValue: " + typeof inputValue);
-                //}
+                resizeInput(energyInput);
             });
         }
         // RotConsts input.
         let rotConstsKey = id + "_rotConsts";
         let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
         if (rotConstsInput) {
+            resizeInput(rotConstsInput);
             rotConstsInput.addEventListener('change', (event) => {
                 let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
                 let rotConsts: number[] = [];
                 let values: string[] = inputValue.split(/\s+/);
-                //let nRotConsts = molecule.getRotConsts()?.length ?? 0;
-                //console.log("nRotConsts=" + nRotConsts);
-                //if (values.length != nRotConsts) {
-                //    alert("Expecting " + nRotConsts + " rotation constant values for " + id + " but finding " + values.length);
-                // }
                 values.forEach(function (value) {
-                    //if (!isNumeric(value)) {
-                    //    alert("A rotation constant for " + id + " is not a number");
-                    //}
                     rotConsts.push(parseFloat(value));
                 });
                 molecule.setRotConsts(rotConsts);
                 console.log("Set rotConsts of " + id + " to " + inputValue);
+                resizeInput(rotConstsInput);
             });
         }
-
+        // VibFreqs input.
+        let vibFreqsKey = id + "_vibFreqs";
+        let vibFreqsInput = document.getElementById(vibFreqsKey) as HTMLInputElement;
+        if (vibFreqsInput) {
+            resizeInput(vibFreqsInput);
+            vibFreqsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
+                let inputValue = eventTarget.value;
+                let vibFreqs: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                values.forEach(function (value) {
+                    vibFreqs.push(parseFloat(value));
+                });
+                molecule.setVibFreqs(vibFreqs);
+                console.log("Set vibFreqs of " + id + " to " + inputValue);
+                resizeInput(vibFreqsInput);
+            });
+        }
     });
 }
 
-
+/**
+ * @param xml_property The XML property element.
+ * @returns The property.
+ */
 function getProperty(xml_property: Element): Property {
     let attribs: Map<string, string> = getAttributes(xml_property);
     let children: HTMLCollectionOf<Element> = xml_property.children;
@@ -503,7 +500,9 @@ function getProperty(xml_property: Element): Property {
     }
 }
 
-//function reload() {
+/**
+ * Load the XML file.
+ */
 function loadXML() {
     let inputElement: HTMLInputElement = document.createElement('input');
     inputElement.type = 'file';
@@ -579,7 +578,6 @@ function loadXML() {
         //loadButton.addEventListener('click', reload);
         loadButton.addEventListener('click', loadXML);
     }
-
     // Ensure save button is displayed.
     saveButton = document.getElementById('saveButton');
     if (saveButton != null) {
@@ -591,12 +589,10 @@ function loadXML() {
  * Once the DOM is loaded, set up the elements.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
-
     // Initialise elements
     xml_title = document.getElementById("xml_title");
     xml_text = document.getElementById("xml_text");
-
-
+    // Set up for XML loading.
     window.loadXML = function () {
         loadXML();
         //reload();
@@ -631,7 +627,6 @@ function setTitle(xml: XMLDocument) {
  * @param {XMLDocument} xml 
  */
 function parse(xml: XMLDocument) {
-
     /**
      * Set mesmer_xml start tag.
      */
@@ -660,38 +655,32 @@ function parse(xml: XMLDocument) {
         mesmerStartTag += ">";
         //console.log(mesmerStartTag);
     }
-
     /**
      *  Set title.
      */
     setTitle(xml);
-
     /**
      * Generate molecules table.
      */
     initMolecules(xml);
     displayMolecules();
     addEventListenersToMolecules();
-
     /**
      * Generate reactions table.
      */
     initReactions(xml);
     displayReactionsTable();
     displayReactionsDiagram();
-
     /**
      * Generate conditions table.
      */
     initConditions(xml);
     displayConditions();
-
     /**
      * Generate parameters table.
      */
     initModelParameters(xml);
     displayModelParameters();
-
     /**
      * Generate control table.
      */
@@ -960,7 +949,6 @@ function initReactions(xml: XMLDocument): void {
         }
         if (reactionID != null) {
             console.log("id=" + reactionID);
-
             // Load reactants.
             let reactants: Map<string, Reactant> | Reactant | undefined;
             let xml_reactants: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Reactant.tagName);
@@ -980,7 +968,6 @@ function initReactions(xml: XMLDocument): void {
                     }
                 }
             }
-
             // Load products.
             let products: Map<string, Product> | Product | undefined;
             let xml_products: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Product.tagName);
@@ -1000,7 +987,6 @@ function initReactions(xml: XMLDocument): void {
                     }
                 }
             }
-
             // Load transition states.
             //console.log("Load  transition states...");
             let xml_transitionState: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(TransitionState.tagName);
@@ -1021,7 +1007,6 @@ function initReactions(xml: XMLDocument): void {
                 }
             }
             //console.log("transitionStates=" + transitionStates);
-
             // Load tunneling.
             let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
             let tunneling: Tunneling | undefined;
@@ -1031,7 +1016,6 @@ function initReactions(xml: XMLDocument): void {
                 }
                 tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
             }
-
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
             let mCRCMethod: MCRCMethod | undefined;
@@ -1094,7 +1078,6 @@ function initReactions(xml: XMLDocument): void {
                     }
                 }
             }
-
             // Load excessReactantConc
             let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(ExcessReactantConc.tagName);
             let excessReactantConc: ExcessReactantConc | undefined;
@@ -1105,7 +1088,6 @@ function initReactions(xml: XMLDocument): void {
                 let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_excessReactantConc[0])));
                 excessReactantConc = new ExcessReactantConc(getAttributes(xml_excessReactantConc[0]), value);
             }
-
             // Create reaction.
             let reaction = new Reaction(attributes, reactionID, reactants, products, tunneling, transitionStates,
                 mCRCMethod, excessReactantConc);
@@ -1140,11 +1122,9 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
     let foreground = "white";
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
     //ctx.fillStyle = background;
-
     // Get text height for font size.
     let th = getTextHeight(ctx, "Aj", font);
     //console.log("th=" + th);
-
     // Go through reactions:
     // 1. Create sets of reactants, end products, intermediate products and transition states.
     // 2. Create maps of orders and energies.
@@ -1259,14 +1239,12 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
     //console.log("reactants=" + reactants);
     //console.log("products=" + products);
     //console.log("transitionStates=" + transitionStates);
-
     // Create a lookup from order to label.
     let reorders: string[] = [];
     orders.forEach(function (value, key) {
         reorders[value] = key;
     });
     //console.log("reorders=" + arrayToString(reorders));
-
     // Iterate through the reorders:
     // 1. Capture coordinates for connecting lines.
     // 2. Store maximum x.
@@ -1295,8 +1273,8 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
         y0 = energyRescaled + lw;
         y1 = y0;
         // Draw horizontal line and add label.
-        // (The drawing is now not done here but done later so labels are on top of lines.)
-        // The code is left here commented out for reference.
+        // (The drawing is now not done here but done later so labels are on top of lines, but
+        // the code is left here commented out for code comprehension.)
         //drawLevel(ctx, green, 4, x0, y0, x1, y1, th, value);
         reactantsInXY.set(value, [x0, y0]);
         reactantsOutXY.set(value, [x1, y1]);
@@ -1311,25 +1289,18 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
         x0 = x1 + stepSpacing;
         xmax = x1;
     });
-
     // Set canvas width to maximum x.
     canvas.width = xmax;
     //console.log("canvas.width=" + canvas.width);
-
     // Set canvas height to maximum energy plus the label.
     let canvasHeightWithBorder = canvas.height + (4 * th) + (2 * lw);
     //console.log("canvasHeightWithBorder=" + canvasHeightWithBorder);
-
     let originalCanvasHeight = canvas.height;
-
     // Update the canvas height.
     canvas.height = canvasHeightWithBorder;
-
     // Set the transformation matrix.
     //ctx.transform(1, 0, 0, 1, 0, canvasHeightWithBorder);
     ctx.transform(1, 0, 0, -1, 0, canvasHeightWithBorder)
-
-
     // Go through reactions and draw connecting lines.
     reactions.forEach(function (reaction, id) {
         //console.log("id=" + id);
@@ -1368,7 +1339,6 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, M
                 productInXY[0], productInXY[1]);
         }
     });
-
     // Draw horizontal lines and labels.
     // (This is done last so that the labels are on top of the vertical lines.)
     reactants.forEach(function (value) {
@@ -1412,12 +1382,10 @@ function displayMolecules(): void {
     if (molecules.size == 0) {
         return;
     }
-    // Prepare table headings.
     molecules.forEach(function (molecule, id) {
-        let moleculeDiv: string = "";
-
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
+        // Energy.
         let energyNumber: number = molecule.getEnergy();
         let energy: string;
         if (energyNumber == null) {
@@ -1425,40 +1393,44 @@ function displayMolecules(): void {
         } else {
             energy = energyNumber.toString();
         }
-        //console.log("energy=" + energy);
-        let rotationConstants: string = "";
-        let rotConsts: number[] | undefined = molecule.getRotConsts();
-        if (rotConsts != undefined) {
-            rotationConstants = arrayToString(rotConsts, " ");
-        }
-        let vibrationFrequencies: string = "";
-        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
-        if (vibFreqs != undefined) {
-            vibrationFrequencies = arrayToString(vibFreqs, " ");
-        }
         let energyInputDiv: HTMLDivElement = getInput("number", id + "_energy", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setEnergy(event.target);
             }
         }, energy, "Energy");
-
+        //console.log("energy=" + energy);
+        // Rotation Constants.
+        let rotationConstants: string = "";
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
+        if (rotConsts != undefined) {
+            rotationConstants = arrayToString(rotConsts, " ");
+        }
         let rotConstsDiv: HTMLDivElement = getInput("text", id + "_rotConst", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setRotConst(event.target);
             }
         }, rotationConstants, "Rotation Constants");
-
+        //console.log("rotationConstants=" + rotationConstants);
+        // Vibration Frequencies.
+        let vibrationFrequencies: string = "";
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
+        if (vibFreqs != undefined) {
+            vibrationFrequencies = arrayToString(vibFreqs, " ");
+        }
+        let vibFreqsDiv: HTMLDivElement = getInput("text", id + "_vibFreqs", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setVibFreqs(event.target);
+            }
+        }, vibrationFrequencies, "Vibration Frequencies");
+        //console.log("vibrationFrequencies=" + vibrationFrequencies);
+        // Create molecule detail div.
         let div = document.createElement("div");
         div.appendChild(energyInputDiv);
         div.appendChild(rotConstsDiv);
-
-        //let moleculeDetailDiv = getCollapsibleDiv(energyInputDiv, id + "_details", "collapsible");
-        //moleculeDetailDiv.appendChild(energyInputDiv);
-        let moleculeDetailDiv = getCollapsibleDiv(div, id + "_details", "collapsible");
-        moleculeDetailDiv.appendChild(div);
-
-
-        //moleculeDiv += moleculeDetailDiv.innerHTML;
+        div.appendChild(vibFreqsDiv);
+        let moleculeDetailDiv = getCollapsibleDiv(div, id, id + "_details", "molecule");
+        //let div2 = document.createElement("div");
+        //moleculeDetailDiv.appendChild(div2);
         moleculesDiv = document.getElementById("moleculesList");
         if (moleculesDiv !== null) {
             let parentElement = document.getElementById('molecules');
@@ -1466,13 +1438,6 @@ function displayMolecules(): void {
                 parentElement.appendChild(moleculeDetailDiv);
             }
         }
-
-        /*
-        moleculesDiv += getTR(getTD(id)
-            + getTD(getInput("number", id + "_energy", "setEnergy(this)", energy))
-            + getTD(rotationConstants, true)
-            + getTD(vibrationFrequencies, true));
-        */
     });
     makeCollapsible();
 }
@@ -1547,7 +1512,7 @@ function displayReactionsTable(): void {
                 }
             }
         }
-
+        // Complete table creation.
         reactionsTable += getTR(getTD(id) + getTD(reactants) + getTD(products) + getTD(transitionState)
             + getTD(preExponential, true) + getTD(activationEnergy, true) + getTD(tInfinity, true)
             + getTD(nInfinity, true));
@@ -1724,13 +1689,13 @@ export function setEnergy(input: HTMLInputElement): void {
     let id_energy: string = input.id;
     let moleculeID: string = id_energy.split("_")[0];
     let molecule: Molecule | undefined = molecules.get(moleculeID);
-    if (molecule) {
-        let inputNumber: number = parseFloat(input.value);
-        if (!isNaN(inputNumber)) {
+    if (molecule) {       
+        if (isNumeric(input.value)) {
+            let inputNumber: number = parseFloat(input.value);
             molecule.setEnergy(inputNumber);
             console.log("Energy of " + moleculeID + " set to " + inputNumber);
         } else {
-            alert("Energy input for " + moleculeID + " is not a number");
+            alert("Energy input for " + moleculeID + " is not numeric, resetting...");
             let inputElement = document.getElementById(id_energy) as HTMLInputElement;
             inputElement.value = molecule.getEnergy().toString();
         }
@@ -1755,13 +1720,10 @@ export function setRotConst(input: HTMLInputElement): void {
         //console.log("rotConsts=" + rotConsts);
         if (rotConsts) {
             let nRotConsts = rotConsts.length;
-            let success: boolean = true; 
+            let success: boolean = true;
             values.forEach(function (value) {
-                let inputNumber: number = parseFloat(value);
-                if (!isNaN(inputNumber)) {
+                if (!isNumeric(value)) {
                     success = false;
-                } else {
-                    console.log("value=" + value);
                 }
             });
             if (!success) {
@@ -1785,6 +1747,50 @@ export function setRotConst(input: HTMLInputElement): void {
 }
 
 (window as any).setRotConst = setRotConst;
+
+/**
+ * Set the vibration frequencies of a molecule when the vibration frequencies input value is changed.
+ * @param input The input element. 
+ */
+export function setVibFreqs(input: HTMLInputElement): void {
+    let id_vibFreqs: string = input.id;
+    let moleculeID: string = id_vibFreqs.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
+    if (molecule) {
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
+        //console.log("vibFreqs=" + vibFreqs);
+        if (vibFreqs) {
+            let nVibFreqs = vibFreqs.length;
+            let success: boolean = true;
+            values.forEach(function (value) {
+                if (!isNumeric(value)) {
+                    success = false;
+                }
+            });
+            if (!success) {
+                alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                inputElement.value = arrayToString(vibFreqs as number[], " ");
+                return;
+            }
+            if (values.length == nVibFreqs) {
+                let vibFreqsNew: number[] = inputString.split(" ").map(Number);
+                molecule.setVibFreqs(vibFreqsNew);
+                console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
+                //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                inputElement.value = arrayToString(vibFreqs as number[], " ");
+            }
+        }
+    }
+}
+
+(window as any).setVibFreqs = setVibFreqs;
+
 /**
  * Save to XML file.
  */

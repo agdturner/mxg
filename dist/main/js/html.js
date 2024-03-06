@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeCollapsible = exports.getSelfClosingTag = exports.getInput = exports.getCollapsibleDiv = exports.getTable = exports.getTR = exports.getTD = exports.getTH = exports.getButton = exports.getHeading = void 0;
+exports.resizeInput = exports.makeCollapsible = exports.getSelfClosingTag = exports.getInput = exports.getCollapsibleDiv = exports.getTable = exports.getTR = exports.getTD = exports.getTH = exports.getButton = exports.getHeading = void 0;
 /**
  * Create a heading.
  * @param {string} text The text.
@@ -190,4 +190,16 @@ function toggleCollapsible() {
         content.style.display = "block";
     }
 }
+/**
+ * For resizing an input to the width of what it contains.
+ * @param input The input to resize.
+ * @param minSize The minimum size of the input.
+ */
+function resizeInput(input, minSize) {
+    if (minSize == undefined) {
+        minSize = 4;
+    }
+    input.style.width = (input.value.length + minSize) + "ch";
+}
+exports.resizeInput = resizeInput;
 //# sourceMappingURL=html.js.map
