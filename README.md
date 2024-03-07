@@ -2,10 +2,11 @@
 
 ## Introduction
 
-MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and should be ongoing until the end of April 2024. 
+MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and should be ongoing until the end of April 2024 when hopefully a supported version of an Web application will be available for community use. 
 
-Versions of MXG can be used online and each can be installed onto devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
+Different versions of MXG can be used online and each can be installed onto devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
+ - [Version 0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
  - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
 
 For details on use please see the [MXG User Guide Section](#User-Guide) 
@@ -26,13 +27,24 @@ MXG is built, packaged and deployed using [Node](https://nodejs.org/) and [Parce
 
 
 ## User Guide
-This section is mainly for users involved in alpha testing...
+The only users currently supported are those involved in alpha testing. A application that is intended to have community user support is under development and tentatively scheduled for relesase in April 2024. The alpha versions are not recommended for general use, but please feel free to have a play.
 
 ### User Testing
 - Please ensure you are testing the right version.
   - Please uninstall any installed PWA before installing a different version to test.
     -  Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
 - Please report issues with documentation/installation/use to help develop something better...
+
+### Version 0.2
+- This build on Version 0.1
+- For the example [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) file:
+  - The rotation constants and vibration frequencies can now also be edited.
+  - Rather than present the data for molecules in a single table, the details are collapsible and editable via buttons.
+  - Additional tables present data for: Conditions, Model Parameters, and Control.
+- It had been the intention to:
+1. Ensure additional details are exposed and amde editable for molecules.
+2. Make all details editable for all tables.
+- Progress has been made workign towards these additional features, but this is not included in this version...
 
 ### Version 0.1
 - A single `load` button should appear on the interface.
@@ -52,24 +64,21 @@ This section is mainly for users involved in alpha testing...
     - Additonal spaces are removed.
     - Numbers may format differently, for example `2.25E16` appears as `22500000000000000`.
 
-### Version 0.2
-- This is not yet ready for testing...
-
-
 ## Development RoadMap
 - Development is currently in an alpha phase...
 - Beta testing will follow...
-- Version 0.2 Sprint (focussing on priorities to 2024-03-07)
-  - Version 0.2 will build on Version 0.1
-  - Prioritised enhancements:
-    1. Display all [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) details in HTML
-      - Include details not exposed already in Molecules and Reactions tables.
-        - No need to include atoms or bonds for molecules.
-      - Create tables for: Conditions, Model Parameters, and Control.
-    2. Make all details editable.
-- Version 0.3 Sprint (due by 2024-03-21)
+- Version 0.3 Sprint (focussing on priorities to 2024-03-21)
+  - Make all details of [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) editable
   - Test loading of other XML files.
   - Allow users to add molecules and reactions from scratch and use an existing XML file as a template.
+- Version 0.2 Sprint (focussing on priorities to 2024-03-07)
+  - Version 0.2 builds on Version 0.1
+  - Prioritised enhancements:
+1. Display all [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) details in HTML
+  - Include details not exposed already in Molecules and Reactions tables.
+    - No need to include atoms or bonds for molecules.
+  - Create tables for: Conditions, Model Parameters, and Control.
+2. Make all details editable.
 
  
 ## Developer Guide
