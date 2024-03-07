@@ -6,7 +6,6 @@ MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualis
 
 Different versions of MXG can be used online and each can be installed onto devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
- - [Version 0.3](https://agdturner.github.io/mxg-pwa/dist/0.3)
  - [Version 0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
  - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
 
