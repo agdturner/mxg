@@ -1,7 +1,6 @@
 import {
     getSelfClosingTag
-}
-    from "./html";
+} from "./html";
 
 /**
  * Get the attribute of an xml element.

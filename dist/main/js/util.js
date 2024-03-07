@@ -33,13 +33,17 @@ exports.rescale = rescale;
 /**
  * For convertina a map to a string.
  * @param map The map to convert to a string.
+ * @param delimiter The (optional) delimiter.
  * @returns A string representation of all the entries in the map.
  */
-function mapToString(map) {
+function mapToString(map, delimiter) {
     if (map == null) {
         return "";
     }
-    return Array.from(map.entries()).map(([key, value]) => `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(', ');
+    if (delimiter == undefined) {
+        delimiter = ', ';
+    }
+    return Array.from(map.entries()).map(([key, value]) => `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(delimiter);
 }
 exports.mapToString = mapToString;
 /**

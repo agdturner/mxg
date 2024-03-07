@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setVibFreqs = exports.setRotConst = exports.setEnergy = void 0;
+exports.setPropertyArray = exports.setVibFreqs = exports.setRotConst = exports.setPropertyScalar = exports.setEnergy = void 0;
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const molecule_js_1 = require("./molecule.js");
@@ -383,6 +383,58 @@ function addEventListenersToMolecules() {
                 (0, html_js_1.resizeInput)(vibFreqsInput);
             });
         }
+        let properties = molecule.getAttributesAsString();
+        let props = molecule.getProperties();
+        if (props != undefined) {
+            if (props instanceof molecule_js_1.PropertyList) {
+                let propsProperties = props.properties;
+                propsProperties.forEach(function (value0, key0) {
+                    properties += "(" + key0 + "=";
+                    let prop = value0.getProperty();
+                    if (prop instanceof molecule_js_1.PropertyScalar) {
+                        // Property input.
+                        let propertyKey = id + "_" + key0;
+                        let units = prop.attributes.get("units");
+                        let input = document.getElementById(propertyKey);
+                        if (input) {
+                            (0, html_js_1.resizeInput)(input);
+                            input.addEventListener('change', (event) => {
+                                let eventTarget = event.target;
+                                let inputValue = eventTarget.value;
+                                molecule.setPropertyScalar(key0, parseFloat(inputValue));
+                                if (units != undefined) {
+                                    console.log("Set " + key0 + " of " + id + " to " + inputValue + " " + units);
+                                }
+                                else {
+                                    console.log("Set " + key0 + " of " + id + " to " + inputValue);
+                                }
+                                (0, html_js_1.resizeInput)(input);
+                            });
+                        }
+                    }
+                    else {
+                        // Property input.
+                        let propertyKey = id + "_" + key0;
+                        let input = document.getElementById(propertyKey);
+                        if (input) {
+                            (0, html_js_1.resizeInput)(input);
+                            input.addEventListener('change', (event) => {
+                                let eventTarget = event.target;
+                                let inputValue = eventTarget.value;
+                                let values = inputValue.split(/\s+/);
+                                let numbers = [];
+                                values.forEach(function (value) {
+                                    numbers.push(parseFloat(value));
+                                });
+                                molecule.setPropertyArray(key0, numbers);
+                                console.log("Set " + key0 + " of " + id + " to " + inputValue);
+                                (0, html_js_1.resizeInput)(input);
+                            });
+                        }
+                    }
+                });
+            }
+        }
     });
 }
 /**
@@ -540,11 +592,55 @@ function setTitle(xml) {
             console.log("Title=" + title);
             let e = document.getElementById("title");
             if (e != null) {
+                // Create a new input element.
+                let inputElement = document.createElement("input");
+                // Set its type to "text".
+                inputElement.type = "text";
+                // Set its value to the title.
+                inputElement.value = title;
+                // Apply CSS styles to make the input text appear like a h1.
+                inputElement.style.fontSize = '2em';
+                inputElement.style.fontWeight = 'bold';
+                // Create a text node.
+                let textNode = document.createTextNode("Title: ");
+                // Insert the text node before the input element in the parent node.
+                e.parentNode?.insertBefore(textNode, e);
+                (0, html_js_1.resizeInput)(inputElement, 0);
+                // Replace the existing title element with the new input element.
+                e.parentNode?.replaceChild(inputElement, e);
+                console.log("inputElement.value=" + inputElement.value);
+                // Add event listener to inputElement.
+                inputElement.addEventListener('change', function () {
+                    if (inputElement.value != title) {
+                        title = inputElement.value;
+                        console.log("title=" + title);
+                    }
+                    (0, html_js_1.resizeInput)(inputElement, 0);
+                });
+            }
+        }
+    }
+}
+/*
+function setTitle(xml: XMLDocument) {
+    me_title = xml.getElementsByTagName(me_title_s);
+    if (me_title == null) {
+        throw new Error(me_title_s + ' not found');
+    } else {
+        if (me_title.length != 1) {
+            throw new Error('Multiple ' + me_title_s + ' elements found');
+        } else {
+            title = me_title[0].childNodes[0].nodeValue as string;
+            title = title.trim();
+            console.log("Title=" + title);
+            let e: HTMLElement | null = document.getElementById("title");
+            if (e != null) {
                 e.innerHTML = title;
             }
         }
     }
 }
+*/
 /**
  * Parse the XML.
  * @param {XMLDocument} xml
@@ -1315,53 +1411,150 @@ function displayMolecules() {
     molecules.forEach(function (molecule, id) {
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
+        // Create molecule detail div.
+        let div = document.createElement("div");
+        /*
         // Energy.
-        let energyNumber = molecule.getEnergy();
-        let energy;
+        let energyNumber: number = molecule.getEnergy();
+        let energy: string;
         if (energyNumber == null) {
             energy = "";
-        }
-        else {
+        } else {
             energy = energyNumber.toString();
         }
-        let energyInputDiv = (0, html_js_1.getInput)("number", id + "_energy", (event) => {
+        let energyInputDiv: HTMLDivElement = getInput("number", id + "_energy", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setEnergy(event.target);
             }
         }, energy, "Energy");
+        div.appendChild(energyInputDiv);
         //console.log("energy=" + energy);
+        
         // Rotation Constants.
-        let rotationConstants = "";
-        let rotConsts = molecule.getRotConsts();
+        let rotationConstants: string = "";
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
         if (rotConsts != undefined) {
-            rotationConstants = (0, util_js_2.arrayToString)(rotConsts, " ");
+            rotationConstants = arrayToString(rotConsts, " ");
         }
-        let rotConstsDiv = (0, html_js_1.getInput)("text", id + "_rotConst", (event) => {
+        let rotConstsDiv: HTMLDivElement = getInput("text", id + "_rotConst", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setRotConst(event.target);
             }
         }, rotationConstants, "Rotation Constants");
+        div.appendChild(rotConstsDiv);
         //console.log("rotationConstants=" + rotationConstants);
+        
         // Vibration Frequencies.
-        let vibrationFrequencies = "";
-        let vibFreqs = molecule.getVibFreqs();
+        let vibrationFrequencies: string = "";
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
         if (vibFreqs != undefined) {
-            vibrationFrequencies = (0, util_js_2.arrayToString)(vibFreqs, " ");
+            vibrationFrequencies = arrayToString(vibFreqs, " ");
         }
-        let vibFreqsDiv = (0, html_js_1.getInput)("text", id + "_vibFreqs", (event) => {
+        let vibFreqsDiv: HTMLDivElement = getInput("text", id + "_vibFreqs", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setVibFreqs(event.target);
             }
         }, vibrationFrequencies, "Vibration Frequencies");
-        //console.log("vibrationFrequencies=" + vibrationFrequencies);
-        // Create molecule detail div.
-        let div = document.createElement("div");
-        div.appendChild(energyInputDiv);
-        div.appendChild(rotConstsDiv);
         div.appendChild(vibFreqsDiv);
-        let moleculeDetailDiv = (0, html_js_1.getCollapsibleDiv)(div, id, id + "_details", "molecule");
-        //let div2 = document.createElement("div");
-        //moleculeDetailDiv.appendChild(div2);
+        //console.log("vibrationFrequencies=" + vibrationFrequencies);
+        */
+        // Properties.
+        //let properties: string = molecule.getAttributesAsString();
+        let props = molecule.getProperties();
+        if (props != undefined) {
+            if (props instanceof molecule_js_1.PropertyList) {
+                let propsAttributes = props.attributes;
+                let propsAttributesString = (0, util_js_1.mapToString)(propsAttributes);
+                console.log("propsAttributesString=" + propsAttributesString);
+                //properties += propsAttributesString;
+                let propsProperties = props.properties;
+                propsProperties.forEach(function (value0, key0) {
+                    //properties += "(" + key0 + "=";
+                    let prop = value0.getProperty();
+                    if (prop instanceof molecule_js_1.PropertyScalar) {
+                        //properties += prop.tagName + "(";
+                        //properties += toHTML(prop.toXML());
+                        let label = key0 + " " + (0, util_js_1.mapToString)(prop.attributes, " ");
+                        //prop.attributes.forEach(function (value1, key1) {
+                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                        //});
+                        let v = prop.value;
+                        //properties += "value(" + v.toString() + ")";
+                        //properties += ")";
+                        let inputDiv = (0, html_js_1.getInput)("number", id + "_" + key0, (event) => {
+                            if (event.target instanceof HTMLInputElement) {
+                                setPropertyScalar(key0, event.target);
+                            }
+                        }, v.toString(), label);
+                        div.appendChild(inputDiv);
+                    }
+                    else {
+                        //prop instanceof PropertyArray
+                        //properties += toHTML(prop.toXML());
+                        let label = key0 + " " + (0, util_js_1.mapToString)(prop.attributes, " ");
+                        //prop.attributes.forEach(function (value1, key1) {
+                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                        //});
+                        let v = prop.values;
+                        //properties += "values(" + arrayToString(v, " ") + ")";
+                        //properties += ")";
+                        let inputDiv = (0, html_js_1.getInput)("text", id + "_" + key0, (event) => {
+                            if (event.target instanceof HTMLInputElement) {
+                                setPropertyArray(key0, event.target);
+                            }
+                        }, (0, util_js_2.arrayToString)(v, " "), label);
+                        div.appendChild(inputDiv);
+                    }
+                    //properties += ")";
+                });
+            }
+            else {
+                //props instanceof Property
+                let prop = props.getProperty();
+                let key0 = props.tagName;
+                if (prop instanceof molecule_js_1.PropertyScalar) {
+                    //properties += prop.tagName + "(";
+                    //properties += toHTML(prop.toXML());
+                    let label = key0 + " " + (0, util_js_1.mapToString)(prop.attributes, " ");
+                    //prop.attributes.forEach(function (value1, key1) {
+                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                    //});
+                    let v = prop.value;
+                    //properties += "value(" + v.toString() + ")";
+                    //properties += ")";
+                    let inputDiv = (0, html_js_1.getInput)("number", id + "_" + key0, (event) => {
+                        if (event.target instanceof HTMLInputElement) {
+                            setPropertyScalar(key0, event.target);
+                        }
+                    }, v.toString(), label);
+                    div.appendChild(inputDiv);
+                }
+                else {
+                    //prop instanceof PropertyArray
+                    //properties += toHTML(prop.toXML());
+                    let label = key0 + " " + (0, util_js_1.mapToString)(prop.attributes, " ");
+                    //prop.attributes.forEach(function (value1, key1) {
+                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                    //});
+                    let v = prop.values;
+                    //properties += "values(" + arrayToString(v, " ") + ")";
+                    //properties += ")";
+                    let inputDiv = (0, html_js_1.getInput)("text", id + "_" + key0, (event) => {
+                        if (event.target instanceof HTMLInputElement) {
+                            setPropertyArray(key0, event.target);
+                        }
+                    }, (0, util_js_2.arrayToString)(v, " "), label);
+                    div.appendChild(inputDiv);
+                }
+                //properties += ")";
+            }
+        }
+        //let propertiesDiv: HTMLDivElement = document.createElement('div');
+        //let p: HTMLParagraphElement = document.createElement('p');
+        //p.innerHTML = properties;
+        //propertiesDiv.appendChild(p);
+        //div.appendChild(propertiesDiv);
+        let moleculeDetailDiv = (0, html_js_1.getCollapsibleDiv)(div, molecule.getLabel(), id + "_details", "molecule");
         moleculesDiv = document.getElementById("moleculesList");
         if (moleculesDiv !== null) {
             let parentElement = document.getElementById('molecules');
@@ -1633,6 +1826,34 @@ function setEnergy(input) {
 exports.setEnergy = setEnergy;
 window.setEnergy = setEnergy;
 /**
+ * Set a molecule property scalar when the input value is changed.
+ * @param dictRef The dictionary reference of the property.
+ * @param input The input element.
+ */
+function setPropertyScalar(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
+    let molecule = molecules.get(moleculeID);
+    if (molecule) {
+        if ((0, util_js_1.isNumeric)(input.value)) {
+            let inputNumber = parseFloat(input.value);
+            molecule.setPropertyScalar(dictRef, inputNumber);
+            console.log(dictRef + " of " + moleculeID + " set to " + inputNumber);
+        }
+        else {
+            alert(dictRef + " input for " + moleculeID + " is not numeric, resetting...");
+            let inputElement = document.getElementById(inputId);
+            let value = molecule.getPropertyScalar(dictRef);
+            if (value != undefined) {
+                inputElement.value = value.toString();
+            }
+        }
+        //console.log("molecule=" + molecule);
+    }
+}
+exports.setPropertyScalar = setPropertyScalar;
+window.setProperty = setPropertyScalar;
+/**
  * Set the rotation constants of a molecule when the rotation constants input value is changed.
  * @param input The input element.
  */
@@ -1698,8 +1919,8 @@ function setVibFreqs(input) {
             });
             if (!success) {
                 alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
-                let inputElement = document.getElementById(id_vibFreqs);
-                inputElement.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
+                let input = document.getElementById(id_vibFreqs);
+                input.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
                 return;
             }
             if (values.length == nVibFreqs) {
@@ -1710,8 +1931,8 @@ function setVibFreqs(input) {
             }
             else {
                 alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
-                let inputElement = document.getElementById(id_vibFreqs);
-                inputElement.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
+                let input = document.getElementById(id_vibFreqs);
+                input.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
             }
         }
     }
@@ -1719,17 +1940,59 @@ function setVibFreqs(input) {
 exports.setVibFreqs = setVibFreqs;
 window.setVibFreqs = setVibFreqs;
 /**
+ * Set a molecule property array when the input value is changed.
+ * @param dictRef The dictionary reference of the property.
+ * @param input The input element.
+ */
+function setPropertyArray(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
+    let molecule = molecules.get(moleculeID);
+    if (molecule) {
+        let inputString = input.value;
+        let values = inputString.split(/\s+/);
+        let propertyArray = molecule.getPropertyArray(dictRef);
+        //console.log("propertyArray=" + propertyArray);
+        if (propertyArray) {
+            let n = propertyArray.length;
+            let success = true;
+            values.forEach(function (value) {
+                if (!(0, util_js_1.isNumeric)(value)) {
+                    success = false;
+                }
+            });
+            if (!success) {
+                alert(dictRef + " input for " + moleculeID + " is not a number, resetting...");
+                let input = document.getElementById(inputId);
+                input.value = (0, util_js_2.arrayToString)(propertyArray, " ");
+                return;
+            }
+            if (values.length == n) {
+                let propertyArrayNew = inputString.split(" ").map(Number);
+                molecule.setPropertyArray(dictRef, propertyArrayNew);
+                console.log(dictRef + " input for " + moleculeID + " changed from: " + propertyArray + " to: " + propertyArrayNew);
+                //console.log("molecule=" + molecule);
+            }
+            else {
+                alert("Expecting " + n + " " + dictRef + " values for " + moleculeID + " but finding " + values.length + " resetting...");
+                let input = document.getElementById(inputId);
+                input.value = (0, util_js_2.arrayToString)(propertyArray, " ");
+            }
+        }
+    }
+}
+exports.setPropertyArray = setPropertyArray;
+window.setPropertyArray = setPropertyArray;
+/**
  * Save to XML file.
  */
 window.saveXML = function () {
     console.log("saveXML");
     const pad = "  ";
-    let level;
     const padding2 = pad.repeat(2);
     // Create me.title.
     let title_xml = "\n" + pad + (0, xml_js_1.getTag)(title, "me:title");
     // Create moleculeList.
-    level = 2;
     let moleculeList = "";
     molecules.forEach(function (molecule, id) {
         moleculeList += molecule.toXML(pad, padding2);
@@ -1737,7 +2000,6 @@ window.saveXML = function () {
     });
     moleculeList = (0, xml_js_1.getTag)(moleculeList, "moleculeList", undefined, pad, true);
     // Create reactionList.
-    level = 2;
     let reactionList = "";
     reactions.forEach(function (reaction, id) {
         reactionList += reaction.toXML(pad, padding2);

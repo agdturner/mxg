@@ -458,6 +458,28 @@ class Molecule extends xml_js_1.NodeWithNodes {
         return active;
     }
     /**
+     * @returns A label for the molecule detailing the attributes of the XML element (including id,
+     * and possibly including description and whether active).
+     */
+    getLabel() {
+        let label = this.getID();
+        let description = this.getDescription();
+        if (description) {
+            label += " (" + description + ")";
+        }
+        let active = this.getActive();
+        if (active) {
+            label += " (active)";
+        }
+        return label;
+    }
+    /**
+     * @returns A string of the attributes of the molecule.
+     */
+    getAttributesAsString() {
+        return Array.from(this.attributes, ([key, value]) => `${key}: ${value}`).join(', ');
+    }
+    /**
      * @returns The properties of the molecule.
      */
     getProperties() {

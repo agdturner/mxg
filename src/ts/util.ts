@@ -30,14 +30,18 @@ export function rescale(min: number, range: number, newMin: number, newRange: nu
 /**
  * For convertina a map to a string.
  * @param map The map to convert to a string.
+ * @param delimiter The (optional) delimiter.
  * @returns A string representation of all the entries in the map.
  */
-export function mapToString(map: Map<any, any>): string {
+export function mapToString(map: Map<any, any>, delimiter?: string): string {
     if (map == null) {
         return "";
     }
+    if (delimiter == undefined) {
+        delimiter = ', ';
+    }
     return Array.from(map.entries()).map(([key, value]) =>
-        `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(', ');
+        `${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(delimiter);
 }
 
 /**
