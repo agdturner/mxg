@@ -412,6 +412,7 @@ function initMolecules(xml: XMLDocument): void {
 function addEventListenersToMolecules(): void {
     // Add event listeners to molecules.
     molecules.forEach(function (molecule, id) {
+        /*
         // Energy input.
         let energyKey = id + "_energy";
         let energyInput = document.getElementById(energyKey) as HTMLInputElement;
@@ -461,6 +462,7 @@ function addEventListenersToMolecules(): void {
                 resizeInput(vibFreqsInput);
             });
         }
+        */
 
         let properties: string = molecule.getAttributesAsString();
         let props: PropertyList | Property | undefined = molecule.getProperties();
@@ -487,6 +489,12 @@ function addEventListenersToMolecules(): void {
                                     console.log("Set " + key0 + " of " + id + " to " + inputValue);
                                 }
                                 resizeInput(input);
+                                if (key0 === Molecule.energyDictRef) {
+                                    console.log("update display diagram"); 
+                                    displayReactionsDiagram();
+                                } else {
+                                    console.log("key0 " + key0 + " does not match " + Molecule.energyDictRef);
+                                }
                             });
                         }
                     } else {
@@ -1195,16 +1203,13 @@ function initReactions(xml: XMLDocument): void {
 
 /**
  * Create a diagram.
- * @param {Map<string, Molecule>} molecules The molecules.
- * @param {Map<string, Reaction>} reactions The reactions.
- * @param {boolean} dark True for dark mode.
- * @returns {HTMLCanvasElement} The diagram.
- * @param {string} font The font to use.
- * @param {number} lw The line width of reactants, transition states and products.
- * @param {string} lwc The line width color to use.
+ * @param canvas The canvas.
+ * @param dark True for dark mode.
+ * @param font The font to use.
+ * @param lw The line width of reactants, transition states and products.
+ * @param lwc The line width color to use.
  */
-function drawReactionDiagram(canvas: HTMLCanvasElement, molecules: Map<string, Molecule>,
-    reactions: Map<string, Reaction>, dark: boolean, font: string, lw: number, lwc: number): void {
+function drawReactionDiagram(canvas: HTMLCanvasElement, dark: boolean, font: string, lw: number, lwc: number): void {
     console.log("drawReactionDiagram");
     // TODO: Set styles depending on dark/light mode settings of users browser and not hard code.
     //let white = "white";
@@ -1735,7 +1740,7 @@ function displayReactionsDiagram(): void {
         let lwc: number = 2;
         if (canvas != null) {
             canvas.style.display = "block";
-            drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc);
+            drawReactionDiagram(canvas, dark, font, lw, lwc);
         }
     }
 }
@@ -1879,6 +1884,7 @@ function displayControl(): void {
  * Set the energy of a molecule when the energy input value is changed.
  * @param input The input element. 
  */
+/*
 export function setEnergy(input: HTMLInputElement): void {
     let id_energy: string = input.id;
     let moleculeID: string = id_energy.split("_")[0];
@@ -1898,6 +1904,7 @@ export function setEnergy(input: HTMLInputElement): void {
 }
 
 (window as any).setEnergy = setEnergy;
+*/
 
 /**
  * Set a molecule property scalar when the input value is changed.
@@ -1931,6 +1938,7 @@ export function setPropertyScalar(dictRef: string, input: HTMLInputElement): voi
  * Set the rotation constants of a molecule when the rotation constants input value is changed.
  * @param input The input element. 
  */
+/*
 export function setRotConst(input: HTMLInputElement): void {
     let id_rotConst: string = input.id;
     let moleculeID: string = id_rotConst.split("_")[0];
@@ -1969,11 +1977,13 @@ export function setRotConst(input: HTMLInputElement): void {
 }
 
 (window as any).setRotConst = setRotConst;
+*/
 
 /**
  * Set the vibration frequencies of a molecule when the vibration frequencies input value is changed.
  * @param input The input element. 
  */
+/*
 export function setVibFreqs(input: HTMLInputElement): void {
     let id_vibFreqs: string = input.id;
     let moleculeID: string = id_vibFreqs.split("_")[0];
@@ -2012,8 +2022,7 @@ export function setVibFreqs(input: HTMLInputElement): void {
 }
 
 (window as any).setVibFreqs = setVibFreqs;
-
-
+*/
 
 /**
  * Set a molecule property array when the input value is changed.

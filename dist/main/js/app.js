@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setPropertyArray = exports.setVibFreqs = exports.setRotConst = exports.setPropertyScalar = exports.setEnergy = void 0;
+exports.setPropertyArray = exports.setPropertyScalar = void 0;
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const molecule_js_1 = require("./molecule.js");
@@ -334,55 +334,57 @@ function initMolecules(xml) {
 function addEventListenersToMolecules() {
     // Add event listeners to molecules.
     molecules.forEach(function (molecule, id) {
+        /*
         // Energy input.
         let energyKey = id + "_energy";
-        let energyInput = document.getElementById(energyKey);
+        let energyInput = document.getElementById(energyKey) as HTMLInputElement;
         if (energyInput) {
-            (0, html_js_1.resizeInput)(energyInput);
+            resizeInput(energyInput);
             energyInput.addEventListener('change', (event) => {
-                let eventTarget = event.target;
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
                 molecule.setEnergy(parseFloat(inputValue));
                 console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                (0, html_js_1.resizeInput)(energyInput);
+                resizeInput(energyInput);
             });
         }
         // RotConsts input.
         let rotConstsKey = id + "_rotConsts";
-        let rotConstsInput = document.getElementById(rotConstsKey);
+        let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
         if (rotConstsInput) {
-            (0, html_js_1.resizeInput)(rotConstsInput);
+            resizeInput(rotConstsInput);
             rotConstsInput.addEventListener('change', (event) => {
-                let eventTarget = event.target;
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let rotConsts = [];
-                let values = inputValue.split(/\s+/);
+                let rotConsts: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
                 values.forEach(function (value) {
                     rotConsts.push(parseFloat(value));
                 });
                 molecule.setRotConsts(rotConsts);
                 console.log("Set rotConsts of " + id + " to " + inputValue);
-                (0, html_js_1.resizeInput)(rotConstsInput);
+                resizeInput(rotConstsInput);
             });
         }
         // VibFreqs input.
         let vibFreqsKey = id + "_vibFreqs";
-        let vibFreqsInput = document.getElementById(vibFreqsKey);
+        let vibFreqsInput = document.getElementById(vibFreqsKey) as HTMLInputElement;
         if (vibFreqsInput) {
-            (0, html_js_1.resizeInput)(vibFreqsInput);
+            resizeInput(vibFreqsInput);
             vibFreqsInput.addEventListener('change', (event) => {
-                let eventTarget = event.target;
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let vibFreqs = [];
-                let values = inputValue.split(/\s+/);
+                let vibFreqs: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
                 values.forEach(function (value) {
                     vibFreqs.push(parseFloat(value));
                 });
                 molecule.setVibFreqs(vibFreqs);
                 console.log("Set vibFreqs of " + id + " to " + inputValue);
-                (0, html_js_1.resizeInput)(vibFreqsInput);
+                resizeInput(vibFreqsInput);
             });
         }
+        */
         let properties = molecule.getAttributesAsString();
         let props = molecule.getProperties();
         if (props != undefined) {
@@ -409,6 +411,13 @@ function addEventListenersToMolecules() {
                                     console.log("Set " + key0 + " of " + id + " to " + inputValue);
                                 }
                                 (0, html_js_1.resizeInput)(input);
+                                if (key0 === molecule_js_1.Molecule.energyDictRef) {
+                                    console.log("update display diagram");
+                                    displayReactionsDiagram();
+                                }
+                                else {
+                                    console.log("key0 " + key0 + " does not match " + molecule_js_1.Molecule.energyDictRef);
+                                }
                             });
                         }
                     }
@@ -1126,15 +1135,13 @@ function initReactions(xml) {
 }
 /**
  * Create a diagram.
- * @param {Map<string, Molecule>} molecules The molecules.
- * @param {Map<string, Reaction>} reactions The reactions.
- * @param {boolean} dark True for dark mode.
- * @returns {HTMLCanvasElement} The diagram.
- * @param {string} font The font to use.
- * @param {number} lw The line width of reactants, transition states and products.
- * @param {string} lwc The line width color to use.
+ * @param canvas The canvas.
+ * @param dark True for dark mode.
+ * @param font The font to use.
+ * @param lw The line width of reactants, transition states and products.
+ * @param lwc The line width color to use.
  */
-function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) {
+function drawReactionDiagram(canvas, dark, font, lw, lwc) {
     console.log("drawReactionDiagram");
     // TODO: Set styles depending on dark/light mode settings of users browser and not hard code.
     //let white = "white";
@@ -1666,7 +1673,7 @@ function displayReactionsDiagram() {
         let lwc = 2;
         if (canvas != null) {
             canvas.style.display = "block";
-            drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc);
+            drawReactionDiagram(canvas, dark, font, lw, lwc);
         }
     }
 }
@@ -1805,26 +1812,27 @@ function displayControl() {
  * Set the energy of a molecule when the energy input value is changed.
  * @param input The input element.
  */
-function setEnergy(input) {
-    let id_energy = input.id;
-    let moleculeID = id_energy.split("_")[0];
-    let molecule = molecules.get(moleculeID);
+/*
+export function setEnergy(input: HTMLInputElement): void {
+    let id_energy: string = input.id;
+    let moleculeID: string = id_energy.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
     if (molecule) {
-        if ((0, util_js_1.isNumeric)(input.value)) {
-            let inputNumber = parseFloat(input.value);
+        if (isNumeric(input.value)) {
+            let inputNumber: number = parseFloat(input.value);
             molecule.setEnergy(inputNumber);
             console.log("Energy of " + moleculeID + " set to " + inputNumber);
-        }
-        else {
+        } else {
             alert("Energy input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(id_energy);
+            let inputElement = document.getElementById(id_energy) as HTMLInputElement;
             inputElement.value = molecule.getEnergy().toString();
         }
         //console.log("molecule=" + molecule);
     }
 }
-exports.setEnergy = setEnergy;
-window.setEnergy = setEnergy;
+
+(window as any).setEnergy = setEnergy;
+*/
 /**
  * Set a molecule property scalar when the input value is changed.
  * @param dictRef The dictionary reference of the property.
@@ -1857,88 +1865,90 @@ window.setProperty = setPropertyScalar;
  * Set the rotation constants of a molecule when the rotation constants input value is changed.
  * @param input The input element.
  */
-function setRotConst(input) {
-    let id_rotConst = input.id;
-    let moleculeID = id_rotConst.split("_")[0];
-    let molecule = molecules.get(moleculeID);
+/*
+export function setRotConst(input: HTMLInputElement): void {
+    let id_rotConst: string = input.id;
+    let moleculeID: string = id_rotConst.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
     if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let rotConsts = molecule.getRotConsts();
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
         //console.log("rotConsts=" + rotConsts);
         if (rotConsts) {
             let nRotConsts = rotConsts.length;
-            let success = true;
+            let success: boolean = true;
             values.forEach(function (value) {
-                if (!(0, util_js_1.isNumeric)(value)) {
+                if (!isNumeric(value)) {
                     success = false;
                 }
             });
             if (!success) {
                 alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, util_js_2.arrayToString)(rotConsts, " ");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
                 return;
             }
             if (values.length == nRotConsts) {
-                let rotConstsNew = inputString.split(" ").map(Number);
+                let rotConstsNew: number[] = inputString.split(" ").map(Number);
                 molecule.setRotConsts(rotConstsNew);
                 console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
                 //console.log("molecule=" + molecule);
-            }
-            else {
+            } else {
                 alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, util_js_2.arrayToString)(rotConsts, " ");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
             }
         }
     }
 }
-exports.setRotConst = setRotConst;
-window.setRotConst = setRotConst;
+
+(window as any).setRotConst = setRotConst;
+*/
 /**
  * Set the vibration frequencies of a molecule when the vibration frequencies input value is changed.
  * @param input The input element.
  */
-function setVibFreqs(input) {
-    let id_vibFreqs = input.id;
-    let moleculeID = id_vibFreqs.split("_")[0];
-    let molecule = molecules.get(moleculeID);
+/*
+export function setVibFreqs(input: HTMLInputElement): void {
+    let id_vibFreqs: string = input.id;
+    let moleculeID: string = id_vibFreqs.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
     if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let vibFreqs = molecule.getVibFreqs();
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
         //console.log("vibFreqs=" + vibFreqs);
         if (vibFreqs) {
             let nVibFreqs = vibFreqs.length;
-            let success = true;
+            let success: boolean = true;
             values.forEach(function (value) {
-                if (!(0, util_js_1.isNumeric)(value)) {
+                if (!isNumeric(value)) {
                     success = false;
                 }
             });
             if (!success) {
                 alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
-                let input = document.getElementById(id_vibFreqs);
-                input.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
+                let input = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                input.value = arrayToString(vibFreqs as number[], " ");
                 return;
             }
             if (values.length == nVibFreqs) {
-                let vibFreqsNew = inputString.split(" ").map(Number);
+                let vibFreqsNew: number[] = inputString.split(" ").map(Number);
                 molecule.setVibFreqs(vibFreqsNew);
                 console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
                 //console.log("molecule=" + molecule);
-            }
-            else {
+            } else {
                 alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
-                let input = document.getElementById(id_vibFreqs);
-                input.value = (0, util_js_2.arrayToString)(vibFreqs, " ");
+                let input = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                input.value = arrayToString(vibFreqs as number[], " ");
             }
         }
     }
 }
-exports.setVibFreqs = setVibFreqs;
-window.setVibFreqs = setVibFreqs;
+
+(window as any).setVibFreqs = setVibFreqs;
+*/
 /**
  * Set a molecule property array when the input value is changed.
  * @param dictRef The dictionary reference of the property.

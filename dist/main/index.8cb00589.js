@@ -13,9 +13,10 @@ function $134d19e749bf0414$export$bd2782c820638828(min, range, newMin, newRange,
     //return (((value - min) / (range + 0.0)) * (newRange)) + newMin;
     return (value - min) * newRange / (range + 0.0) + newMin;
 }
-function $134d19e749bf0414$export$dc22ec7f8e0b9ac(map) {
+function $134d19e749bf0414$export$dc22ec7f8e0b9ac(map, delimiter) {
     if (map == null) return "";
-    return Array.from(map.entries()).map(([key, value])=>`${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(", ");
+    if (delimiter == undefined) delimiter = ", ";
+    return Array.from(map.entries()).map(([key, value])=>`${key == null ? "null" : key.toString()}(${value == null ? "null" : value.toString()})`).join(delimiter);
 }
 function $134d19e749bf0414$export$4323cc4280d5be7(array, delimiter) {
     if (delimiter == undefined) delimiter = ", ";
@@ -392,8 +393,8 @@ class $ef5b9341e5193b70$export$9cea715eceba39a0 extends (0, $cc8c7201a9bad777$ex
     }
     /**
      * 
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Atom[]} atoms The atoms.
+     * @param attributes The attributes.
+     * @param atoms The atoms.
      */ constructor(attributes, atoms){
         super(attributes, $ef5b9341e5193b70$export$9cea715eceba39a0.tagName);
         atoms.forEach((atom)=>{
@@ -451,7 +452,7 @@ class $ef5b9341e5193b70$export$9f93a3fdf2490572 extends (0, $cc8c7201a9bad777$ex
     /**
      * @param attributes The attributes.
      * @param values The values.
-     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
      */ constructor(attributes, values, delimiter){
         super(attributes, $ef5b9341e5193b70$export$9f93a3fdf2490572.tagName, values, delimiter);
     }
@@ -463,8 +464,8 @@ class $ef5b9341e5193b70$export$41b04b3a73e7216d extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "property";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PropertyScalar | PropertyArray} property The property.
+     * @param attributes The attributes.
+     * @param property The property.
      */ constructor(attributes, property){
         super(attributes, $ef5b9341e5193b70$export$41b04b3a73e7216d.tagName);
         this.nodes.set(0, property);
@@ -482,8 +483,8 @@ class $ef5b9341e5193b70$export$4e0d1ad7ad6a0802 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "propertyList";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Map<string, Property>} properties A Map of properties with keys as dictRefs.
+     * @param attributes The attributes.
+     * @param properties A Map of properties with keys as dictRefs.
      */ constructor(attributes, properties){
         super(attributes, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName);
         this.properties = properties;
@@ -512,8 +513,8 @@ class $ef5b9341e5193b70$export$499950da20810ac9 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:energyTransferModel";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {DeltaEDown[]} deltaEDowns The DeltaEDowns.
+     * @param attributes The attributes.
+     * @param deltaEDowns The DeltaEDowns.
      */ constructor(attributes, deltaEDowns){
         super(attributes, $ef5b9341e5193b70$export$499950da20810ac9.tagName);
         deltaEDowns.forEach((deltaEDown)=>{
@@ -527,7 +528,9 @@ class $ef5b9341e5193b70$export$bbdce6c921702068 extends (0, $cc8c7201a9bad777$ex
      * The tag name.
      */ this.tagName = "me:DOSCMethod";
     }
-    constructor(attributes){
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes){
         super(attributes, $ef5b9341e5193b70$export$bbdce6c921702068.tagName);
     }
 }
@@ -587,9 +590,9 @@ class $ef5b9341e5193b70$export$ae98b7db6376163d extends (0, $cc8c7201a9bad777$ex
     }
     /**
      * @param attributes The attributes.
-     * @param {BondRef | undefined} bondRef The bondRef.
-     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
-     * @param {Periodicity | undefined} periodicity The Periodicity.
+     * @param bondRef The bondRef.
+     * @param hinderedRotorPotential The HinderedRotorPotential.
+     * @param periodicity The Periodicity.
      */ constructor(attributes, bondRef, hinderedRotorPotential, periodicity){
         super(attributes, $ef5b9341e5193b70$export$ae98b7db6376163d.tagName);
         if (bondRef) this.nodes.set(this.nodes.size, bondRef);
@@ -621,29 +624,25 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
      * The energy dictRef.
      */ this.energyDictRef = "me:ZPE";
     }
-    static{
-        /**
-     * The rotation constants dictRef.
-     */ this.rotConstsDictRef = "me:rotConsts";
-    }
-    static{
-        /**
-     * The vibration frequencies dictRef.
-     */ this.vibFreqsDictRef = "me:vibFreqs";
-    }
     /**
      * Create a molecule.
-     * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
+     * @param attributes The attributes. If there is no "id" key an error will be thrown.
      * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param {Atom | AtomArray | undefined} atoms The atoms.
-     * @param {Bond | undefined} bonds The bonds.
-     * @param {PropertyList | Property | undefined} properties The properties.
-     * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
-     * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
-     * @param {ExtraDOSCMethod | undefined} extraDOSCMethod The extra method for calculating density of states.
-     * @param {ReservoirSize | undefined} reservoirSize The reservoir size.
+     * @param atoms The atoms.
+     * @param bonds The bonds.
+     * @param properties The properties.
+     * @param energyTransferModel The energy transfer model.
+     * @param dOSCMethod The method for calculating density of states.
+     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param reservoirSize The reservoir size.
      */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, $ef5b9341e5193b70$export$3da9759ad07746a3.tagName);
+        /**
+     * The rotation constants dictRef.
+     */ //static readonly rotConstsDictRef: string = 'me:rotConsts';
+        /**
+     * The vibration frequencies dictRef.
+     */ //static readonly vibFreqsDictRef: string = 'me:vibFreqs';
         /**
      * The index.
      */ this.index = new Map();
@@ -709,6 +708,22 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
         let active = this.attributes.get("active");
         if (active != undefined) return true;
         return active;
+    }
+    /**
+     * @returns A label for the molecule detailing the attributes of the XML element (including id, 
+     * and possibly including description and whether active).
+     */ getLabel() {
+        let label = this.getID();
+        let description = this.getDescription();
+        if (description) label += " (" + description + ")";
+        let active = this.getActive();
+        if (active) label += " (active)";
+        return label;
+    }
+    /**
+     * @returns A string of the attributes of the molecule.
+     */ getAttributesAsString() {
+        return Array.from(this.attributes, ([key, value])=>`${key}: ${value}`).join(", ");
     }
     /**
      * @returns The properties of the molecule.
@@ -825,16 +840,18 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
     /**
      * Set the RotationConstants of the molecule.
      * @param rotConsts The rotation constants of the molecule.
-     */ setRotConsts(rotConsts) {
-        this.setPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.rotConstsDictRef, rotConsts);
+     */ /*
+    setRotConsts(rotConsts: number[]): void {
+        this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
     }
-    /**
+    */ /**
      * Set the vibration frequencies of the molecule.
      * @param vibFreqs The vibration frequencies of the molecule.
-     */ setVibFreqs(vibFreqs) {
-        this.setPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.vibFreqsDictRef, vibFreqs);
+     */ /*
+    setVibFreqs(vibFreqs: number[]): void {
+        this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
     }
-    /**
+    */ /**
      * Get a property array.
      * @param dictRef The dictRef of the property.
      * @returns The array property.
@@ -853,25 +870,13 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
             } else return undefined;
         }
     }
-    /**
-     * Get the RotationConstants of the molecule.
-     * @returns The RotationConstants of the molecule.
-     */ getRotConsts() {
-        return this.getPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.rotConstsDictRef);
-    }
-    /**
-     * Get the vibration frequencies of the molecule.
-     * @returns The vibration frequencies of the molecule.
-     */ getVibFreqs() {
-        return this.getPropertyArray($ef5b9341e5193b70$export$3da9759ad07746a3.vibFreqsDictRef);
-    }
 }
 class $ef5b9341e5193b70$export$954a71e3ba0cc2 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} tagName The tag name.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
+     * @param attributes The attributes.
+     * @param tagName The tag name.
+     * @param molecule The molecule (an abbreviated molecule).
+     * @param molecules The molecules.
      */ constructor(attributes, tagName, molecule, molecules){
         super(attributes, tagName);
         this.nodes.set(0, molecule);
@@ -2094,54 +2099,106 @@ let $7e68913db756e51f$var$xml_text;
 function $7e68913db756e51f$var$addEventListenersToMolecules() {
     // Add event listeners to molecules.
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
+        /*
         // Energy input.
         let energyKey = id + "_energy";
-        let energyInput = document.getElementById(energyKey);
+        let energyInput = document.getElementById(energyKey) as HTMLInputElement;
         if (energyInput) {
-            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(energyInput);
-            energyInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(energyInput);
+            energyInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
                 molecule.setEnergy(parseFloat(inputValue));
                 console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(energyInput);
+                resizeInput(energyInput);
             });
         }
         // RotConsts input.
         let rotConstsKey = id + "_rotConsts";
-        let rotConstsInput = document.getElementById(rotConstsKey);
+        let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
         if (rotConstsInput) {
-            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(rotConstsInput);
-            rotConstsInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(rotConstsInput);
+            rotConstsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let rotConsts = [];
-                let values = inputValue.split(/\s+/);
-                values.forEach(function(value) {
+                let rotConsts: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                values.forEach(function (value) {
                     rotConsts.push(parseFloat(value));
                 });
                 molecule.setRotConsts(rotConsts);
                 console.log("Set rotConsts of " + id + " to " + inputValue);
-                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(rotConstsInput);
+                resizeInput(rotConstsInput);
             });
         }
         // VibFreqs input.
         let vibFreqsKey = id + "_vibFreqs";
-        let vibFreqsInput = document.getElementById(vibFreqsKey);
+        let vibFreqsInput = document.getElementById(vibFreqsKey) as HTMLInputElement;
         if (vibFreqsInput) {
-            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(vibFreqsInput);
-            vibFreqsInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(vibFreqsInput);
+            vibFreqsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let vibFreqs = [];
-                let values = inputValue.split(/\s+/);
-                values.forEach(function(value) {
+                let vibFreqs: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                values.forEach(function (value) {
                     vibFreqs.push(parseFloat(value));
                 });
                 molecule.setVibFreqs(vibFreqs);
                 console.log("Set vibFreqs of " + id + " to " + inputValue);
-                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(vibFreqsInput);
+                resizeInput(vibFreqsInput);
             });
+        }
+        */ let properties = molecule.getAttributesAsString();
+        let props = molecule.getProperties();
+        if (props != undefined) {
+            if (props instanceof (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)) {
+                let propsProperties = props.properties;
+                propsProperties.forEach(function(value0, key0) {
+                    properties += "(" + key0 + "=";
+                    let prop = value0.getProperty();
+                    if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
+                        // Property input.
+                        let propertyKey = id + "_" + key0;
+                        let units = prop.attributes.get("units");
+                        let input = document.getElementById(propertyKey);
+                        if (input) {
+                            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
+                            input.addEventListener("change", (event)=>{
+                                let eventTarget = event.target;
+                                let inputValue = eventTarget.value;
+                                molecule.setPropertyScalar(key0, parseFloat(inputValue));
+                                if (units != undefined) console.log("Set " + key0 + " of " + id + " to " + inputValue + " " + units);
+                                else console.log("Set " + key0 + " of " + id + " to " + inputValue);
+                                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
+                                if (key0 === (0, $ef5b9341e5193b70$export$3da9759ad07746a3).energyDictRef) {
+                                    console.log("update display diagram");
+                                    $7e68913db756e51f$var$displayReactionsDiagram();
+                                } else console.log("key0 " + key0 + " does not match " + (0, $ef5b9341e5193b70$export$3da9759ad07746a3).energyDictRef);
+                            });
+                        }
+                    } else {
+                        // Property input.
+                        let propertyKey = id + "_" + key0;
+                        let input = document.getElementById(propertyKey);
+                        if (input) {
+                            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
+                            input.addEventListener("change", (event)=>{
+                                let eventTarget = event.target;
+                                let inputValue = eventTarget.value;
+                                let values = inputValue.split(/\s+/);
+                                let numbers = [];
+                                values.forEach(function(value) {
+                                    numbers.push(parseFloat(value));
+                                });
+                                molecule.setPropertyArray(key0, numbers);
+                                console.log("Set " + key0 + " of " + id + " to " + inputValue);
+                                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
+                            });
+                        }
+                    }
+                });
+            }
         }
     });
 }
@@ -2277,8 +2334,25 @@ function $7e68913db756e51f$var$addEventListenersToMolecules() {
                 inputElement.type = "text";
                 // Set its value to the title.
                 inputElement.value = $7e68913db756e51f$var$title;
+                // Apply CSS styles to make the input text appear like a h1.
+                inputElement.style.fontSize = "2em";
+                inputElement.style.fontWeight = "bold";
+                // Create a text node.
+                let textNode = document.createTextNode("Title: ");
+                // Insert the text node before the input element in the parent node.
+                e.parentNode?.insertBefore(textNode, e);
+                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
                 // Replace the existing title element with the new input element.
                 e.parentNode?.replaceChild(inputElement, e);
+                console.log("inputElement.value=" + inputElement.value);
+                // Add event listener to inputElement.
+                inputElement.addEventListener("change", function() {
+                    if (inputElement.value != $7e68913db756e51f$var$title) {
+                        $7e68913db756e51f$var$title = inputElement.value;
+                        console.log("title=" + $7e68913db756e51f$var$title);
+                    }
+                    (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
+                });
             }
         }
     }
@@ -2665,14 +2739,12 @@ let $7e68913db756e51f$var$control;
 }
 /**
  * Create a diagram.
- * @param {Map<string, Molecule>} molecules The molecules.
- * @param {Map<string, Reaction>} reactions The reactions.
- * @param {boolean} dark True for dark mode.
- * @returns {HTMLCanvasElement} The diagram.
- * @param {string} font The font to use.
- * @param {number} lw The line width of reactants, transition states and products.
- * @param {string} lwc The line width color to use.
- */ function $7e68913db756e51f$var$drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) {
+ * @param canvas The canvas.
+ * @param dark True for dark mode.
+ * @param font The font to use.
+ * @param lw The line width of reactants, transition states and products.
+ * @param lwc The line width color to use.
+ */ function $7e68913db756e51f$var$drawReactionDiagram(canvas, dark, font, lw, lwc) {
     console.log("drawReactionDiagram");
     // TODO: Set styles depending on dark/light mode settings of users browser and not hard code.
     //let white = "white";
@@ -2702,7 +2774,7 @@ let $7e68913db756e51f$var$control;
     let i = 0;
     let energyMin = Number.MAX_VALUE;
     let energyMax = Number.MIN_VALUE;
-    reactions.forEach(function(reaction, id) {
+    $7e68913db756e51f$var$reactions.forEach(function(reaction, id) {
         // Get TransitionStates.
         let reactionTransitionStates = reaction.transitionStates;
         //console.log("reactant=" + reactant);
@@ -2878,7 +2950,7 @@ let $7e68913db756e51f$var$control;
     //ctx.transform(1, 0, 0, 1, 0, canvasHeightWithBorder);
     ctx.transform(1, 0, 0, -1, 0, canvasHeightWithBorder);
     // Go through reactions and draw connecting lines.
-    reactions.forEach(function(reaction, id) {
+    $7e68913db756e51f$var$reactions.forEach(function(reaction, id) {
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
         // Get TransitionState if there is one.
@@ -2946,39 +3018,138 @@ let $7e68913db756e51f$var$control;
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
-        // Energy.
-        let energyNumber = molecule.getEnergy();
-        let energy;
-        if (energyNumber == null) energy = "";
-        else energy = energyNumber.toString();
-        let energyInputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_energy", (event)=>{
-            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$afc96e5ea6df45fd(event.target);
-        }, energy, "Energy");
-        //console.log("energy=" + energy);
-        // Rotation Constants.
-        let rotationConstants = "";
-        let rotConsts = molecule.getRotConsts();
-        if (rotConsts != undefined) rotationConstants = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
-        let rotConstsDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_rotConst", (event)=>{
-            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$89b14b349130d1de(event.target);
-        }, rotationConstants, "Rotation Constants");
-        //console.log("rotationConstants=" + rotationConstants);
-        // Vibration Frequencies.
-        let vibrationFrequencies = "";
-        let vibFreqs = molecule.getVibFreqs();
-        if (vibFreqs != undefined) vibrationFrequencies = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
-        let vibFreqsDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_vibFreqs", (event)=>{
-            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$1950ad01e0241ba8(event.target);
-        }, vibrationFrequencies, "Vibration Frequencies");
-        //console.log("vibrationFrequencies=" + vibrationFrequencies);
         // Create molecule detail div.
         let div = document.createElement("div");
+        /*
+        // Energy.
+        let energyNumber: number = molecule.getEnergy();
+        let energy: string;
+        if (energyNumber == null) {
+            energy = "";
+        } else {
+            energy = energyNumber.toString();
+        }
+        let energyInputDiv: HTMLDivElement = getInput("number", id + "_energy", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setEnergy(event.target);
+            }
+        }, energy, "Energy");
         div.appendChild(energyInputDiv);
+        //console.log("energy=" + energy);
+        
+        // Rotation Constants.
+        let rotationConstants: string = "";
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
+        if (rotConsts != undefined) {
+            rotationConstants = arrayToString(rotConsts, " ");
+        }
+        let rotConstsDiv: HTMLDivElement = getInput("text", id + "_rotConst", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setRotConst(event.target);
+            }
+        }, rotationConstants, "Rotation Constants");
         div.appendChild(rotConstsDiv);
+        //console.log("rotationConstants=" + rotationConstants);
+        
+        // Vibration Frequencies.
+        let vibrationFrequencies: string = "";
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
+        if (vibFreqs != undefined) {
+            vibrationFrequencies = arrayToString(vibFreqs, " ");
+        }
+        let vibFreqsDiv: HTMLDivElement = getInput("text", id + "_vibFreqs", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setVibFreqs(event.target);
+            }
+        }, vibrationFrequencies, "Vibration Frequencies");
         div.appendChild(vibFreqsDiv);
-        let moleculeDetailDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(div, id, id + "_details", "molecule");
-        //let div2 = document.createElement("div");
-        //moleculeDetailDiv.appendChild(div2);
+        //console.log("vibrationFrequencies=" + vibrationFrequencies);
+        */ // Properties.
+        //let properties: string = molecule.getAttributesAsString();
+        let props = molecule.getProperties();
+        if (props != undefined) {
+            if (props instanceof (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)) {
+                let propsAttributes = props.attributes;
+                let propsAttributesString = (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(propsAttributes);
+                console.log("propsAttributesString=" + propsAttributesString);
+                //properties += propsAttributesString;
+                let propsProperties = props.properties;
+                propsProperties.forEach(function(value0, key0) {
+                    //properties += "(" + key0 + "=";
+                    let prop = value0.getProperty();
+                    if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
+                        //properties += prop.tagName + "(";
+                        //properties += toHTML(prop.toXML());
+                        let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
+                        //prop.attributes.forEach(function (value1, key1) {
+                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                        //});
+                        let v = prop.value;
+                        //properties += "value(" + v.toString() + ")";
+                        //properties += ")";
+                        let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_" + key0, (event)=>{
+                            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$4e634558561f5cca(key0, event.target);
+                        }, v.toString(), label);
+                        div.appendChild(inputDiv);
+                    } else {
+                        //prop instanceof PropertyArray
+                        //properties += toHTML(prop.toXML());
+                        let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
+                        //prop.attributes.forEach(function (value1, key1) {
+                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                        //});
+                        let v = prop.values;
+                        //properties += "values(" + arrayToString(v, " ") + ")";
+                        //properties += ")";
+                        let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_" + key0, (event)=>{
+                            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$c01f4ac2c1d26a5a(key0, event.target);
+                        }, (0, $134d19e749bf0414$export$4323cc4280d5be7)(v, " "), label);
+                        div.appendChild(inputDiv);
+                    }
+                //properties += ")";
+                });
+            } else {
+                //props instanceof Property
+                let prop = props.getProperty();
+                let key0 = props.tagName;
+                if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
+                    //properties += prop.tagName + "(";
+                    //properties += toHTML(prop.toXML());
+                    let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
+                    //prop.attributes.forEach(function (value1, key1) {
+                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                    //});
+                    let v = prop.value;
+                    //properties += "value(" + v.toString() + ")";
+                    //properties += ")";
+                    let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_" + key0, (event)=>{
+                        if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$4e634558561f5cca(key0, event.target);
+                    }, v.toString(), label);
+                    div.appendChild(inputDiv);
+                } else {
+                    //prop instanceof PropertyArray
+                    //properties += toHTML(prop.toXML());
+                    let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
+                    //prop.attributes.forEach(function (value1, key1) {
+                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
+                    //});
+                    let v = prop.values;
+                    //properties += "values(" + arrayToString(v, " ") + ")";
+                    //properties += ")";
+                    let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_" + key0, (event)=>{
+                        if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$c01f4ac2c1d26a5a(key0, event.target);
+                    }, (0, $134d19e749bf0414$export$4323cc4280d5be7)(v, " "), label);
+                    div.appendChild(inputDiv);
+                }
+            //properties += ")";
+            }
+        }
+        //let propertiesDiv: HTMLDivElement = document.createElement('div');
+        //let p: HTMLParagraphElement = document.createElement('p');
+        //p.innerHTML = properties;
+        //propertiesDiv.appendChild(p);
+        //div.appendChild(propertiesDiv);
+        let moleculeDetailDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(div, molecule.getLabel(), id + "_details", "molecule");
         $7e68913db756e51f$var$moleculesDiv = document.getElementById("moleculesList");
         if ($7e68913db756e51f$var$moleculesDiv !== null) {
             let parentElement = document.getElementById("molecules");
@@ -3068,7 +3239,7 @@ let $7e68913db756e51f$var$control;
         let lwc = 2;
         if (canvas != null) {
             canvas.style.display = "block";
-            $7e68913db756e51f$var$drawReactionDiagram(canvas, $7e68913db756e51f$var$molecules, $7e68913db756e51f$var$reactions, dark, font, lw, lwc);
+            $7e68913db756e51f$var$drawReactionDiagram(canvas, dark, font, lw, lwc);
         }
     }
 }
@@ -3167,104 +3338,68 @@ let $7e68913db756e51f$var$control;
     // Set the table.
     if (control_table_element != null) control_table_element.innerHTML = table;
 }
-function $7e68913db756e51f$export$afc96e5ea6df45fd(input) {
-    let id_energy = input.id;
-    let moleculeID = id_energy.split("_")[0];
+function $7e68913db756e51f$export$4e634558561f5cca(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
     let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
     if (molecule) {
         if ((0, $134d19e749bf0414$export$e90fb89750dba83f)(input.value)) {
             let inputNumber = parseFloat(input.value);
-            molecule.setEnergy(inputNumber);
-            console.log("Energy of " + moleculeID + " set to " + inputNumber);
+            molecule.setPropertyScalar(dictRef, inputNumber);
+            console.log(dictRef + " of " + moleculeID + " set to " + inputNumber);
         } else {
-            alert("Energy input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(id_energy);
-            inputElement.value = molecule.getEnergy().toString();
+            alert(dictRef + " input for " + moleculeID + " is not numeric, resetting...");
+            let inputElement = document.getElementById(inputId);
+            let value = molecule.getPropertyScalar(dictRef);
+            if (value != undefined) inputElement.value = value.toString();
         }
     }
 }
-window.setEnergy = $7e68913db756e51f$export$afc96e5ea6df45fd;
-function $7e68913db756e51f$export$89b14b349130d1de(input) {
-    let id_rotConst = input.id;
-    let moleculeID = id_rotConst.split("_")[0];
+window.setProperty = $7e68913db756e51f$export$4e634558561f5cca;
+function $7e68913db756e51f$export$c01f4ac2c1d26a5a(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
     let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
     if (molecule) {
         let inputString = input.value;
         let values = inputString.split(/\s+/);
-        let rotConsts = molecule.getRotConsts();
-        //console.log("rotConsts=" + rotConsts);
-        if (rotConsts) {
-            let nRotConsts = rotConsts.length;
+        let propertyArray = molecule.getPropertyArray(dictRef);
+        //console.log("propertyArray=" + propertyArray);
+        if (propertyArray) {
+            let n = propertyArray.length;
             let success = true;
             values.forEach(function(value) {
                 if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
             });
             if (!success) {
-                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
+                alert(dictRef + " input for " + moleculeID + " is not a number, resetting...");
+                let input = document.getElementById(inputId);
+                input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(propertyArray, " ");
                 return;
             }
-            if (values.length == nRotConsts) {
-                let rotConstsNew = inputString.split(" ").map(Number);
-                molecule.setRotConsts(rotConstsNew);
-                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+            if (values.length == n) {
+                let propertyArrayNew = inputString.split(" ").map(Number);
+                molecule.setPropertyArray(dictRef, propertyArrayNew);
+                console.log(dictRef + " input for " + moleculeID + " changed from: " + propertyArray + " to: " + propertyArrayNew);
             //console.log("molecule=" + molecule);
             } else {
-                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(rotConsts, " ");
+                alert("Expecting " + n + " " + dictRef + " values for " + moleculeID + " but finding " + values.length + " resetting...");
+                let input = document.getElementById(inputId);
+                input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(propertyArray, " ");
             }
         }
     }
 }
-window.setRotConst = $7e68913db756e51f$export$89b14b349130d1de;
-function $7e68913db756e51f$export$1950ad01e0241ba8(input) {
-    let id_vibFreqs = input.id;
-    let moleculeID = id_vibFreqs.split("_")[0];
-    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
-    if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let vibFreqs = molecule.getVibFreqs();
-        //console.log("vibFreqs=" + vibFreqs);
-        if (vibFreqs) {
-            let nVibFreqs = vibFreqs.length;
-            let success = true;
-            values.forEach(function(value) {
-                if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
-            });
-            if (!success) {
-                alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
-                let inputElement = document.getElementById(id_vibFreqs);
-                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
-                return;
-            }
-            if (values.length == nVibFreqs) {
-                let vibFreqsNew = inputString.split(" ").map(Number);
-                molecule.setVibFreqs(vibFreqsNew);
-                console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
-            //console.log("molecule=" + molecule);
-            } else {
-                alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
-                let inputElement = document.getElementById(id_vibFreqs);
-                inputElement.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(vibFreqs, " ");
-            }
-        }
-    }
-}
-window.setVibFreqs = $7e68913db756e51f$export$1950ad01e0241ba8;
+window.setPropertyArray = $7e68913db756e51f$export$c01f4ac2c1d26a5a;
 /**
  * Save to XML file.
  */ window.saveXML = function() {
     console.log("saveXML");
     const pad = "  ";
-    let level;
     const padding2 = pad.repeat(2);
     // Create me.title.
     let title_xml = "\n" + pad + (0, $cc8c7201a9bad777$export$dad497fe1f6e27c0)($7e68913db756e51f$var$title, "me:title");
     // Create moleculeList.
-    level = 2;
     let moleculeList = "";
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
         moleculeList += molecule.toXML(pad, padding2);
@@ -3272,7 +3407,6 @@ window.setVibFreqs = $7e68913db756e51f$export$1950ad01e0241ba8;
     });
     moleculeList = (0, $cc8c7201a9bad777$export$dad497fe1f6e27c0)(moleculeList, "moleculeList", undefined, pad, true);
     // Create reactionList.
-    level = 2;
     let reactionList = "";
     $7e68913db756e51f$var$reactions.forEach(function(reaction, id) {
         reactionList += reaction.toXML(pad, padding2);
@@ -3314,5 +3448,5 @@ window.setVibFreqs = $7e68913db756e51f$export$1950ad01e0241ba8;
 };
 
 
-export {$7e68913db756e51f$export$afc96e5ea6df45fd as setEnergy, $7e68913db756e51f$export$89b14b349130d1de as setRotConst, $7e68913db756e51f$export$1950ad01e0241ba8 as setVibFreqs};
-//# sourceMappingURL=index.8c554b16.js.map
+export {$7e68913db756e51f$export$4e634558561f5cca as setPropertyScalar, $7e68913db756e51f$export$c01f4ac2c1d26a5a as setPropertyArray};
+//# sourceMappingURL=index.8cb00589.js.map

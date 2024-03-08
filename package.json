@@ -2,7 +2,7 @@
   "name": "mxg-pwa",
   "description": "MESMER XML GUI PWA.",
   "source": "src/index.html",
-  "version": "0.2",
+  "version": "0.3",
   "license": "MIT",
   "scripts": {
     "compile": "tsc -p tsconfig.json",

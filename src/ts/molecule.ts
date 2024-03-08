@@ -4,7 +4,7 @@ import {
 
 /**
  * A class for representing an atom.
- * @param {Map<string, string>} attributes The attributes.
+ * @param attributes The attributes.
  * If there is no "id" or "elementType" key an error will be thrown.
  */
 export class Atom extends TagWithAttributes {
@@ -56,8 +56,8 @@ export class AtomArray extends NodeWithNodes {
 
     /**
      * 
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Atom[]} atoms The atoms.
+     * @param attributes The attributes.
+     * @param atoms The atoms.
      */
     constructor(attributes: Map<string, string>, atoms: Atom[]) {
         super(attributes, AtomArray.tagName);
@@ -69,10 +69,6 @@ export class AtomArray extends NodeWithNodes {
 
 /**
  * A class for representing an atomic bond - a bond beteen two atoms.
- * @param {Map<string, string>} attributes The attributes.
- * @param {Atom} atomA One atom.
- * @param {Atom} atomB Another atom.
- * @param {string} order The order of the bond.
  */
 export class Bond extends TagWithAttributes {
 
@@ -143,7 +139,7 @@ export class PropertyArray extends NumberArrayNode {
     /**
      * @param attributes The attributes.
      * @param values The values.
-     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
      */
     constructor(attributes: Map<string, string>, values: number[], delimiter?: string) {
         super(attributes, PropertyArray.tagName, values, delimiter);
@@ -161,8 +157,8 @@ export class Property extends NodeWithNodes {
     static readonly tagName: string = "property";
 
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PropertyScalar | PropertyArray} property The property.
+     * @param attributes The attributes.
+     * @param property The property.
      */
     constructor(attributes: Map<string, string>, property: PropertyScalar | PropertyArray) {
         super(attributes, Property.tagName);
@@ -193,8 +189,8 @@ export class PropertyList extends NodeWithNodes {
     properties: Map<string, Property>;
 
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Map<string, Property>} properties A Map of properties with keys as dictRefs.
+     * @param attributes The attributes.
+     * @param properties A Map of properties with keys as dictRefs.
      */
     constructor(attributes: Map<string, string>, properties: Map<string, Property>) {
         super(attributes, PropertyList.tagName);
@@ -235,8 +231,8 @@ export class EnergyTransferModel extends NodeWithNodes {
     static readonly tagName: string = "me:energyTransferModel";
 
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {DeltaEDown[]} deltaEDowns The DeltaEDowns.
+     * @param attributes The attributes.
+     * @param deltaEDowns The DeltaEDowns.
      */
     constructor(attributes: Map<string, string>, deltaEDowns: DeltaEDown[]) {
         super(attributes, EnergyTransferModel.tagName);
@@ -256,6 +252,9 @@ export class DOSCMethod extends TagWithAttributes {
      */
     static readonly tagName: string = "me:DOSCMethod";
 
+    /**
+     * @param attributes The attributes.
+     */
     constructor(attributes: Map<string, string>) {
         super(attributes, DOSCMethod.tagName);
     }
@@ -343,9 +342,9 @@ export class ExtraDOSCMethod extends NodeWithNodes {
 
     /**
      * @param attributes The attributes.
-     * @param {BondRef | undefined} bondRef The bondRef.
-     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
-     * @param {Periodicity | undefined} periodicity The Periodicity.
+     * @param bondRef The bondRef.
+     * @param hinderedRotorPotential The HinderedRotorPotential.
+     * @param periodicity The Periodicity.
      */
     constructor(attributes: Map<string, string>, bondRef: BondRef | undefined,
         hinderedRotorPotential: HinderedRotorPotential | undefined,
@@ -401,12 +400,12 @@ export class Molecule extends NodeWithNodes {
     /**
      * The rotation constants dictRef.
      */
-    static readonly rotConstsDictRef: string = 'me:rotConsts';
+    //static readonly rotConstsDictRef: string = 'me:rotConsts';
 
     /**
      * The vibration frequencies dictRef.
      */
-    static readonly vibFreqsDictRef: string = 'me:vibFreqs';
+    //static readonly vibFreqsDictRef: string = 'me:vibFreqs';
 
     /**
      * The index.
@@ -418,15 +417,15 @@ export class Molecule extends NodeWithNodes {
 
     /**
      * Create a molecule.
-     * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
+     * @param attributes The attributes. If there is no "id" key an error will be thrown.
      * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param {Atom | AtomArray | undefined} atoms The atoms.
-     * @param {Bond | undefined} bonds The bonds.
-     * @param {PropertyList | Property | undefined} properties The properties.
-     * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
-     * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
-     * @param {ExtraDOSCMethod | undefined} extraDOSCMethod The extra method for calculating density of states.
-     * @param {ReservoirSize | undefined} reservoirSize The reservoir size.
+     * @param atoms The atoms.
+     * @param bonds The bonds.
+     * @param properties The properties.
+     * @param energyTransferModel The energy transfer model.
+     * @param dOSCMethod The method for calculating density of states.
+     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param reservoirSize The reservoir size.
      */
     constructor(
         attributes: Map<string, string>,
@@ -698,17 +697,21 @@ export class Molecule extends NodeWithNodes {
      * Set the RotationConstants of the molecule.
      * @param rotConsts The rotation constants of the molecule.
      */
+    /*
     setRotConsts(rotConsts: number[]): void {
         this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
     }
+    */
 
     /**
      * Set the vibration frequencies of the molecule.
      * @param vibFreqs The vibration frequencies of the molecule.
      */
+    /*
     setVibFreqs(vibFreqs: number[]): void {
         this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
     }
+    */
 
     /**
      * Get a property array.
@@ -742,17 +745,21 @@ export class Molecule extends NodeWithNodes {
      * Get the RotationConstants of the molecule.
      * @returns The RotationConstants of the molecule.
      */
+    /*
     getRotConsts(): number[] | undefined {
         return this.getPropertyArray(Molecule.rotConstsDictRef);
     }
+    */
 
     /**
      * Get the vibration frequencies of the molecule.
      * @returns The vibration frequencies of the molecule.
      */
+    /*
     getVibFreqs(): number[] | undefined {
         return this.getPropertyArray(Molecule.vibFreqsDictRef);
     }
+    */
 }
 
 /**
@@ -766,10 +773,10 @@ export class MoleculeRef extends NodeWithNodes {
     molecules: Map<string, Molecule>
 
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} tagName The tag name.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
+     * @param attributes The attributes.
+     * @param tagName The tag name.
+     * @param molecule The molecule (an abbreviated molecule).
+     * @param molecules The molecules.
      */
     constructor(attributes: Map<string, string>, tagName: string, molecule: TagWithAttributes,
         molecules: Map<string, Molecule>) {

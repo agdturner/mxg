@@ -584,8 +584,27 @@ parcelHelpers.defineInteropFlag(exports);
 /**
  * Set the energy of a molecule when the energy input value is changed.
  * @param input The input element. 
- */ parcelHelpers.export(exports, "setEnergy", ()=>setEnergy);
-/**
+ */ /*
+export function setEnergy(input: HTMLInputElement): void {
+    let id_energy: string = input.id;
+    let moleculeID: string = id_energy.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
+    if (molecule) {
+        if (isNumeric(input.value)) {
+            let inputNumber: number = parseFloat(input.value);
+            molecule.setEnergy(inputNumber);
+            console.log("Energy of " + moleculeID + " set to " + inputNumber);
+        } else {
+            alert("Energy input for " + moleculeID + " is not numeric, resetting...");
+            let inputElement = document.getElementById(id_energy) as HTMLInputElement;
+            inputElement.value = molecule.getEnergy().toString();
+        }
+        //console.log("molecule=" + molecule);
+    }
+}
+
+(window as any).setEnergy = setEnergy;
+*/ /**
  * Set a molecule property scalar when the input value is changed.
  * @param dictRef The dictionary reference of the property.
  * @param input The input element.
@@ -593,12 +612,88 @@ parcelHelpers.defineInteropFlag(exports);
 /**
  * Set the rotation constants of a molecule when the rotation constants input value is changed.
  * @param input The input element. 
- */ parcelHelpers.export(exports, "setRotConst", ()=>setRotConst);
-/**
+ */ /*
+export function setRotConst(input: HTMLInputElement): void {
+    let id_rotConst: string = input.id;
+    let moleculeID: string = id_rotConst.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
+    if (molecule) {
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
+        let rotConsts: number[] | undefined = molecule.getRotConsts();
+        //console.log("rotConsts=" + rotConsts);
+        if (rotConsts) {
+            let nRotConsts = rotConsts.length;
+            let success: boolean = true;
+            values.forEach(function (value) {
+                if (!isNumeric(value)) {
+                    success = false;
+                }
+            });
+            if (!success) {
+                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
+                return;
+            }
+            if (values.length == nRotConsts) {
+                let rotConstsNew: number[] = inputString.split(" ").map(Number);
+                molecule.setRotConsts(rotConstsNew);
+                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
+                //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
+                let inputElement = document.getElementById(id_rotConst) as HTMLInputElement;
+                inputElement.value = arrayToString(rotConsts as number[], " ");
+            }
+        }
+    }
+}
+
+(window as any).setRotConst = setRotConst;
+*/ /**
  * Set the vibration frequencies of a molecule when the vibration frequencies input value is changed.
  * @param input The input element. 
- */ parcelHelpers.export(exports, "setVibFreqs", ()=>setVibFreqs);
-/**
+ */ /*
+export function setVibFreqs(input: HTMLInputElement): void {
+    let id_vibFreqs: string = input.id;
+    let moleculeID: string = id_vibFreqs.split("_")[0];
+    let molecule: Molecule | undefined = molecules.get(moleculeID);
+    if (molecule) {
+        let inputString: string = input.value;
+        let values: string[] = inputString.split(/\s+/);
+        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
+        //console.log("vibFreqs=" + vibFreqs);
+        if (vibFreqs) {
+            let nVibFreqs = vibFreqs.length;
+            let success: boolean = true;
+            values.forEach(function (value) {
+                if (!isNumeric(value)) {
+                    success = false;
+                }
+            });
+            if (!success) {
+                alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
+                let input = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                input.value = arrayToString(vibFreqs as number[], " ");
+                return;
+            }
+            if (values.length == nVibFreqs) {
+                let vibFreqsNew: number[] = inputString.split(" ").map(Number);
+                molecule.setVibFreqs(vibFreqsNew);
+                console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
+                //console.log("molecule=" + molecule);
+            } else {
+                alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
+                let input = document.getElementById(id_vibFreqs) as HTMLInputElement;
+                input.value = arrayToString(vibFreqs as number[], " ");
+            }
+        }
+    }
+}
+
+(window as any).setVibFreqs = setVibFreqs;
+*/ /**
  * Set a molecule property array when the input value is changed.
  * @param dictRef The dictionary reference of the property.
  * @param input The input element.
@@ -863,56 +958,57 @@ let xml_text;
 function addEventListenersToMolecules() {
     // Add event listeners to molecules.
     molecules.forEach(function(molecule, id) {
+        /*
         // Energy input.
         let energyKey = id + "_energy";
-        let energyInput = document.getElementById(energyKey);
+        let energyInput = document.getElementById(energyKey) as HTMLInputElement;
         if (energyInput) {
-            (0, _htmlJs.resizeInput)(energyInput);
-            energyInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(energyInput);
+            energyInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
                 molecule.setEnergy(parseFloat(inputValue));
                 console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                (0, _htmlJs.resizeInput)(energyInput);
+                resizeInput(energyInput);
             });
         }
         // RotConsts input.
         let rotConstsKey = id + "_rotConsts";
-        let rotConstsInput = document.getElementById(rotConstsKey);
+        let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
         if (rotConstsInput) {
-            (0, _htmlJs.resizeInput)(rotConstsInput);
-            rotConstsInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(rotConstsInput);
+            rotConstsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let rotConsts = [];
-                let values = inputValue.split(/\s+/);
-                values.forEach(function(value) {
+                let rotConsts: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                values.forEach(function (value) {
                     rotConsts.push(parseFloat(value));
                 });
                 molecule.setRotConsts(rotConsts);
                 console.log("Set rotConsts of " + id + " to " + inputValue);
-                (0, _htmlJs.resizeInput)(rotConstsInput);
+                resizeInput(rotConstsInput);
             });
         }
         // VibFreqs input.
         let vibFreqsKey = id + "_vibFreqs";
-        let vibFreqsInput = document.getElementById(vibFreqsKey);
+        let vibFreqsInput = document.getElementById(vibFreqsKey) as HTMLInputElement;
         if (vibFreqsInput) {
-            (0, _htmlJs.resizeInput)(vibFreqsInput);
-            vibFreqsInput.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
+            resizeInput(vibFreqsInput);
+            vibFreqsInput.addEventListener('change', (event) => {
+                let eventTarget = event.target as HTMLInputElement;
                 let inputValue = eventTarget.value;
-                let vibFreqs = [];
-                let values = inputValue.split(/\s+/);
-                values.forEach(function(value) {
+                let vibFreqs: number[] = [];
+                let values: string[] = inputValue.split(/\s+/);
+                values.forEach(function (value) {
                     vibFreqs.push(parseFloat(value));
                 });
                 molecule.setVibFreqs(vibFreqs);
                 console.log("Set vibFreqs of " + id + " to " + inputValue);
-                (0, _htmlJs.resizeInput)(vibFreqsInput);
+                resizeInput(vibFreqsInput);
             });
         }
-        let properties = molecule.getAttributesAsString();
+        */ let properties = molecule.getAttributesAsString();
         let props = molecule.getProperties();
         if (props != undefined) {
             if (props instanceof (0, _moleculeJs.PropertyList)) {
@@ -934,6 +1030,10 @@ function addEventListenersToMolecules() {
                                 if (units != undefined) console.log("Set " + key0 + " of " + id + " to " + inputValue + " " + units);
                                 else console.log("Set " + key0 + " of " + id + " to " + inputValue);
                                 (0, _htmlJs.resizeInput)(input);
+                                if (key0 === (0, _moleculeJs.Molecule).energyDictRef) {
+                                    console.log("update display diagram");
+                                    displayReactionsDiagram();
+                                } else console.log("key0 " + key0 + " does not match " + (0, _moleculeJs.Molecule).energyDictRef);
                             });
                         }
                     } else {
@@ -1498,14 +1598,12 @@ let control;
 }
 /**
  * Create a diagram.
- * @param {Map<string, Molecule>} molecules The molecules.
- * @param {Map<string, Reaction>} reactions The reactions.
- * @param {boolean} dark True for dark mode.
- * @returns {HTMLCanvasElement} The diagram.
- * @param {string} font The font to use.
- * @param {number} lw The line width of reactants, transition states and products.
- * @param {string} lwc The line width color to use.
- */ function drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc) {
+ * @param canvas The canvas.
+ * @param dark True for dark mode.
+ * @param font The font to use.
+ * @param lw The line width of reactants, transition states and products.
+ * @param lwc The line width color to use.
+ */ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
     console.log("drawReactionDiagram");
     // TODO: Set styles depending on dark/light mode settings of users browser and not hard code.
     //let white = "white";
@@ -2000,7 +2098,7 @@ let control;
         let lwc = 2;
         if (canvas != null) {
             canvas.style.display = "block";
-            drawReactionDiagram(canvas, molecules, reactions, dark, font, lw, lwc);
+            drawReactionDiagram(canvas, dark, font, lw, lwc);
         }
     }
 }
@@ -2099,23 +2197,6 @@ let control;
     // Set the table.
     if (control_table_element != null) control_table_element.innerHTML = table;
 }
-function setEnergy(input) {
-    let id_energy = input.id;
-    let moleculeID = id_energy.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule) {
-        if ((0, _utilJs.isNumeric)(input.value)) {
-            let inputNumber = parseFloat(input.value);
-            molecule.setEnergy(inputNumber);
-            console.log("Energy of " + moleculeID + " set to " + inputNumber);
-        } else {
-            alert("Energy input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(id_energy);
-            inputElement.value = molecule.getEnergy().toString();
-        }
-    }
-}
-window.setEnergy = setEnergy;
 function setPropertyScalar(dictRef, input) {
     let inputId = input.id;
     let moleculeID = inputId.split("_")[0];
@@ -2134,76 +2215,6 @@ function setPropertyScalar(dictRef, input) {
     }
 }
 window.setProperty = setPropertyScalar;
-function setRotConst(input) {
-    let id_rotConst = input.id;
-    let moleculeID = id_rotConst.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let rotConsts = molecule.getRotConsts();
-        //console.log("rotConsts=" + rotConsts);
-        if (rotConsts) {
-            let nRotConsts = rotConsts.length;
-            let success = true;
-            values.forEach(function(value) {
-                if (!(0, _utilJs.isNumeric)(value)) success = false;
-            });
-            if (!success) {
-                alert("A rotation constant for " + moleculeID + " is not a number, resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
-                return;
-            }
-            if (values.length == nRotConsts) {
-                let rotConstsNew = inputString.split(" ").map(Number);
-                molecule.setRotConsts(rotConstsNew);
-                console.log("Rotation constants of " + moleculeID + " changed from: " + rotConsts + " to: " + rotConstsNew);
-            //console.log("molecule=" + molecule);
-            } else {
-                alert("Expecting " + nRotConsts + " rotation constants for " + moleculeID + " but finding " + values.length + " resetting...");
-                let inputElement = document.getElementById(id_rotConst);
-                inputElement.value = (0, _utilJs.arrayToString)(rotConsts, " ");
-            }
-        }
-    }
-}
-window.setRotConst = setRotConst;
-function setVibFreqs(input) {
-    let id_vibFreqs = input.id;
-    let moleculeID = id_vibFreqs.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let vibFreqs = molecule.getVibFreqs();
-        //console.log("vibFreqs=" + vibFreqs);
-        if (vibFreqs) {
-            let nVibFreqs = vibFreqs.length;
-            let success = true;
-            values.forEach(function(value) {
-                if (!(0, _utilJs.isNumeric)(value)) success = false;
-            });
-            if (!success) {
-                alert("A vibration frequency for " + moleculeID + " is not a number, resetting...");
-                let input = document.getElementById(id_vibFreqs);
-                input.value = (0, _utilJs.arrayToString)(vibFreqs, " ");
-                return;
-            }
-            if (values.length == nVibFreqs) {
-                let vibFreqsNew = inputString.split(" ").map(Number);
-                molecule.setVibFreqs(vibFreqsNew);
-                console.log("Vibration frequencies of " + moleculeID + " changed from: " + vibFreqs + " to: " + vibFreqsNew);
-            //console.log("molecule=" + molecule);
-            } else {
-                alert("Expecting " + nVibFreqs + " vibration frequencies for " + moleculeID + " but finding " + values.length + " resetting...");
-                let input = document.getElementById(id_vibFreqs);
-                input.value = (0, _utilJs.arrayToString)(vibFreqs, " ");
-            }
-        }
-    }
-}
-window.setVibFreqs = setVibFreqs;
 function setPropertyArray(dictRef, input) {
     let inputId = input.id;
     let moleculeID = inputId.split("_")[0];
@@ -2877,7 +2888,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
  * A class for representing an atom.
- * @param {Map<string, string>} attributes The attributes.
+ * @param attributes The attributes.
  * If there is no "id" or "elementType" key an error will be thrown.
  */ parcelHelpers.export(exports, "Atom", ()=>Atom);
 /**
@@ -2885,10 +2896,6 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "AtomArray", ()=>AtomArray);
 /**
  * A class for representing an atomic bond - a bond beteen two atoms.
- * @param {Map<string, string>} attributes The attributes.
- * @param {Atom} atomA One atom.
- * @param {Atom} atomB Another atom.
- * @param {string} order The order of the bond.
  */ parcelHelpers.export(exports, "Bond", ()=>Bond);
 /**
  * A class for representing a bondArray.
@@ -2973,8 +2980,8 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * 
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Atom[]} atoms The atoms.
+     * @param attributes The attributes.
+     * @param atoms The atoms.
      */ constructor(attributes, atoms){
         super(attributes, AtomArray.tagName);
         atoms.forEach((atom)=>{
@@ -3032,7 +3039,7 @@ class PropertyArray extends (0, _xmlJs.NumberArrayNode) {
     /**
      * @param attributes The attributes.
      * @param values The values.
-     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
      */ constructor(attributes, values, delimiter){
         super(attributes, PropertyArray.tagName, values, delimiter);
     }
@@ -3044,8 +3051,8 @@ class Property extends (0, _xmlJs.NodeWithNodes) {
      */ this.tagName = "property";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PropertyScalar | PropertyArray} property The property.
+     * @param attributes The attributes.
+     * @param property The property.
      */ constructor(attributes, property){
         super(attributes, Property.tagName);
         this.nodes.set(0, property);
@@ -3063,8 +3070,8 @@ class PropertyList extends (0, _xmlJs.NodeWithNodes) {
      */ this.tagName = "propertyList";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Map<string, Property>} properties A Map of properties with keys as dictRefs.
+     * @param attributes The attributes.
+     * @param properties A Map of properties with keys as dictRefs.
      */ constructor(attributes, properties){
         super(attributes, PropertyList.tagName);
         this.properties = properties;
@@ -3093,8 +3100,8 @@ class EnergyTransferModel extends (0, _xmlJs.NodeWithNodes) {
      */ this.tagName = "me:energyTransferModel";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {DeltaEDown[]} deltaEDowns The DeltaEDowns.
+     * @param attributes The attributes.
+     * @param deltaEDowns The DeltaEDowns.
      */ constructor(attributes, deltaEDowns){
         super(attributes, EnergyTransferModel.tagName);
         deltaEDowns.forEach((deltaEDown)=>{
@@ -3108,7 +3115,9 @@ class DOSCMethod extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "me:DOSCMethod";
     }
-    constructor(attributes){
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes){
         super(attributes, DOSCMethod.tagName);
     }
 }
@@ -3168,9 +3177,9 @@ class ExtraDOSCMethod extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     * @param {BondRef | undefined} bondRef The bondRef.
-     * @param {HinderedRotorPotential | undefined} hinderedRotorPotential The HinderedRotorPotential.
-     * @param {Periodicity | undefined} periodicity The Periodicity.
+     * @param bondRef The bondRef.
+     * @param hinderedRotorPotential The HinderedRotorPotential.
+     * @param periodicity The Periodicity.
      */ constructor(attributes, bondRef, hinderedRotorPotential, periodicity){
         super(attributes, ExtraDOSCMethod.tagName);
         if (bondRef) this.nodes.set(this.nodes.size, bondRef);
@@ -3202,29 +3211,25 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * The energy dictRef.
      */ this.energyDictRef = "me:ZPE";
     }
-    static{
-        /**
-     * The rotation constants dictRef.
-     */ this.rotConstsDictRef = "me:rotConsts";
-    }
-    static{
-        /**
-     * The vibration frequencies dictRef.
-     */ this.vibFreqsDictRef = "me:vibFreqs";
-    }
     /**
      * Create a molecule.
-     * @param {Map<string, string>} attributes The attributes. If there is no "id" key an error will be thrown.
+     * @param attributes The attributes. If there is no "id" key an error will be thrown.
      * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param {Atom | AtomArray | undefined} atoms The atoms.
-     * @param {Bond | undefined} bonds The bonds.
-     * @param {PropertyList | Property | undefined} properties The properties.
-     * @param {EnergyTransferModel | undefined} energyTransferModel The energy transfer model.
-     * @param {DOSCMethod | undefined} dOSCMethod The method for calculating density of states.
-     * @param {ExtraDOSCMethod | undefined} extraDOSCMethod The extra method for calculating density of states.
-     * @param {ReservoirSize | undefined} reservoirSize The reservoir size.
+     * @param atoms The atoms.
+     * @param bonds The bonds.
+     * @param properties The properties.
+     * @param energyTransferModel The energy transfer model.
+     * @param dOSCMethod The method for calculating density of states.
+     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param reservoirSize The reservoir size.
      */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, Molecule.tagName);
+        /**
+     * The rotation constants dictRef.
+     */ //static readonly rotConstsDictRef: string = 'me:rotConsts';
+        /**
+     * The vibration frequencies dictRef.
+     */ //static readonly vibFreqsDictRef: string = 'me:vibFreqs';
         /**
      * The index.
      */ this.index = new Map();
@@ -3422,16 +3427,18 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Set the RotationConstants of the molecule.
      * @param rotConsts The rotation constants of the molecule.
-     */ setRotConsts(rotConsts) {
+     */ /*
+    setRotConsts(rotConsts: number[]): void {
         this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
     }
-    /**
+    */ /**
      * Set the vibration frequencies of the molecule.
      * @param vibFreqs The vibration frequencies of the molecule.
-     */ setVibFreqs(vibFreqs) {
+     */ /*
+    setVibFreqs(vibFreqs: number[]): void {
         this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
     }
-    /**
+    */ /**
      * Get a property array.
      * @param dictRef The dictRef of the property.
      * @returns The array property.
@@ -3450,25 +3457,13 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
             } else return undefined;
         }
     }
-    /**
-     * Get the RotationConstants of the molecule.
-     * @returns The RotationConstants of the molecule.
-     */ getRotConsts() {
-        return this.getPropertyArray(Molecule.rotConstsDictRef);
-    }
-    /**
-     * Get the vibration frequencies of the molecule.
-     * @returns The vibration frequencies of the molecule.
-     */ getVibFreqs() {
-        return this.getPropertyArray(Molecule.vibFreqsDictRef);
-    }
 }
 class MoleculeRef extends (0, _xmlJs.NodeWithNodes) {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} tagName The tag name.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
+     * @param attributes The attributes.
+     * @param tagName The tag name.
+     * @param molecule The molecule (an abbreviated molecule).
+     * @param molecules The molecules.
      */ constructor(attributes, tagName, molecule, molecules){
         super(attributes, tagName);
         this.nodes.set(0, molecule);
