@@ -1,8 +1,8 @@
-# MESMER XML GUI (MXG)
+# [MESMER XML GUI (MXG)](https://github.com/agdturner/mxg-pwa)
 
 ## Introduction
 
-[MESMER XML GUI (MXG)](https://github.com/agdturner/mxg-pwa) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and should be ongoing until the end of April 2024 when hopefully a supported version of an Web application will be available for community use. 
+MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and should be ongoing until the end of April 2024 when hopefully a supported version of an Web application will be available for community use. 
 
 Different versions of MXG can be used online and each can be installed onto devices as a Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
