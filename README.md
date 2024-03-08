@@ -1,4 +1,4 @@
-# MESMER XML GUI (MXG)
+# [MESMER XML GUI (MXG)](https://github.com/agdturner/mxg-pwa)
 
 ## Introduction
 
