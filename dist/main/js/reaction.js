@@ -1,238 +1,207 @@
-import {
-    Molecule, ZPE
-} from './molecule.js';
-
-import {
-    TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode
-} from './xml.js';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Reaction = exports.ExcessReactantConc = exports.Tunneling = exports.MesmerILT = exports.MCRCMethod = exports.NInfinity = exports.TInfinity = exports.ActivationEnergy = exports.PreExponential = exports.TransitionState = exports.Product = exports.Reactant = exports.ReactionMolecule = void 0;
+const xml_js_1 = require("./xml.js");
 /**
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
  */
-export class ReactionMolecule extends TagWithAttributes {
-
+class ReactionMolecule extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "molecule";
-
+    static tagName = "molecule";
     /**
      * The ref attribute.
      */
-    ref: string;
-
+    ref;
     /**
      * @param attributes The attributes.
      * @param tagName The tag name.
      * @param molecule The molecule (an abbreviated molecule).
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, ReactionMolecule.tagName);
-        this.ref = attributes.get("ref") as string;
+        this.ref = attributes.get("ref");
     }
 }
-
+exports.ReactionMolecule = ReactionMolecule;
 /**
  * A molecule that reacts in a reaction.
  * In the XML, a "reactant" node is a child of the "reaction" node and has a child "molecule" node.
  */
-export class Reactant extends NodeWithNodes {
-
+class Reactant extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "reactant";
-
+    static tagName = "reactant";
     /**
      * @param attributes The attributes.
      * @param molecule The reaction molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: ReactionMolecule) {
+    constructor(attributes, molecule) {
         super(attributes, Reactant.tagName);
         this.addNode(molecule);
     }
-
     /**
      * @returns The molecule.
      */
-    getMolecule(): ReactionMolecule {
-        return this.nodes.get(0) as ReactionMolecule;
+    getMolecule() {
+        return this.nodes.get(0);
     }
 }
-
+exports.Reactant = Reactant;
 /**
  * A molecule produced in a reaction.
  * In the XML, a "product" node is a child of the "reaction" node and has a child "molecule" node.
  */
-export class Product extends NodeWithNodes {
-
+class Product extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "product";
-
+    static tagName = "product";
     /**
      * @param attributes The attributes.
      * @param molecule The reaction molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: ReactionMolecule) {
+    constructor(attributes, molecule) {
         super(attributes, Product.tagName);
         this.addNode(molecule);
     }
-
     /**
      * @returns The molecule.
      */
-    getMolecule(): ReactionMolecule {
-        return this.nodes.get(0) as ReactionMolecule;
+    getMolecule() {
+        return this.nodes.get(0);
     }
-
 }
-
+exports.Product = Product;
 /**
  * A molecule that is a transition state in a reaction.
  * In the XML, a "me:transitionState" node is a child of the "reaction" node and has a child "molecule" node.
  */
-export class TransitionState extends NodeWithNodes {
-
+class TransitionState extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:transitionState";
-
+    static tagName = "me:transitionState";
     /**
      * @param attributes The attributes.
      * @param molecule The reaction molecule.
      */
-    constructor(attributes: Map<string, string>, molecule: ReactionMolecule) {
+    constructor(attributes, molecule) {
         super(attributes, TransitionState.tagName);
         this.addNode(molecule);
     }
-
     /**
      * @returns The molecule.
      */
-    getMolecule(): ReactionMolecule {
-        return this.nodes.get(0) as ReactionMolecule;
+    getMolecule() {
+        return this.nodes.get(0);
     }
 }
-
+exports.TransitionState = TransitionState;
 /**
  * In the XML, a "me:preExponential" node is a child of a "me:MCRCMethod" node.
  */
-export class PreExponential extends NumberNode {
-
+class PreExponential extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:preExponential";
-
+    static tagName = "me:preExponential";
     /**
-     * @param attributes The attributes. 
+     * @param attributes The attributes.
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, PreExponential.tagName, value);
     }
 }
-
+exports.PreExponential = PreExponential;
 /**
  * In the XML, a "me:activationEnergy" node is a child of a "me:MCRCMethod" node.
  */
-export class ActivationEnergy extends NumberNode {
-
+class ActivationEnergy extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:activationEnergy";
-
+    static tagName = "me:activationEnergy";
     /**
-     * @param attributes The attributes. 
+     * @param attributes The attributes.
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, ActivationEnergy.tagName, value);
     }
 }
-
+exports.ActivationEnergy = ActivationEnergy;
 /**
  * In the XML, a "me:TInfinity" node is a child of a "me:MCRCMethod" node.
  */
-export class TInfinity extends NumberNode {
-
+class TInfinity extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:TInfinity";
-
+    static tagName = "me:TInfinity";
     /**
-     * @param attributes The attributes. 
+     * @param attributes The attributes.
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, TInfinity.tagName, value);
     }
 }
-
+exports.TInfinity = TInfinity;
 /**
  * In the XML, a "me:nInfinity" node is a child of a "me:MCRCMethod" node.
  */
-export class NInfinity extends NumberNode {
-
+class NInfinity extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:nInfinity";
-
+    static tagName = "me:nInfinity";
     /**
-     * @param attributes The attributes. 
+     * @param attributes The attributes.
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes, value) {
         super(attributes, NInfinity.tagName, value);
     }
 }
-
+exports.NInfinity = NInfinity;
 /**
  * Extended classes indicate how microcanonical rate constant is to be treated.
  * In the XML, a "me:MCRCMethod" node is a child of a "reaction" node.
  */
-export class MCRCMethod extends NodeWithNodes {
-
+class MCRCMethod extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:MCRCMethod";
-
+    static tagName = "me:MCRCMethod";
     /**
      * @param {Map<string, string>} attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, MCRCMethod.tagName);
     }
 }
-
+exports.MCRCMethod = MCRCMethod;
 /**
  * The Inverse Laplace Transform (ILT) type of microcanonical rate constant.
  */
-export class MesmerILT extends MCRCMethod {
-
+class MesmerILT extends MCRCMethod {
     /**
      * The xsiType.
      */
-    static readonly xsiType: string = "me:MesmerILT";
-
+    static xsiType = "me:MesmerILT";
     /**
      * The tag name.
      */
-    static readonly xsiType2: string = "MesmerILT";
-
+    static xsiType2 = "MesmerILT";
     /**
-     * The index for the nodes. 
+     * The index for the nodes.
      */
-    index: Map<string, number>;
-
+    index;
     /**
      * Should any parameters be specified as being optional?
      * @param attributes The attributes.
@@ -241,10 +210,9 @@ export class MesmerILT extends MCRCMethod {
      * @param tInfinity The TInfinity (optional).
      * @param nInfinity The nInfinity (optional).
      */
-    constructor(attributes: Map<string, string>, preExponential?: PreExponential,
-        activationEnergy?: ActivationEnergy, tInfinity?: TInfinity, nInfinity?: NInfinity) {
+    constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity) {
         super(attributes);
-        this.index = new Map<string, number>();
+        this.index = new Map();
         if (preExponential != undefined) {
             this.index.set(PreExponential.tagName, this.index.size);
             this.addNode(preExponential);
@@ -262,126 +230,112 @@ export class MesmerILT extends MCRCMethod {
             this.addNode(nInfinity);
         }
     }
-
     /**
      * @returns The pre-exponential factor or undefined if it does not exist.
      */
-    getPreExponential(): PreExponential | undefined {
-        let i: number | undefined = this.index.get(PreExponential.tagName);
+    getPreExponential() {
+        let i = this.index.get(PreExponential.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as PreExponential;
+        return this.nodes.get(i);
     }
-
     /**
      * @returns The activation energy or undefined if it does not exist.
      */
-    getActivationEnergy(): ActivationEnergy | undefined {
-        let i: number | undefined = this.index.get(ActivationEnergy.tagName);
+    getActivationEnergy() {
+        let i = this.index.get(ActivationEnergy.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as ActivationEnergy;
+        return this.nodes.get(i);
     }
-
     /**
      * @returns The TInfinity or undefined if it does not exist.
      */
-    getTInfinity(): TInfinity | undefined {
-        let i: number | undefined = this.index.get(TInfinity.tagName);
+    getTInfinity() {
+        let i = this.index.get(TInfinity.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as TInfinity;
+        return this.nodes.get(i);
     }
-
     /**
      * @returns The NInfinity or undefined if it does not exist.
      */
-    getNInfinity(): NInfinity | undefined {
-        let i: number | undefined = this.index.get(NInfinity.tagName);
+    getNInfinity() {
+        let i = this.index.get(NInfinity.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i) as NInfinity;
+        return this.nodes.get(i);
     }
 }
-
+exports.MesmerILT = MesmerILT;
 /**
  * In the XML, the "me:tunneling" node is a child of a "reaction" node.
  */
-export class Tunneling extends TagWithAttributes {
-
+class Tunneling extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:tunneling";
-
+    static tagName = "me:tunneling";
     /**
      * @param {Map<string, string>} attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes) {
         super(attributes, Tunneling.tagName);
     }
 }
-
+exports.Tunneling = Tunneling;
 /**
  * In the XML, the "me:excessReactantConc" node is a child of a "reaction" node.
  */
-export class ExcessReactantConc extends NumberNode {
-
+class ExcessReactantConc extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:excessReactantConc";
-
+    static tagName = "me:excessReactantConc";
     /**
-     * @param attributes The attributes. 
+     * @param attributes The attributes.
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes, value) {
         super(attributes, ExcessReactantConc.tagName, value);
     }
 }
-
+exports.ExcessReactantConc = ExcessReactantConc;
 /**
  * A class for representing a reaction.
  */
-export class Reaction extends NodeWithNodes {
-
+class Reaction extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
-    static readonly tagName: string = "reaction";
-
+    static tagName = "reaction";
     /**
      * The index for the nodes.
      * The key is the type of node.
-     * The value is the index of the node in the nodes array or if there are multiple nodes of this type, 
+     * The value is the index of the node in the nodes array or if there are multiple nodes of this type,
      * the value is a Map where the key of the map is the dictRef of the Node and the value is the respective node index for that specific thing.
      */
-    index: Map<string, number | Map<string, number>>;
-
+    index;
     /**
      * The reactants index.
      * The key is the ref of the reactant.
      * The value is the index of the reactant in the nodes array.
      */
-    reactantsIndex: Map<string, number>;
-
+    reactantsIndex;
     /**
      * The products index.
      * The key is the ref of the product.
      * The value is the index of the product in the nodes array.
      */
-    productsIndex: Map<string, number>;
-
+    productsIndex;
     /**
      * The id of the reaction.
      */
-    id: string;
-
+    id;
     /**
      * @param attributes The attributes.
      * @param id The id of the reaction.
@@ -392,10 +346,7 @@ export class Reaction extends NodeWithNodes {
      * @param mCRCMethod The MCRCMethod (optional).
      * @param excessReactantConc The excess reactant concentration (optional).
      */
-    constructor(attributes: Map<string, string>, id: string,
-        reactants: Reactant[], products: Product[], tunneling?: Tunneling,
-        transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
-        excessReactantConc?: ExcessReactantConc) {
+    constructor(attributes, id, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
         this.id = id;
@@ -430,192 +381,186 @@ export class Reaction extends NodeWithNodes {
             this.addNode(excessReactantConc);
         }
     }
-
     /**
      * Add a node to the index.
      */
-    addToIndex(tagName: string, node: NodeWithNodes): void {
-        let v: Map<string, number> | number | undefined = this.index.get(tagName);
+    addToIndex(tagName, node) {
+        let v = this.index.get(tagName);
         if (v == undefined) {
             this.index.set(tagName, this.nodes.size);
-        } else if (v instanceof Map) {
-            (v as Map<string, number>).set(node.tagName, this.nodes.size);
-        } else {
-            let map: Map<string, number> = new Map<string, number>();
-            map.set((this.nodes.get(v) as ReactionMolecule).ref, v as number);
+        }
+        else if (v instanceof Map) {
+            v.set(node.tagName, this.nodes.size);
+        }
+        else {
+            let map = new Map();
+            map.set(this.nodes.get(v).ref, v);
             map.set(node.tagName, this.nodes.size);
             this.index.set(tagName, map);
         }
     }
-
     /**
      * @returns The reactants.
      */
-    getReactants(): Reactant[] {
-        let i: Map<string, number> | number | undefined = this.index.get(Reactant.tagName);
+    getReactants() {
+        let i = this.index.get(Reactant.tagName);
         if (i == undefined) {
             return [];
         }
         if (i instanceof Map) {
-            return Array.from(i.values()).map(index => this.nodes.get(index) as Reactant);
-        } else {
-            return [this.nodes.get(i) as Reactant];
+            return Array.from(i.values()).map(index => this.nodes.get(index));
+        }
+        else {
+            return [this.nodes.get(i)];
         }
     }
-
     /**
      * @returns A particular Reactant.
      * @param ref The ref of the reactant to return.
      * @returns The reactant at the given index.
      */
-    getReactant(ref: string): Reactant {
-        let index: number | undefined = this.reactantsIndex.get(ref);
+    getReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
         if (index == undefined) {
             throw new Error(`Reactant with ref ${ref} not found`);
         }
-        return this.nodes.get(index) as Reactant;
+        return this.nodes.get(index);
     }
-
     /**
      * @returns The products.
      */
-    getProducts(): Product[] {
-        let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
+    getProducts() {
+        let i = this.index.get(Product.tagName);
         if (i == undefined) {
             return [];
         }
         if (i instanceof Map) {
-            return Array.from(i.values()).map(index => this.nodes.get(index) as Product);
-        } else {
-            return [this.nodes.get(i) as Product];
+            return Array.from(i.values()).map(index => this.nodes.get(index));
+        }
+        else {
+            return [this.nodes.get(i)];
         }
     }
-
     /**
      * @returns A particular Product.
      * @param ref The ref of the product to return.
      * @returns The product at the given index.
      */
-    getProduct(ref: string): Product {
-        let index: number | undefined = this.productsIndex.get(ref);
+    getProduct(ref) {
+        let index = this.productsIndex.get(ref);
         if (index == undefined) {
             throw new Error(`Product with ref ${ref} not found`);
         }
-        return this.nodes.get(index) as Product;
+        return this.nodes.get(index);
     }
-
     /**
      * @returns The tunneling node or undefined if it does not exist.
      */
-    getTunneling(): Tunneling | undefined {
-        let i: Map<string, number> | number | undefined = this.index.get(Tunneling.tagName);
+    getTunneling() {
+        let i = this.index.get(Tunneling.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i as number) as Tunneling;
+        return this.nodes.get(i);
     }
-
     /**
      * Set the tunneling node or create it if it is undefined.
      */
-    setTunneling(tunneling: Tunneling): void {
+    setTunneling(tunneling) {
         let i = this.index.get(Tunneling.tagName);
         if (i == undefined) {
             this.index.set(Tunneling.tagName, this.nodes.size);
             this.addNode(tunneling);
-        } else {
+        }
+        else {
             if (i instanceof Map) {
                 throw new Error("Tunneling is a map and it is assumed there would be only 1!");
-            } else {
+            }
+            else {
                 this.nodes.set(i, tunneling);
             }
         }
     }
-
     /**
      * @returns The transition states.
      */
-    getTransitionStates(): TransitionState[] {
-        let i: Map<string, number> | number | undefined = this.index.get(TransitionState.tagName);
+    getTransitionStates() {
+        let i = this.index.get(TransitionState.tagName);
         if (i == undefined) {
             return [];
         }
         if (i instanceof Map) {
-            return Array.from(i.values()).map(index => this.nodes.get(index) as TransitionState);
-        } else {
-            return [this.nodes.get(i) as TransitionState];
+            return Array.from(i.values()).map(index => this.nodes.get(index));
+        }
+        else {
+            return [this.nodes.get(i)];
         }
     }
-
     /**
      * @returns The MCRCMethod node or undefined if it does not exist.
      */
-    getMCRCMethod(): MCRCMethod | undefined {
-        let i: Map<string, number> | number | undefined = this.index.get(MCRCMethod.tagName);
+    getMCRCMethod() {
+        let i = this.index.get(MCRCMethod.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i as number) as MCRCMethod;
+        return this.nodes.get(i);
     }
-
     /**
      * Set the MCRCMethod node or create it if it is undefined.
      */
-    setMCRCMethod(mCRCMethod: MCRCMethod): void {
+    setMCRCMethod(mCRCMethod) {
         let i = this.index.get(MCRCMethod.tagName);
         if (i == undefined) {
             this.index.set(MCRCMethod.tagName, this.nodes.size);
             this.addNode(mCRCMethod);
-        } else {
+        }
+        else {
             if (i instanceof Map) {
                 throw new Error("MCRCMethod is a map and it is assumed there would be only 1!");
-            } else {
+            }
+            else {
                 this.nodes.set(i, mCRCMethod);
             }
         }
     }
-
     /**
      * @returns The excess reactant concentration or undefined if it does not exist.
      */
-    getExcessReactantConc(): ExcessReactantConc | undefined {
-        let i: Map<string, number> | number | undefined = this.index.get(ExcessReactantConc.tagName);
+    getExcessReactantConc() {
+        let i = this.index.get(ExcessReactantConc.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i as number) as ExcessReactantConc;
+        return this.nodes.get(i);
     }
-
     /**
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */
-    getReactantsLabel(): string {
+    getReactantsLabel() {
         return this.getReactants().map(reactant => reactant.getMolecule().ref).join(' + ');
     }
-
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */
-    getProductsLabel(): string {
+    getProductsLabel() {
         return this.getProducts().map(product => product.getMolecule().ref).join(' + ');
     }
-
     /**
      * Get the label of the reaction.
      * @returns The label of the reaction.
      */
-    getLabel(): string {
-        let label: string = this.getReactantsLabel() + ' -> ' + this.getProductsLabel();
+    getLabel() {
+        let label = this.getReactantsLabel() + ' -> ' + this.getProductsLabel();
         return label;
     }
-
     /**
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
-    getReactantsEnergy(molecules: Map<string, Molecule>): number {
+    getReactantsEnergy(molecules) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map(reactant => {
             let molecule = molecules.get(reactant.getMolecule().ref);
@@ -625,12 +570,11 @@ export class Reaction extends NodeWithNodes {
             return molecule.getEnergy();
         }).reduce((a, b) => a + b, 0);
     }
-
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(molecules: Map<string, Molecule>): number {
+    getProductsEnergy(molecules) {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map(product => {
             let molecule = molecules.get(product.getMolecule().ref);
@@ -640,27 +584,27 @@ export class Reaction extends NodeWithNodes {
             return molecule.getEnergy();
         }).reduce((a, b) => a + b, 0);
     }
-
     /**
      * @param tagName The tag name.
      * @param dictRef The dictRef.
      * @returns The node with the tag name and dictRef or undefined if it does not exist.
      */
-    get(tagName: string, dictRef: string): NodeWithNodes | TagWithAttributes | Tag | undefined {
+    get(tagName, dictRef) {
         if (this.index.has(tagName)) {
-            let i: number | Map<string, number> | undefined = this.index.get(tagName);
+            let i = this.index.get(tagName);
             if (i != undefined) {
                 if (i instanceof Map) {
-                    let nodeIndex: number | undefined = i.get(dictRef);
+                    let nodeIndex = i.get(dictRef);
                     if (nodeIndex != undefined) {
                         return this.nodes.get(nodeIndex);
                     }
-                } else {
+                }
+                else {
                     return this.nodes.get(i);
                 }
             }
         }
     }
-
-
 }
+exports.Reaction = Reaction;
+//# sourceMappingURL=reaction.js.map

@@ -28,7 +28,7 @@ function $134d19e749bf0414$export$736cc24a423eb64d(set, delimiter) {
 }
 function $134d19e749bf0414$export$8cfbaad830aa9e0a(s) {
     let r = [];
-    for(let i = 0; i < s.length; i++)r.push(parseFloat(s[i]));
+    for(let i = 0; i < s.length; i++)if ($134d19e749bf0414$export$e90fb89750dba83f(s[i])) r.push(parseFloat(s[i]));
     return r;
 }
 function $134d19e749bf0414$export$e90fb89750dba83f(s) {
@@ -38,56 +38,123 @@ function $134d19e749bf0414$export$e90fb89750dba83f(s) {
 
 
 /**
- * Create a heading.
- * @param {string} text The text.
- * @param {number} level The level of the heading e.g. 1 for h1.
- * @param {string | undefined} id The id of the div.
- * @param {string | undefined} _class The class of the div.
- * @returns {string} Heading element.
- */ function $f0396edd0a5c99f7$export$f0263defb70013a9(text, level, id, _class) {
-    let heading = "<h" + level;
-    if (id) heading += ' id="' + id + '"';
-    if (_class) heading += ' class="' + _class + '"';
+ * Get a heading.
+ * @param text The text.
+ * @param type The heading type (i.e. 'h1', 'h2', 'h3', 'h4', 'h5', or 'h6').
+ * @param id The id of the div.
+ * @param className The class of the div.
+ */ /*
+export function getH3(text: string, type: string, id?: string, className?: string): HTMLHeadingElement {
+    //let heading: HTMLHeadingElement = document.createElement(type);
+    let heading: HTMLHeadingElement = document.createElement("h3");
+    heading.innerHTML = text;
+    if (id != undefined) {
+        heading.id = id;
+    }
+    if (className != undefined) {
+        heading.className = className;
+    }
+
     return heading + ">" + text + "</h" + level + ">";
 }
-function $f0396edd0a5c99f7$export$2adc17400f349ce6(text, id, _class, func) {
-    let button = "<button";
-    if (id) button += ' id="' + id + '"';
-    if (_class) button += ' class="' + _class + '"';
-    if (func) button += ' onclick="' + func + '"';
+*/ /**
+ * @deprecated There is no need for this method - simply use HTMLButtonElement.
+ * Create a button.
+ * @param text The text.
+ * @param id The id of the button.
+ * @param  _class The class of the button.
+ * @param  func The function called on a click.
+ * @returns The button.
+ */ /*
+export function getButton(text: string, id?: string, _class?: string, func?: string): HTMLButtonElement {
+    let button: HTMLButtonElement = new HTMLButtonElement();
+    button.innerHTML = text;
+    button.type = "button";
+    button.onclick = function () {
+
+    if (id) {
+        button += " id=\"" + id + "\"";
+    }
+    if (_class) {
+        button += " class=\"" + _class + "\"";
+    }
+    if (func) {
+        button += " onclick=\"" + func + "\"";
+    }
     return button + ">" + text + "</button>";
 }
-function $f0396edd0a5c99f7$export$3359980f21752184(headings) {
-    var th = "";
-    for(let i = 0; i < headings.length; i++)th += "<th>" + headings[i] + "</th>";
-    return $f0396edd0a5c99f7$export$b5ad96d32b19f99(th);
+*/ /**
+ * Create a table cell.
+ * @param x A cell for a table row.
+ * @param contentEditable If true then the cell is set to be editable.  
+ * @returns x wrapped in td tags.
+ */ /*
+export function getTD(x: string, contentEditable: boolean = false): HTMLTableCellElement {
+    let td: HTMLTableCellElement = document.createElement('td');
+    if (contentEditable) {
+        td.contentEditable = "true";
+    }
+    td.innerHTML = x;
+    return td;
 }
-function $f0396edd0a5c99f7$export$983f4376b55e6517(x, contentEditable = false) {
-    let r = "<td";
-    if (contentEditable) r += ' contenteditable="true"';
-    r += ">" + x + "</td>";
-    return r;
+*/ /**
+ * @deprecated There is no need for this method - simply use HTMLTableRowElement.
+ * Create a table row.
+ * @param x A row for a table.
+ * @returns x wrapped in tr tags.
+ */ /*
+export function getTR(x: string): HTMLTableRowElement {
+    let tr: HTMLTableRowElement = document.createElement('tr');
+    tr.innerHTML = x;
+    return tr;
 }
-function $f0396edd0a5c99f7$export$b5ad96d32b19f99(x) {
-    return "<tr>" + x + "</tr>\n";
+*/ /**
+ * @deprecated There is no need for this method - simply use HTMLTableElement.
+ * Create a table.
+ * @param {string} x Table rows for a table.
+ * @returns {string} x wrapped in table tags.
+ */ /*
+export function getTable(x: string): HTMLTableElement {
+    let table: HTMLTableElement = document.createElement('table');
+    table.innerHTML = x;
+    return table;
 }
-function $f0396edd0a5c99f7$export$71b553ef914ccf29(x) {
-    return "<table>" + x + "</table>";
-}
-function $f0396edd0a5c99f7$export$8b2cd46c11844202(content, buttonLabel, id, className) {
-    let div = document.createElement("div");
-    if (id) div.id = id;
-    if (className) div.className = className;
-    // Create a button.
+*/ /**
+ * Create a collapsible div.
+ * @param buttonId The id of the button.
+ * @param buttonLabel The label of the button.
+ * @param content The content that will be collapsible.
+ * @param contentDivId The id of the content div.
+ * @param contentDivClassName The class of the content div.
+ * @returns A collapsible div.
+ */ function $f0396edd0a5c99f7$export$8b2cd46c11844202(buttonId, buttonLabel, content, contentDivId, contentDivClassName) {
+    let contentDiv = document.createElement("div");
+    contentDiv.id = contentDivId;
+    if (contentDivClassName != undefined) contentDiv.className = contentDivClassName;
     let button = document.createElement("button");
+    button.id = buttonId;
     button.className = "collapsible";
-    if (buttonLabel) button.innerText = buttonLabel;
-    else button.innerText = "Show/Hide Details";
-    // Append the button and the content.
-    div.appendChild(button);
-    div.appendChild(content);
-    $f0396edd0a5c99f7$export$2883f21c1f82e07d();
-    return div;
+    button.innerText = buttonLabel;
+    contentDiv.appendChild(button);
+    contentDiv.appendChild(content);
+    return contentDiv;
+}
+function $f0396edd0a5c99f7$export$2883f21c1f82e07d() {
+    var collapsibleElements = document.getElementsByClassName("collapsible");
+    for(var i = 0; i < collapsibleElements.length; i++){
+        // Remove existing event listener
+        collapsibleElements[i].removeEventListener("click", $f0396edd0a5c99f7$var$toggleCollapsible);
+        // Add new event listener
+        collapsibleElements[i].addEventListener("click", $f0396edd0a5c99f7$var$toggleCollapsible);
+    }
+}
+/**
+ * For toggling the collapsible content.
+ */ function $f0396edd0a5c99f7$var$toggleCollapsible() {
+    this.classList.toggle("active");
+    let contentDiv = this.nextElementSibling;
+    if (contentDiv.style.display === "block") contentDiv.style.display = "none";
+    else contentDiv.style.display = "block";
 }
 function $f0396edd0a5c99f7$export$7c112ceec8941e67(type, id, func, value, labelText) {
     let input = document.createElement("input");
@@ -102,30 +169,12 @@ function $f0396edd0a5c99f7$export$7c112ceec8941e67(type, id, func, value, labelT
     let container = document.createElement("div");
     container.appendChild(label);
     container.appendChild(input);
-    //return input;
     return container;
 }
 function $f0396edd0a5c99f7$export$ff083c49da8fe0f9(attributes, tagName) {
     let s = "<" + tagName;
     if (attributes) for (let [key, value] of attributes)s += " " + key + '="' + value + '"';
     return s + " />";
-}
-function $f0396edd0a5c99f7$export$2883f21c1f82e07d() {
-    var coll = document.getElementsByClassName("collapsible");
-    for(var i = 0; i < coll.length; i++){
-        // Remove existing event listener
-        coll[i].removeEventListener("click", $f0396edd0a5c99f7$var$toggleCollapsible);
-        // Add new event listener
-        coll[i].addEventListener("click", $f0396edd0a5c99f7$var$toggleCollapsible);
-    }
-}
-/**
- * For toggling the collapsible content.
- */ function $f0396edd0a5c99f7$var$toggleCollapsible() {
-    this.classList.toggle("active");
-    var content = this.nextElementSibling;
-    if (content.style.display === "block") content.style.display = "none";
-    else content.style.display = "block";
 }
 function $f0396edd0a5c99f7$export$4b454580398e92d5(input, minSize) {
     if (minSize == undefined) minSize = 4;
@@ -155,17 +204,17 @@ function $cc8c7201a9bad777$export$13cb40e9b656ab9e(node) {
 }
 class $cc8c7201a9bad777$export$3288d34c523a1192 {
     /**
-     * @param {string} tagName The tag name.
+     * @param tagName The tag name.
      */ constructor(tagName){
         this.tagName = tagName;
     }
     /**
      * Get an XML like representation that instead of having a closing tag is a self closing tag.
      * Whilst not strictly XML, some consider self closing tags as XML.
-     * @param {string | undefined} padding The padding (optional).
+     * @param padding The padding (optional).
      * @returns A self closing tag.
      */ toXML(padding) {
-        let s = (0, $f0396edd0a5c99f7$export$ff083c49da8fe0f9)(null, this.tagName);
+        let s = (0, $f0396edd0a5c99f7$export$ff083c49da8fe0f9)(undefined, this.tagName);
         if (padding) return "\n" + padding + s;
         return s;
     }
@@ -181,7 +230,7 @@ class $cc8c7201a9bad777$export$ca4ceee82ec565dc extends $cc8c7201a9bad777$export
      * @returns A string representation.
      */ toString() {
         let r = this.tagName + `(`;
-        this.attributes.forEach((value, key)=>{
+        if (this.attributes) this.attributes.forEach((value, key)=>{
             r += `${key}(${value}), `;
         });
         return r;
@@ -201,8 +250,8 @@ class $cc8c7201a9bad777$export$ca4ceee82ec565dc extends $cc8c7201a9bad777$export
 }
 class $cc8c7201a9bad777$export$8f67221c6fb2ad09 extends $cc8c7201a9bad777$export$ca4ceee82ec565dc {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} value The value.
+     * @param attributes The attributes.
+     * @param value The value.
      */ constructor(attributes, tagName, value){
         super(attributes, tagName);
         this.value = value;
@@ -214,7 +263,7 @@ class $cc8c7201a9bad777$export$8f67221c6fb2ad09 extends $cc8c7201a9bad777$export
     }
     /**
      * Get the XML representation.
-     * @param {string} padding The padding (Optional).
+     * @param padding The padding (Optional).
      * @returns An XML representation.
      */ toXML(padding) {
         return $cc8c7201a9bad777$export$dad497fe1f6e27c0(this.value.trim(), this.tagName, this.attributes, padding, false);
@@ -222,8 +271,8 @@ class $cc8c7201a9bad777$export$8f67221c6fb2ad09 extends $cc8c7201a9bad777$export
 }
 class $cc8c7201a9bad777$export$82583fad49645fc9 extends $cc8c7201a9bad777$export$ca4ceee82ec565dc {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {number} value The value.
+     * @param attributes The attributes.
+     * @param value The value.
      */ constructor(attributes, tagName, value){
         super(attributes, tagName);
         this.value = value;
@@ -235,7 +284,7 @@ class $cc8c7201a9bad777$export$82583fad49645fc9 extends $cc8c7201a9bad777$export
     }
     /**
      * Get the XML representation.
-     * @param {string} padding The padding (Optional).
+     * @param padding The padding (Optional).
      * @returns An XML representation.
      */ toXML(padding) {
         return $cc8c7201a9bad777$export$dad497fe1f6e27c0(this.value.toString().trim(), this.tagName, this.attributes, padding, false);
@@ -243,17 +292,17 @@ class $cc8c7201a9bad777$export$82583fad49645fc9 extends $cc8c7201a9bad777$export
 }
 class $cc8c7201a9bad777$export$38d8ebe2767f8865 extends $cc8c7201a9bad777$export$ca4ceee82ec565dc {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} tagName The tag name.
-     * @param {number[]} values The values.
-     * @param {string} delimiter The delimiter of the values (Optional - default will be ",").
+     * @param attributes The attributes.
+     * @param tagName The tag name.
+     * @param values The values.
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
      */ constructor(attributes, tagName, values, delimiter){
         super(attributes, tagName);
         /**
      * The delimiter of the values.
      */ this.delimiter = ",";
         this.values = values;
-        if (delimiter) this.delimiter = delimiter;
+        if (delimiter != undefined) this.delimiter = delimiter;
     }
     /**
      * @returns A string representation.
@@ -262,13 +311,13 @@ class $cc8c7201a9bad777$export$38d8ebe2767f8865 extends $cc8c7201a9bad777$export
     }
     /**
      * Set the delimiter.
-     * @param {string} delimiter The delimiter.
+     * @param delimiter The delimiter.
      */ setDelimiter(delimiter) {
         this.delimiter = delimiter;
     }
     /**
      * Get the XML representation.
-     * @param {string} padding The padding (Optional).
+     * @param padding The padding (Optional).
      * @returns An XML representation.
      */ toXML(padding) {
         return $cc8c7201a9bad777$export$dad497fe1f6e27c0(this.values.toString().replaceAll(",", this.delimiter), this.tagName, this.attributes, padding, false);
@@ -276,8 +325,8 @@ class $cc8c7201a9bad777$export$38d8ebe2767f8865 extends $cc8c7201a9bad777$export
 }
 class $cc8c7201a9bad777$export$bd431b64ad3b0433 extends $cc8c7201a9bad777$export$ca4ceee82ec565dc {
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} tagName The tag name.
+     * @param attributes The attributes.
+     * @param tagName The tag name.
      */ constructor(attributes, tagName){
         super(attributes, tagName);
         this.nodes = new Map();
@@ -285,8 +334,10 @@ class $cc8c7201a9bad777$export$bd431b64ad3b0433 extends $cc8c7201a9bad777$export
     /**
      * Add a node.
      * @param {Tag | TagWithAttributes | NodeWithNodes} node The node.
+     * @returns The index of the node added.
      */ addNode(node) {
         this.nodes.set(this.nodes.size, node);
+        return this.nodes.size - 1;
     }
     /**
      * @returns A string representation.
@@ -299,8 +350,8 @@ class $cc8c7201a9bad777$export$bd431b64ad3b0433 extends $cc8c7201a9bad777$export
     }
     /**
      * Get the XML representation.
-     * @param {string} pad The pad (Optional).
-     * @param {string} padding The padding (Optional).
+     * @param pad The pad (Optional).
+     * @param padding The padding (Optional).
      * @returns An XML representation.
      */ toXML(pad, padding) {
         let padding1;
@@ -359,6 +410,7 @@ function $cc8c7201a9bad777$export$438fa7935f716bdf(text) {
 
 
 
+
 class $ef5b9341e5193b70$export$80986e6afdd7e0cb extends (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc) {
     static{
         /**
@@ -366,23 +418,16 @@ class $ef5b9341e5193b70$export$80986e6afdd7e0cb extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "atom";
     }
     /**
-     * @param attributes The attributes. If there is no "id" or "elementType" key an error will be thrown.
+     * @param attributes The attributes. If there is no "elementType" key an error will be thrown.
+     * If there is no "id" then "this.id" is set to the "elementType".
      */ constructor(attributes){
         super(attributes, $ef5b9341e5193b70$export$80986e6afdd7e0cb.tagName);
-        let id = attributes.get("id");
-        if (id == undefined) console.warn($ef5b9341e5193b70$export$80986e6afdd7e0cb.tagName + " id attribute is undefined");
         let elementType = attributes.get("elementType");
-        if (elementType == undefined) console.warn($ef5b9341e5193b70$export$80986e6afdd7e0cb.tagName + " elementType attribute is undefined");
-    }
-    /**
-     * @returns The id of the atom.
-     */ get id() {
-        return this.attributes.get("id");
-    }
-    /**
-     * @returns The element type of the atom.
-     */ get elementType() {
-        return this.attributes.get("elementType");
+        if (elementType == undefined) throw new Error("elementType is undefined");
+        this.elementType = elementType;
+        let id = attributes.get("id");
+        if (id == undefined) id = this.elementType;
+        this.id = id;
     }
 }
 class $ef5b9341e5193b70$export$9cea715eceba39a0 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -392,7 +437,6 @@ class $ef5b9341e5193b70$export$9cea715eceba39a0 extends (0, $cc8c7201a9bad777$ex
     */ this.tagName = "atomArray";
     }
     /**
-     * 
      * @param attributes The attributes.
      * @param atoms The atoms.
      */ constructor(attributes, atoms){
@@ -409,9 +453,12 @@ class $ef5b9341e5193b70$export$153327fc99ac0c53 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "bond";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
+     * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, $ef5b9341e5193b70$export$153327fc99ac0c53.tagName);
+        let atomRefs2 = attributes.get("atomRefs2");
+        if (atomRefs2 == undefined) throw new Error("atomRefs2 is undefined");
+        this.atomRefs2 = atomRefs2;
     }
 }
 class $ef5b9341e5193b70$export$746fba2e30d93fe6 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -421,8 +468,8 @@ class $ef5b9341e5193b70$export$746fba2e30d93fe6 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "bondArray";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {Map<string, Bond>} bonds A Map of bonds with keys as ids.
+     * @param attributes The attributes.
+     * @param bonds A Map of bonds with keys as ids.
      */ constructor(attributes, bonds){
         super(attributes, $ef5b9341e5193b70$export$746fba2e30d93fe6.tagName);
         bonds.forEach((bond)=>{
@@ -442,6 +489,22 @@ class $ef5b9341e5193b70$export$d29b345ea2be5072 extends (0, $cc8c7201a9bad777$ex
      */ constructor(attributes, value){
         super(attributes, $ef5b9341e5193b70$export$d29b345ea2be5072.tagName, value);
     }
+    /**
+     * This updates the units of the property. It does not do any unit conversion.
+     * It simply updates the specified units of a property
+     * @param units Updates the units of the property.
+     */ updateUnits(units) {
+        // Check the units are the same and if not replace the units...
+        if (units) {
+            if (this.attributes != undefined) {
+                let existingUnits = this.attributes.get("units");
+                if (existingUnits != undefined) {
+                    if (existingUnits != units) //console.log('Units are not the same, changing units...');
+                    this.attributes.set("units", units);
+                }
+            }
+        }
+    }
 }
 class $ef5b9341e5193b70$export$9f93a3fdf2490572 extends (0, $cc8c7201a9bad777$export$38d8ebe2767f8865) {
     static{
@@ -456,6 +519,22 @@ class $ef5b9341e5193b70$export$9f93a3fdf2490572 extends (0, $cc8c7201a9bad777$ex
      */ constructor(attributes, values, delimiter){
         super(attributes, $ef5b9341e5193b70$export$9f93a3fdf2490572.tagName, values, delimiter);
     }
+    /**
+     * This updates the units of the property. It does not do any unit conversion.
+     * It simply updates the specified units of a property
+     * @param units Updates the units of the property.
+     */ updateUnits(units) {
+        // Check the units are the same and if not replace the units...
+        if (units) {
+            if (this.attributes != undefined) {
+                let existingUnits = this.attributes.get("units");
+                if (existingUnits != undefined) {
+                    if (existingUnits != units) //console.log('Units are not the same, changing units...');
+                    this.attributes.set("units", units);
+                }
+            }
+        }
+    }
 }
 class $ef5b9341e5193b70$export$41b04b3a73e7216d extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     static{
@@ -468,12 +547,87 @@ class $ef5b9341e5193b70$export$41b04b3a73e7216d extends (0, $cc8c7201a9bad777$ex
      * @param property The property.
      */ constructor(attributes, property){
         super(attributes, $ef5b9341e5193b70$export$41b04b3a73e7216d.tagName);
-        this.nodes.set(0, property);
+        let dictRef = attributes.get("dictRef");
+        if (dictRef == undefined) throw new Error("dictRef is undefined");
+        this.dictRef = dictRef;
+        if (property) this.nodes.set(0, property);
     }
     /**
      * @returns The property.
      */ getProperty() {
         return this.nodes.get(0);
+    }
+    /**
+     * Set the property.
+     * @param property The property.
+     */ setProperty(property) {
+        this.nodes.set(0, property);
+    }
+}
+class $ef5b9341e5193b70$export$95174cf0748f45cd extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:ZPE";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
+    }
+}
+class $ef5b9341e5193b70$export$1288989e9be37590 extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:frequenciesScaleFactor";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
+    }
+}
+class $ef5b9341e5193b70$export$2762c8fbc03043ca extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:vibFreqs";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
+    }
+}
+class $ef5b9341e5193b70$export$984abe26ded13ee0 extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:rotConsts";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
+    }
+}
+class $ef5b9341e5193b70$export$a3772f6eb527275b extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:MW";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
+    }
+}
+class $ef5b9341e5193b70$export$22995ecd2bdeb2 extends $ef5b9341e5193b70$export$41b04b3a73e7216d {
+    static{
+        this.dictRef = "me:imFreqs";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */ constructor(attributes, property){
+        super(attributes, property);
     }
 }
 class $ef5b9341e5193b70$export$4e0d1ad7ad6a0802 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -484,13 +638,36 @@ class $ef5b9341e5193b70$export$4e0d1ad7ad6a0802 extends (0, $cc8c7201a9bad777$ex
     }
     /**
      * @param attributes The attributes.
-     * @param properties A Map of properties with keys as dictRefs.
+     * @param properties The properties (optional).
      */ constructor(attributes, properties){
         super(attributes, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName);
-        this.properties = properties;
-        properties.forEach((property)=>{
+        this.index = new Map();
+        if (properties) properties.forEach((property)=>{
             this.nodes.set(this.nodes.size, property);
+            this.index.set(property.dictRef, this.nodes.size - 1);
         });
+    }
+    /**
+     * @param dictRef The dictRef of the property.
+     * @returns The property.
+     */ getProperty(dictRef) {
+        let i = this.index.get(dictRef);
+        if (i != undefined) return this.nodes.get(i);
+        else throw new Error("Property " + dictRef + " does not exist");
+    }
+    /**
+     * Set the property.
+     * @param property The property.
+     */ setProperty(property) {
+        let i = this.index.get(property.dictRef);
+        if (i == undefined) {
+            //console.log('Property ' + property.dictRef + ' does not exist, adding...');
+            this.nodes.set(this.nodes.size, property);
+            this.index.set(property.dictRef, this.nodes.size - 1);
+        } else {
+            console.log("Property " + property.dictRef + " already exists, updating...");
+            this.nodes.set(i, property);
+        }
     }
 }
 class $ef5b9341e5193b70$export$16fc56ab40b12b45 extends (0, $cc8c7201a9bad777$export$82583fad49645fc9) {
@@ -504,6 +681,56 @@ class $ef5b9341e5193b70$export$16fc56ab40b12b45 extends (0, $cc8c7201a9bad777$ex
      * @param units The units.
      */ constructor(attributes, value){
         super(attributes, $ef5b9341e5193b70$export$16fc56ab40b12b45.tagName, value);
+    }
+    /**
+     * @returns The bath gas of the DeltaEDown.
+     */ getBathGas() {
+        if (this.attributes != undefined) return this.attributes.get("bathGas");
+    }
+    /**
+     * @param bathGas The bath gas of the DeltaEDown.
+     */ setBathGas(bathGas) {
+        if (this.attributes != undefined) this.attributes.set("bathGas", bathGas);
+    }
+    /**
+     * @returns The units of the DeltaEDown.
+     */ getUnits() {
+        if (this.attributes != undefined) return this.attributes.get("units");
+    }
+    /**
+     * @returns The lower of the DeltaEDown.
+     */ getLower() {
+        if (this.attributes != undefined) return parseFloat((0, $134d19e749bf0414$export$3988ae62b71be9a3)(this.attributes, "lower"));
+    }
+    /**
+     * @param lower The lower of the DeltaEDown.
+     */ setLower(lower) {
+        if (this.attributes != undefined) this.attributes.set("lower", lower.toString());
+    }
+    /**
+     * @returns The upper of the DeltaEDown.
+     */ getUpper() {
+        if (this.attributes != undefined) return parseFloat((0, $134d19e749bf0414$export$3988ae62b71be9a3)(this.attributes, "upper"));
+    }
+    /**
+     * @param upper The upper of the DeltaEDown.
+     */ setUpper(upper) {
+        if (this.attributes != undefined) this.attributes.set("upper", upper.toString());
+    }
+    /**
+     * @returns The stepsize of the DeltaEDown.
+     */ getStepsize() {
+        if (this.attributes != undefined) return parseFloat((0, $134d19e749bf0414$export$3988ae62b71be9a3)(this.attributes, "stepsize"));
+    }
+    /**
+     * @param stepsize The stepsize of the DeltaEDown.
+     */ setStepsize(stepsize) {
+        if (this.attributes != undefined) this.attributes.set("stepsize", stepsize.toString());
+    }
+    /**
+     * @param value The value of the DeltaEDown.
+     */ setValue(value) {
+        this.value = value;
     }
 }
 class $ef5b9341e5193b70$export$499950da20810ac9 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -520,6 +747,28 @@ class $ef5b9341e5193b70$export$499950da20810ac9 extends (0, $cc8c7201a9bad777$ex
         deltaEDowns.forEach((deltaEDown)=>{
             this.nodes.set(this.nodes.size, deltaEDown);
         });
+    }
+    /**
+     * @param index The index of the DeltaEDown to return.
+     * @returns The DeltaEDown at the given index.
+     */ getDeltaEDown(index) {
+        if (index < 0 || index >= this.nodes.size) throw new Error("index out of range");
+        return this.nodes.get(index);
+    }
+    /**
+     * Set the DeltaEDown at the given index.
+     * @param index The index to set the DeltaEDown at.
+     * @param deltaEDown The DeltaEDown to set at the index.
+     */ setDeltaEDown(index, deltaEDown) {
+        this.nodes.set(index, deltaEDown);
+    }
+    /**
+     * Add the DeltaEDowns.
+     * @param deltaEDown The DeltaEDown.
+     * @returns The index of the DeltaEDown added.
+     */ addDeltaEDown(deltaEDown) {
+        this.nodes.set(this.nodes.size, deltaEDown);
+        return this.nodes.size - 1;
     }
 }
 class $ef5b9341e5193b70$export$bbdce6c921702068 extends (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc) {
@@ -570,6 +819,26 @@ class $ef5b9341e5193b70$export$9b8e857b9a081d2 extends (0, $cc8c7201a9bad777$exp
             this.nodes.set(this.nodes.size, p);
         });
     }
+    /**
+     * @returns The potential point with the given index.
+     */ getPotentialPoint(index) {
+        return this.nodes.get(index);
+    }
+    /**
+     * Set the potential point at the given index.
+     * @param index The index to set the potential point at.
+     * @param p The potential point to set at the index.
+     */ setPotentialPoints(index, p) {
+        this.nodes.set(index, p);
+    }
+    /**
+     * Add the potential point.
+     * @param p The potential point.
+     * @returns The index of the potential point added.
+     */ addPotentialPoint(p) {
+        this.nodes.set(this.nodes.size, p);
+        return this.nodes.size - 1;
+    }
 }
 class $ef5b9341e5193b70$export$9513c16afdf7d852 extends (0, $cc8c7201a9bad777$export$82583fad49645fc9) {
     static{
@@ -599,6 +868,39 @@ class $ef5b9341e5193b70$export$ae98b7db6376163d extends (0, $cc8c7201a9bad777$ex
         if (hinderedRotorPotential) this.nodes.set(this.nodes.size, hinderedRotorPotential);
         if (periodicity) this.nodes.set(this.nodes.size, periodicity);
     }
+    /**
+     * @returns The bondRef.
+     */ getBondRef() {
+        return this.nodes.get(0);
+    }
+    /**
+     * Set the bondRef.
+     * @param bondRef The bondRef.
+     */ setBondRef(bondRef) {
+        this.nodes.set(0, bondRef);
+    }
+    /**
+     * @returns The hindered rotor potential of the molecule.
+     */ getHinderedRotorPotential() {
+        return this.nodes.get(1);
+    }
+    /**
+     * Set the hindered rotor potential.
+     * @param hinderedRotorPotential The hindered rotor potential.
+     */ setHinderedRotorPotential(hinderedRotorPotential) {
+        this.nodes.set(1, hinderedRotorPotential);
+    }
+    /**
+     * @returns The periodicity of the molecule.
+     */ getPeriodicity() {
+        return this.nodes.get(2);
+    }
+    /**
+     * Set the periodicity.
+     * @param periodicity The periodicity.
+     */ setPeriodicity(periodicity) {
+        this.nodes.set(2, periodicity);
+    }
 }
 class $ef5b9341e5193b70$export$97850fe2f2906f00 extends (0, $cc8c7201a9bad777$export$82583fad49645fc9) {
     static{
@@ -619,16 +921,11 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
      * The tag name.
      */ this.tagName = "molecule";
     }
-    static{
-        /**
-     * The energy dictRef.
-     */ this.energyDictRef = "me:ZPE";
-    }
     /**
      * Create a molecule.
      * @param attributes The attributes. If there is no "id" key an error will be thrown.
      * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
-     * @param atoms The atoms.
+     * @param atoms The atom or atoms.
      * @param bonds The bonds.
      * @param properties The properties.
      * @param energyTransferModel The energy transfer model.
@@ -637,16 +934,8 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
      * @param reservoirSize The reservoir size.
      */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, $ef5b9341e5193b70$export$3da9759ad07746a3.tagName);
-        /**
-     * The rotation constants dictRef.
-     */ //static readonly rotConstsDictRef: string = 'me:rotConsts';
-        /**
-     * The vibration frequencies dictRef.
-     */ //static readonly vibFreqsDictRef: string = 'me:vibFreqs';
-        /**
-     * The index.
-     */ this.index = new Map();
-        let id = this.attributes.get("id");
+        this.index = new Map();
+        let id = attributes.get("id");
         if (id == undefined) throw new Error("id is undefined");
         this.id = id;
         let i = 0;
@@ -664,10 +953,11 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
             i++;
         }
         // Properties
-        if (properties == undefined) throw new Error("properties is undefined");
-        this.nodes.set(i, properties);
-        this.index.set($ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName, i);
-        i++;
+        if (properties) {
+            this.nodes.set(i, properties);
+            this.index.set($ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName, i);
+            i++;
+        }
         // EnergyTransferModel
         if (energyTransferModel) {
             this.nodes.set(i, energyTransferModel);
@@ -691,39 +981,52 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
         }
     }
     /**
-     * @return The id of the molecule.
-     */ getID() {
-        return this.attributes.get("id");
-    }
-    /**
-     * Gets the description of the molecule.
+     * Get the description of the molecule.
      * @returns The description of the molecule, or undefined if it is not set.
      */ getDescription() {
-        return this.attributes.get("description");
+        if (this.attributes != undefined) return this.attributes.get("description");
     }
     /**
-     * Gets the active status of the molecule.
+     * Set the description of the molecule.
+     * @param description The description of the molecule.
+     */ setDescription(description) {
+        if (this.attributes != undefined) this.attributes.set("description", description);
+    }
+    /**
+     * Get the active status of the molecule.
      * @returns The active status of the molecule, or undefined if it is not set.
      */ getActive() {
-        let active = this.attributes.get("active");
-        if (active != undefined) return true;
-        return active;
+        if (this.attributes != undefined) {
+            let active = this.attributes.get("active");
+            if (active != undefined) {
+                if (active == "true") return true;
+                else return false;
+            }
+        }
     }
     /**
+     * Set the active status of the molecule.
+     * @param active The active status of the molecule.
+     */ setActive(active) {
+        if (this.attributes != undefined) this.attributes.set("active", active.toString());
+    }
+    /**
+     * Get a label for the molecule which includes the is and any description and whether active.
      * @returns A label for the molecule detailing the attributes of the XML element (including id, 
      * and possibly including description and whether active).
      */ getLabel() {
-        let label = this.getID();
+        let label = this.id;
         let description = this.getDescription();
-        if (description) label += " (" + description + ")";
+        if (description != undefined) label += " (" + description + ")";
         let active = this.getActive();
         if (active) label += " (active)";
         return label;
     }
     /**
-     * @returns A string of the attributes of the molecule.
+     * @returns A comma and space separated string of the attributes of the molecule.
      */ getAttributesAsString() {
-        return Array.from(this.attributes, ([key, value])=>`${key}: ${value}`).join(", ");
+        if (this.attributes == undefined) return "";
+        return Array.from(this.attributes, ([key, value])=>`${key}=\"${value}\"`).join(", ");
     }
     /**
      * @returns The properties of the molecule.
@@ -736,224 +1039,207 @@ class $ef5b9341e5193b70$export$3da9759ad07746a3 extends (0, $cc8c7201a9bad777$ex
         } else return this.nodes.get(i);
     }
     /**
-     * Get a property scalar.
-     * @param {string} dictRef The dictRef of the property.
-     * @returns {number | undefined} The scalar property.
-     */ getPropertyScalar(dictRef) {
+     * @param properties The properties.
+     */ setProperties(properties) {
+        let i = this.index.get($ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName);
+        if (i == undefined) {
+            this.index.set($ef5b9341e5193b70$export$4e0d1ad7ad6a0802.tagName, this.nodes.size);
+            this.addNode(properties);
+        } else this.nodes.set(i, properties);
+    }
+    /**
+     * Get a property.
+     * @param dictRef The dictRef of the property.
+     * @returns The property.
+     */ getProperty(dictRef) {
         let properties = this.getProperties();
-        if (properties == undefined) return undefined;
-        else if (properties instanceof $ef5b9341e5193b70$export$4e0d1ad7ad6a0802) {
-            let property = properties.properties.get(dictRef);
-            if (property == undefined) return undefined;
-            return property.getProperty().value;
-        } else {
-            let scalar = properties.getProperty();
-            if (scalar == undefined) return undefined;
-            return scalar.value;
+        if (properties != undefined) {
+            if (properties instanceof $ef5b9341e5193b70$export$4e0d1ad7ad6a0802) //console.log('PropertyList');
+            return properties.getProperty(dictRef);
+            else //console.log('Property');
+            return properties;
         }
     }
     /**
-     * @returns {number} The energy of the molecule or zero if the energy is not set or defined.
+     * Set the property.
+     * @param property The property.
+     */ setProperty(property) {
+        let properties = this.getProperties();
+        if (properties != undefined) {
+            if (properties instanceof $ef5b9341e5193b70$export$4e0d1ad7ad6a0802) properties.setProperty(property);
+            else this.setProperties(properties);
+        } else this.setProperties(property);
+    }
+    /**
+     * @returns The atoms of the molecule.
+     */ getAtoms() {
+        let i = this.index.get($ef5b9341e5193b70$export$80986e6afdd7e0cb.tagName);
+        if (i == undefined) {
+            i = this.index.get($ef5b9341e5193b70$export$9cea715eceba39a0.tagName);
+            if (i == undefined) return undefined;
+            else return this.nodes.get(i);
+        } else return this.nodes.get(i);
+    }
+    /**
+     * @returns The bonds of the molecule.
+     */ getBonds() {
+        let i = this.index.get($ef5b9341e5193b70$export$746fba2e30d93fe6.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * @returns The energy transfer model of the molecule.
+     */ getEnergyTransferModel() {
+        let i = this.index.get($ef5b9341e5193b70$export$499950da20810ac9.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * Set the energy transfer model.
+     * @param energyTransferModel The energy transfer model.
+     */ setEnergyTransferModel(energyTransferModel) {
+        let i = this.index.get($ef5b9341e5193b70$export$499950da20810ac9.tagName);
+        if (i == undefined) {
+            this.index.set($ef5b9341e5193b70$export$499950da20810ac9.tagName, this.nodes.size);
+            this.addNode(energyTransferModel);
+        } else this.nodes.set(i, energyTransferModel);
+    }
+    /**
+     * @returns The DOSC method of the molecule.
+     */ getDOSCMethod() {
+        let i = this.index.get($ef5b9341e5193b70$export$bbdce6c921702068.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * Set the DOSC method.
+     * @param dOSCMethod The DOSC method.
+     */ setDOSCMethod(dOSCMethod) {
+        let i = this.index.get($ef5b9341e5193b70$export$bbdce6c921702068.tagName);
+        if (i == undefined) {
+            this.index.set($ef5b9341e5193b70$export$bbdce6c921702068.tagName, this.nodes.size);
+            this.addNode(dOSCMethod);
+        } else this.nodes.set(i, dOSCMethod);
+    }
+    /**
+     * @returns The extra DOSC method of the molecule.
+     */ getExtraDOSCMethod() {
+        let i = this.index.get($ef5b9341e5193b70$export$ae98b7db6376163d.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * Set the extra DOSC method.
+     * @param extraDOSCMethod The extra DOSC method.
+     */ setExtraDOSCMethod(extraDOSCMethod) {
+        let i = this.index.get($ef5b9341e5193b70$export$ae98b7db6376163d.tagName);
+        if (i == undefined) {
+            this.index.set($ef5b9341e5193b70$export$ae98b7db6376163d.tagName, this.nodes.size);
+            this.addNode(extraDOSCMethod);
+        } else this.nodes.set(i, extraDOSCMethod);
+    }
+    /**
+     * @returns The reservoir size of the molecule.
+     */ getReservoirSize() {
+        let i = this.index.get($ef5b9341e5193b70$export$97850fe2f2906f00.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * Set the reservoir size.
+     * @param reservoirSize The reservoir size.
+     */ setReservoirSize(reservoirSize) {
+        let i = this.index.get($ef5b9341e5193b70$export$97850fe2f2906f00.tagName);
+        if (i == undefined) {
+            this.index.set($ef5b9341e5193b70$export$97850fe2f2906f00.tagName, this.nodes.size);
+            this.addNode(reservoirSize);
+        } else this.nodes.set(i, reservoirSize);
+    }
+    /**
+     * Get the ZPE value of the molecule.
      */ getEnergy() {
-        let p = this.getPropertyScalar($ef5b9341e5193b70$export$3da9759ad07746a3.energyDictRef);
-        if (p == undefined) return 0;
-        return p;
-    }
-    /**
-     * Set the scalar property.
-     * @param dictRef The dictRef of the property.
-     * @param value The value of the property.
-     * @param units The units of the property (optional).
-     */ setPropertyScalar(dictRef, value, units) {
-        let properties = this.getProperties();
-        if (properties == undefined) {
-            this.nodes.set(this.nodes.size, this.createPropertyScalar(dictRef, value, units));
-            this.index.set($ef5b9341e5193b70$export$41b04b3a73e7216d.tagName, this.nodes.size);
-        } else if (properties instanceof $ef5b9341e5193b70$export$41b04b3a73e7216d) {
-            if (properties.getProperty().attributes.get(dictRef)) properties.getProperty().value = value;
-            else {
-                let plmap = new Map();
-                plmap.set(dictRef, properties);
-                plmap.set(dictRef, this.createPropertyScalar(dictRef, value, units));
-                properties = new $ef5b9341e5193b70$export$4e0d1ad7ad6a0802(new Map(), plmap);
-            }
-        } else {
-            let scalarProperty = properties.properties.get(dictRef);
-            if (scalarProperty == undefined) properties.properties.set(dictRef, this.createPropertyScalar(dictRef, value, units));
-            else scalarProperty.getProperty().value = value;
+        let p = this.getProperty($ef5b9341e5193b70$export$95174cf0748f45cd.dictRef);
+        if (p == undefined) {
+            console.log(this.toString());
+            throw new Error("ZPE property not found");
+        //return 0;
         }
-    }
-    /**
-     * @param dictRef The dictRef of the property.
-     * @param value The value of the property.
-     * @param units The units of the property.
-     * @returns A scalar property.
-     */ createPropertyScalar(dictRef, value, units) {
-        let propertyAttributes = new Map();
-        propertyAttributes.set("dictRef", dictRef);
-        let attribs = new Map();
-        if (units) attribs.set("units", units);
-        return new $ef5b9341e5193b70$export$41b04b3a73e7216d(propertyAttributes, new $ef5b9341e5193b70$export$d29b345ea2be5072(attribs, value));
-    }
-    /**
-      * Set the scalar property.
-      * @param dictRef The dictRef of the property.
-      * @param values The values of the property.
-      * @param units The units of the property.
-      */ setPropertyArray(dictRef, values, units) {
-        let properties = this.getProperties();
-        if (properties == undefined) {
-            this.nodes.set(this.nodes.size, this.createPropertyArray(dictRef, values, units));
-            this.index.set($ef5b9341e5193b70$export$41b04b3a73e7216d.tagName, this.nodes.size);
-        } else if (properties instanceof $ef5b9341e5193b70$export$41b04b3a73e7216d) {
-            if (properties.getProperty().attributes.get(dictRef)) properties.getProperty().values = values;
-            else {
-                let plmap = new Map();
-                plmap.set(dictRef, properties);
-                plmap.set(dictRef, this.createPropertyArray(dictRef, values, units));
-                properties = new $ef5b9341e5193b70$export$4e0d1ad7ad6a0802(new Map(), plmap);
-            }
-        } else {
-            let scalarProperty = properties.properties.get(dictRef);
-            if (scalarProperty == undefined) properties.properties.set(dictRef, this.createPropertyArray(dictRef, values, units));
-            else scalarProperty.getProperty().values = values;
-        }
-    }
-    /**
-     * @param dictRef The dictRef of the property.
-     * @param values The values of the property.
-     * @param units The units of the property.
-     * @returns A scalar property.
-     */ createPropertyArray(dictRef, values, units) {
-        let propertyAttributes = new Map();
-        propertyAttributes.set("dictRef", dictRef);
-        let attribs = new Map();
-        if (units) attribs.set("units", units);
-        return new $ef5b9341e5193b70$export$41b04b3a73e7216d(propertyAttributes, new $ef5b9341e5193b70$export$9f93a3fdf2490572(attribs, values));
-    }
-    /**
-     * Set the Energy of the molecule.
-     * @param energy The energy of the molecule in kcal/mol.
-     */ setEnergy(energy) {
-        this.setPropertyScalar($ef5b9341e5193b70$export$3da9759ad07746a3.energyDictRef, energy);
-    }
-    /**
-     * Set the RotationConstants of the molecule.
-     * @param rotConsts The rotation constants of the molecule.
-     */ /*
-    setRotConsts(rotConsts: number[]): void {
-        this.setPropertyArray(Molecule.rotConstsDictRef, rotConsts);
-    }
-    */ /**
-     * Set the vibration frequencies of the molecule.
-     * @param vibFreqs The vibration frequencies of the molecule.
-     */ /*
-    setVibFreqs(vibFreqs: number[]): void {
-        this.setPropertyArray(Molecule.vibFreqsDictRef, vibFreqs);
-    }
-    */ /**
-     * Get a property array.
-     * @param dictRef The dictRef of the property.
-     * @returns The array property.
-     */ getPropertyArray(dictRef) {
-        let properties = this.getProperties();
-        if (properties == undefined) return undefined;
-        else if (properties instanceof $ef5b9341e5193b70$export$4e0d1ad7ad6a0802) {
-            let property = properties.properties.get(dictRef);
-            if (property == undefined) return undefined;
-            return property.getProperty().values;
-        } else {
-            if (properties.getProperty().tagName == dictRef) {
-                let pA = properties.getProperty();
-                if (pA == undefined) return undefined;
-                return pA.values;
-            } else return undefined;
-        }
+        return p.getProperty().value;
     }
 }
-class $ef5b9341e5193b70$export$954a71e3ba0cc2 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
+
+
+
+class $6f7aa7a716962086$export$e8a062bb2fc9e2ba extends (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "molecule";
+    }
     /**
      * @param attributes The attributes.
      * @param tagName The tag name.
      * @param molecule The molecule (an abbreviated molecule).
-     * @param molecules The molecules.
-     */ constructor(attributes, tagName, molecule, molecules){
-        super(attributes, tagName);
-        this.nodes.set(0, molecule);
-        this.molecules = molecules;
-    }
-    /**
-     * A convenience method to get the molecule abbreviation.
-     * @returns The molecule abbreviation.
-     */ getMoleculeAbb() {
-        return this.nodes.get(0);
-    }
-    /**
-     * A convenience method to get the ref (the molecule ID) of the molecule.
-     * @returns The ref of the molecule.
-     */ getRef() {
-        let s = this.getMoleculeAbb().attributes.get("ref");
-        if (s == null) {
-            console.log(this.getMoleculeAbb().toString());
-            throw new Error('Attribute "ref" is undefined.');
-        }
-        return s;
-    }
-    /**
-     * A convenience method to get the molecule.
-     * @returns {Molecule} The molecule.
-     * @throws An error if the molecule is not found.
-     */ getMolecule() {
-        let ref = this.getRef();
-        let molecule = this.molecules.get(ref);
-        if (molecule == null) throw new Error(`Molecule with ref ${ref} not found in molecules`);
-        return molecule;
+     */ constructor(attributes){
+        super(attributes, $6f7aa7a716962086$export$e8a062bb2fc9e2ba.tagName);
+        this.ref = attributes.get("ref");
     }
 }
-
-
-
-
-class $6f7aa7a716962086$export$dcfd4302d04b7fb6 extends (0, $ef5b9341e5193b70$export$954a71e3ba0cc2) {
+class $6f7aa7a716962086$export$dcfd4302d04b7fb6 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     static{
         /**
      * The tag name.
      */ this.tagName = "reactant";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
-     */ constructor(attributes, molecule, molecules){
-        super(attributes, $6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName, molecule, molecules);
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, $6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
     }
 }
-class $6f7aa7a716962086$export$264ad599d7cef668 extends (0, $ef5b9341e5193b70$export$954a71e3ba0cc2) {
+class $6f7aa7a716962086$export$264ad599d7cef668 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     static{
         /**
      * The tag name.
      */ this.tagName = "product";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
-     */ constructor(attributes, molecule, molecules){
-        super(attributes, $6f7aa7a716962086$export$264ad599d7cef668.tagName, molecule, molecules);
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, $6f7aa7a716962086$export$264ad599d7cef668.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
     }
 }
-class $6f7aa7a716962086$export$145c1ed87b1a2216 extends (0, $ef5b9341e5193b70$export$954a71e3ba0cc2) {
+class $6f7aa7a716962086$export$145c1ed87b1a2216 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     static{
         /**
      * The tag name.
      */ this.tagName = "me:transitionState";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {TagWithAttributes} molecule The molecule (an abbreviated molecule).
-     * @param {Map<string, Molecule>} molecules The molecules.
-     */ constructor(attributes, molecule, molecules){
-        super(attributes, $6f7aa7a716962086$export$145c1ed87b1a2216.tagName, molecule, molecules);
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, $6f7aa7a716962086$export$145c1ed87b1a2216.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
     }
 }
 class $6f7aa7a716962086$export$38ce90ac8b004d85 extends (0, $cc8c7201a9bad777$export$82583fad49645fc9) {
@@ -963,9 +1249,8 @@ class $6f7aa7a716962086$export$38ce90ac8b004d85 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:preExponential";
     }
     /**
-     * A class for representing the Arrhenius pre-exponential factor.
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value of the factor.
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
      */ constructor(attributes, value){
         super(attributes, $6f7aa7a716962086$export$38ce90ac8b004d85.tagName, value);
     }
@@ -977,9 +1262,8 @@ class $6f7aa7a716962086$export$1bdc69d2439d749d extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:activationEnergy";
     }
     /**
-     * A class for representing the Arrhenius pre-exponential factor.
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value of the factor.
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
      */ constructor(attributes, value){
         super(attributes, $6f7aa7a716962086$export$1bdc69d2439d749d.tagName, value);
     }
@@ -991,8 +1275,8 @@ class $6f7aa7a716962086$export$8d95dd32819bc86c extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:TInfinity";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value of the factor.
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
      */ constructor(attributes, value){
         super(attributes, $6f7aa7a716962086$export$8d95dd32819bc86c.tagName, value);
     }
@@ -1004,22 +1288,10 @@ class $6f7aa7a716962086$export$d08982dd841d496f extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:nInfinity";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value of the factor.
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
      */ constructor(attributes, value){
         super(attributes, $6f7aa7a716962086$export$d08982dd841d496f.tagName, value);
-    }
-}
-class $6f7aa7a716962086$export$c3cf6f96dac11421 extends (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:tunneling";
-    }
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     */ constructor(attributes){
-        super(attributes, $6f7aa7a716962086$export$c3cf6f96dac11421.tagName);
     }
 }
 class $6f7aa7a716962086$export$6fa70ee10f356b6 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -1046,11 +1318,12 @@ class $6f7aa7a716962086$export$191e95ebb11cc88 extends $6f7aa7a716962086$export$
      */ this.xsiType2 = "MesmerILT";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PreExponential | undefined} preExponential The pre-exponential factor.
-     * @param {ActivationEnergy | undefined} activationEnergy The activation energy.
-     * @param {TInfinity | undefined} tInfinity The TInfinity.
-     * @param {NInfinity | undefined} nInfinity The nInfinity.
+     * Should any parameters be specified as being optional?
+     * @param attributes The attributes.
+     * @param preExponential The pre-exponential factor (optional).
+     * @param activationEnergy The activation energy (optional).
+     * @param tInfinity The TInfinity (optional).
+     * @param nInfinity The nInfinity (optional).
      */ constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity){
         super(attributes);
         this.index = new Map();
@@ -1100,23 +1373,16 @@ class $6f7aa7a716962086$export$191e95ebb11cc88 extends $6f7aa7a716962086$export$
         return this.nodes.get(i);
     }
 }
-class $6f7aa7a716962086$export$1dd2ea318727eda extends $6f7aa7a716962086$export$6fa70ee10f356b6 {
+class $6f7aa7a716962086$export$c3cf6f96dac11421 extends (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:tunneling";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {number} harmonicReactantDiabat_FC The harmonic reactant diabatic FC.
-     * @param {number} harmonicReactantDiabat_XO The harmonic reactant diabatic XO.
-     * @param {number} harmonicProductDiabat_DE The harmonic product diabatic DE.
-     * @param {number} exponentialProductDiabat_A The exponential product diabatic A.
-     * @param {number} exponentialProductDiabat_B The exponential product diabatic B.
-     * @param {number} exponentialProductDiabat_DE The exponential product diabatic DE.
-     */ constructor(attributes, harmonicReactantDiabat_FC, harmonicReactantDiabat_XO, harmonicProductDiabat_DE, exponentialProductDiabat_A, exponentialProductDiabat_B, exponentialProductDiabat_DE){
-        super(attributes);
-        this.harmonicReactantDiabat_FC = harmonicReactantDiabat_FC;
-        this.harmonicReactantDiabat_XO = harmonicReactantDiabat_XO;
-        this.harmonicProductDiabat_DE = harmonicProductDiabat_DE;
-        this.exponentialProductDiabat_A = exponentialProductDiabat_A;
-        this.exponentialProductDiabat_B = exponentialProductDiabat_B;
-        this.exponentialProductDiabat_DE = exponentialProductDiabat_DE;
+     */ constructor(attributes){
+        super(attributes, $6f7aa7a716962086$export$c3cf6f96dac11421.tagName);
     }
 }
 class $6f7aa7a716962086$export$284227145ed02b04 extends (0, $cc8c7201a9bad777$export$82583fad49645fc9) {
@@ -1126,8 +1392,8 @@ class $6f7aa7a716962086$export$284227145ed02b04 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:excessReactantConc";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value of the factor.
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
      */ constructor(attributes, value){
         super(attributes, $6f7aa7a716962086$export$284227145ed02b04.tagName, value);
     }
@@ -1139,103 +1405,126 @@ class $6f7aa7a716962086$export$d2ae4167a30cf6bb extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "reaction";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} id The id of the reaction.
-     * @param {Map<string, Reactant> | Reactant | undefined} reactants The reactants in the reaction.
-     * @param {Map<string, Product> | Product | undefined} products The products of the reaction.
-     * @param {Tunneling | undefined} tunneling The tunneling (optional).
-     * @param {Map<string, TransitionState> | TransitionState | undefined} transitionStates The transition states (optional).
-     * @param {MCRCMethod | undefined} mCRCMethod The MCRCMethod (optional).
-     * @param {ExcessReactantConc | undefined} excessReactantConc The excess reactant concentration (optional).
+     * @param attributes The attributes.
+     * @param id The id of the reaction.
+     * @param reactants The reactants in the reaction.
+     * @param products The products of the reaction.
+     * @param tunneling The tunneling (optional).
+     * @param transitionStates The transition states (optional).
+     * @param mCRCMethod The MCRCMethod (optional).
+     * @param excessReactantConc The excess reactant concentration (optional).
      */ constructor(attributes, id, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc){
         super(attributes, $6f7aa7a716962086$export$d2ae4167a30cf6bb.tagName);
         this.index = new Map();
-        this.reactants = reactants;
-        //console.log("Construct reaction:");
-        if (reactants instanceof Map) //console.log("Map of reactants");
+        this.id = id;
+        this.reactantsIndex = new Map();
         reactants.forEach((reactant)=>{
-            this.addToIndex($6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName, reactant);
             this.addNode(reactant);
-        //console.log("Added reactant " + reactant);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
+            this.addToIndex($6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName, reactant);
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
         });
-        else //console.log("Individual reactant");
-        if (reactants != undefined) {
-            //this.addToIndex(Reactant.tagName, reactants);
-            this.index.set($6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName, this.nodes.size);
-            this.addNode(reactants);
-        //console.log("Added reactant " + reactants);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
-        }
-        this.products = products;
-        if (products instanceof Map) //console.log("Map of products");
+        this.productsIndex = new Map();
         products.forEach((product)=>{
             this.addToIndex($6f7aa7a716962086$export$264ad599d7cef668.tagName, product);
             this.addNode(product);
-        //console.log("Added product " + product);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
         });
-        else if (products != undefined) {
-            //console.log("Individual product");
-            //this.addToIndex(Product.tagName, products);
-            this.index.set($6f7aa7a716962086$export$264ad599d7cef668.tagName, this.nodes.size);
-            this.addNode(products);
-        //console.log("Added product " + products);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
-        }
-        if (tunneling) {
+        if (tunneling != undefined) {
             this.index.set($6f7aa7a716962086$export$c3cf6f96dac11421.tagName, this.nodes.size);
             this.addNode(tunneling);
         }
-        this.transitionStates = transitionStates;
-        if (transitionStates instanceof Map) //console.log("Map of transition states");
-        transitionStates.forEach((transitionState)=>{
-            this.addToIndex($6f7aa7a716962086$export$145c1ed87b1a2216.tagName, transitionState);
+        if (transitionStates != undefined) transitionStates.forEach((transitionState)=>{
+            this.addToIndex($6f7aa7a716962086$export$264ad599d7cef668.tagName, transitionState);
             this.addNode(transitionState);
-        //console.log("Added transition state " + transitionState);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
         });
-        else if (transitionStates != undefined) {
-            //console.log("Individual transition state");
-            //this.addToIndex(TransitionState.tagName, transitionStates);
-            this.index.set($6f7aa7a716962086$export$145c1ed87b1a2216.tagName, this.nodes.size);
-            this.addNode(transitionStates);
-        //console.log("Added transition state " + transitionStates);
-        //console.log("index.size: " + this.index.size);
-        //console.log("nodes.size: " + this.nodes.size);
-        }
         if (mCRCMethod != undefined) {
             this.index.set($6f7aa7a716962086$export$6fa70ee10f356b6.tagName, this.nodes.size);
             this.addNode(mCRCMethod);
         }
-        if (excessReactantConc) {
+        if (excessReactantConc != undefined) {
             this.index.set($6f7aa7a716962086$export$284227145ed02b04.tagName, this.nodes.size);
             this.addNode(excessReactantConc);
         }
     }
     /**
      * Add a node to the index.
-     * @returns 0 or 1 depeding on if the index has a new entry.
-     */ addToIndex(tagName, moleculeRef) {
-        let value0 = this.index.get(tagName);
-        if (value0 == undefined) this.index.set(tagName, this.nodes.size);
-        else if (value0 instanceof Map) value0.set(moleculeRef.getRef(), this.nodes.size);
+     */ addToIndex(tagName, node) {
+        let v = this.index.get(tagName);
+        if (v == undefined) this.index.set(tagName, this.nodes.size);
+        else if (v instanceof Map) v.set(node.tagName, this.nodes.size);
         else {
             let map = new Map();
-            map.set(this.nodes.get(value0).getRef(), value0);
-            map.set(moleculeRef.getRef(), this.nodes.size);
+            map.set(this.nodes.get(v).ref, v);
+            map.set(node.tagName, this.nodes.size);
             this.index.set(tagName, map);
         }
     }
     /**
-     * @returns The id of the reaction.
-     */ getID() {
-        return this.attributes.get("id");
+     * @returns The reactants.
+     */ getReactants() {
+        let i = this.index.get($6f7aa7a716962086$export$dcfd4302d04b7fb6.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
+    }
+    /**
+     * @returns A particular Reactant.
+     * @param ref The ref of the reactant to return.
+     * @returns The reactant at the given index.
+     */ getReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
+        if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @returns The products.
+     */ getProducts() {
+        let i = this.index.get($6f7aa7a716962086$export$264ad599d7cef668.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
+    }
+    /**
+     * @returns A particular Product.
+     * @param ref The ref of the product to return.
+     * @returns The product at the given index.
+     */ getProduct(ref) {
+        let index = this.productsIndex.get(ref);
+        if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @returns The tunneling node or undefined if it does not exist.
+     */ getTunneling() {
+        let i = this.index.get($6f7aa7a716962086$export$c3cf6f96dac11421.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the tunneling node or create it if it is undefined.
+     */ setTunneling(tunneling) {
+        let i = this.index.get($6f7aa7a716962086$export$c3cf6f96dac11421.tagName);
+        if (i == undefined) {
+            this.index.set($6f7aa7a716962086$export$c3cf6f96dac11421.tagName, this.nodes.size);
+            this.addNode(tunneling);
+        } else {
+            if (i instanceof Map) throw new Error("Tunneling is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, tunneling);
+        }
+    }
+    /**
+     * @returns The transition states.
+     */ getTransitionStates() {
+        let i = this.index.get($6f7aa7a716962086$export$145c1ed87b1a2216.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
     }
     /**
      * @returns The MCRCMethod node or undefined if it does not exist.
@@ -1245,11 +1534,16 @@ class $6f7aa7a716962086$export$d2ae4167a30cf6bb extends (0, $cc8c7201a9bad777$ex
         return this.nodes.get(i);
     }
     /**
-     * @returns The tunneling node or undefined if it does not exist.
-     */ getTunneling() {
-        let i = this.index.get($6f7aa7a716962086$export$c3cf6f96dac11421.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
+     * Set the MCRCMethod node or create it if it is undefined.
+     */ setMCRCMethod(mCRCMethod) {
+        let i = this.index.get($6f7aa7a716962086$export$6fa70ee10f356b6.tagName);
+        if (i == undefined) {
+            this.index.set($6f7aa7a716962086$export$6fa70ee10f356b6.tagName, this.nodes.size);
+            this.addNode(mCRCMethod);
+        } else {
+            if (i instanceof Map) throw new Error("MCRCMethod is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, mCRCMethod);
+        }
     }
     /**
      * @returns The excess reactant concentration or undefined if it does not exist.
@@ -1262,31 +1556,13 @@ class $6f7aa7a716962086$export$d2ae4167a30cf6bb extends (0, $cc8c7201a9bad777$ex
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */ getReactantsLabel() {
-        if (this.reactants == undefined) return undefined;
-        else if (this.reactants instanceof Map) return Array.from(this.reactants.keys()).join(" + ");
-        else return this.reactants.getRef();
-    }
-    /**
-     * Get the combined energy of the reactants.
-     * @returns The combined energy of the reactants.
-     */ getReactantsEnergy() {
-        if (this.reactants instanceof Map) return Array.from(this.reactants.values()).map((reactant)=>reactant.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
-        return 0;
+        return this.getReactants().map((reactant)=>reactant.getMolecule().ref).join(" + ");
     }
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */ getProductsLabel() {
-        if (this.products == undefined) return undefined;
-        else if (this.products instanceof Map) return Array.from(this.products.keys()).join(" + ");
-        else return this.products.getRef();
-    }
-    /**
-     * Returns the total energy of all products.
-     * @returns The total energy of all products.
-     */ getProductsEnergy() {
-        if (this.products instanceof Map) return Array.from(this.products.values()).map((product)=>product.getMolecule().getEnergy()).reduce((a, b)=>a + b, 0);
-        return 0;
+        return this.getProducts().map((product)=>product.getMolecule().ref).join(" + ");
     }
     /**
      * Get the label of the reaction.
@@ -1295,17 +1571,54 @@ class $6f7aa7a716962086$export$d2ae4167a30cf6bb extends (0, $cc8c7201a9bad777$ex
         let label = this.getReactantsLabel() + " -> " + this.getProductsLabel();
         return label;
     }
+    /**
+     * Returns the total energy of all reactants.
+     * @returns The total energy of all reactants.
+     */ getReactantsEnergy(molecules) {
+        // Sum up the energy values of all the reactants in the reaction
+        return Array.from(this.getReactants()).map((reactant)=>{
+            let molecule = molecules.get(reactant.getMolecule().ref);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
+            return molecule.getEnergy();
+        }).reduce((a, b)=>a + b, 0);
+    }
+    /**
+     * Returns the total energy of all products.
+     * @returns The total energy of all products.
+     */ getProductsEnergy(molecules) {
+        // Sum up the energy values of all the products in the reaction
+        return Array.from(this.getProducts()).map((product)=>{
+            let molecule = molecules.get(product.getMolecule().ref);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
+            return molecule.getEnergy();
+        }).reduce((a, b)=>a + b, 0);
+    }
+    /**
+     * @param tagName The tag name.
+     * @param dictRef The dictRef.
+     * @returns The node with the tag name and dictRef or undefined if it does not exist.
+     */ get(tagName, dictRef) {
+        if (this.index.has(tagName)) {
+            let i = this.index.get(tagName);
+            if (i != undefined) {
+                if (i instanceof Map) {
+                    let nodeIndex = i.get(dictRef);
+                    if (nodeIndex != undefined) return this.nodes.get(nodeIndex);
+                } else return this.nodes.get(i);
+            }
+        }
+    }
 }
 
 
 
 /**
  * Draw a horizontal line and add labels.
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} strokeStyle The name of a style to use for the line.
- * @param {number} strokewidth The width of the line.
- * @param {number} x0 The start x-coordinate of the line.
- * @param {number} y0 The start y-coordinate of the line. Also used for an energy label.
+ * @param ctx The context to use.
+ * @param strokeStyle The name of a style to use for the line.
+ * @param strokewidth The width of the line.
+ * @param x0 The start x-coordinate of the line.
+ * @param y0 The start y-coordinate of the line. Also used for an energy label.
  * @param {number} x1 The end x-coordinate of the line.
  * @param {number} y1 The end y-coordinate of the line.
  * @param {string} font The font to use.
@@ -1371,9 +1684,9 @@ class $ae74a7b44a6504a1$export$b33a132661f4be58 extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:bathGas";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {string} moleculeID The moleculeID.
-     * @param {Map<string, Molecule>} molecules The molecules.
+     * @param attributes The attributes.
+     * @param moleculeID The moleculeID.
+     * @param molecules The molecules.
      */ constructor(attributes, moleculeID, molecules){
         super(attributes, $ae74a7b44a6504a1$export$b33a132661f4be58.tagName, moleculeID);
         this.molecules = molecules;
@@ -1389,24 +1702,24 @@ class $ae74a7b44a6504a1$export$ea088383ce76fc5a extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:experimentRate";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes. 
-     * @param {number} value The value. 
+     * @param attributes The attributes. 
+     * @param value The value. 
      */ constructor(attributes, value){
         super(attributes, $ae74a7b44a6504a1$export$ea088383ce76fc5a.tagName, value);
     }
 }
-class $ae74a7b44a6504a1$export$3fe97ecb6b172244 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
+class $ae74a7b44a6504a1$export$3961bdb9130b90e7 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
     static{
         /**
      * The tag name.
      */ this.tagName = "me:PTpair";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {BathGas | undefined} bathGas The bath gas.
-     * @param {ExperimentRate | undefined} experimentRate The experiment rate.
+     * @param attributes The attributes.
+     * @param bathGas The bath gas.
+     * @param experimentRate The experiment rate.
      */ constructor(attributes, bathGas, experimentRate){
-        super(attributes, $ae74a7b44a6504a1$export$3fe97ecb6b172244.tagName);
+        super(attributes, $ae74a7b44a6504a1$export$3961bdb9130b90e7.tagName);
         this.index = new Map();
         if (bathGas) {
             this.index.set($ae74a7b44a6504a1$export$b33a132661f4be58.tagName, this.nodes.size);
@@ -1420,26 +1733,32 @@ class $ae74a7b44a6504a1$export$3fe97ecb6b172244 extends (0, $cc8c7201a9bad777$ex
     /**
      * @returns The Pressure.
      */ getP() {
-        let p = this.attributes.get("P");
-        if (p) return parseFloat(p);
-        else throw new Error("P is undefined");
+        if (this.attributes != undefined) {
+            let p = this.attributes.get("P");
+            if (p) return parseFloat(p);
+            else throw new Error("P is undefined");
+        }
+        return NaN;
     }
     /**
      * Set The Pressure
      */ setP(p) {
-        this.attributes.set("P", p.toString());
+        if (this.attributes != undefined) this.attributes.set("P", p.toString());
     }
     /**
      * @returns The Temperature.
      */ getT() {
-        let t = this.attributes.get("T");
-        if (t) return parseFloat(t);
-        else throw new Error("T is undefined");
+        if (this.attributes != undefined) {
+            let t = this.attributes.get("T");
+            if (t) return parseFloat(t);
+            else throw new Error("T is undefined");
+        }
+        return NaN;
     }
     /**
      * Set The Temperature.
      */ setT(t) {
-        this.attributes.set("T", t.toString());
+        if (this.attributes != undefined) this.attributes.set("T", t.toString());
     }
     /**
      * @returns The bath gas.
@@ -1449,11 +1768,31 @@ class $ae74a7b44a6504a1$export$3fe97ecb6b172244 extends (0, $cc8c7201a9bad777$ex
         else return undefined;
     }
     /**
+     * @param bathGas The bath gas.
+     */ setBathGas(bathGas) {
+        let i = this.index.get($ae74a7b44a6504a1$export$b33a132661f4be58.tagName);
+        if (i) this.nodes.set(i, bathGas);
+        else {
+            this.index.set($ae74a7b44a6504a1$export$b33a132661f4be58.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+    }
+    /**
      * @returns The experiment rate.
      */ getExperimentRate() {
         let i = this.index.get($ae74a7b44a6504a1$export$ea088383ce76fc5a.tagName);
         if (i) return this.nodes.get(i);
         else return undefined;
+    }
+    /**
+     * @param experimentRate The experiment rate.
+     */ setExperimentRate(experimentRate) {
+        let i = this.index.get($ae74a7b44a6504a1$export$ea088383ce76fc5a.tagName);
+        if (i) this.nodes.set(i, experimentRate);
+        else {
+            this.index.set($ae74a7b44a6504a1$export$ea088383ce76fc5a.tagName, this.nodes.size);
+            this.addNode(experimentRate);
+        }
     }
 }
 class $ae74a7b44a6504a1$export$3be0efe793283834 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -1464,13 +1803,31 @@ class $ae74a7b44a6504a1$export$3be0efe793283834 extends (0, $cc8c7201a9bad777$ex
     }
     /**
      * @param {Map<string, string>} attributes The attributes.
-     * @param {PTpair[]} pTpairs The PT pairs.
-     */ constructor(attributes, pTpairs){
+     * @param {PT[]} pTs The PTs.
+     */ constructor(attributes, pTs){
         super(attributes, $ae74a7b44a6504a1$export$3be0efe793283834.tagName);
-        pTpairs.forEach((pTpair)=>{
+        pTs.forEach((pTpair)=>{
             this.addNode(pTpair);
         });
-        this.pTpairs = pTpairs;
+    }
+    /**
+     * @param index The index of the PT pair to return.
+     * @returns The PT pair at the given index.
+     */ getPTpair(index) {
+        return this.nodes.get(index);
+    }
+    /**
+     * Set the PT at the given index.
+     * @returns The PT pairs.
+     */ setPTpair(index, pT) {
+        this.nodes.set(index, pT);
+    }
+    /**
+     * Add a PT.
+     * @param pTPair The PT to add.
+     * @returns The index of the PT added.
+     */ addPTpair(pT) {
+        return this.addNode(pT);
     }
 }
 class $ae74a7b44a6504a1$export$363c7374d425f4ad extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
@@ -1480,8 +1837,9 @@ class $ae74a7b44a6504a1$export$363c7374d425f4ad extends (0, $cc8c7201a9bad777$ex
      */ this.tagName = "me:conditions";
     }
     /**
-     * @param {BathGas} bathGas The bath gas.
-     * @param {PTpair} pTs The Pressure and Temperature pairs.
+     * @param attributes The attributes.
+     * @param bathGas The bath gas.
+     * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */ constructor(attributes, bathGas, pTs){
         super(attributes, $ae74a7b44a6504a1$export$363c7374d425f4ad.tagName);
         this.addNode(bathGas);
@@ -1848,17 +2206,244 @@ class $b6873406fb778c0b$export$7a7fa4424cb20976 extends (0, $cc8c7201a9bad777$ex
 }
 
 
-// Expected XML tags strings.
-let $7e68913db756e51f$var$me_title_s = "me:title";
+
+
+
+
 /**
- * For storing me.title.
- */ let $7e68913db756e51f$var$title;
-/**
- * For storing the XML root start tag.
- */ let $7e68913db756e51f$var$mesmerStartTag;
-/**
- * For storing the XML root end tag.
- */ let $7e68913db756e51f$var$mesmerEndTag;
+ * The header of the XML file.
+ */ const $8677001474399221$var$header = `<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
+class $8677001474399221$export$f99233281efd08a0 extends (0, $cc8c7201a9bad777$export$8f67221c6fb2ad09) {
+    static{
+        this.tagName = "me:title";
+    }
+    /**
+     * @param value 
+     */ constructor(attributes, value){
+        super(attributes, $8677001474399221$export$f99233281efd08a0.tagName, value);
+    }
+}
+class $8677001474399221$export$19d70f3647dee606 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "moleculeList";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param molecules The molecules.
+     */ constructor(attributes, molecules){
+        super(attributes, $8677001474399221$export$19d70f3647dee606.tagName);
+        this.index = new Map();
+        if (molecules != undefined) molecules.forEach((molecule)=>{
+            this.nodes.set(this.nodes.size, molecule);
+            this.index.set(molecule.id, this.nodes.size - 1);
+        });
+    }
+    /**
+     * @param id The id of the molecule.
+     * @returns The molecule.
+     */ getMolecule(id) {
+        let i = this.index.get(id);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Remove a molecule.
+     * @param id The id of the molecule to remove.
+     */ removeMolecule(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+    /**
+     * Add a molecule.
+     * @param molecule The molecule.
+     */ addMolecule(molecule) {
+        let index = this.index.get(molecule.id);
+        if (index !== undefined) {
+            this.nodes.set(index, molecule);
+            console.log("Replaced molecule with id " + molecule.id);
+        } else {
+            this.nodes.set(this.nodes.size, molecule);
+            this.index.set(molecule.id, this.nodes.size - 1);
+        }
+    }
+}
+class $8677001474399221$export$44466a39ca846289 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "reactionList";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param reactions The reactions.
+     */ constructor(attributes, reactions){
+        super(attributes, $8677001474399221$export$44466a39ca846289.tagName);
+        this.index = new Map();
+        if (reactions != undefined) reactions.forEach((reaction)=>{
+            this.nodes.set(this.nodes.size, reaction);
+            this.index.set(reaction.id, this.nodes.size - 1);
+        });
+    }
+    /**
+     * @param id The id of the reaction.
+     * @returns The reaction.
+     */ getReaction(id) {
+        let i = this.index.get(id);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Remove a reaction.
+     * @param id The id of the reaction to remove.
+     */ removeReaction(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+    /**
+     * Add a reaction.
+     * @param reaction The reaction.
+     */ addReaction(reaction) {
+        let index = this.index.get(reaction.id);
+        if (index !== undefined) {
+            this.nodes.set(index, reaction);
+            console.log("Replaced reaction with id " + reaction.id);
+        } else {
+            this.nodes.set(this.nodes.size, reaction);
+            this.index.set(reaction.id, this.nodes.size - 1);
+        }
+    }
+}
+class $8677001474399221$export$692079bb871c6039 extends (0, $cc8c7201a9bad777$export$bd431b64ad3b0433) {
+    static{
+        this.tagName = "me:mesmer";
+    }
+    constructor(attributes, moleculeList, reactionList, conditions, modelParameters, control){
+        super(attributes, $8677001474399221$export$692079bb871c6039.tagName);
+        this.index = new Map();
+        if (moleculeList != undefined) {
+            this.index.set($8677001474399221$export$19d70f3647dee606.tagName, this.nodes.size);
+            this.addNode(moleculeList);
+        }
+        if (reactionList != undefined) {
+            this.index.set($8677001474399221$export$44466a39ca846289.tagName, this.nodes.size);
+            this.addNode(reactionList);
+        }
+        if (conditions != undefined) {
+            this.index.set((0, $ae74a7b44a6504a1$export$363c7374d425f4ad).tagName, this.nodes.size);
+            this.addNode(conditions);
+        }
+        if (modelParameters != undefined) {
+            this.index.set((0, $8883b31bd809eb64$export$77f098867dc64198).tagName, this.nodes.size);
+            this.addNode(modelParameters);
+        }
+        if (control != undefined) {
+            this.index.set((0, $b6873406fb778c0b$export$7a7fa4424cb20976).tagName, this.nodes.size);
+            this.addNode(control);
+        }
+    }
+    /**
+     * @returns The molecule list.
+     */ getMoleculeList() {
+        let i = this.index.get($8677001474399221$export$19d70f3647dee606.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the molecule list.
+     * @param moleculeList The molecule list.
+     */ setMoleculeList(moleculeList) {
+        let i = this.index.get($8677001474399221$export$19d70f3647dee606.tagName);
+        if (i != undefined) this.nodes.set(i, moleculeList);
+        else {
+            this.index.set($8677001474399221$export$19d70f3647dee606.tagName, this.nodes.size);
+            this.addNode(moleculeList);
+        }
+    }
+    /**
+     * @returns The reaction list.
+     */ getReactionList() {
+        let i = this.index.get($8677001474399221$export$44466a39ca846289.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the reaction list.
+     * @param reactionList The reaction list.
+     */ setReactionList(reactionList) {
+        let i = this.index.get($8677001474399221$export$44466a39ca846289.tagName);
+        if (i != undefined) this.nodes.set(i, reactionList);
+        else {
+            this.index.set($8677001474399221$export$44466a39ca846289.tagName, this.nodes.size);
+            this.addNode(reactionList);
+        }
+    }
+    /**
+     * @returns The conditions.
+     */ getConditions() {
+        let i = this.index.get((0, $ae74a7b44a6504a1$export$363c7374d425f4ad).tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the conditions.
+     * @param conditions The conditions.
+     */ setConditions(conditions) {
+        let i = this.index.get((0, $ae74a7b44a6504a1$export$363c7374d425f4ad).tagName);
+        if (i != undefined) this.nodes.set(i, conditions);
+        else {
+            this.index.set((0, $ae74a7b44a6504a1$export$363c7374d425f4ad).tagName, this.nodes.size);
+            this.addNode(conditions);
+        }
+    }
+    /**
+     * @returns The model parameters.
+     */ getModelParameters() {
+        let i = this.index.get((0, $8883b31bd809eb64$export$77f098867dc64198).tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the model parameters.
+     * @param modelParameters The model parameters.
+     */ setModelParameters(modelParameters) {
+        let i = this.index.get((0, $8883b31bd809eb64$export$77f098867dc64198).tagName);
+        if (i != undefined) this.nodes.set(i, modelParameters);
+        else {
+            this.index.set((0, $8883b31bd809eb64$export$77f098867dc64198).tagName, this.nodes.size);
+            this.addNode(modelParameters);
+        }
+    }
+    /**
+     * @returns The control.
+     */ getControl() {
+        let i = this.index.get((0, $b6873406fb778c0b$export$7a7fa4424cb20976).tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the control.
+     * @param control The control.
+     */ setControl(control) {
+        let i = this.index.get((0, $b6873406fb778c0b$export$7a7fa4424cb20976).tagName);
+        if (i != undefined) this.nodes.set(i, control);
+        else {
+            this.index.set((0, $b6873406fb778c0b$export$7a7fa4424cb20976).tagName, this.nodes.size);
+            this.addNode(control);
+        }
+    }
+}
+
+
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */ let $7e68913db756e51f$var$molecules = new Map();
@@ -1872,11 +2457,6 @@ let $7e68913db756e51f$var$me_title_s = "me:title";
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */ let $7e68913db756e51f$var$reactions = new Map();
 /**
- * The header of the XML file.
- */ const $7e68913db756e51f$var$header = `<?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
-/**
  * The filename of the mesmer input file loaded.
  */ let $7e68913db756e51f$var$input_xml_filename;
 /**
@@ -1889,10 +2469,9 @@ let $7e68913db756e51f$var$me_title_s = "me:title";
  * The XML text element.
  */ let $7e68913db756e51f$var$me_title;
 let $7e68913db756e51f$var$molecules_title;
-let $7e68913db756e51f$var$moleculesDiv;
+//let moleculesDiv: HTMLElement | null;
 let $7e68913db756e51f$var$reactions_title;
-let $7e68913db756e51f$var$reactions_table;
-let $7e68913db756e51f$var$reactions_diagram_title;
+let $7e68913db756e51f$var$reactionsDiv;
 let $7e68913db756e51f$var$conditions_title;
 let $7e68913db756e51f$var$conditions_table;
 let $7e68913db756e51f$var$modelParameters_title;
@@ -1908,16 +2487,14 @@ let $7e68913db756e51f$var$xml_text;
     if ($7e68913db756e51f$var$xml_text != null) $7e68913db756e51f$var$xml_text.innerHTML = (0, $cc8c7201a9bad777$export$438fa7935f716bdf)(xml);
 }
 /**
- * Parses xml to initilise molecules.
- * @param {XMLDocument} xml The XML document.
- */ function $7e68913db756e51f$var$initMolecules(xml) {
-    let moleculeList_s = "moleculeList";
-    console.log("Read and store " + moleculeList_s);
-    let xml_moleculeList = (0, $cc8c7201a9bad777$export$b7531b8ff18dc588)(xml, moleculeList_s);
-    // Set molecules_title.
-    $7e68913db756e51f$var$molecules_title = document.getElementById("molecules_title");
-    if ($7e68913db756e51f$var$molecules_title != null) $7e68913db756e51f$var$molecules_title.innerHTML = "Molecules";
-    // xml_moleculeList should have one or more molecule elements and no other elements.
+ * Parse XML and create HTMLElement for molecules.
+ * @param xml The XML.
+ * @returns The HTMLElement.
+ */ function $7e68913db756e51f$var$getMolecules(xml) {
+    // moleculesListDiv is the div that will contain the molecules list.
+    let moleculeListDiv = document.createElement("moleculesList");
+    let xml_moleculeList = (0, $cc8c7201a9bad777$export$b7531b8ff18dc588)(xml, (0, $8677001474399221$export$19d70f3647dee606).tagName);
+    // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
     let moleculeListTagNames = new Set();
     xml_moleculeList.childNodes.forEach(function(node) {
         moleculeListTagNames.add(node.nodeName);
@@ -1930,12 +2507,13 @@ let $7e68913db756e51f$var$xml_text;
         }
     }
     if (!moleculeListTagNames.has((0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName)) throw new Error('Expecting tags with "' + (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName + '" tagName but there are none!');
+    // Process the XML "molecule" elements.
     let xml_molecules = xml_moleculeList.getElementsByTagName((0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
     let xml_molecules_length = xml_molecules.length;
     console.log("Number of molecules=" + xml_molecules_length);
-    // Process each molecule.
-    //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf like this.
+    //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
     for(let i = 0; i < xml_molecules.length; i++){
+        let moleculeDiv = document.createElement("moleculeDiv");
         // Set attributes.
         let attributes = (0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecules[i]);
         let moleculeTagNames = new Set();
@@ -1971,6 +2549,7 @@ let $7e68913db756e51f$var$xml_text;
             if (xml_atoms.length == 1) atomsNode = new (0, $ef5b9341e5193b70$export$80986e6afdd7e0cb)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_atoms[0]));
             else if (xml_atoms.length > 1) throw new Error("Expecting 1 " + (0, $ef5b9341e5193b70$export$80986e6afdd7e0cb).tagName + " but finding " + xml_atoms.length + ". Should these be in an " + (0, $ef5b9341e5193b70$export$9cea715eceba39a0).tagName + "?");
         }
+        //console.log("atomsNode=" + atomsNode);
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$80986e6afdd7e0cb).tagName);
         // Init bondsNode.
         let bondsNode;
@@ -1991,33 +2570,89 @@ let $7e68913db756e51f$var$xml_text;
             else if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, $ef5b9341e5193b70$export$153327fc99ac0c53).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, $ef5b9341e5193b70$export$746fba2e30d93fe6).tagName + "?");
         }
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$153327fc99ac0c53).tagName);
-        // Init propertiesNode.
-        let propertiesNode;
-        // There can be an individual property not in a propertyList.
+        // Create molecule.
+        let molecule = new (0, $ef5b9341e5193b70$export$3da9759ad07746a3)(attributes, atomsNode, bondsNode);
+        $7e68913db756e51f$var$molecules.set(molecule.id, molecule);
+        // Add any propertyList or individual property.
+        // (There can be an individual property not in a propertyList?)
         let xml_PLs = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802).tagName);
         if (xml_PLs.length > 1) throw new Error("Expecting 1 or 0 " + (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802).tagName + " but finding " + xml_PLs.length + "!");
         if (xml_PLs.length == 1) {
-            let xml_PL = xml_PLs[0];
-            let xml_Ps = xml_PL.getElementsByTagName((0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName);
-            if (xml_Ps.length < 2) throw new Error("Expecting 2 or more " + (0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName + " in " + (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802).tagName + ", but finding " + xml_Ps.length + "!");
-            let properties = new Map();
+            let pl = new (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_PLs[0]));
+            let xml_Ps = xml_PLs[0].getElementsByTagName((0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName);
             for(let j = 0; j < xml_Ps.length; j++){
-                let property = $7e68913db756e51f$var$getProperty(xml_Ps[j]);
-                let dictRef = property.attributes.get("dictRef");
-                properties.set(dictRef, property);
+                let p = new (0, $ef5b9341e5193b70$export$41b04b3a73e7216d)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_Ps[j]));
+                pl.setProperty(p);
+                molecule.setProperties(pl);
+                // Handle scalar or array property
+                let scalarNodes = xml_Ps[j].getElementsByTagName((0, $ef5b9341e5193b70$export$d29b345ea2be5072).tagName);
+                if (scalarNodes.length > 0) {
+                    if (scalarNodes.length != 1) throw new Error("Expecting 1 " + (0, $ef5b9341e5193b70$export$d29b345ea2be5072).tagName + " but finding " + scalarNodes.length + "!");
+                    let inputString;
+                    let firstChildNode = (0, $cc8c7201a9bad777$export$4e07613bf412feb7)(scalarNodes[0]);
+                    if (firstChildNode) inputString = (0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)(firstChildNode).trim();
+                    else inputString = "";
+                    let value = parseFloat(inputString);
+                    let ps = new (0, $ef5b9341e5193b70$export$d29b345ea2be5072)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(scalarNodes[0]), value);
+                    p.setProperty(ps);
+                    let label = p.dictRef;
+                    // Create a new div element for the input.
+                    let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", molecule.id + "_" + p.dictRef, (event)=>{
+                        if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$4e634558561f5cca(p.dictRef, event.target);
+                    }, p.toString(), label);
+                    moleculeDiv.appendChild(inputDiv);
+                    let inputElement = inputDiv.querySelector("input");
+                    inputElement.value = inputString;
+                    (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement);
+                    inputElement.addEventListener("change", (event)=>{
+                        let eventTarget = event.target;
+                        inputString = eventTarget.value;
+                        ps = p.getProperty();
+                        ps.value = parseFloat(inputString);
+                        console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
+                        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement);
+                    });
+                } else {
+                    let arrayNodes = xml_Ps[j].getElementsByTagName((0, $ef5b9341e5193b70$export$9f93a3fdf2490572).tagName);
+                    if (arrayNodes.length > 0) {
+                        if (arrayNodes.length != 1) throw new Error("Expecting 1 " + (0, $ef5b9341e5193b70$export$9f93a3fdf2490572).tagName + " but finding " + arrayNodes.length + "!");
+                        let inputString;
+                        let firstChildNode = (0, $cc8c7201a9bad777$export$4e07613bf412feb7)(arrayNodes[0]);
+                        if (firstChildNode) inputString = (0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)(firstChildNode).trim();
+                        else inputString = "";
+                        let values = (0, $134d19e749bf0414$export$8cfbaad830aa9e0a)(inputString.split(/\s+/));
+                        let pa = new (0, $ef5b9341e5193b70$export$9f93a3fdf2490572)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(arrayNodes[0]), values);
+                        p.setProperty(pa);
+                        let label = p.dictRef;
+                        // Create a new div element for the input.
+                        let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", molecule.id + "_" + p.dictRef, (event)=>{
+                            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$c01f4ac2c1d26a5a(p.dictRef, event.target);
+                        }, p.toString(), label);
+                        moleculeDiv.appendChild(inputDiv);
+                        let inputElement = inputDiv.querySelector("input");
+                        inputElement.value = inputString;
+                        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement);
+                        inputElement.addEventListener("change", (event)=>{
+                            let eventTarget = event.target;
+                            inputString = eventTarget.value;
+                            pa = p.getProperty();
+                            values = (0, $134d19e749bf0414$export$8cfbaad830aa9e0a)(inputString.split(/\s+/));
+                            pa.values = values;
+                            console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
+                            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement);
+                        });
+                    } else throw new Error("Expecting " + (0, $ef5b9341e5193b70$export$d29b345ea2be5072).tagName + " or " + (0, $ef5b9341e5193b70$export$9f93a3fdf2490572).tagName);
+                }
             }
-            propertiesNode = new (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_PL), properties);
             moleculeTagNames.delete((0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802).tagName);
         } else {
             let xml_Ps = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName);
             if (xml_Ps.length > 1) throw new Error("Expecting 1 " + (0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName + " but finding " + xml_Ps.length + ". Should these be in a " + (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802).tagName + "?");
-            propertiesNode = $7e68913db756e51f$var$getProperty(xml_Ps[0]);
         }
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$41b04b3a73e7216d).tagName);
         let els;
         // Read energyTransferModel
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$499950da20810ac9).tagName);
-        let energyTransferModel = undefined;
         els = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$499950da20810ac9).tagName);
         if (els != null) {
             if (els.length > 0) {
@@ -2030,21 +2665,21 @@ let $7e68913db756e51f$var$xml_text;
                         let deltaEDown = new (0, $ef5b9341e5193b70$export$16fc56ab40b12b45)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_deltaEDown[k]), value);
                         deltaEDowns.push(deltaEDown);
                     }
-                    energyTransferModel = new (0, $ef5b9341e5193b70$export$499950da20810ac9)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), deltaEDowns);
+                    let etm = new (0, $ef5b9341e5193b70$export$499950da20810ac9)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), deltaEDowns);
+                    molecule.setEnergyTransferModel(etm);
+                //addEventListenerMoleculeProperty(molecule, etm);
                 }
             }
         }
         // Read DOSCMethod
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$bbdce6c921702068).tagName);
-        let dOSCMethod = undefined;
         els = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$bbdce6c921702068).tagName);
         if (els != null) {
             let el = els[0];
-            if (el != null) dOSCMethod = new (0, $ef5b9341e5193b70$export$bbdce6c921702068)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(el));
+            if (el != null) molecule.setDOSCMethod(new (0, $ef5b9341e5193b70$export$bbdce6c921702068)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(el)));
         }
         // Read ExtraDOSCMethod.
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$ae98b7db6376163d).tagName);
-        let extraDOSCMethod = undefined;
         els = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$ae98b7db6376163d).tagName);
         if (els.length > 0) {
             if (els.length != 1) throw new Error("Expecting only 1 extra DOSCMethod, but there are " + els.length);
@@ -2073,15 +2708,14 @@ let $7e68913db756e51f$var$xml_text;
                 if (xml_periodicities.length != 1) throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
                 periodicity = new (0, $ef5b9341e5193b70$export$9513c16afdf7d852)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_periodicities[0]), parseFloat((0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)((0, $cc8c7201a9bad777$export$4e07613bf412feb7)(xml_periodicities[0]))));
             }
-            extraDOSCMethod = new (0, $ef5b9341e5193b70$export$ae98b7db6376163d)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), bondRef, hinderedRotorPotential, periodicity);
+            molecule.setExtraDOSCMethod(new (0, $ef5b9341e5193b70$export$ae98b7db6376163d)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), bondRef, hinderedRotorPotential, periodicity));
         }
         // Read reservoirSize.
         moleculeTagNames.delete((0, $ef5b9341e5193b70$export$97850fe2f2906f00).tagName);
-        let reservoirSize;
         els = xml_molecules[i].getElementsByTagName((0, $ef5b9341e5193b70$export$97850fe2f2906f00).tagName);
         if (els.length > 0) {
             if (els.length != 1) throw new Error("Expecting only 1 reservoirSize, but there are " + els.length);
-            reservoirSize = new (0, $ef5b9341e5193b70$export$97850fe2f2906f00)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), parseFloat((0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)((0, $cc8c7201a9bad777$export$4e07613bf412feb7)(els[0]))));
+            molecule.setReservoirSize(new (0, $ef5b9341e5193b70$export$97850fe2f2906f00)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(els[0]), parseFloat((0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)((0, $cc8c7201a9bad777$export$4e07613bf412feb7)(els[0])))));
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -2090,144 +2724,69 @@ let $7e68913db756e51f$var$xml_text;
             moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
-        // Create molecule.
-        let molecule = new (0, $ef5b9341e5193b70$export$3da9759ad07746a3)(attributes, atomsNode, bondsNode, propertiesNode, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize);
-        //console.log(molecule.toString());
-        $7e68913db756e51f$var$molecules.set(molecule.id, molecule);
+        let buttonId = "buttonId";
+        let buttonLabel = molecule.getLabel();
+        let contentDivId = molecule.tagName + "_" + molecule.id;
+        //let collapsibleDiv = getCollapsibleDiv(buttonId, buttonLabel, paragraph, contentDivId);
+        let collapsibleDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(buttonId, buttonLabel, moleculeDiv, contentDivId);
+        moleculeListDiv.appendChild(collapsibleDiv);
+    }
+    return moleculeListDiv;
+}
+function $7e68913db756e51f$export$c01f4ac2c1d26a5a(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
+    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
+    if (molecule) {
+        let inputString = input.value;
+        let values = inputString.split(/\s+/);
+        let pA = molecule.getProperty(dictRef).getProperty();
+        //console.log("propertyArray=" + propertyArray);
+        let pAValues = pA.values;
+        let n = pAValues.length;
+        let success = true;
+        values.forEach(function(value) {
+            if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
+        });
+        if (!success) {
+            alert(dictRef + " input for " + moleculeID + " is not a number, resetting...");
+            let input = document.getElementById(inputId);
+            input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(pAValues, " ");
+            return;
+        }
+        if (values.length == n) {
+            let inputPAValues = inputString.split(" ").map(Number);
+            pA.values = inputPAValues;
+            console.log("Changed " + dictRef + " input for " + moleculeID + " from: " + inputString + " to: " + (0, $134d19e749bf0414$export$4323cc4280d5be7)(inputPAValues, " "));
+        //console.log("molecule=" + molecule);
+        } else {
+            alert("Expecting " + n + " " + dictRef + " values for " + moleculeID + " but finding " + values.length + " resetting...");
+            let input = document.getElementById(inputId);
+            input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(pAValues, " ");
+        }
     }
 }
-function $7e68913db756e51f$var$addEventListenersToMolecules() {
-    // Add event listeners to molecules.
-    $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
-        /*
-        // Energy input.
-        let energyKey = id + "_energy";
-        let energyInput = document.getElementById(energyKey) as HTMLInputElement;
-        if (energyInput) {
-            resizeInput(energyInput);
-            energyInput.addEventListener('change', (event) => {
-                let eventTarget = event.target as HTMLInputElement;
-                let inputValue = eventTarget.value;
-                molecule.setEnergy(parseFloat(inputValue));
-                console.log("Set energy of " + id + " to " + inputValue + " kJ/mol");
-                resizeInput(energyInput);
-            });
+window.setPropertyArray = $7e68913db756e51f$export$c01f4ac2c1d26a5a;
+function $7e68913db756e51f$export$4e634558561f5cca(dictRef, input) {
+    let inputId = input.id;
+    let moleculeID = inputId.split("_")[0];
+    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
+    if (molecule != undefined) {
+        let ps = molecule.getProperty(dictRef).getProperty();
+        if ((0, $134d19e749bf0414$export$e90fb89750dba83f)(input.value)) {
+            let inputNumber = parseFloat(input.value);
+            ps.value = inputNumber;
+            console.log(dictRef + " of " + moleculeID + " set to " + inputNumber);
+        } else {
+            alert(dictRef + " input for " + moleculeID + " is not numeric, resetting...");
+            let inputElement = document.getElementById(inputId);
+            let value = ps.value;
+            if (value != undefined) inputElement.value = value.toString();
         }
-        // RotConsts input.
-        let rotConstsKey = id + "_rotConsts";
-        let rotConstsInput = document.getElementById(rotConstsKey) as HTMLInputElement;
-        if (rotConstsInput) {
-            resizeInput(rotConstsInput);
-            rotConstsInput.addEventListener('change', (event) => {
-                let eventTarget = event.target as HTMLInputElement;
-                let inputValue = eventTarget.value;
-                let rotConsts: number[] = [];
-                let values: string[] = inputValue.split(/\s+/);
-                values.forEach(function (value) {
-                    rotConsts.push(parseFloat(value));
-                });
-                molecule.setRotConsts(rotConsts);
-                console.log("Set rotConsts of " + id + " to " + inputValue);
-                resizeInput(rotConstsInput);
-            });
-        }
-        // VibFreqs input.
-        let vibFreqsKey = id + "_vibFreqs";
-        let vibFreqsInput = document.getElementById(vibFreqsKey) as HTMLInputElement;
-        if (vibFreqsInput) {
-            resizeInput(vibFreqsInput);
-            vibFreqsInput.addEventListener('change', (event) => {
-                let eventTarget = event.target as HTMLInputElement;
-                let inputValue = eventTarget.value;
-                let vibFreqs: number[] = [];
-                let values: string[] = inputValue.split(/\s+/);
-                values.forEach(function (value) {
-                    vibFreqs.push(parseFloat(value));
-                });
-                molecule.setVibFreqs(vibFreqs);
-                console.log("Set vibFreqs of " + id + " to " + inputValue);
-                resizeInput(vibFreqsInput);
-            });
-        }
-        */ let properties = molecule.getAttributesAsString();
-        let props = molecule.getProperties();
-        if (props != undefined) {
-            if (props instanceof (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)) {
-                let propsProperties = props.properties;
-                propsProperties.forEach(function(value0, key0) {
-                    properties += "(" + key0 + "=";
-                    let prop = value0.getProperty();
-                    if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
-                        // Property input.
-                        let propertyKey = id + "_" + key0;
-                        let units = prop.attributes.get("units");
-                        let input = document.getElementById(propertyKey);
-                        if (input) {
-                            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
-                            input.addEventListener("change", (event)=>{
-                                let eventTarget = event.target;
-                                let inputValue = eventTarget.value;
-                                molecule.setPropertyScalar(key0, parseFloat(inputValue));
-                                if (units != undefined) console.log("Set " + key0 + " of " + id + " to " + inputValue + " " + units);
-                                else console.log("Set " + key0 + " of " + id + " to " + inputValue);
-                                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
-                                if (key0 === (0, $ef5b9341e5193b70$export$3da9759ad07746a3).energyDictRef) {
-                                    console.log("update display diagram");
-                                    $7e68913db756e51f$var$displayReactionsDiagram();
-                                } else console.log("key0 " + key0 + " does not match " + (0, $ef5b9341e5193b70$export$3da9759ad07746a3).energyDictRef);
-                            });
-                        }
-                    } else {
-                        // Property input.
-                        let propertyKey = id + "_" + key0;
-                        let input = document.getElementById(propertyKey);
-                        if (input) {
-                            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
-                            input.addEventListener("change", (event)=>{
-                                let eventTarget = event.target;
-                                let inputValue = eventTarget.value;
-                                let values = inputValue.split(/\s+/);
-                                let numbers = [];
-                                values.forEach(function(value) {
-                                    numbers.push(parseFloat(value));
-                                });
-                                molecule.setPropertyArray(key0, numbers);
-                                console.log("Set " + key0 + " of " + id + " to " + inputValue);
-                                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(input);
-                            });
-                        }
-                    }
-                });
-            }
-        }
-    });
-}
-/**
- * @param xml_property The XML property element.
- * @returns The property.
- */ function $7e68913db756e51f$var$getProperty(xml_property) {
-    let attribs = (0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_property);
-    let children = xml_property.children;
-    if (children.length != 1) throw new Error("Expecting 1 child but finding " + children.length);
-    let nodeAttributes = (0, $cc8c7201a9bad777$export$fe94072fee8a6976)(children[0]);
-    let nodeName = children[0].nodeName; // Expecting scalar or array
-    let textContent = children[0].textContent;
-    if (textContent == null) {
-        console.error("nodeName");
-        throw new Error("textContent is null");
+    //console.log("molecule=" + molecule);
     }
-    textContent = textContent.trim();
-    let dictRef = attribs.get("dictRef");
-    //console.log("dictRef=" + dictRef);
-    if (dictRef == null) throw new Error("dictRef is null");
-    //console.log("fcnn=" + fcnn);
-    if (nodeName == (0, $ef5b9341e5193b70$export$d29b345ea2be5072).tagName) {
-        let value = parseFloat(textContent);
-        return new (0, $ef5b9341e5193b70$export$41b04b3a73e7216d)(attribs, new (0, $ef5b9341e5193b70$export$d29b345ea2be5072)(nodeAttributes, value));
-    } else if (nodeName == (0, $ef5b9341e5193b70$export$9f93a3fdf2490572).tagName) return new (0, $ef5b9341e5193b70$export$41b04b3a73e7216d)(attribs, new (0, $ef5b9341e5193b70$export$9f93a3fdf2490572)(nodeAttributes, (0, $134d19e749bf0414$export$8cfbaad830aa9e0a)(textContent.split(/\s+/)), " "));
-    else if (nodeName == "matrix") throw new Error("Unexpected nodeName: " + nodeName);
-    else throw new Error("Unexpected nodeName: " + nodeName);
 }
+window.setProperty = $7e68913db756e51f$export$4e634558561f5cca;
 /**
  * Load the XML file.
  */ function $7e68913db756e51f$var$loadXML() {
@@ -2246,7 +2805,7 @@ function $7e68913db756e51f$var$addEventListenersToMolecules() {
                 let start = 0;
                 let contents = "";
                 reader.onload = function(e) {
-                    if (!e.target) throw new Error("Event target is null");
+                    if (e.target == null) throw new Error("Event target is null");
                     contents += e.target.result;
                     if (file != null) {
                         if (start < file.size) {
@@ -2315,120 +2874,74 @@ function $7e68913db756e51f$var$addEventListenersToMolecules() {
     };
 });
 /**
- * Set the title.
- * @param {XMLDocument} xml The XML document.
- */ function $7e68913db756e51f$var$setTitle(xml) {
-    $7e68913db756e51f$var$me_title = xml.getElementsByTagName($7e68913db756e51f$var$me_title_s);
-    if ($7e68913db756e51f$var$me_title == null) throw new Error($7e68913db756e51f$var$me_title_s + " not found");
-    else {
-        if ($7e68913db756e51f$var$me_title.length != 1) throw new Error("Multiple " + $7e68913db756e51f$var$me_title_s + " elements found");
-        else {
-            $7e68913db756e51f$var$title = $7e68913db756e51f$var$me_title[0].childNodes[0].nodeValue;
-            $7e68913db756e51f$var$title = $7e68913db756e51f$var$title.trim();
-            console.log("Title=" + $7e68913db756e51f$var$title);
-            let e = document.getElementById("title");
-            if (e != null) {
-                // Create a new input element.
-                let inputElement = document.createElement("input");
-                // Set its type to "text".
-                inputElement.type = "text";
-                // Set its value to the title.
-                inputElement.value = $7e68913db756e51f$var$title;
-                // Apply CSS styles to make the input text appear like a h1.
-                inputElement.style.fontSize = "2em";
-                inputElement.style.fontWeight = "bold";
-                // Create a text node.
-                let textNode = document.createTextNode("Title: ");
-                // Insert the text node before the input element in the parent node.
-                e.parentNode?.insertBefore(textNode, e);
-                (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
-                // Replace the existing title element with the new input element.
-                e.parentNode?.replaceChild(inputElement, e);
-                console.log("inputElement.value=" + inputElement.value);
-                // Add event listener to inputElement.
-                inputElement.addEventListener("change", function() {
-                    if (inputElement.value != $7e68913db756e51f$var$title) {
-                        $7e68913db756e51f$var$title = inputElement.value;
-                        console.log("title=" + $7e68913db756e51f$var$title);
-                    }
-                    (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
-                });
-            }
-        }
-    }
-}
-/*
-function setTitle(xml: XMLDocument) {
-    me_title = xml.getElementsByTagName(me_title_s);
-    if (me_title == null) {
-        throw new Error(me_title_s + ' not found');
-    } else {
-        if (me_title.length != 1) {
-            throw new Error('Multiple ' + me_title_s + ' elements found');
-        } else {
-            title = me_title[0].childNodes[0].nodeValue as string;
-            title = title.trim();
-            console.log("Title=" + title);
-            let e: HTMLElement | null = document.getElementById("title");
-            if (e != null) {
-                e.innerHTML = title;
-            }
-        }
-    }
-}
-*/ /**
  * Parse the XML.
  * @param {XMLDocument} xml 
  */ function $7e68913db756e51f$var$parse(xml) {
-    /**
-     * Set mesmer_xml start tag.
-     */ $7e68913db756e51f$var$mesmerStartTag = "\n";
-    let documentElement = xml.documentElement;
-    if (documentElement == null) throw new Error("Document element not found");
+    // Title.
+    let xml_title = xml.getElementsByTagName((0, $8677001474399221$export$f99233281efd08a0).tagName);
+    if (xml_title.length != 1) throw new Error("Multiple " + (0, $8677001474399221$export$f99233281efd08a0).tagName + " tags found");
     else {
-        let tagName = documentElement.tagName;
-        $7e68913db756e51f$var$mesmerStartTag += "<" + tagName;
-        console.log(tagName);
-        $7e68913db756e51f$var$mesmerEndTag = (0, $cc8c7201a9bad777$export$34b7e1ae786b72b0)(tagName, "", true);
-        let first = true;
-        let pad = " ".repeat(tagName.length + 2);
-        let names = documentElement.getAttributeNames();
-        names.forEach(function(name) {
-            let attribute = documentElement.getAttribute(name);
-            let na = `${name}="${attribute}"`;
-            if (first) {
-                first = false;
-                $7e68913db756e51f$var$mesmerStartTag += " " + na;
-            } else $7e68913db756e51f$var$mesmerStartTag += "\n" + pad + na;
+        let title = xml_title[0].childNodes[0].nodeValue.trim();
+        let titleNode = new (0, $8677001474399221$export$f99233281efd08a0)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_title[0]), title);
+        let titleElement = document.getElementById("title");
+        // Create a new input element.
+        let inputElement = document.createElement("input");
+        inputElement.type = "text";
+        inputElement.value = title;
+        // Apply CSS styles to make the input text appear like a h1.
+        //inputElement.style.fontSize = '2em';
+        //inputElement.style.fontWeight = 'bold';
+        // Create a text node.
+        let textNode = document.createTextNode("Title: ");
+        // Insert the text node before the input element in the parent node.
+        titleElement.parentNode?.insertBefore(textNode, titleElement);
+        (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
+        // Replace the existing title element with the new input element.
+        titleElement.parentNode?.replaceChild(inputElement, titleElement);
+        console.log("inputElement.value=" + inputElement.value);
+        // Add event listener to inputElement.
+        inputElement.addEventListener("change", function() {
+            if (inputElement.value != title) titleNode.value = inputElement.value;
+            (0, $f0396edd0a5c99f7$export$4b454580398e92d5)(inputElement, 0);
         });
-        $7e68913db756e51f$var$mesmerStartTag += ">";
-    //console.log(mesmerStartTag);
+        // Molecules
+        // Create a collapsible div for molecules
+        let moleculesElement = document.getElementById("molecules");
+        let paragraph = document.createElement("p");
+        paragraph.innerHTML = "Moleculesvfdafdfdsfds";
+        let moleculeListElement = $7e68913db756e51f$var$getMolecules(xml);
+        let buttonId = "buttonId";
+        let buttonLabel = "Molecules";
+        let contentDivId = "moleculesList";
+        //let collapsibleDiv = getCollapsibleDiv(buttonId, buttonLabel, paragraph, contentDivId);
+        let collapsibleDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(buttonId, buttonLabel, moleculeListElement, contentDivId);
+        moleculesElement.appendChild(collapsibleDiv);
+        // Reactions
+        // Create a collapsible div for reactions
+        (0, $f0396edd0a5c99f7$export$2883f21c1f82e07d)();
     }
-    /**
-     *  Set title.
-     */ $7e68913db756e51f$var$setTitle(xml);
-    /**
+/**
      * Generate molecules table.
-     */ $7e68913db756e51f$var$initMolecules(xml);
-    $7e68913db756e51f$var$displayMolecules();
-    $7e68913db756e51f$var$addEventListenersToMolecules();
-    /**
+     */ //initMolecules(xml);
+//displayMolecules();
+/**
      * Generate reactions table.
-     */ $7e68913db756e51f$var$initReactions(xml);
-    $7e68913db756e51f$var$displayReactionsTable();
-    $7e68913db756e51f$var$displayReactionsDiagram();
-    /**
+     */ //initReactions(xml);
+//displayReactions();
+//addEventListeners();
+//displayReactionsDiagram();
+/**
      * Generate conditions table.
-     */ $7e68913db756e51f$var$initConditions(xml);
-    $7e68913db756e51f$var$displayConditions();
-    /**
+     */ //initConditions(xml);
+//displayConditions();
+/**
      * Generate parameters table.
-     */ $7e68913db756e51f$var$initModelParameters(xml);
-    $7e68913db756e51f$var$displayModelParameters();
-    /**
+     */ //initModelParameters(xml);
+//displayModelParameters();
+/**
      * Generate control table.
-     */ $7e68913db756e51f$var$initControl(xml);
-    $7e68913db756e51f$var$displayControl();
+     */ //initControl(xml);
+//displayControl();
 }
 let $7e68913db756e51f$var$conditions;
 /**
@@ -2447,7 +2960,7 @@ let $7e68913db756e51f$var$conditions;
     let bathGas = new (0, $ae74a7b44a6504a1$export$b33a132661f4be58)(attributes, moleculeID, $7e68913db756e51f$var$molecules);
     // PTs
     let xml_PTs = (0, $cc8c7201a9bad777$export$b7531b8ff18dc588)(xml_conditions, "me:PTs");
-    let xml_PTPairs = xml_PTs.getElementsByTagName((0, $ae74a7b44a6504a1$export$3fe97ecb6b172244).tagName);
+    let xml_PTPairs = xml_PTs.getElementsByTagName((0, $ae74a7b44a6504a1$export$3961bdb9130b90e7).tagName);
     // Process each PTpair.
     let pTs = [];
     for(let i = 0; i < xml_PTPairs.length; i++){
@@ -2467,7 +2980,7 @@ let $7e68913db756e51f$var$conditions;
             experimentRate = new (0, $ae74a7b44a6504a1$export$ea088383ce76fc5a)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_experimentRates[0]), parseFloat((0, $cc8c7201a9bad777$export$13cb40e9b656ab9e)((0, $cc8c7201a9bad777$export$4e07613bf412feb7)(xml_experimentRates[0]))));
             console.log("experimentRate" + experimentRate.toString());
         }
-        pTs.push(new (0, $ae74a7b44a6504a1$export$3fe97ecb6b172244)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_PTPairs[i]), pTBathGas, experimentRate));
+        pTs.push(new (0, $ae74a7b44a6504a1$export$3961bdb9130b90e7)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_PTPairs[i]), pTBathGas, experimentRate));
     //console.log(pTs[i].toString()); // For debugging.
     }
     $7e68913db756e51f$var$conditions = new (0, $ae74a7b44a6504a1$export$363c7374d425f4ad)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_conditions), bathGas, new (0, $ae74a7b44a6504a1$export$3be0efe793283834)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_PTs), pTs));
@@ -2475,7 +2988,7 @@ let $7e68913db756e51f$var$conditions;
 let $7e68913db756e51f$var$modelParameters;
 /**
  * Parses xml to initialise modelParameters.
- * @param {XMLDocument} xml The XML document.
+ * @param xml The XML document.
  */ function $7e68913db756e51f$var$initModelParameters(xml) {
     console.log((0, $8883b31bd809eb64$export$77f098867dc64198).tagName);
     let xml_modelParameters = (0, $cc8c7201a9bad777$export$b7531b8ff18dc588)(xml, (0, $8883b31bd809eb64$export$77f098867dc64198).tagName);
@@ -2599,60 +3112,42 @@ let $7e68913db756e51f$var$control;
         if (reactionID != null) {
             console.log("id=" + reactionID);
             // Load reactants.
-            let reactants;
+            let reactants = [];
             let xml_reactants = xml_reactions[i].getElementsByTagName((0, $6f7aa7a716962086$export$dcfd4302d04b7fb6).tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             if (xml_reactants.length > 0) {
                 if (xml_reactants.length < 2) {
                     let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_reactants[0], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                    let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                    reactants = new (0, $6f7aa7a716962086$export$dcfd4302d04b7fb6)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_reactants[0]), twa, $7e68913db756e51f$var$molecules);
-                } else {
-                    reactants = new Map();
-                    for(let j = 0; j < xml_reactants.length; j++){
-                        let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_reactants[j], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                        let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                        let reactant = new (0, $6f7aa7a716962086$export$dcfd4302d04b7fb6)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_reactants[j]), twa, $7e68913db756e51f$var$molecules);
-                        reactants.set(reactant.getRef(), reactant);
-                    }
+                    reactants.push(new (0, $6f7aa7a716962086$export$dcfd4302d04b7fb6)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_reactants[0]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
+                } else for(let j = 0; j < xml_reactants.length; j++){
+                    let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_reactants[j], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
+                    reactants.push(new (0, $6f7aa7a716962086$export$dcfd4302d04b7fb6)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_reactants[j]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
                 }
             }
             // Load products.
-            let products;
+            let products = [];
             let xml_products = xml_reactions[i].getElementsByTagName((0, $6f7aa7a716962086$export$264ad599d7cef668).tagName);
             //console.log("xml_products.length=" + xml_products.length);
             if (xml_products.length > 0) {
                 if (xml_products.length < 2) {
                     let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_products[0], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                    let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                    products = new (0, $6f7aa7a716962086$export$264ad599d7cef668)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_products[0]), twa, $7e68913db756e51f$var$molecules);
-                } else {
-                    products = new Map();
-                    for(let j = 0; j < xml_products.length; j++){
-                        let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_products[j], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                        let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                        let product = new (0, $6f7aa7a716962086$export$264ad599d7cef668)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_products[j]), twa, $7e68913db756e51f$var$molecules);
-                        products.set(product.getRef(), product);
-                    }
+                    products.push(new (0, $6f7aa7a716962086$export$264ad599d7cef668)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_products[0]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
+                } else for(let j = 0; j < xml_products.length; j++){
+                    let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_products[j], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
+                    products.push(new (0, $6f7aa7a716962086$export$264ad599d7cef668)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_products[j]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
                 }
             }
             // Load transition states.
-            //console.log("Load  transition states...");
-            let xml_transitionState = xml_reactions[i].getElementsByTagName((0, $6f7aa7a716962086$export$145c1ed87b1a2216).tagName);
-            let transitionStates;
-            if (xml_transitionState.length > 0) {
-                if (xml_transitionState.length < 2) {
-                    let xml_molecule = xml_transitionState[0].getElementsByTagName((0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName)[0];
-                    let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                    transitionStates = new (0, $6f7aa7a716962086$export$145c1ed87b1a2216)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_transitionState[0]), twa, $7e68913db756e51f$var$molecules);
-                } else {
-                    transitionStates = new Map();
-                    for(let j = 0; j < xml_transitionState.length; j++){
-                        let xml_molecule = xml_transitionState[j].getElementsByTagName((0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName)[0];
-                        let twa = new (0, $cc8c7201a9bad777$export$ca4ceee82ec565dc)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule), (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
-                        let transitionState = new (0, $6f7aa7a716962086$export$145c1ed87b1a2216)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_transitionState[j]), twa, $7e68913db756e51f$var$molecules);
-                        transitionStates.set(transitionState.getRef(), transitionState);
-                    }
+            let transitionStates = [];
+            let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, $6f7aa7a716962086$export$145c1ed87b1a2216).tagName);
+            //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
+            if (xml_transitionStates.length > 0) {
+                if (xml_transitionStates.length < 2) {
+                    let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_transitionStates[0], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
+                    transitionStates.push(new (0, $6f7aa7a716962086$export$145c1ed87b1a2216)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_transitionStates[0]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
+                } else for(let j = 0; j < xml_transitionStates.length; j++){
+                    let xml_molecule = (0, $cc8c7201a9bad777$export$91e73a91db22e6a2)(xml_transitionStates[j], (0, $ef5b9341e5193b70$export$3da9759ad07746a3).tagName);
+                    transitionStates.push(new (0, $6f7aa7a716962086$export$145c1ed87b1a2216)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_transitionStates[j]), new (0, $6f7aa7a716962086$export$e8a062bb2fc9e2ba)((0, $cc8c7201a9bad777$export$fe94072fee8a6976)(xml_molecule))));
                 }
             }
             //console.log("transitionStates=" + transitionStates);
@@ -2776,13 +3271,13 @@ let $7e68913db756e51f$var$control;
     let energyMax = Number.MIN_VALUE;
     $7e68913db756e51f$var$reactions.forEach(function(reaction, id) {
         // Get TransitionStates.
-        let reactionTransitionStates = reaction.transitionStates;
+        let reactionTransitionStates = reaction.getTransitionStates();
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         if (reactantsLabel != undefined) {
             reactants.add(reactantsLabel);
             if (products.has(reactantsLabel)) intProducts.add(reactantsLabel);
-            let energy = reaction.getReactantsEnergy();
+            let energy = reaction.getReactantsEnergy($7e68913db756e51f$var$molecules);
             energyMin = Math.min(energyMin, energy);
             energyMax = Math.max(energyMax, energy);
             energies.set(reactantsLabel, energy);
@@ -2794,7 +3289,7 @@ let $7e68913db756e51f$var$control;
         let productsLabel = reaction.getProductsLabel();
         if (productsLabel != undefined) {
             products.add(productsLabel);
-            let energy = reaction.getProductsEnergy();
+            let energy = reaction.getProductsEnergy($7e68913db756e51f$var$molecules);
             energyMin = Math.min(energyMin, energy);
             energyMax = Math.max(energyMax, energy);
             energies.set(productsLabel, energy);
@@ -2807,54 +3302,30 @@ let $7e68913db756e51f$var$control;
                 });
                 // Insert transition states.
                 if (reactionTransitionStates != undefined) {
-                    if (reactionTransitionStates instanceof Map) reactionTransitionStates.forEach(function(ts, id) {
-                        let tsn = ts.getRef();
-                        transitionStates.add(tsn);
-                        orders.set(tsn, i);
-                        energy = ts.getMolecule().getEnergy();
+                    reactionTransitionStates.forEach(function(ts) {
+                        let ref = ts.getMolecule().ref;
+                        transitionStates.add(ref);
+                        orders.set(ref, i);
+                        energy = $7e68913db756e51f$var$molecules.get(ref)?.getEnergy() ?? 0;
                         energyMin = Math.min(energyMin, energy);
                         energyMax = Math.max(energyMax, energy);
-                        energies.set(tsn, energy);
+                        energies.set(ref, energy);
                         i++;
                     });
-                    else {
-                        let ts = reactionTransitionStates;
-                        let tsn = ts.getRef();
-                        transitionStates.add(tsn);
-                        orders.set(tsn, i);
-                        energy = ts.getMolecule().getEnergy();
-                        energyMin = Math.min(energyMin, energy);
-                        energyMax = Math.max(energyMax, energy);
-                        energies.set(tsn, energy);
-                        i++;
-                    }
                     orders.set(productsLabel, i);
                     i++;
                 }
             } else {
-                if (reactionTransitionStates != undefined) {
-                    if (reactionTransitionStates instanceof Map) reactionTransitionStates.forEach(function(ts, id) {
-                        let tsn = ts.getRef();
-                        transitionStates.add(tsn);
-                        orders.set(tsn, i);
-                        energy = ts.getMolecule().getEnergy();
-                        energyMin = Math.min(energyMin, energy);
-                        energyMax = Math.max(energyMax, energy);
-                        energies.set(tsn, energy);
-                        i++;
-                    });
-                    else {
-                        let ts = reactionTransitionStates;
-                        let tsn = ts.getRef();
-                        transitionStates.add(tsn);
-                        orders.set(tsn, i);
-                        energy = ts.getMolecule().getEnergy();
-                        energyMin = Math.min(energyMin, energy);
-                        energyMax = Math.max(energyMax, energy);
-                        energies.set(tsn, energy);
-                        i++;
-                    }
-                }
+                if (reactionTransitionStates != undefined) reactionTransitionStates.forEach(function(ts) {
+                    let ref = ts.getMolecule().ref;
+                    transitionStates.add(ref);
+                    orders.set(ref, i);
+                    energy = $7e68913db756e51f$var$molecules.get(ref)?.getEnergy() ?? 0;
+                    energyMin = Math.min(energyMin, energy);
+                    energyMax = Math.max(energyMax, energy);
+                    energies.set(ref, energy);
+                    i++;
+                });
                 orders.set(productsLabel, i);
                 i++;
             }
@@ -2954,30 +3425,20 @@ let $7e68913db756e51f$var$control;
         //console.log("id=" + id);
         //console.log("reaction=" + reaction);
         // Get TransitionState if there is one.
-        let reactionTransitionStates = reaction.transitionStates;
+        let reactionTransitionStates = reaction.getTransitionStates();
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         let productsLabel = reaction.getProductsLabel();
         let reactantOutXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(reactantsOutXY, reactantsLabel);
         let productInXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(productsInXY, productsLabel);
-        if (reactionTransitionStates != undefined) {
-            if (reactionTransitionStates instanceof Map) reactionTransitionStates.forEach(function(ts, id) {
-                let transitionState = ts;
-                let transitionStateLabel = transitionState.getRef();
-                let transitionStateInXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesInXY, transitionStateLabel);
-                (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
-                let transitionStateOutXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesOutXY, transitionStateLabel);
-                (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
-            });
-            else {
-                let transitionState = reactionTransitionStates;
-                let transitionStateLabel = transitionState.getRef();
-                let transitionStateInXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesInXY, transitionStateLabel);
-                (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
-                let transitionStateOutXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesOutXY, transitionStateLabel);
-                (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
-            }
-        } else (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
+        if (reactionTransitionStates != undefined) reactionTransitionStates.forEach(function(ts) {
+            let transitionStateLabel = ts.getMolecule().ref;
+            let transitionStateInXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesInXY, transitionStateLabel);
+            (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
+            let transitionStateOutXY = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesOutXY, transitionStateLabel);
+            (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
+        });
+        else (0, $e5f7ab5c40db3f0e$export$819db45aec5fcbe5)(ctx, black, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
     });
     // Draw horizontal lines and labels.
     // (This is done last so that the labels are on top of the vertical lines.)
@@ -3001,7 +3462,6 @@ let $7e68913db756e51f$var$control;
         else (0, $e5f7ab5c40db3f0e$export$479ac392a7fb4419)(ctx, green, lw, x0, y, x1, y, font, th, value, energyString);
     });
     transitionStates.forEach(function(value) {
-        let v;
         let energy = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(energies, value);
         let energyRescaled = (0, $134d19e749bf0414$export$bd2782c820638828)(energyMin, energyRange, 0, originalCanvasHeight, energy);
         let x0 = (0, $134d19e749bf0414$export$3988ae62b71be9a3)(transitionStatesInXY, value)[0];
@@ -3011,226 +3471,144 @@ let $7e68913db756e51f$var$control;
         (0, $e5f7ab5c40db3f0e$export$479ac392a7fb4419)(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
     });
 }
+function $7e68913db756e51f$var$getLabel(key, twa) {
+    let attributes = twa.attributes;
+    let label = key;
+    if (attributes != undefined) label += " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(attributes, " ");
+    return label.trim();
+}
 /**
  * Display molecules.
  */ function $7e68913db756e51f$var$displayMolecules() {
-    if ($7e68913db756e51f$var$molecules.size == 0) return;
-    $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
+/*
+    if (molecules.size == 0) {
+        return;
+    }
+    molecules.forEach(function (molecule, id) {
         //console.log("id=" + id);
         //console.log("molecule=" + molecule);
-        // Create molecule detail div.
+        // Create molecule div.
         let div = document.createElement("div");
-        /*
-        // Energy.
-        let energyNumber: number = molecule.getEnergy();
-        let energy: string;
-        if (energyNumber == null) {
-            energy = "";
-        } else {
-            energy = energyNumber.toString();
-        }
-        let energyInputDiv: HTMLDivElement = getInput("number", id + "_energy", (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setEnergy(event.target);
-            }
-        }, energy, "Energy");
-        div.appendChild(energyInputDiv);
-        //console.log("energy=" + energy);
-        
-        // Rotation Constants.
-        let rotationConstants: string = "";
-        let rotConsts: number[] | undefined = molecule.getRotConsts();
-        if (rotConsts != undefined) {
-            rotationConstants = arrayToString(rotConsts, " ");
-        }
-        let rotConstsDiv: HTMLDivElement = getInput("text", id + "_rotConst", (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setRotConst(event.target);
-            }
-        }, rotationConstants, "Rotation Constants");
-        div.appendChild(rotConstsDiv);
-        //console.log("rotationConstants=" + rotationConstants);
-        
-        // Vibration Frequencies.
-        let vibrationFrequencies: string = "";
-        let vibFreqs: number[] | undefined = molecule.getVibFreqs();
-        if (vibFreqs != undefined) {
-            vibrationFrequencies = arrayToString(vibFreqs, " ");
-        }
-        let vibFreqsDiv: HTMLDivElement = getInput("text", id + "_vibFreqs", (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setVibFreqs(event.target);
-            }
-        }, vibrationFrequencies, "Vibration Frequencies");
-        div.appendChild(vibFreqsDiv);
-        //console.log("vibrationFrequencies=" + vibrationFrequencies);
-        */ // Properties.
-        //let properties: string = molecule.getAttributesAsString();
-        let props = molecule.getProperties();
-        if (props != undefined) {
-            if (props instanceof (0, $ef5b9341e5193b70$export$4e0d1ad7ad6a0802)) {
-                let propsAttributes = props.attributes;
-                let propsAttributesString = (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(propsAttributes);
-                console.log("propsAttributesString=" + propsAttributesString);
-                //properties += propsAttributesString;
-                let propsProperties = props.properties;
-                propsProperties.forEach(function(value0, key0) {
-                    //properties += "(" + key0 + "=";
-                    let prop = value0.getProperty();
-                    if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
-                        //properties += prop.tagName + "(";
-                        //properties += toHTML(prop.toXML());
-                        let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
-                        //prop.attributes.forEach(function (value1, key1) {
-                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
-                        //});
-                        let v = prop.value;
-                        //properties += "value(" + v.toString() + ")";
-                        //properties += ")";
-                        let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_" + key0, (event)=>{
-                            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$4e634558561f5cca(key0, event.target);
-                        }, v.toString(), label);
-                        div.appendChild(inputDiv);
-                    } else {
-                        //prop instanceof PropertyArray
-                        //properties += toHTML(prop.toXML());
-                        let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
-                        //prop.attributes.forEach(function (value1, key1) {
-                        //    properties += "attributes(" + key1 + "=" + value1 + ")";
-                        //});
-                        let v = prop.values;
-                        //properties += "values(" + arrayToString(v, " ") + ")";
-                        //properties += ")";
-                        let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_" + key0, (event)=>{
-                            if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$c01f4ac2c1d26a5a(key0, event.target);
-                        }, (0, $134d19e749bf0414$export$4323cc4280d5be7)(v, " "), label);
-                        div.appendChild(inputDiv);
-                    }
-                //properties += ")";
-                });
+        // Go through each node
+        molecule.nodes.forEach(function (node) {
+            if (node instanceof NodeWithNodes) {
+                processNodeWithNodes(molecule.tagName, id, div, node);
+            } else if (node instanceof StringNode) {
+                processStringNode(molecule.tagName, id, div, "", node);
+            } else if (node instanceof NumberArrayNode) {
+                processNumberArrayNode(molecule.tagName, id, div, "", node);
+            } else if (node instanceof NumberNode) {
+                processNumberNode(molecule.tagName, id, div, "", node);
+            } else if (node instanceof TagWithAttributes) {
+                processTagWithAttributes(molecule.tagName, id, div, "", node);
             } else {
-                //props instanceof Property
-                let prop = props.getProperty();
-                let key0 = props.tagName;
-                if (prop instanceof (0, $ef5b9341e5193b70$export$d29b345ea2be5072)) {
-                    //properties += prop.tagName + "(";
-                    //properties += toHTML(prop.toXML());
-                    let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
-                    //prop.attributes.forEach(function (value1, key1) {
-                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
-                    //});
-                    let v = prop.value;
-                    //properties += "value(" + v.toString() + ")";
-                    //properties += ")";
-                    let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("number", id + "_" + key0, (event)=>{
-                        if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$4e634558561f5cca(key0, event.target);
-                    }, v.toString(), label);
-                    div.appendChild(inputDiv);
-                } else {
-                    //prop instanceof PropertyArray
-                    //properties += toHTML(prop.toXML());
-                    let label = key0 + " " + (0, $134d19e749bf0414$export$dc22ec7f8e0b9ac)(prop.attributes, " ");
-                    //prop.attributes.forEach(function (value1, key1) {
-                    //    properties += "attributes(" + key1 + "=" + value1 + ")";
-                    //});
-                    let v = prop.values;
-                    //properties += "values(" + arrayToString(v, " ") + ")";
-                    //properties += ")";
-                    let inputDiv = (0, $f0396edd0a5c99f7$export$7c112ceec8941e67)("text", id + "_" + key0, (event)=>{
-                        if (event.target instanceof HTMLInputElement) $7e68913db756e51f$export$c01f4ac2c1d26a5a(key0, event.target);
-                    }, (0, $134d19e749bf0414$export$4323cc4280d5be7)(v, " "), label);
-                    div.appendChild(inputDiv);
-                }
-            //properties += ")";
+                processTag(molecule.tagName, id, div, node);
             }
-        }
-        //let propertiesDiv: HTMLDivElement = document.createElement('div');
-        //let p: HTMLParagraphElement = document.createElement('p');
-        //p.innerHTML = properties;
-        //propertiesDiv.appendChild(p);
-        //div.appendChild(propertiesDiv);
-        let moleculeDetailDiv = (0, $f0396edd0a5c99f7$export$8b2cd46c11844202)(div, molecule.getLabel(), id + "_details", "molecule");
-        $7e68913db756e51f$var$moleculesDiv = document.getElementById("moleculesList");
-        if ($7e68913db756e51f$var$moleculesDiv !== null) {
-            let parentElement = document.getElementById("molecules");
-            if (parentElement) parentElement.appendChild(moleculeDetailDiv);
+        });
+        let moleculeDetailDiv = getCollapsibleDiv(div, molecule.getLabel(), id + "_details", "molecule");
+        moleculesDiv = document.getElementById("moleculesList");
+        if (moleculesDiv !== null) {
+            let parentElement = document.getElementById('molecules');
+            if (parentElement != undefined) {
+                parentElement.appendChild(moleculeDetailDiv);
+            }
         }
     });
-    (0, $f0396edd0a5c99f7$export$2883f21c1f82e07d)();
-}
+    makeCollapsible();
+        */ }
 /**
  * Display reactions table.
- */ function $7e68913db756e51f$var$displayReactionsTable() {
+ */ function $7e68913db756e51f$var$displayReactions() {
     if ($7e68913db756e51f$var$reactions.size == 0) return;
-    // Prepare table headings.
-    let reactionsTable = (0, $f0396edd0a5c99f7$export$3359980f21752184)([
-        "ID",
-        "Reactants",
-        "Products",
-        "Transition State",
-        "PreExponential",
-        "Activation Energy",
-        "TInfinity",
-        "NInfinity"
-    ]);
     $7e68913db756e51f$var$reactions.forEach(function(reaction, id) {
         //console.log("id=" + id);
+        //console.log("reactions=" + reactions);
+        // Create reactions div.
+        let div = document.createElement("div");
+        // Properties.
+        reaction.index.forEach(function(value, key) {});
+    });
+/*
+    if (reactions.size == 0) {
+        return;
+    }
+    // Prepare table headings.
+    let reactionsTable = getTH(["ID", "Reactants", "Products", "Transition State",
+        "PreExponential", "Activation Energy", "TInfinity", "NInfinity"]);
+    reactions.forEach(function (reaction, id) {
+        //console.log("id=" + id);
         //console.log("reaction=" + reaction);
-        let reactants = reaction.getReactantsLabel() || "";
-        let products = reaction.getProductsLabel() || "";
-        let transitionState = "";
-        let preExponential = "";
-        let activationEnergy = "";
-        let tInfinity = "";
-        let nInfinity = "";
-        let tSs = reaction.transitionStates;
+        let reactants: string = reaction.getReactantsLabel() || "";
+        let products: string = reaction.getProductsLabel() || "";
+        let transitionState: string = "";
+        let preExponential: string = "";
+        let activationEnergy: string = "";
+        let tInfinity: string = "";
+        let nInfinity: string = "";
+        let tSs: Map<string, TransitionState> | TransitionState | undefined = reaction.transitionStates;
         //console.log("tSs=" + tSs);
         if (tSs != undefined) {
-            if (tSs instanceof Map) // Join all names together.
-            tSs.forEach(function(ts) {
-                let name = ts.getRef();
-                if (name != null) transitionState = name + " ";
-            });
-            else {
-                let ts = tSs;
-                let name = ts.getRef();
-                if (name != null) transitionState = name;
+            if (tSs instanceof Map) {
+                // Join all names together.
+                tSs.forEach(function (ts) {
+                    let name: string | undefined = ts.getRef();
+                    if (name != null) {
+                        transitionState = name + " ";
+                    }
+                });
+            } else {
+                let ts: TransitionState = tSs as TransitionState;
+                let name: string | undefined = ts.getRef();
+                if (name != null) {
+                    transitionState = name;
+                }
             }
         }
-        let mCRCMethod = reaction.getMCRCMethod();
+        let mCRCMethod: MCRCMethod | undefined = reaction.getMCRCMethod();
         //console.log("mCRCMethod=" + mCRCMethod);
         //console.log("typeof mCRCMethod=" + typeof mCRCMethod);
         if (mCRCMethod != undefined) {
-            if (mCRCMethod instanceof (0, $6f7aa7a716962086$export$191e95ebb11cc88)) {
-                let mp = mCRCMethod.getPreExponential();
-                if (mp != undefined) preExponential = mp.value.toString() + " " + mp.attributes.get("units");
-                let ae = mCRCMethod.getActivationEnergy();
-                if (ae != undefined) activationEnergy = ae.value.toString() + " " + ae.attributes.get("units");
-                let ti = mCRCMethod.getTInfinity();
-                if (ti != undefined) tInfinity = ti.value.toString();
-                let ni = mCRCMethod.getNInfinity();
-                if (ni != undefined) nInfinity = ni.value.toString();
+            if (mCRCMethod instanceof MesmerILT) {
+                let mp: PreExponential | undefined = mCRCMethod.getPreExponential();
+                if (mp != undefined) {
+                    preExponential = mp.value.toString() + " "
+                        + mp.attributes.get("units");
+                }
+                let ae: ActivationEnergy | undefined = mCRCMethod.getActivationEnergy();
+                if (ae != undefined) {
+                    activationEnergy = ae.value.toString() + " "
+                        + ae.attributes.get("units");
+                }
+                let ti: TInfinity | undefined = mCRCMethod.getTInfinity();
+                if (ti != undefined) {
+                    tInfinity = ti.value.toString();
+                }
+                let ni: NInfinity | undefined = mCRCMethod.getNInfinity();
+                if (ni != undefined) {
+                    nInfinity = ni.value.toString();
+                }
             } else {
-                if (mCRCMethod.attributes.get("name") == "RRKM") ;
-                else {
+                if (mCRCMethod.attributes.get("name") == "RRKM") {
+                } else {
                     console.log("Unexpected mCRCMethod: " + mCRCMethod);
                     throw new Error("Unexpected mCRCMethod: " + mCRCMethod);
                 }
             }
         }
         // Complete table creation.
-        reactionsTable += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)(id) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(reactants) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(products) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(transitionState) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(preExponential, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(activationEnergy, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(tInfinity, true) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(nInfinity, true));
-        $7e68913db756e51f$var$reactions_table = document.getElementById("reactions_table");
-        if ($7e68913db756e51f$var$reactions_table !== null) $7e68913db756e51f$var$reactions_table.innerHTML = reactionsTable;
+        reactionsTable += getTR(getTD(id) + getTD(reactants) + getTD(products) + getTD(transitionState)
+            + getTD(preExponential, true) + getTD(activationEnergy, true) + getTD(tInfinity, true)
+            + getTD(nInfinity, true));
+        reactions_table = document.getElementById("reactions_table");
+        if (reactions_table !== null) {
+            reactions_table.innerHTML = reactionsTable;
+        }
     });
-}
+    */ }
 /**
  * Display reactions diagram.
  */ function $7e68913db756e51f$var$displayReactionsDiagram() {
     if ($7e68913db756e51f$var$reactions.size > 1) {
-        // Set reactions_diagram_title.
-        $7e68913db756e51f$var$reactions_diagram_title = document.getElementById("reactions_diagram_title");
-        if ($7e68913db756e51f$var$reactions_diagram_title != null) $7e68913db756e51f$var$reactions_diagram_title.innerHTML = "Diagram";
         // Display the diagram.
         let canvas = document.getElementById("reactions_diagram");
         let font = "14px Arial";
@@ -3246,159 +3624,141 @@ let $7e68913db756e51f$var$control;
 /**
  * Display conditions.
  */ function $7e68913db756e51f$var$displayConditions() {
-    let bathGas_element = document.getElementById("bathGas");
-    if (bathGas_element != null) bathGas_element.innerHTML = "Bath Gas " + $7e68913db756e51f$var$conditions.getBathGas().value;
-    let pTs_element = document.getElementById("PT_table");
-    let th = [
-        "P",
-        "T"
-    ];
+/*
+    let bathGas_element: HTMLElement | null = document.getElementById("bathGas");
+    if (bathGas_element != null) {
+        bathGas_element.innerHTML = "Bath Gas " + conditions.getBathGas().value;
+    }
+    let pTs_element: HTMLElement | null = document.getElementById("PT_table");
+    let th: string[] = ["P", "T"];
     // If PTs contain BathGas
-    let hasBathGas = $7e68913db756e51f$var$conditions.getPTs().pTpairs.some((pair)=>{
+    let hasBathGas: boolean = conditions.getPTs().pTpairs.some(pair => {
         return pair.getBathGas() != undefined;
     });
-    if (hasBathGas) th.push("BathGas");
+    if (hasBathGas) {
+        th.push("BathGas");
+    }
     // Check if PTs contain ExperimentRate
-    let hasExperimentRate = $7e68913db756e51f$var$conditions.getPTs().pTpairs.some((pair)=>{
+    let hasExperimentRate: boolean = conditions.getPTs().pTpairs.some(pair => {
         return pair.getExperimentRate() != undefined;
     });
-    if (hasExperimentRate) th.push("ExperimentRate");
-    let table = (0, $f0396edd0a5c99f7$export$3359980f21752184)(th);
+    if (hasExperimentRate) {
+        th.push("ExperimentRate");
+    }
+    let table: string = getTH(th);
     if (pTs_element != null) {
-        $7e68913db756e51f$var$conditions.getPTs().pTpairs.forEach(function(pTpair) {
-            table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)(pTpair.getP().toString()) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(pTpair.getT().toString()));
-            if (hasBathGas) table += (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(pTpair.getBathGas()?.toString() ?? "");
-            if (hasExperimentRate) table += (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(pTpair.getExperimentRate()?.toString() ?? "");
+        conditions.getPTs().pTpairs.forEach(function (pTpair) {
+            table += getTR(getTD(pTpair.getP().toString()) + getTD(pTpair.getT().toString()));
+            if (hasBathGas) {
+                table += getTD(pTpair.getBathGas()?.toString() ?? '');
+            }
+            if (hasExperimentRate) {
+                table += getTD(pTpair.getExperimentRate()?.toString() ?? '');
+            }
         });
         pTs_element.innerHTML = table;
     }
-}
+    */ }
 /**
  * Display modelParameters.
  */ function $7e68913db756e51f$var$displayModelParameters() {
-    let modelParameters_element = document.getElementById("modelParameters_table");
-    let table = (0, $f0396edd0a5c99f7$export$3359980f21752184)([
-        "Parameter",
-        "Value"
-    ]);
-    table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)("Grain Size") + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)($7e68913db756e51f$var$modelParameters.getGrainSize().value.toString()));
-    table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)("Energy Above The Top Hill") + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)($7e68913db756e51f$var$modelParameters.getEnergyAboveTheTopHill().value.toString()));
-    if (modelParameters_element != null) modelParameters_element.innerHTML = table;
-}
+/*
+    let modelParameters_element: HTMLElement | null = document.getElementById("modelParameters_table");
+    let table: string = getTH(["Parameter", "Value"]);
+    table += getTR(getTD("Grain Size") + getTD(modelParameters.getGrainSize().value.toString()));
+    table += getTR(getTD("Energy Above The Top Hill") + getTD(modelParameters.getEnergyAboveTheTopHill().value.toString()));
+
+    if (modelParameters_element != null) {
+        modelParameters_element.innerHTML = table;
+    }
+    */ }
 /**
  * Display control.
  */ function $7e68913db756e51f$var$displayControl() {
-    let control_table_element = document.getElementById("control_table");
-    let table = (0, $f0396edd0a5c99f7$export$3359980f21752184)([
-        "Control",
-        "Value"
-    ]);
+/*
+    let control_table_element: HTMLElement | null = document.getElementById("control_table");
+    let table: string = getTH(["Control", "Value"]);
     // TestDOS
-    let testDOS = $7e68913db756e51f$var$control.getTestDOS();
-    if (testDOS != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$a3d7e677521f681f).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let testDOS: TestDOS | undefined = control.getTestDOS();
+    if (testDOS != undefined) {
+        table += getTR(getTD(TestDOS.tagName) + getTD(""));
+    }
     // PrintSpeciesProfile
-    let printSpeciesProfile = $7e68913db756e51f$var$control.getPrintSpeciesProfile();
-    if (printSpeciesProfile != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$ed9b9e07e51c2ac1).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printSpeciesProfile: PrintSpeciesProfile | undefined = control.getPrintSpeciesProfile();
+    if (printSpeciesProfile != undefined) {
+        table += getTR(getTD(PrintSpeciesProfile.tagName) + getTD(""));
+    }
     // TestMicroRates
-    let testMicroRates = $7e68913db756e51f$var$control.getTestMicroRates();
-    if (testMicroRates != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$1f37c7c73e401f31).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let testMicroRates: TestMicroRates | undefined = control.getTestMicroRates();
+    if (testMicroRates != undefined) {
+        table += getTR(getTD(TestMicroRates.tagName) + getTD(""));
+    }
     // TestRateConstant
-    let testRateConstant = $7e68913db756e51f$var$control.getTestRateConstant();
-    if (testRateConstant != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$980e5abe9a459423).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let testRateConstant: TestRateConstant | undefined = control.getTestRateConstant();
+    if (testRateConstant != undefined) {
+        table += getTR(getTD(TestRateConstant.tagName) + getTD(""));
+    }
     // PrintGrainDOS
-    let printGrainDOS = $7e68913db756e51f$var$control.getPrintGrainDOS();
-    if (printGrainDOS != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$d23243bda4dfae2b).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printGrainDOS: PrintGrainDOS | undefined = control.getPrintGrainDOS();
+    if (printGrainDOS != undefined) {
+        table += getTR(getTD(PrintGrainDOS.tagName) + getTD(""));
+    }
     // PrintCellDOS
-    let printCellDOS = $7e68913db756e51f$var$control.getPrintCellDOS();
-    if (printCellDOS != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$60b233651e162b60).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printCellDOS: PrintCellDOS | undefined = control.getPrintCellDOS();
+    if (printCellDOS != undefined) {
+        table += getTR(getTD(PrintCellDOS.tagName) + getTD(""));
+    }
     // PrintReactionOperatorColumnSums
-    let printReactionOperatorColumnSums = $7e68913db756e51f$var$control.getPrintReactionOperatorColumnSums();
-    if (printReactionOperatorColumnSums != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$a915db169f144f37).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printReactionOperatorColumnSums: PrintReactionOperatorColumnSums | undefined = control.getPrintReactionOperatorColumnSums();
+    if (printReactionOperatorColumnSums != undefined) {
+        table += getTR(getTD(PrintReactionOperatorColumnSums.tagName) + getTD(""));
+    }
     // PrintTunnellingCoefficients
-    let printTunnellingCoefficients = $7e68913db756e51f$var$control.getPrintTunnellingCoefficients();
-    if (printTunnellingCoefficients != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$8a58e03b7b3f0f47).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printTunnellingCoefficients: PrintTunnellingCoefficients | undefined = control.getPrintTunnellingCoefficients();
+    if (printTunnellingCoefficients != undefined) {
+        table += getTR(getTD(PrintTunnellingCoefficients.tagName) + getTD(""));
+    }
     // PrintGrainkfE
-    let printGrainkfE = $7e68913db756e51f$var$control.getPrintGrainkfE();
-    if (printGrainkfE != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$f8d814a406a0ff5b).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printGrainkfE: PrintGrainkfE | undefined = control.getPrintGrainkfE();
+    if (printGrainkfE != undefined) {
+        table += getTR(getTD(PrintGrainkfE.tagName) + getTD(""));
+    }
     // PrintGrainBoltzmann
-    let printGrainBoltzmann = $7e68913db756e51f$var$control.getPrintGrainBoltzmann();
-    if (printGrainBoltzmann != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$e7fff349901f700d).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printGrainBoltzmann: PrintGrainBoltzmann | undefined = control.getPrintGrainBoltzmann();
+    if (printGrainBoltzmann != undefined) {
+        table += getTR(getTD(PrintGrainBoltzmann.tagName) + getTD(""));
+    }
     // PrintGrainkbE
-    let printGrainkbE = $7e68913db756e51f$var$control.getPrintGrainkbE();
-    if (printGrainkbE != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$55888ef4e813a34d).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let printGrainkbE: PrintGrainkbE | undefined = control.getPrintGrainkbE();
+    if (printGrainkbE != undefined) {
+        table += getTR(getTD(PrintGrainkbE.tagName) + getTD(""));
+    }
     // Eigenvalues
-    let eigenvalues = $7e68913db756e51f$var$control.getEigenvalues();
-    if (eigenvalues != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$2453e311f702d9c7).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(eigenvalues.value.toString()));
+    let eigenvalues: Eigenvalues | undefined = control.getEigenvalues();
+    if (eigenvalues != undefined) {
+        table += getTR(getTD(Eigenvalues.tagName) + getTD(eigenvalues.value.toString()));
+    }
     // HideInactive
-    let hideInactive = $7e68913db756e51f$var$control.getHideInactive();
-    if (hideInactive != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$9d51752a8549e2d6).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(""));
+    let hideInactive: HideInactive | undefined = control.getHideInactive();
+    if (hideInactive != undefined) {
+        table += getTR(getTD(HideInactive.tagName) + getTD(""));
+    }
     // DiagramEnergyOffset
-    let diagramEnergyOffset = $7e68913db756e51f$var$control.getDiagramEnergyOffset();
-    if (diagramEnergyOffset != undefined) table += (0, $f0396edd0a5c99f7$export$b5ad96d32b19f99)((0, $f0396edd0a5c99f7$export$983f4376b55e6517)((0, $b6873406fb778c0b$export$159b5d3263f1049a).tagName) + (0, $f0396edd0a5c99f7$export$983f4376b55e6517)(diagramEnergyOffset.value.toString()));
+    let diagramEnergyOffset: DiagramEnergyOffset | undefined = control.getDiagramEnergyOffset();
+    if (diagramEnergyOffset != undefined) {
+        table += getTR(getTD(DiagramEnergyOffset.tagName) + getTD(diagramEnergyOffset.value.toString()));
+    }
     // Set the table.
-    if (control_table_element != null) control_table_element.innerHTML = table;
-}
-function $7e68913db756e51f$export$4e634558561f5cca(dictRef, input) {
-    let inputId = input.id;
-    let moleculeID = inputId.split("_")[0];
-    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
-    if (molecule) {
-        if ((0, $134d19e749bf0414$export$e90fb89750dba83f)(input.value)) {
-            let inputNumber = parseFloat(input.value);
-            molecule.setPropertyScalar(dictRef, inputNumber);
-            console.log(dictRef + " of " + moleculeID + " set to " + inputNumber);
-        } else {
-            alert(dictRef + " input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(inputId);
-            let value = molecule.getPropertyScalar(dictRef);
-            if (value != undefined) inputElement.value = value.toString();
-        }
+    if (control_table_element != null) {
+        control_table_element.innerHTML = table;
     }
-}
-window.setProperty = $7e68913db756e51f$export$4e634558561f5cca;
-function $7e68913db756e51f$export$c01f4ac2c1d26a5a(dictRef, input) {
-    let inputId = input.id;
-    let moleculeID = inputId.split("_")[0];
-    let molecule = $7e68913db756e51f$var$molecules.get(moleculeID);
-    if (molecule) {
-        let inputString = input.value;
-        let values = inputString.split(/\s+/);
-        let propertyArray = molecule.getPropertyArray(dictRef);
-        //console.log("propertyArray=" + propertyArray);
-        if (propertyArray) {
-            let n = propertyArray.length;
-            let success = true;
-            values.forEach(function(value) {
-                if (!(0, $134d19e749bf0414$export$e90fb89750dba83f)(value)) success = false;
-            });
-            if (!success) {
-                alert(dictRef + " input for " + moleculeID + " is not a number, resetting...");
-                let input = document.getElementById(inputId);
-                input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(propertyArray, " ");
-                return;
-            }
-            if (values.length == n) {
-                let propertyArrayNew = inputString.split(" ").map(Number);
-                molecule.setPropertyArray(dictRef, propertyArrayNew);
-                console.log(dictRef + " input for " + moleculeID + " changed from: " + propertyArray + " to: " + propertyArrayNew);
-            //console.log("molecule=" + molecule);
-            } else {
-                alert("Expecting " + n + " " + dictRef + " values for " + moleculeID + " but finding " + values.length + " resetting...");
-                let input = document.getElementById(inputId);
-                input.value = (0, $134d19e749bf0414$export$4323cc4280d5be7)(propertyArray, " ");
-            }
-        }
-    }
-}
-window.setPropertyArray = $7e68913db756e51f$export$c01f4ac2c1d26a5a;
+    */ }
 /**
  * Save to XML file.
  */ window.saveXML = function() {
     console.log("saveXML");
     const pad = "  ";
     const padding2 = pad.repeat(2);
-    // Create me.title.
-    let title_xml = "\n" + pad + (0, $cc8c7201a9bad777$export$dad497fe1f6e27c0)($7e68913db756e51f$var$title, "me:title");
     // Create moleculeList.
     let moleculeList = "";
     $7e68913db756e51f$var$molecules.forEach(function(molecule, id) {
@@ -3421,15 +3781,11 @@ window.setPropertyArray = $7e68913db756e51f$export$c01f4ac2c1d26a5a;
     let xml_control = $7e68913db756e51f$var$control.toXML(pad, pad);
     // Create a new Blob object from the data
     let blob = new Blob([
-        $7e68913db756e51f$var$header,
-        $7e68913db756e51f$var$mesmerStartTag,
-        title_xml,
         moleculeList,
         reactionList,
         xml_conditions,
         xml_modelParameters,
-        xml_control,
-        $7e68913db756e51f$var$mesmerEndTag
+        xml_control
     ], {
         type: "text/plain"
     });
@@ -3449,4 +3805,4 @@ window.setPropertyArray = $7e68913db756e51f$export$c01f4ac2c1d26a5a;
 
 
 export {$7e68913db756e51f$export$4e634558561f5cca as setPropertyScalar, $7e68913db756e51f$export$c01f4ac2c1d26a5a as setPropertyArray};
-//# sourceMappingURL=index.8cb00589.js.map
+//# sourceMappingURL=index.3180ff0f.js.map
