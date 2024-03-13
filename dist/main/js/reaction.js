@@ -333,6 +333,12 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     productsIndex;
     /**
+     * The transition states index.
+     * The key is the ref of the transition state.
+     * The value is the index of the transition state in the nodes array.
+     */
+    transitionStatesIndex;
+    /**
      * The id of the reaction.
      */
     id;
@@ -346,22 +352,31 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param mCRCMethod The MCRCMethod (optional).
      * @param excessReactantConc The excess reactant concentration (optional).
      */
-    constructor(attributes, id, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc) {
+    constructor(attributes, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
-        this.id = id;
         this.reactantsIndex = new Map();
-        reactants.forEach(reactant => {
-            this.addNode(reactant);
-            this.addToIndex(Reactant.tagName, reactant);
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
-        });
         this.productsIndex = new Map();
-        products.forEach(product => {
-            this.addToIndex(Product.tagName, product);
-            this.addNode(product);
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
-        });
+        this.transitionStatesIndex = new Map();
+        let id = attributes.get("id");
+        if (id == undefined) {
+            throw new Error("Reaction id is undefined");
+        }
+        this.id = id;
+        if (reactants != undefined) {
+            reactants.forEach(reactant => {
+                this.addNode(reactant);
+                this.addToIndex(Reactant.tagName, reactant);
+                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+            });
+        }
+        if (products != undefined) {
+            products.forEach(product => {
+                this.addToIndex(Product.tagName, product);
+                this.addNode(product);
+                this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+            });
+        }
         if (tunneling != undefined) {
             this.index.set(Tunneling.tagName, this.nodes.size);
             this.addNode(tunneling);
@@ -370,6 +385,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
             transitionStates.forEach(transitionState => {
                 this.addToIndex(Product.tagName, transitionState);
                 this.addNode(transitionState);
+                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
             });
         }
         if (mCRCMethod != undefined) {
@@ -415,6 +431,16 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Set the reactants.
+     */
+    setReactants(reactants) {
+        reactants.forEach(reactant => {
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, reactant);
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
      * @returns A particular Reactant.
      * @param ref The ref of the reactant to return.
      * @returns The reactant at the given index.
@@ -425,6 +451,24 @@ class Reaction extends xml_js_1.NodeWithNodes {
             throw new Error(`Reactant with ref ${ref} not found`);
         }
         return this.nodes.get(index);
+    }
+    /**
+     * @param reactant The reactant to add.
+     */
+    addReactant(reactant) {
+        this.addNode(reactant);
+        this.addToIndex(Reactant.tagName, reactant);
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the reactant to remove.
+     */
+    removeReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.reactantsIndex.delete(ref);
+        }
     }
     /**
      * @returns The products.
@@ -442,6 +486,16 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Set the products.
+     */
+    setProducts(products) {
+        products.forEach(product => {
+            this.addToIndex(Product.tagName, product);
+            this.addNode(product);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
      * @returns A particular Product.
      * @param ref The ref of the product to return.
      * @returns The product at the given index.
@@ -452,6 +506,24 @@ class Reaction extends xml_js_1.NodeWithNodes {
             throw new Error(`Product with ref ${ref} not found`);
         }
         return this.nodes.get(index);
+    }
+    /**
+     * @param product The product to add.
+     */
+    addProduct(product) {
+        this.addNode(product);
+        this.addToIndex(Product.tagName, product);
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the product to remove.
+     */
+    removeProduct(ref) {
+        let index = this.productsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.productsIndex.delete(ref);
+        }
     }
     /**
      * @returns The tunneling node or undefined if it does not exist.
@@ -497,6 +569,46 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Set the transition states.
+     */
+    setTransitionStates(transitionStates) {
+        transitionStates.forEach(transitionState => {
+            this.addToIndex(TransitionState.tagName, transitionState);
+            this.addNode(transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
+     * @returns A particular TransitionState.
+     * @param ref The ref of the transition state to return.
+     * @returns The transition state at the given index.
+     */
+    getTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index == undefined) {
+            throw new Error(`Transition state with ref ${ref} not found`);
+        }
+        return this.nodes.get(index);
+    }
+    /**
+     * @param transitionState The transition state to add.
+     */
+    addTransitionState(transitionState) {
+        this.addNode(transitionState);
+        this.addToIndex(TransitionState.tagName, transitionState);
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the transition state to remove.
+     */
+    removeTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.transitionStatesIndex.delete(ref);
+        }
+    }
+    /**
      * @returns The MCRCMethod node or undefined if it does not exist.
      */
     getMCRCMethod() {
@@ -533,6 +645,24 @@ class Reaction extends xml_js_1.NodeWithNodes {
             return undefined;
         }
         return this.nodes.get(i);
+    }
+    /**
+     * Set the excess reactant concentration or create it if it is undefined.
+     */
+    setExcessReactantConc(excessReactantConc) {
+        let i = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        }
+        else {
+            if (i instanceof Map) {
+                throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
+            }
+            else {
+                this.nodes.set(i, excessReactantConc);
+            }
+        }
     }
     /**
      * Get the label of the reactants.

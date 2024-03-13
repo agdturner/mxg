@@ -61,6 +61,13 @@ let fontSize1 = "1.5em";
 let fontSize2 = "1.25em";
 let fontSize3 = "1.0em";
 let fontSize4 = "0.75em";
+/**
+ * The margins for different levels of the GUI.
+ */
+let margin1 = "0px";
+let margin2 = "25px";
+let margin3 = "50px";
+let margin4 = "75px";
 
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
@@ -254,12 +261,12 @@ function parse(xml: XMLDocument) {
         // Create a collapsible div for molecules
         let moleculesElement: HTMLElement = document.getElementById("molecules") as HTMLElement;
         let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild(getCollapsibleDiv("molecules_button", fontSize1, "Molecules", moleculeListElement, "moleculesList"));
+        moleculesElement.appendChild(getCollapsibleDiv("molecules_button", fontSize1, margin1, "Molecules", moleculeListElement, "moleculesList"));
 
         // Create a collapsible div for reactions
         let reactionsElement: HTMLElement = document.getElementById("reactions") as HTMLElement;
         let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild(getCollapsibleDiv("reactions_button", fontSize1, "Reactions", reactionListElement, "reactionsList"));
+        reactionsElement.appendChild(getCollapsibleDiv("reactions_button", fontSize1, margin1, "Reactions", reactionListElement, "reactionsList"));
 
 
 
@@ -425,17 +432,17 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let plDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
             let buttonId: string = molecule.id + "_" + PropertyList.tagName;
             let contentDivId: string = molecule.id + "_" + PropertyList.tagName + "_";
-            let collapsibleDiv = getCollapsibleDiv(buttonId, fontSize3, PropertyList.tagName, plDiv, contentDivId);
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(buttonId, fontSize3, margin3, PropertyList.tagName, plDiv, contentDivId);
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
-            let pl = new PropertyList(getAttributes(xml_PLs[0]));
+            let pl: PropertyList = new PropertyList(getAttributes(xml_PLs[0]));
             molecule.setProperties(pl);
             let xml_Ps: HTMLCollectionOf<Element> = xml_PLs[0].getElementsByTagName(Property.tagName);
             for (let j = 0; j < xml_Ps.length; j++) {
                 let p: Property = new Property(getAttributes(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], plDiv);
+                processProperty(p, molecule, xml_Ps[j], plDiv, margin4);
             }
             moleculeTagNames.delete(PropertyList.tagName);
         } else {
@@ -447,7 +454,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             // Create a new Property.
             let p: Property = new Property(getAttributes(xml_Ps[0]));
             molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv);
+            processProperty(p, molecule, xml_Ps[0], moleculeDiv, margin4);
         }
         moleculeTagNames.delete(Property.tagName);
         // Organise EnergyTransferModel.
@@ -458,7 +465,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 throw new Error("Expecting 1 or 0 " + EnergyTransferModel.tagName + " but finding " + xml_ETMs.length + "!");
             }
             let etm = new EnergyTransferModel(getAttributes(xml_ETMs[0]));
-            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv);
+            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv, margin4);
         }
         // Organise DOSCMethod.
         moleculeTagNames.delete(DOSCMethod.tagName);
@@ -468,7 +475,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 throw new Error("Expecting 1 or 0 " + DOSCMethod.tagName + " but finding " + xml_DOSCMethod.length + "!");
             }
             let dOSCMethod = new DOSCMethod(getAttributes(xml_DOSCMethod[0]));
-            processDOSCMethod(dOSCMethod, molecule, xml_DOSCMethod[0], moleculeDiv);
+            processDOSCMethod(dOSCMethod, molecule, margin3, moleculeDiv);
         }
 
         // Organise ExtraDOSCMethod.
@@ -531,7 +538,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             //throw new Error("Unexpected tags in molecule.");
         }
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = getCollapsibleDiv(molecule.tagName + "_" + molecule.id + "_button", fontSize2, molecule.getLabel(),
+        let collapsibleDiv = getCollapsibleDiv(molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, molecule.getLabel(),
             moleculeDiv, molecule.tagName + "_" + molecule.id);
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
@@ -559,8 +566,9 @@ function displayXML(xml: string) {
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
+ * @param margin The margin.
  */
-function processProperty(p: Property, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement) {
+function processProperty(p: Property, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement, margin: string) {
     // Handle scalar or array property
     let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalar.tagName);
     if (scalarNodes.length > 0) {
@@ -578,6 +586,7 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
                 setNumberNode(ps, event.target);
             }
         }, inputString, label);
+        inputDiv.style.marginLeft = margin;
         moleculeDiv.appendChild(inputDiv);
         let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
         inputElement.value = inputString;
@@ -607,6 +616,7 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
                     setNumberArrayNode(pa, event.target);
                 }
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             moleculeDiv.appendChild(inputDiv);
             let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
             inputElement.value = inputString;
@@ -631,10 +641,14 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
  * For processing a molecule energy transfer model.
  * @param etm The energy transfer model.
  * @param molecule The molecule.
- * @param element The element.
+ * @param margin The margin.
  * @param moleculeDiv The molecule div.
  */
-function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement) {
+function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, margin: string, moleculeDiv: HTMLDivElement) {
+    let label: HTMLLabelElement = document.createElement('label');
+    label.textContent = DOSCMethod.tagName + ": ";
+    let container: HTMLDivElement = document.createElement('div');
+    container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
     let selectElement: HTMLSelectElement = document.createElement('select');
     selectElement.name = 'DOSCMethod';
@@ -647,7 +661,6 @@ function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, element: 
     optionQMR.value = "QMRotors";
     optionQMR.text = "QMRotors";
     selectElement.appendChild(optionQMR);
-    moleculeDiv.appendChild(selectElement);
     // Set the initial value to the DOSCMethod.
     selectElement.value = dOSCMethod.getXsiType();
     // Add event listener to selectElement.
@@ -659,6 +672,9 @@ function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, element: 
         }
     });
     molecule.setDOSCMethod(dOSCMethod);
+    container.appendChild(selectElement);
+    container.style.marginLeft = margin;
+    moleculeDiv.appendChild(container);
 }
 
 /**
@@ -668,14 +684,14 @@ function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, element: 
  * @param element The element.
  * @param moleculeDiv The molecule div.
  */
-function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement) {
+function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement, margin: string) {
     let xml_deltaEDowns: HTMLCollectionOf<Element> = element.getElementsByTagName(DeltaEDown.tagName);
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
         let etmDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
         let buttonId: string = molecule.id + "_" + EnergyTransferModel.tagName;
         let contentDivId: string = molecule.id + "_" + EnergyTransferModel.tagName + "_";
-        let collapsibleDiv = getCollapsibleDiv(buttonId, fontSize3, EnergyTransferModel.tagName, etmDiv, contentDivId);
+        let collapsibleDiv = getCollapsibleDiv(buttonId, fontSize3, margin3, EnergyTransferModel.tagName, etmDiv, contentDivId);
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns: DeltaEDown[] = [];
         for (let k = 0; k < xml_deltaEDowns.length; k++) {
@@ -691,6 +707,7 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
                     setNumberNode(deltaEDown, event.target);
                 }
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             etmDiv.appendChild(inputDiv);
             let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
             inputElement.value = inputString;
@@ -703,7 +720,7 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
                 resizeInput(inputElement);
             });
         }
-        let etm = new EnergyTransferModel(getAttributes(element), deltaEDowns);
+        etm.setDeltaEDowns(deltaEDowns);
         molecule.setEnergyTransferModel(etm);
     }
 }
@@ -854,8 +871,8 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule: Element = getFirstElement(xml_products[j], Molecule.tagName);
                 products.push(new Product(getAttributes(xml_products[j]),
-                    new ReactionMolecule(getAttributes(xml_reaction))));
-                processProduct(etm, molecule, xml_ETMs[0], moleculeDiv);
+                    new ReactionMolecule(getAttributes(xml_molecule))));
+                //processProduct(etm, reaction, xml_ETMs[0], reactionDiv);
             }
             reaction.setProducts(products);
         }
@@ -957,7 +974,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             reaction.setExcessReactantConc(excessReactantConc);
         }
         // Create a new collapsible div for the reaction.
-        let collapsibleDiv = getCollapsibleDiv(reaction.tagName + "_" + reaction.id + "_button", fontSize2, reaction.getLabel(),
+        let collapsibleDiv = getCollapsibleDiv(reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, reaction.getLabel(),
             reactionDiv, reaction.tagName + "_" + reaction.id);
         // Append the collapsibleDiv to the reactionListDiv.
         reactionListDiv.appendChild(collapsibleDiv);

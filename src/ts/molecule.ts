@@ -564,6 +564,29 @@ export class EnergyTransferModel extends NodeWithNodes {
     }
 
     /**
+     * @returns The DeltaEDowns.
+     */
+    getDeltaEDowns(): DeltaEDown[] {
+        let deltaEDowns: DeltaEDown[] = [];
+        this.nodes.forEach(node => {
+            if (node instanceof DeltaEDown) {
+                deltaEDowns.push(node);
+            }
+        });
+        return deltaEDowns;
+    }
+
+    /**
+     * @param deltaEDowns The DeltaEDowns.
+     */
+    setDeltaEDowns(deltaEDowns: DeltaEDown[]): void {
+        this.nodes.clear();
+        deltaEDowns.forEach(deltaEDown => {
+            this.nodes.set(this.nodes.size, deltaEDown);
+        });
+    }
+
+    /**
      * @param index The index of the DeltaEDown to return.
      * @returns The DeltaEDown at the given index.
      */

@@ -608,6 +608,12 @@ let fontSize2 = "1.25em";
 let fontSize3 = "1.0em";
 let fontSize4 = "0.75em";
 /**
+ * The margins for different levels of the GUI.
+ */ let margin1 = "0px";
+let margin2 = "25px";
+let margin3 = "50px";
+let margin4 = "75px";
+/**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */ let molecules = new Map();
 /**
@@ -764,11 +770,11 @@ let xml_text;
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
         let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)("molecules_button", fontSize1, "Molecules", moleculeListElement, "moleculesList"));
+        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)("molecules_button", fontSize1, margin1, "Molecules", moleculeListElement, "moleculesList"));
         // Create a collapsible div for reactions
         let reactionsElement = document.getElementById("reactions");
         let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)("reactions_button", fontSize1, "Reactions", reactionListElement, "reactionsList"));
+        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)("reactions_button", fontSize1, margin1, "Reactions", reactionListElement, "reactionsList"));
         // Collapse and set up action listeners for all collapsible content.
         (0, _htmlJs.makeCollapsible)();
     }
@@ -893,7 +899,7 @@ let xml_text;
             let plDiv = document.createElement("div");
             let buttonId = molecule.id + "_" + (0, _moleculeJs.PropertyList).tagName;
             let contentDivId = molecule.id + "_" + (0, _moleculeJs.PropertyList).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize3, (0, _moleculeJs.PropertyList).tagName, plDiv, contentDivId);
+            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize3, margin3, (0, _moleculeJs.PropertyList).tagName, plDiv, contentDivId);
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
             let pl = new (0, _moleculeJs.PropertyList)((0, _xmlJs.getAttributes)(xml_PLs[0]));
@@ -903,17 +909,17 @@ let xml_text;
                 let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], plDiv);
+                processProperty(p, molecule, xml_Ps[j], plDiv, margin4);
             }
             moleculeTagNames.delete((0, _moleculeJs.PropertyList).tagName);
         } else {
-            // If there is a a Property on its own, then create a property on its own.
+            // If there is a Property on its own, then create a property on its own.
             let xml_Ps = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Property).tagName);
             if (xml_Ps.length != 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Property).tagName + " but finding " + xml_Ps.length + ". Should these be in a " + (0, _moleculeJs.PropertyList).tagName + "?");
             // Create a new Property.
             let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv);
+            processProperty(p, molecule, xml_Ps[0], moleculeDiv, margin4);
         }
         moleculeTagNames.delete((0, _moleculeJs.Property).tagName);
         // Organise EnergyTransferModel.
@@ -922,7 +928,7 @@ let xml_text;
         if (xml_ETMs.length > 0) {
             if (xml_ETMs.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.EnergyTransferModel).tagName + " but finding " + xml_ETMs.length + "!");
             let etm = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(xml_ETMs[0]));
-            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv);
+            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv, margin4);
         }
         // Organise DOSCMethod.
         moleculeTagNames.delete((0, _moleculeJs.DOSCMethod).tagName);
@@ -930,7 +936,7 @@ let xml_text;
         if (xml_DOSCMethod.length > 0) {
             if (xml_DOSCMethod.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.DOSCMethod).tagName + " but finding " + xml_DOSCMethod.length + "!");
             let dOSCMethod = new (0, _moleculeJs.DOSCMethod)((0, _xmlJs.getAttributes)(xml_DOSCMethod[0]));
-            processDOSCMethod(dOSCMethod, molecule, xml_DOSCMethod[0], moleculeDiv);
+            processDOSCMethod(dOSCMethod, molecule, margin3, moleculeDiv);
         }
         // Organise ExtraDOSCMethod.
         moleculeTagNames.delete((0, _moleculeJs.ExtraDOSCMethod).tagName);
@@ -979,7 +985,7 @@ let xml_text;
         //throw new Error("Unexpected tags in molecule.");
         }
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(molecule.tagName + "_" + molecule.id + "_button", fontSize2, molecule.getLabel(), moleculeDiv, molecule.tagName + "_" + molecule.id);
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, molecule.getLabel(), moleculeDiv, molecule.tagName + "_" + molecule.id);
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
@@ -999,7 +1005,8 @@ let xml_text;
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
- */ function processProperty(p, molecule, element, moleculeDiv) {
+ * @param margin The margin.
+ */ function processProperty(p, molecule, element, moleculeDiv, margin) {
     // Handle scalar or array property
     let scalarNodes = element.getElementsByTagName((0, _moleculeJs.PropertyScalar).tagName);
     if (scalarNodes.length > 0) {
@@ -1013,6 +1020,7 @@ let xml_text;
         let inputDiv = (0, _htmlJs.getInput)("number", molecule.id + "_" + p.dictRef, (event)=>{
             if (event.target instanceof HTMLInputElement) setNumberNode(ps, event.target);
         }, inputString, label);
+        inputDiv.style.marginLeft = margin;
         moleculeDiv.appendChild(inputDiv);
         let inputElement = inputDiv.querySelector("input");
         inputElement.value = inputString;
@@ -1038,6 +1046,7 @@ let xml_text;
             let inputDiv = (0, _htmlJs.getInput)("text", molecule.id + "_" + p.dictRef, (event)=>{
                 if (event.target instanceof HTMLInputElement) setNumberArrayNode(pa, event.target);
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             moleculeDiv.appendChild(inputDiv);
             let inputElement = inputDiv.querySelector("input");
             inputElement.value = inputString;
@@ -1058,9 +1067,13 @@ let xml_text;
  * For processing a molecule energy transfer model.
  * @param etm The energy transfer model.
  * @param molecule The molecule.
- * @param element The element.
+ * @param margin The margin.
  * @param moleculeDiv The molecule div.
- */ function processDOSCMethod(dOSCMethod, molecule, element, moleculeDiv) {
+ */ function processDOSCMethod(dOSCMethod, molecule, margin, moleculeDiv) {
+    let label = document.createElement("label");
+    label.textContent = (0, _moleculeJs.DOSCMethod).tagName + ": ";
+    let container = document.createElement("div");
+    container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
     let selectElement = document.createElement("select");
     selectElement.name = "DOSCMethod";
@@ -1073,7 +1086,6 @@ let xml_text;
     optionQMR.value = "QMRotors";
     optionQMR.text = "QMRotors";
     selectElement.appendChild(optionQMR);
-    moleculeDiv.appendChild(selectElement);
     // Set the initial value to the DOSCMethod.
     selectElement.value = dOSCMethod.getXsiType();
     // Add event listener to selectElement.
@@ -1085,6 +1097,9 @@ let xml_text;
         }
     });
     molecule.setDOSCMethod(dOSCMethod);
+    container.appendChild(selectElement);
+    container.style.marginLeft = margin;
+    moleculeDiv.appendChild(container);
 }
 /**
  * For processing a molecule energy transfer model.
@@ -1092,14 +1107,14 @@ let xml_text;
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
- */ function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
+ */ function processEnergyTransferModel(etm, molecule, element, moleculeDiv, margin) {
     let xml_deltaEDowns = element.getElementsByTagName((0, _moleculeJs.DeltaEDown).tagName);
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
         let etmDiv = document.createElement("div");
         let buttonId = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName;
         let contentDivId = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName + "_";
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize3, (0, _moleculeJs.EnergyTransferModel).tagName, etmDiv, contentDivId);
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize3, margin3, (0, _moleculeJs.EnergyTransferModel).tagName, etmDiv, contentDivId);
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns = [];
         for(let k = 0; k < xml_deltaEDowns.length; k++){
@@ -1113,6 +1128,7 @@ let xml_text;
             let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
                 if (event.target instanceof HTMLInputElement) setNumberNode(deltaEDown, event.target);
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             etmDiv.appendChild(inputDiv);
             let inputElement = inputDiv.querySelector("input");
             inputElement.value = inputString;
@@ -1125,7 +1141,7 @@ let xml_text;
                 (0, _htmlJs.resizeInput)(inputElement);
             });
         }
-        let etm = new (0, _moleculeJs.EnergyTransferModel)((0, _xmlJs.getAttributes)(element), deltaEDowns);
+        etm.setDeltaEDowns(deltaEDowns);
         molecule.setEnergyTransferModel(etm);
     }
 }
@@ -1223,9 +1239,10 @@ window.set = setNumberNode;
         // Create reaction.
         let reaction = new (0, _reactionJs.Reaction)(attributes);
         reactions.set(reaction.id, reaction);
-        // Reactions typically have reactant, product and potentially "me:transitionState" and other things...
+        // Reactions typically have one or more reactant and product. They may also have one or more "me:transitionState" and other things...
         // Load reactants.
         let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
+        reactionTagNames.delete((0, _reactionJs.Reactant).tagName);
         //console.log("xml_reactants.length=" + xml_reactants.length);
         if (xml_reactants.length > 0) {
             let reactants = [];
@@ -1237,12 +1254,14 @@ window.set = setNumberNode;
         }
         // Load products.
         let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
+        reactionTagNames.delete((0, _reactionJs.Product).tagName);
         //console.log("xml_products.length=" + xml_products.length);
         if (xml_products.length > 0) {
             let products = [];
             for(let j = 0; j < xml_products.length; j++){
                 let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
                 products.push(new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
+            //processProduct(etm, reaction, xml_ETMs[0], reactionDiv);
             }
             reaction.setProducts(products);
         }
@@ -1334,7 +1353,7 @@ window.set = setNumberNode;
             reaction.setExcessReactantConc(excessReactantConc);
         }
         // Create a new collapsible div for the reaction.
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(reaction.tagName + "_" + reaction.id + "_button", fontSize2, reaction.getLabel(), reactionDiv, reaction.tagName + "_" + reaction.id);
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, reaction.getLabel(), reactionDiv, reaction.tagName + "_" + reaction.id);
         // Append the collapsibleDiv to the reactionListDiv.
         reactionListDiv.appendChild(collapsibleDiv);
     }
@@ -2494,6 +2513,8 @@ function toHTML(text) {
 /**
  * Create a collapsible div.
  * @param buttonId The id of the button.
+ * @param buttonFontSize The font size of the button.
+ * @param indent The indent of the button.
  * @param buttonLabel The label of the button.
  * @param content The content that will be collapsible.
  * @param contentDivId The id of the content div.
@@ -2524,7 +2545,7 @@ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
  * @param input The input to resize.
  * @param minSize The minimum size of the input.
  */ parcelHelpers.export(exports, "resizeInput", ()=>resizeInput);
-function getCollapsibleDiv(buttonId, buttonFontSize, buttonLabel, content, contentDivId, contentDivClassName) {
+function getCollapsibleDiv(buttonId, buttonFontSize, indent, buttonLabel, content, contentDivId, contentDivClassName) {
     let contentDiv = document.createElement("div");
     contentDiv.id = contentDivId;
     if (contentDivClassName != undefined) contentDiv.className = contentDivClassName;
@@ -2533,6 +2554,7 @@ function getCollapsibleDiv(buttonId, buttonFontSize, buttonLabel, content, conte
     button.className = "collapsible";
     button.innerText = buttonLabel;
     button.style.fontSize = buttonFontSize;
+    button.style.marginLeft = indent;
     contentDiv.appendChild(button);
     contentDiv.appendChild(content);
     return contentDiv;
@@ -3024,6 +3046,23 @@ class EnergyTransferModel extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, deltaEDowns){
         super(attributes, EnergyTransferModel.tagName);
         if (deltaEDowns != undefined) deltaEDowns.forEach((deltaEDown)=>{
+            this.nodes.set(this.nodes.size, deltaEDown);
+        });
+    }
+    /**
+     * @returns The DeltaEDowns.
+     */ getDeltaEDowns() {
+        let deltaEDowns = [];
+        this.nodes.forEach((node)=>{
+            if (node instanceof DeltaEDown) deltaEDowns.push(node);
+        });
+        return deltaEDowns;
+    }
+    /**
+     * @param deltaEDowns The DeltaEDowns.
+     */ setDeltaEDowns(deltaEDowns) {
+        this.nodes.clear();
+        deltaEDowns.forEach((deltaEDown)=>{
             this.nodes.set(this.nodes.size, deltaEDown);
         });
     }

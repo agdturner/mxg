@@ -538,6 +538,7 @@ class EnergyTransferModel extends xml_js_1.NodeWithNodes {
 exports.EnergyTransferModel = EnergyTransferModel;
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
+ * The attributes are expected to include "xsi:type" - expected values are either "ClassicalRotors" or "QMRotors".
  */
 class DOSCMethod extends xml_js_1.TagWithAttributes {
     /**
@@ -549,6 +550,27 @@ class DOSCMethod extends xml_js_1.TagWithAttributes {
      */
     constructor(attributes) {
         super(attributes, DOSCMethod.tagName);
+        if (attributes.get("xsi:type") == undefined) {
+            throw new Error('xsi:type is undefined');
+        }
+    }
+    /**
+     * @returns The xsi type of the DOSCMethod.
+     */
+    getXsiType() {
+        if (this.attributes == undefined) {
+            throw new Error('attributes is undefined');
+        }
+        return this.attributes.get("xsi:type");
+    }
+    /**
+     * @param xsiType The xsi type of the DOSCMethod.
+     */
+    setXsiType(xsiType) {
+        if (this.attributes == undefined) {
+            throw new Error('attributes is undefined');
+        }
+        this.attributes.set("xsi:type", xsiType);
     }
 }
 exports.DOSCMethod = DOSCMethod;

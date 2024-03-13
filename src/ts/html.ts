@@ -1,13 +1,15 @@
 /**
  * Create a collapsible div.
  * @param buttonId The id of the button.
+ * @param buttonFontSize The font size of the button.
+ * @param indent The indent of the button.
  * @param buttonLabel The label of the button.
  * @param content The content that will be collapsible.
  * @param contentDivId The id of the content div.
  * @param contentDivClassName The class of the content div.
  * @returns A collapsible div.
  */
-export function getCollapsibleDiv(buttonId: string, buttonFontSize: string, buttonLabel: string, content: HTMLElement, 
+export function getCollapsibleDiv(buttonId: string, buttonFontSize: string, indent: string, buttonLabel: string, content: HTMLElement, 
     contentDivId: string, contentDivClassName?: string): HTMLDivElement {
     let contentDiv: HTMLDivElement = document.createElement('div');
     contentDiv.id = contentDivId;
@@ -19,6 +21,7 @@ export function getCollapsibleDiv(buttonId: string, buttonFontSize: string, butt
     button.className = 'collapsible';
     button.innerText = buttonLabel;
     button.style.fontSize = buttonFontSize;
+    button.style.marginLeft = indent;
     contentDiv.appendChild(button);
     contentDiv.appendChild(content);
     return contentDiv;

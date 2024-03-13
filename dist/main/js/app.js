@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setDeltaEDown = exports.setPropertyScalar = exports.setPropertyArray = void 0;
+exports.setNumberNode = exports.setNumberArrayNode = void 0;
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const molecule_js_1 = require("./molecule.js");
@@ -12,6 +12,20 @@ const conditions_js_1 = require("./conditions.js");
 const modelParameters_js_1 = require("./modelParameters.js");
 const control_js_1 = require("./control.js");
 const mesmer_js_1 = require("./mesmer.js");
+/**
+ * The font sizes for different levels of the GUI.
+ */
+let fontSize1 = "1.5em";
+let fontSize2 = "1.25em";
+let fontSize3 = "1.0em";
+let fontSize4 = "0.75em";
+/**
+ * The margins for different levels of the GUI.
+ */
+let margin1 = "0px";
+let margin2 = "25px";
+let margin3 = "50px";
+let margin4 = "75px";
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */
@@ -54,461 +68,6 @@ let modelParameters_title;
 let modelParameters_table;
 let xml_title;
 let xml_text;
-/**
- * Display the XML.
- * @param {string} xml The XML to display.
- */
-function displayXML(xml) {
-    //console.log("xml=" + xml);
-    if (xml_title != null) {
-        xml_title.innerHTML = input_xml_filename;
-    }
-    if (xml_text != null) {
-        xml_text.innerHTML = (0, xml_js_1.toHTML)(xml);
-    }
-}
-/**
- * For processing a molecule property.
- * @param p The property.
- * @param molecule The molecule.
- * @param element The element.
- * @param moleculeDiv The molecule div.
- */
-function processProperty(p, molecule, element, moleculeDiv) {
-    // Handle scalar or array property
-    let scalarNodes = element.getElementsByTagName(molecule_js_1.PropertyScalar.tagName);
-    if (scalarNodes.length > 0) {
-        if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + molecule_js_1.PropertyScalar.tagName + " but finding " + scalarNodes.length + "!");
-        }
-        let inputString = (0, xml_js_1.getInputString)(scalarNodes[0]);
-        let value = parseFloat(inputString);
-        let ps = new molecule_js_1.PropertyScalar((0, xml_js_1.getAttributes)(scalarNodes[0]), value);
-        p.setProperty(ps);
-        let label = p.dictRef;
-        // Create a new div element for the input.
-        let inputDiv = (0, html_js_1.getInput)("number", molecule.id + "_" + p.dictRef, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setPropertyScalar(p.dictRef, event.target);
-            }
-        }, inputString, label);
-        moleculeDiv.appendChild(inputDiv);
-        let inputElement = inputDiv.querySelector('input');
-        inputElement.value = inputString;
-        (0, html_js_1.resizeInput)(inputElement);
-        inputElement.addEventListener('change', (event) => {
-            let eventTarget = event.target;
-            inputString = eventTarget.value;
-            ps = p.getProperty();
-            ps.value = parseFloat(inputString);
-            console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-            (0, html_js_1.resizeInput)(inputElement);
-        });
-    }
-    else {
-        let arrayNodes = element.getElementsByTagName(molecule_js_1.PropertyArray.tagName);
-        if (arrayNodes.length > 0) {
-            if (arrayNodes.length != 1) {
-                throw new Error("Expecting 1 " + molecule_js_1.PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
-            }
-            let inputString = (0, xml_js_1.getInputString)(arrayNodes[0]);
-            let values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
-            let pa = new molecule_js_1.PropertyArray((0, xml_js_1.getAttributes)(arrayNodes[0]), values);
-            p.setProperty(pa);
-            let label = p.dictRef;
-            // Create a new div element for the input.
-            let inputDiv = (0, html_js_1.getInput)("text", molecule.id + "_" + p.dictRef, (event) => {
-                if (event.target instanceof HTMLInputElement) {
-                    setPropertyArray(p.dictRef, event.target);
-                }
-            }, inputString, label);
-            moleculeDiv.appendChild(inputDiv);
-            let inputElement = inputDiv.querySelector('input');
-            inputElement.value = inputString;
-            (0, html_js_1.resizeInput)(inputElement);
-            inputElement.addEventListener('change', (event) => {
-                let eventTarget = event.target;
-                inputString = eventTarget.value;
-                pa = p.getProperty();
-                values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
-                pa.values = values;
-                console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-                (0, html_js_1.resizeInput)(inputElement);
-            });
-        }
-        else {
-            throw new Error("Expecting " + molecule_js_1.PropertyScalar.tagName + " or " + molecule_js_1.PropertyArray.tagName);
-        }
-    }
-}
-/**
- * For processing a molecule energy transfer model.
- * @param etm The energy transfer model.
- * @param molecule The molecule.
- * @param element The element.
- * @param moleculeDiv The molecule div.
- */
-function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
-    let xml_deltaEDowns = element.getElementsByTagName(molecule_js_1.DeltaEDown.tagName);
-    if (xml_deltaEDowns.length > 0) {
-        let deltaEDowns = [];
-        for (let k = 0; k < xml_deltaEDowns.length; k++) {
-            let inputString = (0, xml_js_1.getInputString)(xml_deltaEDowns[k]);
-            let value = parseFloat(inputString);
-            let deltaEDown = new molecule_js_1.DeltaEDown((0, xml_js_1.getAttributes)(xml_deltaEDowns[k]), value);
-            deltaEDowns.push(deltaEDown);
-            let label = molecule_js_1.EnergyTransferModel.tagName;
-            // Create a new div element for the input.
-            let inputDiv = (0, html_js_1.getInput)("number", molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName, (event) => {
-                if (event.target instanceof HTMLInputElement) {
-                    setDeltaEDown(molecule_js_1.EnergyTransferModel.tagName, deltaEDown, event.target);
-                }
-            }, inputString, label);
-            moleculeDiv.appendChild(inputDiv);
-            let inputElement = inputDiv.querySelector('input');
-            inputElement.value = inputString;
-            (0, html_js_1.resizeInput)(inputElement);
-            inputElement.addEventListener('change', (event) => {
-                let eventTarget = event.target;
-                inputString = eventTarget.value;
-                deltaEDowns[k].setValue(parseFloat(inputString));
-                console.log("Set " + molecule_js_1.EnergyTransferModel.tagName + " of " + molecule.id + " to " + inputString);
-                (0, html_js_1.resizeInput)(inputElement);
-            });
-        }
-        let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(element), deltaEDowns);
-        molecule.setEnergyTransferModel(etm);
-    }
-}
-/**
- * Parse XML and create HTMLElement for molecules.
- * @param xml The XML.
- * @returns The HTMLElement.
- */
-function getMolecules(xml) {
-    // moleculesListDiv is the div that will contain the molecules list.
-    let moleculeListDiv = document.createElement("moleculesList");
-    let xml_moleculeList = (0, xml_js_1.getSingularElement)(xml, mesmer_js_1.MoleculeList.tagName);
-    // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
-    let moleculeListTagNames = new Set();
-    xml_moleculeList.childNodes.forEach(function (node) {
-        moleculeListTagNames.add(node.nodeName);
-    });
-    if (moleculeListTagNames.size != 1) {
-        if (!(moleculeListTagNames.size == 2 && moleculeListTagNames.has("#text"))) {
-            console.error("moleculeListTagNames:");
-            moleculeListTagNames.forEach(x => console.error(x));
-            throw new Error("Additional tag names in moleculeList:");
-        }
-    }
-    if (!moleculeListTagNames.has(molecule_js_1.Molecule.tagName)) {
-        throw new Error("Expecting tags with \"" + molecule_js_1.Molecule.tagName + "\" tagName but there are none!");
-    }
-    // Process the XML "molecule" elements.
-    let xml_molecules = xml_moleculeList.getElementsByTagName(molecule_js_1.Molecule.tagName);
-    let xml_molecules_length = xml_molecules.length;
-    console.log("Number of molecules=" + xml_molecules_length);
-    //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
-    for (let i = 0; i < xml_molecules.length; i++) {
-        let moleculeDiv = document.createElement("div");
-        // Set attributes.
-        let attributes = (0, xml_js_1.getAttributes)(xml_molecules[i]);
-        let moleculeTagNames = new Set();
-        let cns = xml_molecules[i].childNodes;
-        //console.log("cns.length=" + cns.length);
-        //cns.forEach(function (cn) {
-        for (let j = 0; j < cns.length; j++) {
-            let cn = cns[j];
-            // Check for nodeName repeats that are not #text.
-            if (!moleculeTagNames.has(cn.nodeName)) {
-                moleculeTagNames.add(cn.nodeName);
-            }
-            else {
-                // nodeName = #text are comments or white space/newlines in the XML which are ignored.
-                if (cn.nodeName != "#text") {
-                    console.warn("Another ChildNode with nodeName=" + cn.nodeName);
-                    //throw new Error("cn.nodeName appears twice in molecule.");
-                }
-            }
-            //console.log(cn.nodeName);
-        }
-        //});
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
-        // Init atomsNode.
-        let atomsNode;
-        // There can be an individual atom not in an atom array, or an attom array.
-        let xml_atomArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.AtomArray.tagName);
-        if (xml_atomArrays.length > 1) {
-            throw new Error("Expecting 1 or 0 " + molecule_js_1.AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
-        }
-        if (xml_atomArrays.length == 1) {
-            let xml_atomArray = xml_atomArrays[0];
-            let xml_atoms = xml_atomArray.getElementsByTagName(molecule_js_1.Atom.tagName);
-            if (xml_atoms.length < 2) {
-                throw new Error("Expecting 2 or more atoms in " + molecule_js_1.AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
-            }
-            let atoms = [];
-            for (let j = 0; j < xml_atoms.length; j++) {
-                atoms.push(new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j])));
-            }
-            atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray), atoms);
-            moleculeTagNames.delete(molecule_js_1.AtomArray.tagName);
-        }
-        else {
-            let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
-            if (xml_atoms.length == 1) {
-                atomsNode = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0]));
-            }
-            else if (xml_atoms.length > 1) {
-                throw new Error("Expecting 1 " + molecule_js_1.Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + molecule_js_1.AtomArray.tagName + "?");
-            }
-        }
-        //console.log("atomsNode=" + atomsNode);
-        moleculeTagNames.delete(molecule_js_1.Atom.tagName);
-        // Init bondsNode.
-        let bondsNode;
-        // There can be an individual bond not in a bond array, or a bond array.
-        let xml_bondArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.BondArray.tagName);
-        if (xml_bondArrays.length > 1) {
-            throw new Error("Expecting 1 or 0 " + molecule_js_1.BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
-        }
-        if (xml_bondArrays.length == 1) {
-            let xml_bondArray = xml_bondArrays[0];
-            let xml_bonds = xml_bondArray.getElementsByTagName(molecule_js_1.Bond.tagName);
-            // There may be only 1 bond in a BondArray.
-            let bonds = [];
-            for (let j = 0; j < xml_bonds.length; j++) {
-                bonds.push(new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[j])));
-            }
-            bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArray), bonds);
-            moleculeTagNames.delete(molecule_js_1.BondArray.tagName);
-        }
-        else {
-            let xml_bonds = xml_molecules[i].getElementsByTagName(molecule_js_1.Bond.tagName);
-            if (xml_bonds.length == 1) {
-                bondsNode = new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[0]));
-            }
-            else if (xml_bonds.length > 1) {
-                throw new Error("Expecting 1 " + molecule_js_1.Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + molecule_js_1.BondArray.tagName + "?");
-            }
-        }
-        moleculeTagNames.delete(molecule_js_1.Bond.tagName);
-        // Create molecule.
-        let molecule = new molecule_js_1.Molecule(attributes, atomsNode, bondsNode);
-        molecules.set(molecule.id, molecule);
-        // (There can be an individual property not in a propertyList?)
-        let xml_PLs = xml_molecules[i].getElementsByTagName(molecule_js_1.PropertyList.tagName);
-        if (xml_PLs.length > 1) {
-            throw new Error("Expecting 1 or 0 " + molecule_js_1.PropertyList.tagName + " but finding " + xml_PLs.length + "!");
-        }
-        if (xml_PLs.length == 1) {
-            let pl = new molecule_js_1.PropertyList((0, xml_js_1.getAttributes)(xml_PLs[0]));
-            molecule.setProperties(pl);
-            let xml_Ps = xml_PLs[0].getElementsByTagName(molecule_js_1.Property.tagName);
-            for (let j = 0; j < xml_Ps.length; j++) {
-                let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[j]));
-                pl.setProperty(p);
-                molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], moleculeDiv);
-            }
-            moleculeTagNames.delete(molecule_js_1.PropertyList.tagName);
-        }
-        else {
-            let xml_Ps = xml_molecules[i].getElementsByTagName(molecule_js_1.Property.tagName);
-            if (xml_Ps.length != 1) {
-                throw new Error("Expecting 1 " + molecule_js_1.Property.tagName + " but finding " + xml_Ps.length + ". Should these be in a " + molecule_js_1.PropertyList.tagName + "?");
-            }
-            let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
-            molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv);
-        }
-        moleculeTagNames.delete(molecule_js_1.Property.tagName);
-        // Read energyTransferModel
-        moleculeTagNames.delete(molecule_js_1.EnergyTransferModel.tagName);
-        let xml_ETMs = xml_molecules[i].getElementsByTagName(molecule_js_1.EnergyTransferModel.tagName);
-        if (xml_ETMs != null) {
-            if (xml_ETMs.length > 0) {
-                if (xml_ETMs.length != 1) {
-                    throw new Error("energyTransferModel length=" + xml_ETMs.length);
-                }
-                let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(xml_ETMs[0]));
-                processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv);
-            }
-        }
-        // Read DOSCMethod
-        moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
-        let xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.DOSCMethod.tagName);
-        if (xml_DOSCMethod != null) {
-            let el = xml_DOSCMethod[0];
-            if (el != null) {
-                molecule.setDOSCMethod(new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(el)));
-            }
-        }
-        // Read ExtraDOSCMethod.
-        moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
-        xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ExtraDOSCMethod.tagName);
-        if (xml_DOSCMethod.length > 0) {
-            if (xml_DOSCMethod.length != 1) {
-                throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_DOSCMethod.length);
-            }
-            // Read bondRef.
-            let bondRefs = xml_DOSCMethod[0].getElementsByTagName(molecule_js_1.BondRef.tagName);
-            let bondRef;
-            if (bondRefs.length > 0) {
-                if (bondRefs.length != 1) {
-                    throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
-                }
-                bondRef = new molecule_js_1.BondRef((0, xml_js_1.getAttributes)(bondRefs[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(bondRefs[0])));
-            }
-            // Read hunderedRotorPotential.
-            let hinderedRotorPotentials = xml_DOSCMethod[0].getElementsByTagName(molecule_js_1.HinderedRotorPotential.tagName);
-            let hinderedRotorPotential;
-            if (hinderedRotorPotentials.length > 0) {
-                if (hinderedRotorPotentials.length != 1) {
-                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
-                }
-                // Load PotentialPoints.
-                let potentialPoints = [];
-                let xml_potentialPoints = hinderedRotorPotentials[0].getElementsByTagName(molecule_js_1.PotentialPoint.tagName);
-                for (let k = 0; k < xml_potentialPoints.length; k++) {
-                    potentialPoints.push(new molecule_js_1.PotentialPoint((0, xml_js_1.getAttributes)(xml_potentialPoints[k])));
-                }
-                hinderedRotorPotential = new molecule_js_1.HinderedRotorPotential((0, xml_js_1.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
-            }
-            // Read periodicities.
-            let xml_periodicities = xml_DOSCMethod[0].getElementsByTagName(molecule_js_1.Periodicity.tagName);
-            let periodicity;
-            if (xml_periodicities.length > 0) {
-                if (xml_periodicities.length != 1) {
-                    throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
-                }
-                periodicity = new molecule_js_1.Periodicity((0, xml_js_1.getAttributes)(xml_periodicities[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_periodicities[0]))));
-            }
-            molecule.setExtraDOSCMethod(new molecule_js_1.ExtraDOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), bondRef, hinderedRotorPotential, periodicity));
-        }
-        // Read reservoirSize.
-        moleculeTagNames.delete(molecule_js_1.ReservoirSize.tagName);
-        xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ReservoirSize.tagName);
-        if (xml_DOSCMethod.length > 0) {
-            if (xml_DOSCMethod.length != 1) {
-                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_DOSCMethod.length);
-            }
-            molecule.setReservoirSize(new molecule_js_1.ReservoirSize((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_DOSCMethod[0])))));
-        }
-        // Check for unexpected tags.
-        moleculeTagNames.delete("#text");
-        if (moleculeTagNames.size > 0) {
-            console.warn("There are additional unexpected moleculeTagNames:");
-            moleculeTagNames.forEach(x => console.warn(x));
-            //throw new Error("Unexpected tags in molecule.");
-        }
-        let buttonId = "buttonId";
-        let buttonLabel = molecule.getLabel();
-        let contentDivId = molecule.tagName + "_" + molecule.id;
-        //let collapsibleDiv = getCollapsibleDiv(buttonId, buttonLabel, paragraph, contentDivId);
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, buttonLabel, moleculeDiv, contentDivId);
-        moleculeListDiv.appendChild(collapsibleDiv);
-    }
-    return moleculeListDiv;
-}
-/**
- * Set a molecule property array when the input value is changed.
- * @param dictRef The dictionary reference of the property.
- * @param input The input element.
- */
-function setPropertyArray(dictRef, input) {
-    let inputId = input.id;
-    let moleculeID = inputId.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule) {
-        let pA = molecule.getProperty(dictRef).getProperty();
-        let inputString = input.value.trim();
-        if (inputString == "") {
-            alert("Empty input for " + dictRef + " for " + moleculeID + " resetting...");
-            let input = document.getElementById(inputId);
-            input.value = (0, util_js_2.arrayToString)(pA.values, " ");
-            return;
-        }
-        let inputStrings = inputString.split(/\s+/);
-        let values = [];
-        let success = true;
-        inputStrings.forEach(function (value) {
-            if (!(0, util_js_1.isNumeric)(value)) {
-                success = false;
-            }
-            values.push(parseFloat(value));
-        });
-        if (!success) {
-            alert(dictRef + " input for " + moleculeID + " is not a number, resetting...");
-            let input = document.getElementById(inputId);
-            input.value = (0, util_js_2.arrayToString)(pA.values, " ");
-            return;
-        }
-        //console.log("propertyArray=" + propertyArray);
-        if (values.length == pA.values.length) {
-            console.log("Changed " + dictRef + " input for " + moleculeID + " from: " + inputString + " to: " + (0, util_js_2.arrayToString)(pA.values, " "));
-            //console.log("molecule=" + molecule);
-        }
-        else {
-            alert("Expecting " + pA.values.length + " " + dictRef + " values for " + moleculeID + " but finding " + values.length + " resetting...");
-            let input = document.getElementById(inputId);
-            input.value = (0, util_js_2.arrayToString)(pA.values, " ");
-        }
-    }
-}
-exports.setPropertyArray = setPropertyArray;
-window.setPropertyArray = setPropertyArray;
-/**
- * Set a molecule property scalar when the input value is changed.
- * @param dictRef The dictionary reference of the property.
- * @param input The input element.
- */
-function setPropertyScalar(dictRef, input) {
-    let inputId = input.id;
-    let moleculeID = inputId.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule != undefined) {
-        let ps = molecule.getProperty(dictRef).getProperty();
-        if ((0, util_js_1.isNumeric)(input.value)) {
-            let inputNumber = parseFloat(input.value);
-            ps.value = inputNumber;
-            console.log(dictRef + " of " + moleculeID + " set to " + inputNumber);
-        }
-        else {
-            alert(dictRef + " input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(inputId);
-            inputElement.value = ps.value.toString();
-        }
-        //console.log("molecule=" + molecule);
-    }
-}
-exports.setPropertyScalar = setPropertyScalar;
-window.setProperty = setPropertyScalar;
-/**
- *
- * @param input The input element.
- */
-function setDeltaEDown(tagName, deltaEDown, input) {
-    let inputId = input.id;
-    let moleculeID = inputId.split("_")[0];
-    let molecule = molecules.get(moleculeID);
-    if (molecule != undefined) {
-        if ((0, util_js_1.isNumeric)(input.value)) {
-            let inputNumber = parseFloat(input.value);
-            deltaEDown.value = inputNumber;
-            console.log(tagName + " of " + moleculeID + " set to " + inputNumber);
-        }
-        else {
-            alert(tagName + " input for " + moleculeID + " is not numeric, resetting...");
-            let inputElement = document.getElementById(inputId);
-            inputElement.value = deltaEDown.value.toString();
-        }
-        //console.log("molecule=" + molecule);
-    }
-}
-exports.setDeltaEDown = setDeltaEDown;
-window.setProperty = setDeltaEDown;
 /**
  * Load the XML file.
  */
@@ -621,43 +180,40 @@ function parse(xml) {
         let title = xml_title[0].childNodes[0].nodeValue.trim();
         let titleNode = new mesmer_js_1.Title((0, xml_js_1.getAttributes)(xml_title[0]), title);
         let titleElement = document.getElementById("title");
+        // Create a new div element for the input.
+        let divElement = document.createElement("div");
+        // Create a text node.
+        let textNode = document.createTextNode("Title: ");
+        divElement.appendChild(textNode);
         // Create a new input element.
         let inputElement = document.createElement("input");
         inputElement.type = "text";
         inputElement.value = title;
         // Apply CSS styles to make the input text appear like a h1.
-        //inputElement.style.fontSize = '2em';
-        //inputElement.style.fontWeight = 'bold';
-        // Create a text node.
-        let textNode = document.createTextNode("Title: ");
-        // Insert the text node before the input element in the parent node.
-        titleElement.parentNode?.insertBefore(textNode, titleElement);
+        inputElement.style.fontSize = fontSize1;
+        divElement.appendChild(inputElement);
+        // Add the new div element to the parent of the titleElement.
+        titleElement.parentNode?.insertBefore(divElement, titleElement);
+        // Remove the original titleElement.
+        titleElement.parentNode?.removeChild(titleElement);
         (0, html_js_1.resizeInput)(inputElement, 0);
-        // Replace the existing title element with the new input element.
-        titleElement.parentNode?.replaceChild(inputElement, titleElement);
         console.log("inputElement.value=" + inputElement.value);
         // Add event listener to inputElement.
         inputElement.addEventListener('change', function () {
             if (inputElement.value != title) {
                 titleNode.value = inputElement.value;
-                //console.log("title=" + title);
             }
             (0, html_js_1.resizeInput)(inputElement, 0);
         });
-        // Molecules
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
-        let paragraph = document.createElement("p");
-        paragraph.innerHTML = "Moleculesvfdafdfdsfds";
-        let moleculeListElement = getMolecules(xml);
-        let buttonId = "buttonId";
-        let buttonLabel = "Molecules";
-        let contentDivId = "moleculesList";
-        //let collapsibleDiv = getCollapsibleDiv(buttonId, buttonLabel, paragraph, contentDivId);
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, buttonLabel, moleculeListElement, contentDivId);
-        moleculesElement.appendChild(collapsibleDiv);
-        // Reactions
+        let moleculeListElement = processMoleculeList(xml);
+        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)("molecules_button", fontSize1, margin1, "Molecules", moleculeListElement, "moleculesList"));
         // Create a collapsible div for reactions
+        let reactionsElement = document.getElementById("reactions");
+        let reactionListElement = processReactionList(xml);
+        reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)("reactions_button", fontSize1, margin1, "Reactions", reactionListElement, "reactionsList"));
+        // Collapse and set up action listeners for all collapsible content.
         (0, html_js_1.makeCollapsible)();
     }
     /**
@@ -687,6 +243,667 @@ function parse(xml) {
      */
     //initControl(xml);
     //displayControl();
+}
+/**
+ * Parse XML and create HTMLDivElement for molecules.
+ * @param xml The XML.
+ * @returns The HTMLDivElement.
+ */
+function processMoleculeList(xml) {
+    // Create div to contain the molecules list.
+    let moleculeListDiv = document.createElement("div");
+    // Get the XML "moleculeList" element.
+    let xml_moleculeList = (0, xml_js_1.getSingularElement)(xml, mesmer_js_1.MoleculeList.tagName);
+    // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
+    let moleculeListTagNames = new Set();
+    xml_moleculeList.childNodes.forEach(function (node) {
+        moleculeListTagNames.add(node.nodeName);
+    });
+    if (moleculeListTagNames.size != 1) {
+        if (!(moleculeListTagNames.size == 2 && moleculeListTagNames.has("#text"))) {
+            console.error("moleculeListTagNames:");
+            moleculeListTagNames.forEach(x => console.error(x));
+            throw new Error("Additional tag names in moleculeList:");
+        }
+    }
+    if (!moleculeListTagNames.has(molecule_js_1.Molecule.tagName)) {
+        throw new Error("Expecting tags with \"" + molecule_js_1.Molecule.tagName + "\" tagName but there are none!");
+    }
+    // Process the XML "molecule" elements.
+    let xml_molecules = xml_moleculeList.getElementsByTagName(molecule_js_1.Molecule.tagName);
+    let xml_molecules_length = xml_molecules.length;
+    console.log("Number of molecules=" + xml_molecules_length);
+    //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
+    for (let i = 0; i < xml_molecules.length; i++) {
+        let moleculeDiv = document.createElement("div");
+        // Set attributes.
+        let attributes = (0, xml_js_1.getAttributes)(xml_molecules[i]);
+        let moleculeTagNames = new Set();
+        let cns = xml_molecules[i].childNodes;
+        //console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for (let j = 0; j < cns.length; j++) {
+            let cn = cns[j];
+            // Check for nodeName repeats that are not #text.
+            if (!moleculeTagNames.has(cn.nodeName)) {
+                moleculeTagNames.add(cn.nodeName);
+            }
+            else {
+                // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+                if (cn.nodeName != "#text") {
+                    console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+                    //throw new Error("cn.nodeName appears twice in molecule.");
+                }
+            }
+            //console.log(cn.nodeName);
+        }
+        //});
+        //console.log("moleculeTagNames:");
+        //moleculeTagNames.forEach(x => console.log(x));
+        // Init atomsNode.
+        let atomsNode;
+        // There can be an individual atom not in an atom array, or an attom array.
+        let xml_atomArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.AtomArray.tagName);
+        if (xml_atomArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
+        }
+        if (xml_atomArrays.length == 1) {
+            let xml_atomArray = xml_atomArrays[0];
+            let xml_atoms = xml_atomArray.getElementsByTagName(molecule_js_1.Atom.tagName);
+            if (xml_atoms.length < 2) {
+                throw new Error("Expecting 2 or more atoms in " + molecule_js_1.AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
+            }
+            let atoms = [];
+            for (let j = 0; j < xml_atoms.length; j++) {
+                atoms.push(new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j])));
+            }
+            atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray), atoms);
+            moleculeTagNames.delete(molecule_js_1.AtomArray.tagName);
+        }
+        else {
+            let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
+            if (xml_atoms.length == 1) {
+                atomsNode = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0]));
+            }
+            else if (xml_atoms.length > 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + molecule_js_1.AtomArray.tagName + "?");
+            }
+        }
+        //console.log("atomsNode=" + atomsNode);
+        moleculeTagNames.delete(molecule_js_1.Atom.tagName);
+        // Init bondsNode.
+        let bondsNode;
+        // There can be an individual bond not in a bond array, or a bond array.
+        let xml_bondArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.BondArray.tagName);
+        if (xml_bondArrays.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
+        }
+        if (xml_bondArrays.length == 1) {
+            let xml_bondArray = xml_bondArrays[0];
+            let xml_bonds = xml_bondArray.getElementsByTagName(molecule_js_1.Bond.tagName);
+            // There may be only 1 bond in a BondArray.
+            let bonds = [];
+            for (let j = 0; j < xml_bonds.length; j++) {
+                bonds.push(new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[j])));
+            }
+            bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArray), bonds);
+            moleculeTagNames.delete(molecule_js_1.BondArray.tagName);
+        }
+        else {
+            let xml_bonds = xml_molecules[i].getElementsByTagName(molecule_js_1.Bond.tagName);
+            if (xml_bonds.length == 1) {
+                bondsNode = new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[0]));
+            }
+            else if (xml_bonds.length > 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + molecule_js_1.BondArray.tagName + "?");
+            }
+        }
+        moleculeTagNames.delete(molecule_js_1.Bond.tagName);
+        // Create molecule.
+        let molecule = new molecule_js_1.Molecule(attributes, atomsNode, bondsNode);
+        molecules.set(molecule.id, molecule);
+        // Organise PropertyList or individual Property.
+        // (There can be an individual property not in a propertyList?)
+        // If there is a PropertyList, then create a property list.
+        let xml_PLs = xml_molecules[i].getElementsByTagName(molecule_js_1.PropertyList.tagName);
+        if (xml_PLs.length > 1) {
+            throw new Error("Expecting 1 or 0 " + molecule_js_1.PropertyList.tagName + " but finding " + xml_PLs.length + "!");
+        }
+        if (xml_PLs.length == 1) {
+            // Create a new collapsible div for the PropertyList.
+            let plDiv = document.createElement("div");
+            let buttonId = molecule.id + "_" + molecule_js_1.PropertyList.tagName;
+            let contentDivId = molecule.id + "_" + molecule_js_1.PropertyList.tagName + "_";
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, fontSize3, margin3, molecule_js_1.PropertyList.tagName, plDiv, contentDivId);
+            moleculeDiv.appendChild(collapsibleDiv);
+            // Create a new PropertyList.
+            let pl = new molecule_js_1.PropertyList((0, xml_js_1.getAttributes)(xml_PLs[0]));
+            molecule.setProperties(pl);
+            let xml_Ps = xml_PLs[0].getElementsByTagName(molecule_js_1.Property.tagName);
+            for (let j = 0; j < xml_Ps.length; j++) {
+                let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[j]));
+                pl.setProperty(p);
+                molecule.setProperties(pl);
+                processProperty(p, molecule, xml_Ps[j], plDiv);
+            }
+            moleculeTagNames.delete(molecule_js_1.PropertyList.tagName);
+        }
+        else {
+            // If there is a Property on its own, then create a property on its own.
+            let xml_Ps = xml_molecules[i].getElementsByTagName(molecule_js_1.Property.tagName);
+            if (xml_Ps.length != 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.Property.tagName + " but finding " + xml_Ps.length + ". Should these be in a " + molecule_js_1.PropertyList.tagName + "?");
+            }
+            // Create a new Property.
+            let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
+            molecule.setProperties(p);
+            processProperty(p, molecule, xml_Ps[0], moleculeDiv);
+        }
+        moleculeTagNames.delete(molecule_js_1.Property.tagName);
+        // Organise EnergyTransferModel.
+        moleculeTagNames.delete(molecule_js_1.EnergyTransferModel.tagName);
+        let xml_ETMs = xml_molecules[i].getElementsByTagName(molecule_js_1.EnergyTransferModel.tagName);
+        if (xml_ETMs.length > 0) {
+            if (xml_ETMs.length > 1) {
+                throw new Error("Expecting 1 or 0 " + molecule_js_1.EnergyTransferModel.tagName + " but finding " + xml_ETMs.length + "!");
+            }
+            let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(xml_ETMs[0]));
+            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv);
+        }
+        // Organise DOSCMethod.
+        moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
+        let xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.DOSCMethod.tagName);
+        if (xml_DOSCMethod.length > 0) {
+            if (xml_DOSCMethod.length > 1) {
+                throw new Error("Expecting 1 or 0 " + molecule_js_1.DOSCMethod.tagName + " but finding " + xml_DOSCMethod.length + "!");
+            }
+            let dOSCMethod = new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]));
+            processDOSCMethod(dOSCMethod, molecule, xml_DOSCMethod[0], moleculeDiv);
+        }
+        // Organise ExtraDOSCMethod.
+        moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
+        let xml_ExtraDOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ExtraDOSCMethod.tagName);
+        if (xml_ExtraDOSCMethod.length > 0) {
+            if (xml_ExtraDOSCMethod.length != 1) {
+                throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_ExtraDOSCMethod.length);
+            }
+            // Read bondRef.
+            let bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName(molecule_js_1.BondRef.tagName);
+            let bondRef;
+            if (bondRefs.length > 0) {
+                if (bondRefs.length != 1) {
+                    throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
+                }
+                bondRef = new molecule_js_1.BondRef((0, xml_js_1.getAttributes)(bondRefs[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(bondRefs[0])));
+            }
+            // Read hunderedRotorPotential.
+            let hinderedRotorPotentials = xml_ExtraDOSCMethod[0].getElementsByTagName(molecule_js_1.HinderedRotorPotential.tagName);
+            let hinderedRotorPotential;
+            if (hinderedRotorPotentials.length > 0) {
+                if (hinderedRotorPotentials.length != 1) {
+                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+                }
+                // Load PotentialPoints.
+                let potentialPoints = [];
+                let xml_potentialPoints = hinderedRotorPotentials[0].getElementsByTagName(molecule_js_1.PotentialPoint.tagName);
+                for (let k = 0; k < xml_potentialPoints.length; k++) {
+                    potentialPoints.push(new molecule_js_1.PotentialPoint((0, xml_js_1.getAttributes)(xml_potentialPoints[k])));
+                }
+                hinderedRotorPotential = new molecule_js_1.HinderedRotorPotential((0, xml_js_1.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
+            }
+            // Read periodicities.
+            let xml_periodicities = xml_DOSCMethod[0].getElementsByTagName(molecule_js_1.Periodicity.tagName);
+            let periodicity;
+            if (xml_periodicities.length > 0) {
+                if (xml_periodicities.length != 1) {
+                    throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
+                }
+                periodicity = new molecule_js_1.Periodicity((0, xml_js_1.getAttributes)(xml_periodicities[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_periodicities[0]))));
+            }
+            molecule.setExtraDOSCMethod(new molecule_js_1.ExtraDOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), bondRef, hinderedRotorPotential, periodicity));
+        }
+        // Organise ReservoirSize.
+        moleculeTagNames.delete(molecule_js_1.ReservoirSize.tagName);
+        xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ReservoirSize.tagName);
+        if (xml_DOSCMethod.length > 0) {
+            if (xml_DOSCMethod.length != 1) {
+                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_DOSCMethod.length);
+            }
+            molecule.setReservoirSize(new molecule_js_1.ReservoirSize((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_DOSCMethod[0])))));
+        }
+        // Check for unexpected tags.
+        moleculeTagNames.delete("#text");
+        if (moleculeTagNames.size > 0) {
+            console.warn("There are additional unexpected moleculeTagNames:");
+            moleculeTagNames.forEach(x => console.warn(x));
+            //throw new Error("Unexpected tags in molecule.");
+        }
+        // Create a new collapsible div for the molecule.
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, molecule.getLabel(), moleculeDiv, molecule.tagName + "_" + molecule.id);
+        // Append the collapsibleDiv to the moleculeListDiv.
+        moleculeListDiv.appendChild(collapsibleDiv);
+    }
+    return moleculeListDiv;
+}
+/**
+ * Display the XML.
+ * @param {string} xml The XML to display.
+ */
+function displayXML(xml) {
+    //console.log("xml=" + xml);
+    if (xml_title != null) {
+        xml_title.innerHTML = input_xml_filename;
+    }
+    if (xml_text != null) {
+        xml_text.innerHTML = (0, xml_js_1.toHTML)(xml);
+    }
+}
+/**
+ * For processing a molecule property.
+ * @param p The property.
+ * @param molecule The molecule.
+ * @param element The element.
+ * @param moleculeDiv The molecule div.
+ */
+function processProperty(p, molecule, element, moleculeDiv) {
+    // Handle scalar or array property
+    let scalarNodes = element.getElementsByTagName(molecule_js_1.PropertyScalar.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + molecule_js_1.PropertyScalar.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString = (0, xml_js_1.getInputString)(scalarNodes[0]);
+        let value = parseFloat(inputString);
+        let ps = new molecule_js_1.PropertyScalar((0, xml_js_1.getAttributes)(scalarNodes[0]), value);
+        p.setProperty(ps);
+        let label = p.dictRef;
+        // Create a new div element for the input.
+        let inputDiv = (0, html_js_1.getInput)("number", molecule.id + "_" + p.dictRef, (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(ps, event.target);
+            }
+        }, inputString, label);
+        moleculeDiv.appendChild(inputDiv);
+        let inputElement = inputDiv.querySelector('input');
+        inputElement.value = inputString;
+        (0, html_js_1.resizeInput)(inputElement);
+        inputElement.addEventListener('change', (event) => {
+            let eventTarget = event.target;
+            inputString = eventTarget.value;
+            ps = p.getProperty();
+            ps.value = parseFloat(inputString);
+            console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
+            (0, html_js_1.resizeInput)(inputElement);
+        });
+    }
+    else {
+        let arrayNodes = element.getElementsByTagName(molecule_js_1.PropertyArray.tagName);
+        if (arrayNodes.length > 0) {
+            if (arrayNodes.length != 1) {
+                throw new Error("Expecting 1 " + molecule_js_1.PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
+            }
+            let inputString = (0, xml_js_1.getInputString)(arrayNodes[0]);
+            let values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
+            let pa = new molecule_js_1.PropertyArray((0, xml_js_1.getAttributes)(arrayNodes[0]), values);
+            p.setProperty(pa);
+            let label = p.dictRef;
+            // Create a new div element for the input.
+            let inputDiv = (0, html_js_1.getInput)("text", molecule.id + "_" + p.dictRef, (event) => {
+                if (event.target instanceof HTMLInputElement) {
+                    setNumberArrayNode(pa, event.target);
+                }
+            }, inputString, label);
+            moleculeDiv.appendChild(inputDiv);
+            let inputElement = inputDiv.querySelector('input');
+            inputElement.value = inputString;
+            (0, html_js_1.resizeInput)(inputElement);
+            inputElement.addEventListener('change', (event) => {
+                let eventTarget = event.target;
+                inputString = eventTarget.value;
+                pa = p.getProperty();
+                values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
+                pa.values = values;
+                console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
+                (0, html_js_1.resizeInput)(inputElement);
+            });
+        }
+        else {
+            throw new Error("Expecting " + molecule_js_1.PropertyScalar.tagName + " or " + molecule_js_1.PropertyArray.tagName);
+        }
+    }
+}
+/**
+ * For processing a molecule energy transfer model.
+ * @param etm The energy transfer model.
+ * @param molecule The molecule.
+ * @param element The element.
+ * @param moleculeDiv The molecule div.
+ */
+function processDOSCMethod(dOSCMethod, molecule, element, moleculeDiv) {
+    // Create a HTMLSelectElement to select the DOSCMethod.
+    let selectElement = document.createElement('select');
+    selectElement.name = 'DOSCMethod';
+    selectElement.id = 'DOSCMethod-select';
+    let optionCR = document.createElement('option');
+    optionCR.value = "ClassicalRotors";
+    optionCR.text = "ClassicalRotors";
+    selectElement.appendChild(optionCR);
+    let optionQMR = document.createElement('option');
+    optionQMR.value = "QMRotors";
+    optionQMR.text = "QMRotors";
+    selectElement.appendChild(optionQMR);
+    moleculeDiv.appendChild(selectElement);
+    // Set the initial value to the DOSCMethod.
+    selectElement.value = dOSCMethod.getXsiType();
+    // Add event listener to selectElement.
+    selectElement.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLSelectElement) {
+            dOSCMethod.setXsiType(event.target.value);
+            console.log("Set DOSCMethod to " + event.target.value);
+            molecule.setDOSCMethod(dOSCMethod);
+        }
+    });
+    molecule.setDOSCMethod(dOSCMethod);
+}
+/**
+ * For processing a molecule energy transfer model.
+ * @param etm The energy transfer model.
+ * @param molecule The molecule.
+ * @param element The element.
+ * @param moleculeDiv The molecule div.
+ */
+function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
+    let xml_deltaEDowns = element.getElementsByTagName(molecule_js_1.DeltaEDown.tagName);
+    if (xml_deltaEDowns.length > 0) {
+        // Create a new collapsible div for the energyTransferModel.
+        let etmDiv = document.createElement("div");
+        let buttonId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName;
+        let contentDivId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName + "_";
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, fontSize3, molecule_js_1.EnergyTransferModel.tagName, etmDiv, contentDivId);
+        moleculeDiv.appendChild(collapsibleDiv);
+        let deltaEDowns = [];
+        for (let k = 0; k < xml_deltaEDowns.length; k++) {
+            let inputString = (0, xml_js_1.getInputString)(xml_deltaEDowns[k]);
+            let value = parseFloat(inputString);
+            let deltaEDown = new molecule_js_1.DeltaEDown((0, xml_js_1.getAttributes)(xml_deltaEDowns[k]), value);
+            deltaEDowns.push(deltaEDown);
+            let label = molecule_js_1.DeltaEDown.tagName;
+            // Create a new div element for the input.
+            let id = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName + "_" + molecule_js_1.DeltaEDown.tagName + "_" + k;
+            let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                if (event.target instanceof HTMLInputElement) {
+                    setNumberNode(deltaEDown, event.target);
+                }
+            }, inputString, label);
+            etmDiv.appendChild(inputDiv);
+            let inputElement = inputDiv.querySelector('input');
+            inputElement.value = inputString;
+            (0, html_js_1.resizeInput)(inputElement);
+            inputElement.addEventListener('change', (event) => {
+                let eventTarget = event.target;
+                inputString = eventTarget.value;
+                deltaEDowns[k].setValue(parseFloat(inputString));
+                console.log("Set " + id + " to " + inputString);
+                (0, html_js_1.resizeInput)(inputElement);
+            });
+        }
+        let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(element), deltaEDowns);
+        molecule.setEnergyTransferModel(etm);
+    }
+}
+/**
+ * Set a molecule property array when the input value is changed.
+ * @param dictRef The dictionary reference of the property.
+ * @param input The input element.
+ */
+function setNumberArrayNode(node, input) {
+    let inputId = input.id;
+    let inputString = input.value.trim();
+    if (inputString == "") {
+        alert("Empty input resetting...");
+        let input = document.getElementById(inputId);
+        input.value = (0, util_js_2.arrayToString)(node.values, " ");
+        return;
+    }
+    let inputStrings = inputString.split(/\s+/);
+    let values = [];
+    let success = true;
+    inputStrings.forEach(function (value) {
+        if (!(0, util_js_1.isNumeric)(value)) {
+            success = false;
+        }
+        values.push(parseFloat(value));
+    });
+    if (!success) {
+        alert("An input is not a number, resetting...");
+        let input = document.getElementById(inputId);
+        input.value = (0, util_js_2.arrayToString)(node.values, " ");
+        return;
+    }
+    //console.log("propertyArray=" + propertyArray);
+    if (values.length == node.values.length) {
+        console.log("Changed " + node.tagName + " from: \"" + inputString + "\" to: \"" + (0, util_js_2.arrayToString)(node.values, " ") + "\"");
+        //console.log("molecule=" + molecule);
+    }
+    else {
+        alert("Expecting " + node.values.length + " values for, but finding " + values.length + " resetting...");
+        let input = document.getElementById(inputId);
+        input.value = (0, util_js_2.arrayToString)(node.values, " ");
+    }
+}
+exports.setNumberArrayNode = setNumberArrayNode;
+window.setNumberArrayNode = setNumberArrayNode;
+/**
+ * Set a molecule number node when the input value is changed.
+ * @param node The number node.
+ * @param input The input element.
+ */
+function setNumberNode(node, input) {
+    let inputId = input.id;
+    //let moleculeID: string = inputId.split("_")[0];
+    //let molecule: Molecule | undefined = molecules.get(moleculeID);
+    //if (molecule != undefined) {
+    if ((0, util_js_1.isNumeric)(input.value)) {
+        let inputNumber = parseFloat(input.value);
+        node.value = inputNumber;
+        console.log("Value set to " + inputNumber);
+    }
+    else {
+        alert("Value is not numeric, resetting...");
+        let inputElement = document.getElementById(inputId);
+        inputElement.value = node.value.toString();
+    }
+    //console.log("molecule=" + molecule);
+    //}
+}
+exports.setNumberNode = setNumberNode;
+window.set = setNumberNode;
+/**
+ * Parse XML and create HTMLDivElement for reactions.
+ * @param {XMLDocument} xml The XML document.
+ */
+function processReactionList(xml) {
+    // Create div to contain the reaction list.
+    let reactionListDiv = document.createElement("div");
+    // Get the XML "reactionList" element.
+    let xml_reactionList = (0, xml_js_1.getSingularElement)(xml, mesmer_js_1.ReactionList.tagName);
+    // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
+    let reactionListTagNames = new Set();
+    xml_reactionList.childNodes.forEach(function (node) {
+        reactionListTagNames.add(node.nodeName);
+    });
+    if (reactionListTagNames.size != 1) {
+        if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
+            console.error("reactionListTagNames:");
+            reactionListTagNames.forEach(x => console.error(x));
+            throw new Error("Additional tag names in reactionList:");
+        }
+    }
+    if (!reactionListTagNames.has(reaction_js_1.Reaction.tagName)) {
+        throw new Error("Expecting tags with \"" + reaction_js_1.Reaction.tagName + "\" tagName but there are none!");
+    }
+    // Process the XML "reaction" elements.
+    let xml_reactions = xml_reactionList.getElementsByTagName(reaction_js_1.Reaction.tagName);
+    let xml_reactions_length = xml_reactions.length;
+    console.log("Number of reactions=" + xml_reactions_length);
+    //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
+    for (let i = 0; i < xml_reactions.length; i++) {
+        let reactionDiv = document.createElement("div");
+        // Set attributes.
+        let attributes = (0, xml_js_1.getAttributes)(xml_reactions[i]);
+        let reactionTagNames = new Set();
+        let cns = xml_reactions[i].childNodes;
+        //console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for (let j = 0; j < cns.length; j++) {
+            let cn = cns[j];
+            // Check for nodeName repeats that are not #text.
+            if (!reactionTagNames.has(cn.nodeName)) {
+                reactionTagNames.add(cn.nodeName);
+            }
+            else {
+                // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+                if (cn.nodeName != "#text") {
+                    console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+                    //throw new Error("cn.nodeName appears twice in molecule.");
+                }
+            }
+            //console.log(cn.nodeName);
+        }
+        // Create reaction.
+        let reaction = new reaction_js_1.Reaction(attributes);
+        reactions.set(reaction.id, reaction);
+        // Reactions typically have one or more reactant and product. They may also have one or more "me:transitionState" and other things...
+        // Load reactants.
+        let xml_reactants = xml_reactions[i].getElementsByTagName(reaction_js_1.Reactant.tagName);
+        reactionTagNames.delete(reaction_js_1.Reactant.tagName);
+        //console.log("xml_reactants.length=" + xml_reactants.length);
+        if (xml_reactants.length > 0) {
+            let reactants = [];
+            for (let j = 0; j < xml_reactants.length; j++) {
+                let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
+                reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
+            }
+            reaction.setReactants(reactants);
+        }
+        // Load products.
+        let xml_products = xml_reactions[i].getElementsByTagName(reaction_js_1.Product.tagName);
+        reactionTagNames.delete(reaction_js_1.Product.tagName);
+        //console.log("xml_products.length=" + xml_products.length);
+        if (xml_products.length > 0) {
+            let products = [];
+            for (let j = 0; j < xml_products.length; j++) {
+                let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
+                products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
+                //processProduct(etm, reaction, xml_ETMs[0], reactionDiv);
+            }
+            reaction.setProducts(products);
+        }
+        // Load transition states.
+        let xml_transitionStates = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
+        //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
+        if (xml_transitionStates.length > 0) {
+            let transitionStates = [];
+            for (let j = 0; j < xml_transitionStates.length; j++) {
+                let xml_molecule = (0, xml_js_1.getFirstElement)(xml_transitionStates[j], molecule_js_1.Molecule.tagName);
+                transitionStates.push(new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
+            }
+            reaction.setTransitionStates(transitionStates);
+        }
+        //console.log("transitionStates=" + transitionStates);
+        // Load tunneling.
+        let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
+        let tunneling;
+        if (xml_tunneling.length > 0) {
+            if (xml_tunneling.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
+            }
+            tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
+            reaction.setTunneling(tunneling);
+        }
+        // Load MCRCMethod.
+        //console.log("Load MCRCMethod...");
+        let xml_MCRCMethod = xml_reactions[i].getElementsByTagName(reaction_js_1.MCRCMethod.tagName);
+        //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
+        //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+        if (xml_MCRCMethod.length > 0) {
+            if (xml_MCRCMethod.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
+            }
+            else {
+                let mCRCMethod;
+                let mCRCMethodAttributes = (0, xml_js_1.getAttributes)(xml_MCRCMethod[0]);
+                let name = mCRCMethodAttributes.get("name");
+                //console.log(MCRCMethod.tagName + " name=" + name);
+                if (name == undefined || name == reaction_js_1.MesmerILT.xsiType2) {
+                    let type = mCRCMethodAttributes.get("xsi:type");
+                    //console.log(MCRCMethod.tagName + "xsi:type=" + type);
+                    if (type == reaction_js_1.MesmerILT.xsiType || type == reaction_js_1.MesmerILT.xsiType2) {
+                        let preExponential;
+                        let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.PreExponential.tagName);
+                        if (xml_preExponential != null) {
+                            if (xml_preExponential[0] != null) {
+                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_preExponential[0])));
+                                preExponential = new reaction_js_1.PreExponential((0, xml_js_1.getAttributes)(xml_preExponential[0]), value);
+                            }
+                        }
+                        //console.log("preExponential " + preExponential);
+                        let activationEnergy;
+                        let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.ActivationEnergy.tagName);
+                        if (xml_activationEnergy != null) {
+                            if (xml_activationEnergy[0] != null) {
+                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_activationEnergy[0])));
+                                activationEnergy = new reaction_js_1.ActivationEnergy((0, xml_js_1.getAttributes)(xml_activationEnergy[0]), value);
+                            }
+                        }
+                        //console.log("activationEnergy " + activationEnergy);
+                        let tInfinity;
+                        let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
+                        if (xml_tInfinity != null) {
+                            if (xml_tInfinity[0] != null) {
+                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
+                                tInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_tInfinity[0]), value);
+                            }
+                        }
+                        //console.log("tInfinity " + tInfinity);
+                        let nInfinity;
+                        let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
+                        if (xml_nInfinity != null) {
+                            if (xml_nInfinity[0] != null) {
+                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
+                                nInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_nInfinity[0]), value);
+                            }
+                        }
+                        //console.log("nInfinity " + nInfinity);
+                        mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                    }
+                    else {
+                        throw new Error("Unexpected xsi:type=" + type);
+                    }
+                }
+                else {
+                    mCRCMethod = new reaction_js_1.MCRCMethod(mCRCMethodAttributes);
+                }
+                reaction.setMCRCMethod(mCRCMethod);
+            }
+        }
+        // Load excessReactantConc
+        let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
+        if (xml_excessReactantConc.length > 0) {
+            if (xml_excessReactantConc.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
+            }
+            let excessReactantConc;
+            let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_excessReactantConc[0])));
+            excessReactantConc = new reaction_js_1.ExcessReactantConc((0, xml_js_1.getAttributes)(xml_excessReactantConc[0]), value);
+            reaction.setExcessReactantConc(excessReactantConc);
+        }
+        // Create a new collapsible div for the reaction.
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, reaction.getLabel(), reactionDiv, reaction.tagName + "_" + reaction.id);
+        // Append the collapsibleDiv to the reactionListDiv.
+        reactionListDiv.appendChild(collapsibleDiv);
+    }
+    return reactionListDiv;
 }
 let conditions;
 /**
@@ -923,174 +1140,6 @@ function initControl(xml) {
         console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
     }
     control = new control_js_1.Control((0, xml_js_1.getAttributes)(xml_control), testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
-}
-/**
- * Parses xml to initialise reactions.
- * @param {XMLDocument} xml The XML document.
- */
-function initReactions(xml) {
-    let reactionList_s = 'reactionList';
-    console.log(reactionList_s);
-    let xml_reactionList = (0, xml_js_1.getSingularElement)(xml, reactionList_s);
-    let xml_reactions = xml_reactionList.getElementsByTagName(reaction_js_1.Reaction.tagName);
-    let xml_reactions_length = xml_reactions.length;
-    console.log("Number of reactions=" + xml_reactions_length);
-    // Process each reaction.
-    if (xml_reactions_length == 0) {
-        //return;
-        throw new Error("No reactions: There should be at least 1!");
-    }
-    // Set reactions_title.
-    reactions_title = document.getElementById("reactions_title");
-    if (reactions_title != null) {
-        reactions_title.innerHTML = "Reactions";
-    }
-    for (let i = 0; i < xml_reactions_length; i++) {
-        let attributes = (0, xml_js_1.getAttributes)(xml_reactions[i]);
-        let reactionID = attributes.get("id");
-        if (reactionID == null) {
-            throw new Error("reactionID is null");
-        }
-        if (reactionID != null) {
-            console.log("id=" + reactionID);
-            // Load reactants.
-            let reactants = [];
-            let xml_reactants = xml_reactions[i].getElementsByTagName(reaction_js_1.Reactant.tagName);
-            //console.log("xml_reactants.length=" + xml_reactants.length);
-            if (xml_reactants.length > 0) {
-                if (xml_reactants.length < 2) {
-                    let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[0], molecule_js_1.Molecule.tagName);
-                    reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[0]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                }
-                else {
-                    for (let j = 0; j < xml_reactants.length; j++) {
-                        let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
-                        reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                    }
-                }
-            }
-            // Load products.
-            let products = [];
-            let xml_products = xml_reactions[i].getElementsByTagName(reaction_js_1.Product.tagName);
-            //console.log("xml_products.length=" + xml_products.length);
-            if (xml_products.length > 0) {
-                if (xml_products.length < 2) {
-                    let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[0], molecule_js_1.Molecule.tagName);
-                    products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[0]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                }
-                else {
-                    for (let j = 0; j < xml_products.length; j++) {
-                        let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
-                        products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                    }
-                }
-            }
-            // Load transition states.
-            let transitionStates = [];
-            let xml_transitionStates = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
-            //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
-            if (xml_transitionStates.length > 0) {
-                if (xml_transitionStates.length < 2) {
-                    let xml_molecule = (0, xml_js_1.getFirstElement)(xml_transitionStates[0], molecule_js_1.Molecule.tagName);
-                    transitionStates.push(new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[0]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                }
-                else {
-                    for (let j = 0; j < xml_transitionStates.length; j++) {
-                        let xml_molecule = (0, xml_js_1.getFirstElement)(xml_transitionStates[j], molecule_js_1.Molecule.tagName);
-                        transitionStates.push(new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                    }
-                }
-            }
-            //console.log("transitionStates=" + transitionStates);
-            // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
-            let tunneling;
-            if (xml_tunneling.length > 0) {
-                if (xml_tunneling.length > 1) {
-                    throw new Error("Expecting 1 " + reaction_js_1.Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
-                }
-                tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
-            }
-            // Load MCRCMethod.
-            //console.log("Load MCRCMethod...");
-            let mCRCMethod;
-            let xml_MCRCMethod = xml_reactions[i].getElementsByTagName(reaction_js_1.MCRCMethod.tagName);
-            //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
-            if (xml_MCRCMethod.length > 0) {
-                if (xml_MCRCMethod.length > 1) {
-                    throw new Error("Expecting 1 " + reaction_js_1.MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
-                }
-                else {
-                    let mCRCMethodAttributes = (0, xml_js_1.getAttributes)(xml_MCRCMethod[0]);
-                    let name = mCRCMethodAttributes.get("name");
-                    //console.log(MCRCMethod.tagName + " name=" + name);
-                    if (name == undefined || name == reaction_js_1.MesmerILT.xsiType2) {
-                        let type = mCRCMethodAttributes.get("xsi:type");
-                        //console.log(MCRCMethod.tagName + "xsi:type=" + type);
-                        if (type != undefined) {
-                            if (type == reaction_js_1.MesmerILT.xsiType || type == reaction_js_1.MesmerILT.xsiType2) {
-                                let preExponential;
-                                let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.PreExponential.tagName);
-                                if (xml_preExponential != null) {
-                                    if (xml_preExponential[0] != null) {
-                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_preExponential[0])));
-                                        preExponential = new reaction_js_1.PreExponential((0, xml_js_1.getAttributes)(xml_preExponential[0]), value);
-                                    }
-                                }
-                                //console.log("preExponential " + preExponential);
-                                let activationEnergy;
-                                let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.ActivationEnergy.tagName);
-                                if (xml_activationEnergy != null) {
-                                    if (xml_activationEnergy[0] != null) {
-                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_activationEnergy[0])));
-                                        activationEnergy = new reaction_js_1.ActivationEnergy((0, xml_js_1.getAttributes)(xml_activationEnergy[0]), value);
-                                    }
-                                }
-                                //console.log("activationEnergy " + activationEnergy);
-                                let tInfinity;
-                                let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
-                                if (xml_tInfinity != null) {
-                                    if (xml_tInfinity[0] != null) {
-                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
-                                        tInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_tInfinity[0]), value);
-                                    }
-                                }
-                                //console.log("tInfinity " + tInfinity);
-                                let nInfinity;
-                                let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
-                                if (xml_nInfinity != null) {
-                                    if (xml_nInfinity[0] != null) {
-                                        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
-                                        nInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_nInfinity[0]), value);
-                                    }
-                                }
-                                //console.log("nInfinity " + nInfinity);
-                                mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
-                            }
-                        }
-                    }
-                    else {
-                        mCRCMethod = new reaction_js_1.MCRCMethod(mCRCMethodAttributes);
-                    }
-                }
-            }
-            // Load excessReactantConc
-            let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
-            let excessReactantConc;
-            if (xml_excessReactantConc.length > 0) {
-                if (xml_excessReactantConc.length > 1) {
-                    throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
-                }
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_excessReactantConc[0])));
-                excessReactantConc = new reaction_js_1.ExcessReactantConc((0, xml_js_1.getAttributes)(xml_excessReactantConc[0]), value);
-            }
-            // Create reaction.
-            let reaction = new reaction_js_1.Reaction(attributes, reactionID, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc);
-            reactions.set(reactionID, reaction);
-            //console.log("reaction=" + reaction);
-        }
-    }
 }
 /**
  * Create a diagram.
@@ -1649,14 +1698,16 @@ window.saveXML = function () {
     });
     reactionList = (0, xml_js_1.getTag)(reactionList, "reactionList", undefined, pad, true);
     // Create me.Conditions
-    let xml_conditions = conditions.toXML(pad, pad);
+    //    let xml_conditions: string = conditions.toXML(pad, pad);
     // Create modelParameters
-    let xml_modelParameters = modelParameters.toXML(pad, pad);
+    //   let xml_modelParameters: string = modelParameters.toXML(pad, pad);
     // create me.control
-    let xml_control = control.toXML(pad, pad);
+    //   let xml_control: string = control.toXML(pad, pad);
     // Create a new Blob object from the data
-    let blob = new Blob([moleculeList, reactionList,
-        xml_conditions, xml_modelParameters, xml_control], { type: "text/plain" });
+    let blob = new Blob([moleculeList, reactionList], { type: "text/plain" });
+    //     let blob = new Blob([moleculeList, reactionList,
+    //         xml_conditions, xml_modelParameters, xml_control],
+    //         { type: "text/plain" });
     // Create a new object URL for the blob
     let url = URL.createObjectURL(blob);
     // Create a new 'a' element
