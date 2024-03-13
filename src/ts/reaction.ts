@@ -378,6 +378,13 @@ export class Reaction extends NodeWithNodes {
     productsIndex: Map<string, number>;
 
     /**
+     * The transition states index.
+     * The key is the ref of the transition state.
+     * The value is the index of the transition state in the nodes array.
+     */
+    transitionStatesIndex: Map<string, number>;
+
+    /**
      * The id of the reaction.
      */
     id: string;
@@ -392,25 +399,34 @@ export class Reaction extends NodeWithNodes {
      * @param mCRCMethod The MCRCMethod (optional).
      * @param excessReactantConc The excess reactant concentration (optional).
      */
-    constructor(attributes: Map<string, string>, id: string,
-        reactants: Reactant[], products: Product[], tunneling?: Tunneling,
+    constructor(attributes: Map<string, string>,
+        reactants?: Reactant[], products?: Product[], tunneling?: Tunneling,
         transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
         excessReactantConc?: ExcessReactantConc) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
-        this.id = id;
         this.reactantsIndex = new Map();
-        reactants.forEach(reactant => {
-            this.addNode(reactant);
-            this.addToIndex(Reactant.tagName, reactant);
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
-        });
         this.productsIndex = new Map();
-        products.forEach(product => {
-            this.addToIndex(Product.tagName, product);
-            this.addNode(product);
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
-        });
+        this.transitionStatesIndex = new Map();
+        let id: string | undefined = attributes.get("id");
+        if (id == undefined) {
+            throw new Error("Reaction id is undefined");
+        }
+        this.id = id;
+        if (reactants != undefined) {
+            reactants.forEach(reactant => {
+                this.addNode(reactant);
+                this.addToIndex(Reactant.tagName, reactant);
+                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+            });
+        }
+        if (products != undefined) {
+            products.forEach(product => {
+                this.addToIndex(Product.tagName, product);
+                this.addNode(product);
+                this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+            });
+        }
         if (tunneling != undefined) {
             this.index.set(Tunneling.tagName, this.nodes.size);
             this.addNode(tunneling);
@@ -419,6 +435,7 @@ export class Reaction extends NodeWithNodes {
             transitionStates.forEach(transitionState => {
                 this.addToIndex(Product.tagName, transitionState);
                 this.addNode(transitionState);
+                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
             });
         }
         if (mCRCMethod != undefined) {
@@ -464,6 +481,17 @@ export class Reaction extends NodeWithNodes {
     }
 
     /**
+     * Set the reactants.
+     */
+    setReactants(reactants: Reactant[]): void {
+        reactants.forEach(reactant => {
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, reactant);
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+
+    /**
      * @returns A particular Reactant.
      * @param ref The ref of the reactant to return.
      * @returns The reactant at the given index.
@@ -474,6 +502,26 @@ export class Reaction extends NodeWithNodes {
             throw new Error(`Reactant with ref ${ref} not found`);
         }
         return this.nodes.get(index) as Reactant;
+    }
+
+    /**
+     * @param reactant The reactant to add.
+     */
+    addReactant(reactant: Reactant): void {
+        this.addNode(reactant);
+        this.addToIndex(Reactant.tagName, reactant);
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+    }
+
+    /**
+     * @param ref The ref of the reactant to remove.
+     */
+    removeReactant(ref: string): void {
+        let index: number | undefined = this.reactantsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.reactantsIndex.delete(ref);
+        }
     }
 
     /**
@@ -492,6 +540,17 @@ export class Reaction extends NodeWithNodes {
     }
 
     /**
+     * Set the products.
+     */
+    setProducts(products: Product[]): void {
+        products.forEach(product => {
+            this.addToIndex(Product.tagName, product);
+            this.addNode(product);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+
+    /**
      * @returns A particular Product.
      * @param ref The ref of the product to return.
      * @returns The product at the given index.
@@ -502,6 +561,26 @@ export class Reaction extends NodeWithNodes {
             throw new Error(`Product with ref ${ref} not found`);
         }
         return this.nodes.get(index) as Product;
+    }
+
+    /**
+     * @param product The product to add.
+     */
+    addProduct(product: Product): void {
+        this.addNode(product);
+        this.addToIndex(Product.tagName, product);
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+    }
+
+    /**
+     * @param ref The ref of the product to remove.
+     */
+    removeProduct(ref: string): void {
+        let index: number | undefined = this.productsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.productsIndex.delete(ref);
+        }
     }
 
     /**
@@ -548,6 +627,50 @@ export class Reaction extends NodeWithNodes {
     }
 
     /**
+     * Set the transition states.
+     */
+    setTransitionStates(transitionStates: TransitionState[]): void {
+        transitionStates.forEach(transitionState => {
+            this.addToIndex(TransitionState.tagName, transitionState);
+            this.addNode(transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    
+    /**
+     * @returns A particular TransitionState.
+     * @param ref The ref of the transition state to return.
+     * @returns The transition state at the given index.
+     */
+    getTransitionState(ref: string): TransitionState {
+        let index: number | undefined = this.transitionStatesIndex.get(ref);
+        if (index == undefined) {
+            throw new Error(`Transition state with ref ${ref} not found`);
+        }
+        return this.nodes.get(index) as TransitionState;
+    }
+
+    /**
+     * @param transitionState The transition state to add.
+     */
+    addTransitionState(transitionState: TransitionState): void {
+        this.addNode(transitionState);
+        this.addToIndex(TransitionState.tagName, transitionState);
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+    }
+
+    /**
+     * @param ref The ref of the transition state to remove.
+     */
+    removeTransitionState(ref: string): void {
+        let index: number | undefined = this.transitionStatesIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.transitionStatesIndex.delete(ref);
+        }
+    }
+
+    /**
      * @returns The MCRCMethod node or undefined if it does not exist.
      */
     getMCRCMethod(): MCRCMethod | undefined {
@@ -584,6 +707,23 @@ export class Reaction extends NodeWithNodes {
             return undefined;
         }
         return this.nodes.get(i as number) as ExcessReactantConc;
+    }
+
+    /**
+     * Set the excess reactant concentration or create it if it is undefined.
+     */
+    setExcessReactantConc(excessReactantConc: ExcessReactantConc): void {
+        let i = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        } else {
+            if (i instanceof Map) {
+                throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
+            } else {
+                this.nodes.set(i, excessReactantConc);
+            }
+        }
     }
 
     /**
@@ -661,6 +801,5 @@ export class Reaction extends NodeWithNodes {
             }
         }
     }
-
 
 }

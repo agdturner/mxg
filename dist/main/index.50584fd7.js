@@ -761,19 +761,14 @@ let xml_text;
             if (inputElement.value != title) titleNode.value = inputElement.value;
             (0, _htmlJs.resizeInput)(inputElement, 0);
         });
-        // Molecules
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
-        let paragraph = document.createElement("p");
-        paragraph.innerHTML = "Moleculesvfdafdfdsfds";
         let moleculeListElement = processMoleculeList(xml);
-        let buttonId = "buttonId";
-        let buttonLabel = "Molecules";
-        let contentDivId = "moleculesList";
-        //let collapsibleDiv = getCollapsibleDiv(buttonId, buttonLabel, paragraph, contentDivId);
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize1, buttonLabel, moleculeListElement, contentDivId);
-        moleculesElement.appendChild(collapsibleDiv);
-        //let reacionListElement = processReactionList(xml);
+        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)("molecules_button", fontSize1, "Molecules", moleculeListElement, "moleculesList"));
+        // Create a collapsible div for reactions
+        let reactionsElement = document.getElementById("reactions");
+        let reactionListElement = processReactionList(xml);
+        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)("reactions_button", fontSize1, "Reactions", reactionListElement, "reactionsList"));
         // Collapse and set up action listeners for all collapsible content.
         (0, _htmlJs.makeCollapsible)();
     }
@@ -801,12 +796,12 @@ let xml_text;
 //displayControl();
 }
 /**
- * Parse XML and create HTMLElement for molecules.
+ * Parse XML and create HTMLDivElement for molecules.
  * @param xml The XML.
- * @returns The HTMLElement.
+ * @returns The HTMLDivElement.
  */ function processMoleculeList(xml) {
-    // moleculesListDiv is the div that will contain the molecules list.
-    let moleculeListDiv = document.createElement("moleculesList");
+    // Create div to contain the molecules list.
+    let moleculeListDiv = document.createElement("div");
     // Get the XML "moleculeList" element.
     let xml_moleculeList = (0, _xmlJs.getSingularElement)(xml, (0, _mesmerJs.MoleculeList).tagName);
     // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
@@ -983,10 +978,9 @@ let xml_text;
             moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
-        let buttonId = "buttonId";
-        let buttonLabel = molecule.getLabel();
-        let contentDivId = molecule.tagName + "_" + molecule.id;
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(buttonId, fontSize2, buttonLabel, moleculeDiv, contentDivId);
+        // Create a new collapsible div for the molecule.
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(molecule.tagName + "_" + molecule.id + "_button", fontSize2, molecule.getLabel(), moleculeDiv, molecule.tagName + "_" + molecule.id);
+        // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
     return moleculeListDiv;
@@ -1185,147 +1179,166 @@ function setNumberNode(node, input) {
 }
 window.set = setNumberNode;
 /**
- * Parses xml to initialise reactions.
+ * Parse XML and create HTMLDivElement for reactions.
  * @param {XMLDocument} xml The XML document.
- */ function initReactions(xml) {
-    let reactionList_s = "reactionList";
-    console.log(reactionList_s);
-    let xml_reactionList = (0, _xmlJs.getSingularElement)(xml, reactionList_s);
+ */ function processReactionList(xml) {
+    // Create div to contain the reaction list.
+    let reactionListDiv = document.createElement("div");
+    // Get the XML "reactionList" element.
+    let xml_reactionList = (0, _xmlJs.getSingularElement)(xml, (0, _mesmerJs.ReactionList).tagName);
+    // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
+    let reactionListTagNames = new Set();
+    xml_reactionList.childNodes.forEach(function(node) {
+        reactionListTagNames.add(node.nodeName);
+    });
+    if (reactionListTagNames.size != 1) {
+        if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
+            console.error("reactionListTagNames:");
+            reactionListTagNames.forEach((x)=>console.error(x));
+            throw new Error("Additional tag names in reactionList:");
+        }
+    }
+    if (!reactionListTagNames.has((0, _reactionJs.Reaction).tagName)) throw new Error('Expecting tags with "' + (0, _reactionJs.Reaction).tagName + '" tagName but there are none!');
+    // Process the XML "reaction" elements.
     let xml_reactions = xml_reactionList.getElementsByTagName((0, _reactionJs.Reaction).tagName);
     let xml_reactions_length = xml_reactions.length;
     console.log("Number of reactions=" + xml_reactions_length);
-    // Process each reaction.
-    if (xml_reactions_length == 0) //return;
-    throw new Error("No reactions: There should be at least 1!");
-    // Set reactions_title.
-    reactions_title = document.getElementById("reactions_title");
-    if (reactions_title != null) reactions_title.innerHTML = "Reactions";
-    for(let i = 0; i < xml_reactions_length; i++){
+    //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
+    for(let i = 0; i < xml_reactions.length; i++){
+        let reactionDiv = document.createElement("div");
+        // Set attributes.
         let attributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
-        let reactionID = attributes.get("id");
-        if (reactionID == null) throw new Error("reactionID is null");
-        if (reactionID != null) {
-            console.log("id=" + reactionID);
-            // Load reactants.
+        let reactionTagNames = new Set();
+        let cns = xml_reactions[i].childNodes;
+        //console.log("cns.length=" + cns.length);
+        //cns.forEach(function (cn) {
+        for(let j = 0; j < cns.length; j++){
+            let cn = cns[j];
+            // Check for nodeName repeats that are not #text.
+            if (!reactionTagNames.has(cn.nodeName)) reactionTagNames.add(cn.nodeName);
+            else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+            if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+        //console.log(cn.nodeName);
+        }
+        // Create reaction.
+        let reaction = new (0, _reactionJs.Reaction)(attributes);
+        reactions.set(reaction.id, reaction);
+        // Reactions typically have reactant, product and potentially "me:transitionState" and other things...
+        // Load reactants.
+        let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
+        //console.log("xml_reactants.length=" + xml_reactants.length);
+        if (xml_reactants.length > 0) {
             let reactants = [];
-            let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
-            //console.log("xml_reactants.length=" + xml_reactants.length);
-            if (xml_reactants.length > 0) {
-                if (xml_reactants.length < 2) {
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[0], (0, _moleculeJs.Molecule).tagName);
-                    reactants.push(new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[0]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                } else for(let j = 0; j < xml_reactants.length; j++){
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _moleculeJs.Molecule).tagName);
-                    reactants.push(new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                }
+            for(let j = 0; j < xml_reactants.length; j++){
+                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _moleculeJs.Molecule).tagName);
+                reactants.push(new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
             }
-            // Load products.
+            reaction.setReactants(reactants);
+        }
+        // Load products.
+        let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
+        //console.log("xml_products.length=" + xml_products.length);
+        if (xml_products.length > 0) {
             let products = [];
-            let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
-            //console.log("xml_products.length=" + xml_products.length);
-            if (xml_products.length > 0) {
-                if (xml_products.length < 2) {
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[0], (0, _moleculeJs.Molecule).tagName);
-                    products.push(new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[0]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                } else for(let j = 0; j < xml_products.length; j++){
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
-                    products.push(new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                }
+            for(let j = 0; j < xml_products.length; j++){
+                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _moleculeJs.Molecule).tagName);
+                products.push(new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
             }
-            // Load transition states.
+            reaction.setProducts(products);
+        }
+        // Load transition states.
+        let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, _reactionJs.TransitionState).tagName);
+        //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
+        if (xml_transitionStates.length > 0) {
             let transitionStates = [];
-            let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, _reactionJs.TransitionState).tagName);
-            //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
-            if (xml_transitionStates.length > 0) {
-                if (xml_transitionStates.length < 2) {
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[0], (0, _moleculeJs.Molecule).tagName);
-                    transitionStates.push(new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[0]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                } else for(let j = 0; j < xml_transitionStates.length; j++){
-                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[j], (0, _moleculeJs.Molecule).tagName);
-                    transitionStates.push(new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
-                }
+            for(let j = 0; j < xml_transitionStates.length; j++){
+                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[j], (0, _moleculeJs.Molecule).tagName);
+                transitionStates.push(new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule))));
             }
-            //console.log("transitionStates=" + transitionStates);
-            // Load tunneling.
-            let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _reactionJs.Tunneling).tagName);
-            let tunneling;
-            if (xml_tunneling.length > 0) {
-                if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
-                tunneling = new (0, _reactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
-            }
-            // Load MCRCMethod.
-            //console.log("Load MCRCMethod...");
-            let mCRCMethod;
-            let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _reactionJs.MCRCMethod).tagName);
-            //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
-            if (xml_MCRCMethod.length > 0) {
-                if (xml_MCRCMethod.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.MCRCMethod).tagName + " but finding " + xml_MCRCMethod.length + "!");
-                else {
-                    let mCRCMethodAttributes = (0, _xmlJs.getAttributes)(xml_MCRCMethod[0]);
-                    let name = mCRCMethodAttributes.get("name");
-                    //console.log(MCRCMethod.tagName + " name=" + name);
-                    if (name == undefined || name == (0, _reactionJs.MesmerILT).xsiType2) {
-                        let type = mCRCMethodAttributes.get("xsi:type");
-                        //console.log(MCRCMethod.tagName + "xsi:type=" + type);
-                        if (type != undefined) {
-                            if (type == (0, _reactionJs.MesmerILT).xsiType || type == (0, _reactionJs.MesmerILT).xsiType2) {
-                                let preExponential;
-                                let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.PreExponential).tagName);
-                                if (xml_preExponential != null) {
-                                    if (xml_preExponential[0] != null) {
-                                        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_preExponential[0])));
-                                        preExponential = new (0, _reactionJs.PreExponential)((0, _xmlJs.getAttributes)(xml_preExponential[0]), value);
-                                    }
-                                }
-                                //console.log("preExponential " + preExponential);
-                                let activationEnergy;
-                                let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.ActivationEnergy).tagName);
-                                if (xml_activationEnergy != null) {
-                                    if (xml_activationEnergy[0] != null) {
-                                        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_activationEnergy[0])));
-                                        activationEnergy = new (0, _reactionJs.ActivationEnergy)((0, _xmlJs.getAttributes)(xml_activationEnergy[0]), value);
-                                    }
-                                }
-                                //console.log("activationEnergy " + activationEnergy);
-                                let tInfinity;
-                                let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.TInfinity).tagName);
-                                if (xml_tInfinity != null) {
-                                    if (xml_tInfinity[0] != null) {
-                                        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_tInfinity[0])));
-                                        tInfinity = new (0, _reactionJs.NInfinity)((0, _xmlJs.getAttributes)(xml_tInfinity[0]), value);
-                                    }
-                                }
-                                //console.log("tInfinity " + tInfinity);
-                                let nInfinity;
-                                let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.NInfinity).tagName);
-                                if (xml_nInfinity != null) {
-                                    if (xml_nInfinity[0] != null) {
-                                        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_nInfinity[0])));
-                                        nInfinity = new (0, _reactionJs.NInfinity)((0, _xmlJs.getAttributes)(xml_nInfinity[0]), value);
-                                    }
-                                }
-                                //console.log("nInfinity " + nInfinity);
-                                mCRCMethod = new (0, _reactionJs.MesmerILT)(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+            reaction.setTransitionStates(transitionStates);
+        }
+        //console.log("transitionStates=" + transitionStates);
+        // Load tunneling.
+        let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _reactionJs.Tunneling).tagName);
+        let tunneling;
+        if (xml_tunneling.length > 0) {
+            if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
+            tunneling = new (0, _reactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
+            reaction.setTunneling(tunneling);
+        }
+        // Load MCRCMethod.
+        //console.log("Load MCRCMethod...");
+        let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _reactionJs.MCRCMethod).tagName);
+        //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
+        //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+        if (xml_MCRCMethod.length > 0) {
+            if (xml_MCRCMethod.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.MCRCMethod).tagName + " but finding " + xml_MCRCMethod.length + "!");
+            else {
+                let mCRCMethod;
+                let mCRCMethodAttributes = (0, _xmlJs.getAttributes)(xml_MCRCMethod[0]);
+                let name = mCRCMethodAttributes.get("name");
+                //console.log(MCRCMethod.tagName + " name=" + name);
+                if (name == undefined || name == (0, _reactionJs.MesmerILT).xsiType2) {
+                    let type = mCRCMethodAttributes.get("xsi:type");
+                    //console.log(MCRCMethod.tagName + "xsi:type=" + type);
+                    if (type == (0, _reactionJs.MesmerILT).xsiType || type == (0, _reactionJs.MesmerILT).xsiType2) {
+                        let preExponential;
+                        let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.PreExponential).tagName);
+                        if (xml_preExponential != null) {
+                            if (xml_preExponential[0] != null) {
+                                let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_preExponential[0])));
+                                preExponential = new (0, _reactionJs.PreExponential)((0, _xmlJs.getAttributes)(xml_preExponential[0]), value);
                             }
                         }
-                    } else mCRCMethod = new (0, _reactionJs.MCRCMethod)(mCRCMethodAttributes);
-                }
+                        //console.log("preExponential " + preExponential);
+                        let activationEnergy;
+                        let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.ActivationEnergy).tagName);
+                        if (xml_activationEnergy != null) {
+                            if (xml_activationEnergy[0] != null) {
+                                let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_activationEnergy[0])));
+                                activationEnergy = new (0, _reactionJs.ActivationEnergy)((0, _xmlJs.getAttributes)(xml_activationEnergy[0]), value);
+                            }
+                        }
+                        //console.log("activationEnergy " + activationEnergy);
+                        let tInfinity;
+                        let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.TInfinity).tagName);
+                        if (xml_tInfinity != null) {
+                            if (xml_tInfinity[0] != null) {
+                                let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_tInfinity[0])));
+                                tInfinity = new (0, _reactionJs.NInfinity)((0, _xmlJs.getAttributes)(xml_tInfinity[0]), value);
+                            }
+                        }
+                        //console.log("tInfinity " + tInfinity);
+                        let nInfinity;
+                        let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.NInfinity).tagName);
+                        if (xml_nInfinity != null) {
+                            if (xml_nInfinity[0] != null) {
+                                let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_nInfinity[0])));
+                                nInfinity = new (0, _reactionJs.NInfinity)((0, _xmlJs.getAttributes)(xml_nInfinity[0]), value);
+                            }
+                        }
+                        //console.log("nInfinity " + nInfinity);
+                        mCRCMethod = new (0, _reactionJs.MesmerILT)(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                    } else throw new Error("Unexpected xsi:type=" + type);
+                } else mCRCMethod = new (0, _reactionJs.MCRCMethod)(mCRCMethodAttributes);
+                reaction.setMCRCMethod(mCRCMethod);
             }
-            // Load excessReactantConc
-            let xml_excessReactantConc = xml_reactions[i].getElementsByTagName((0, _reactionJs.ExcessReactantConc).tagName);
-            let excessReactantConc;
-            if (xml_excessReactantConc.length > 0) {
-                if (xml_excessReactantConc.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.ExcessReactantConc).tagName + " but finding " + xml_excessReactantConc.length + "!");
-                let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_excessReactantConc[0])));
-                excessReactantConc = new (0, _reactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_excessReactantConc[0]), value);
-            }
-            // Create reaction.
-            let reaction = new (0, _reactionJs.Reaction)(attributes, reactionID, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc);
-            reactions.set(reactionID, reaction);
-        //console.log("reaction=" + reaction);
         }
+        // Load excessReactantConc
+        let xml_excessReactantConc = xml_reactions[i].getElementsByTagName((0, _reactionJs.ExcessReactantConc).tagName);
+        if (xml_excessReactantConc.length > 0) {
+            if (xml_excessReactantConc.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.ExcessReactantConc).tagName + " but finding " + xml_excessReactantConc.length + "!");
+            let excessReactantConc;
+            let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_excessReactantConc[0])));
+            excessReactantConc = new (0, _reactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_excessReactantConc[0]), value);
+            reaction.setExcessReactantConc(excessReactantConc);
+        }
+        // Create a new collapsible div for the reaction.
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(reaction.tagName + "_" + reaction.id + "_button", fontSize2, reaction.getLabel(), reactionDiv, reaction.tagName + "_" + reaction.id);
+        // Append the collapsibleDiv to the reactionListDiv.
+        reactionListDiv.appendChild(collapsibleDiv);
     }
+    return reactionListDiv;
 }
 let conditions;
 /**
@@ -3738,18 +3751,21 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * @param transitionStates The transition states (optional).
      * @param mCRCMethod The MCRCMethod (optional).
      * @param excessReactantConc The excess reactant concentration (optional).
-     */ constructor(attributes, id, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc){
+     */ constructor(attributes, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc){
         super(attributes, Reaction.tagName);
         this.index = new Map();
-        this.id = id;
         this.reactantsIndex = new Map();
-        reactants.forEach((reactant)=>{
+        this.productsIndex = new Map();
+        this.transitionStatesIndex = new Map();
+        let id = attributes.get("id");
+        if (id == undefined) throw new Error("Reaction id is undefined");
+        this.id = id;
+        if (reactants != undefined) reactants.forEach((reactant)=>{
             this.addNode(reactant);
             this.addToIndex(Reactant.tagName, reactant);
             this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
         });
-        this.productsIndex = new Map();
-        products.forEach((product)=>{
+        if (products != undefined) products.forEach((product)=>{
             this.addToIndex(Product.tagName, product);
             this.addNode(product);
             this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
@@ -3761,6 +3777,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         if (transitionStates != undefined) transitionStates.forEach((transitionState)=>{
             this.addToIndex(Product.tagName, transitionState);
             this.addNode(transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
         });
         if (mCRCMethod != undefined) {
             this.index.set(MCRCMethod.tagName, this.nodes.size);
@@ -3795,6 +3812,15 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         ];
     }
     /**
+     * Set the reactants.
+     */ setReactants(reactants) {
+        reactants.forEach((reactant)=>{
+            this.addNode(reactant);
+            this.addToIndex(Reactant.tagName, reactant);
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
      * @returns A particular Reactant.
      * @param ref The ref of the reactant to return.
      * @returns The reactant at the given index.
@@ -3802,6 +3828,22 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         let index = this.reactantsIndex.get(ref);
         if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
         return this.nodes.get(index);
+    }
+    /**
+     * @param reactant The reactant to add.
+     */ addReactant(reactant) {
+        this.addNode(reactant);
+        this.addToIndex(Reactant.tagName, reactant);
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the reactant to remove.
+     */ removeReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.reactantsIndex.delete(ref);
+        }
     }
     /**
      * @returns The products.
@@ -3814,6 +3856,15 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         ];
     }
     /**
+     * Set the products.
+     */ setProducts(products) {
+        products.forEach((product)=>{
+            this.addToIndex(Product.tagName, product);
+            this.addNode(product);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
      * @returns A particular Product.
      * @param ref The ref of the product to return.
      * @returns The product at the given index.
@@ -3821,6 +3872,22 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         let index = this.productsIndex.get(ref);
         if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
         return this.nodes.get(index);
+    }
+    /**
+     * @param product The product to add.
+     */ addProduct(product) {
+        this.addNode(product);
+        this.addToIndex(Product.tagName, product);
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the product to remove.
+     */ removeProduct(ref) {
+        let index = this.productsIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.productsIndex.delete(ref);
+        }
     }
     /**
      * @returns The tunneling node or undefined if it does not exist.
@@ -3852,6 +3919,40 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         ];
     }
     /**
+     * Set the transition states.
+     */ setTransitionStates(transitionStates) {
+        transitionStates.forEach((transitionState)=>{
+            this.addToIndex(TransitionState.tagName, transitionState);
+            this.addNode(transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+        });
+    }
+    /**
+     * @returns A particular TransitionState.
+     * @param ref The ref of the transition state to return.
+     * @returns The transition state at the given index.
+     */ getTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index == undefined) throw new Error(`Transition state with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @param transitionState The transition state to add.
+     */ addTransitionState(transitionState) {
+        this.addNode(transitionState);
+        this.addToIndex(TransitionState.tagName, transitionState);
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
+    }
+    /**
+     * @param ref The ref of the transition state to remove.
+     */ removeTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index != undefined) {
+            this.nodes.delete(index);
+            this.transitionStatesIndex.delete(ref);
+        }
+    }
+    /**
      * @returns The MCRCMethod node or undefined if it does not exist.
      */ getMCRCMethod() {
         let i = this.index.get(MCRCMethod.tagName);
@@ -3876,6 +3977,18 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         let i = this.index.get(ExcessReactantConc.tagName);
         if (i == undefined) return undefined;
         return this.nodes.get(i);
+    }
+    /**
+     * Set the excess reactant concentration or create it if it is undefined.
+     */ setExcessReactantConc(excessReactantConc) {
+        let i = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        } else {
+            if (i instanceof Map) throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, excessReactantConc);
+        }
     }
     /**
      * Get the label of the reactants.
