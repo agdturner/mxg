@@ -283,6 +283,14 @@ export class ZPE extends Property {
     constructor(attributes: Map<string, string>, property: PropertyScalar) {
         super(attributes, property);
     }
+
+    /**
+     * @param units The units.
+     * Should be one of ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"].
+     */
+    setUnits(units: string): void {
+        this.getProperty().updateUnits(units);
+    }
 }
 
 /**
@@ -766,23 +774,32 @@ export class ExtraDOSCMethod extends NodeWithNodes {
     static readonly tagName: string = "me:ExtraDOSCMethod";
 
     /**
+     * The index.
+     */
+    index: Map<string, number>;
+
+    /**
      * @param attributes The attributes.
      * @param bondRef The bondRef.
      * @param hinderedRotorPotential The HinderedRotorPotential.
      * @param periodicity The Periodicity.
      */
-    constructor(attributes: Map<string, string>, bondRef: BondRef | undefined,
-        hinderedRotorPotential: HinderedRotorPotential | undefined,
-        periodicity: Periodicity | undefined) {
+    constructor(attributes: Map<string, string>, bondRef?: BondRef,
+        hinderedRotorPotential?: HinderedRotorPotential,
+        periodicity?: Periodicity) {
         super(attributes, ExtraDOSCMethod.tagName);
+        this.index = new Map();
         if (bondRef) {
             this.nodes.set(this.nodes.size, bondRef);
+            this.index.set(BondRef.tagName, this.nodes.size - 1);
         }
         if (hinderedRotorPotential) {
             this.nodes.set(this.nodes.size, hinderedRotorPotential);
+            this.index.set(HinderedRotorPotential.tagName, this.nodes.size - 1);
         }
         if (periodicity) {
             this.nodes.set(this.nodes.size, periodicity);
+            this.index.set(Periodicity.tagName, this.nodes.size - 1);
         }
     }
 
@@ -790,7 +807,10 @@ export class ExtraDOSCMethod extends NodeWithNodes {
      * @returns The bondRef.
      */
     getBondRef(): BondRef | undefined {
-        return this.nodes.get(0) as BondRef;
+        let i = this.index.get(BondRef.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as BondRef;
+        }
     }
 
     /**
@@ -798,14 +818,23 @@ export class ExtraDOSCMethod extends NodeWithNodes {
      * @param bondRef The bondRef.
      */
     setBondRef(bondRef: BondRef) {
-        this.nodes.set(0, bondRef);
+        let i = this.index.get(BondRef.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, bondRef);
+        } else {
+            this.nodes.set(this.nodes.size, bondRef);
+            this.index.set(BondRef.tagName, this.nodes.size - 1);
+        }
     }
 
     /**
      * @returns The hindered rotor potential of the molecule.
      */
     getHinderedRotorPotential(): HinderedRotorPotential | undefined {
-        return this.nodes.get(1) as HinderedRotorPotential;
+        let i = this.index.get(HinderedRotorPotential.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as HinderedRotorPotential;
+        }
     }
 
     /**
@@ -813,14 +842,23 @@ export class ExtraDOSCMethod extends NodeWithNodes {
      * @param hinderedRotorPotential The hindered rotor potential.
      */
     setHinderedRotorPotential(hinderedRotorPotential: HinderedRotorPotential) {
-        this.nodes.set(1, hinderedRotorPotential);
+        let i = this.index.get(HinderedRotorPotential.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, hinderedRotorPotential);
+        } else {
+            this.nodes.set(this.nodes.size, hinderedRotorPotential);
+            this.index.set(HinderedRotorPotential.tagName, this.nodes.size - 1);
+        }
     }
 
     /**
      * @returns The periodicity of the molecule.
      */
     getPeriodicity(): Periodicity | undefined {
-        return this.nodes.get(2) as Periodicity;
+        let i = this.index.get(Periodicity.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Periodicity;
+        }
     }
 
     /**
@@ -828,7 +866,13 @@ export class ExtraDOSCMethod extends NodeWithNodes {
      * @param periodicity The periodicity.
      */
     setPeriodicity(periodicity: Periodicity) {
-        this.nodes.set(2, periodicity);
+        let i = this.index.get(Periodicity.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, periodicity);
+        } else {
+            this.nodes.set(this.nodes.size, periodicity);
+            this.index.set(Periodicity.tagName, this.nodes.size - 1);
+        }
     }
 
 }

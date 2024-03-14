@@ -9,6 +9,9 @@ import {
 /**
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
+ * The attribute "role" is the role of the molecule in the reaction. Expected values are:
+ * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
+ * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
  */
 export class ReactionMolecule extends TagWithAttributes {
 
@@ -23,6 +26,11 @@ export class ReactionMolecule extends TagWithAttributes {
     ref: string;
 
     /**
+     * The role attribute.
+     */
+    role: string;
+
+    /**
      * @param attributes The attributes.
      * @param tagName The tag name.
      * @param molecule The molecule (an abbreviated molecule).
@@ -30,7 +38,16 @@ export class ReactionMolecule extends TagWithAttributes {
     constructor(attributes: Map<string, string>) {
         super(attributes, ReactionMolecule.tagName);
         this.ref = attributes.get("ref") as string;
+        this.role = attributes.get("role") as string;
     }
+
+    /**
+     * @param role The role of the molecule in the reaction.
+     */
+    setRole(role: string): void {
+        this.role = role;
+    }
+
 }
 
 /**
@@ -197,6 +214,13 @@ export class NInfinity extends NumberNode {
 /**
  * Extended classes indicate how microcanonical rate constant is to be treated.
  * In the XML, a "me:MCRCMethod" node is a child of a "reaction" node.
+ * A simple MCRCMethod has an attribute name="RRKM".
+ * There are extended classed representing more complicated MCRCMethods:
+ * "me:MesmerILT"
+ * "LandauZenerCrossing"
+ * "ZhuNakamuraCrossing"
+ * "me:CanonicalRateCoefficient"
+ * "DefinedSumOfStates"
  */
 export class MCRCMethod extends NodeWithNodes {
 
@@ -275,6 +299,19 @@ export class MesmerILT extends MCRCMethod {
     }
 
     /**
+     * @param preExponential The pre-exponential factor.
+     */
+    setPreExponential(preExponential: PreExponential): void {
+        let i = this.index.get(PreExponential.tagName);
+        if (i == undefined) {
+            this.index.set(PreExponential.tagName, this.nodes.size);
+            this.addNode(preExponential);
+        } else {
+            this.nodes.set(i, preExponential);
+        }
+    }
+
+    /**
      * @returns The activation energy or undefined if it does not exist.
      */
     getActivationEnergy(): ActivationEnergy | undefined {
@@ -283,6 +320,19 @@ export class MesmerILT extends MCRCMethod {
             return undefined;
         }
         return this.nodes.get(i) as ActivationEnergy;
+    }
+
+    /**
+     * @param activationEnergy The activation energy.
+     */
+    setActivationEnergy(activationEnergy: ActivationEnergy): void {
+        let i = this.index.get(ActivationEnergy.tagName);
+        if (i == undefined) {
+            this.index.set(ActivationEnergy.tagName, this.nodes.size);
+            this.addNode(activationEnergy);
+        } else {
+            this.nodes.set(i, activationEnergy);
+        }
     }
 
     /**
@@ -297,6 +347,19 @@ export class MesmerILT extends MCRCMethod {
     }
 
     /**
+     * @param tInfinity The TInfinity.
+     */
+    setTInfinity(tInfinity: TInfinity): void {
+        let i = this.index.get(TInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(TInfinity.tagName, this.nodes.size);
+            this.addNode(tInfinity);
+        } else {
+            this.nodes.set(i, tInfinity);
+        }
+    }
+
+    /**
      * @returns The NInfinity or undefined if it does not exist.
      */
     getNInfinity(): NInfinity | undefined {
@@ -306,10 +369,24 @@ export class MesmerILT extends MCRCMethod {
         }
         return this.nodes.get(i) as NInfinity;
     }
+
+    /**
+     * @param nInfinity The NInfinity.
+     */
+    setNInfinity(nInfinity: NInfinity): void {
+        let i = this.index.get(NInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(NInfinity.tagName, this.nodes.size);
+            this.addNode(nInfinity);
+        } else {
+            this.nodes.set(i, nInfinity);
+        }
+    }
 }
 
 /**
  * In the XML, the "me:tunneling" node is a child of a "reaction" node.
+ * The "name" attribute is one of: [Eckart, WKB].
  */
 export class Tunneling extends TagWithAttributes {
 
@@ -323,6 +400,25 @@ export class Tunneling extends TagWithAttributes {
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, Tunneling.tagName);
+    }
+
+    /**
+     * @returns The name of the tunneling method.
+     */
+    getName(): string {
+        if (this.attributes != undefined) {
+            return this.attributes.get("name") as string;
+        }
+        return "";
+    }
+
+    /**
+     * @param The name of the tunneling method.
+     */
+    setName(name: string): void {
+        if (this.attributes != undefined) {
+            this.attributes.set("name", name);
+        }
     }
 }
 
@@ -415,17 +511,17 @@ export class Reaction extends NodeWithNodes {
         this.id = id;
         if (reactants != undefined) {
             reactants.forEach(reactant => {
+                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
                 this.addNode(reactant);
-                this.addToIndex(Reactant.tagName, reactant);
-                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
             products.forEach(product => {
-                this.addToIndex(Product.tagName, product);
+                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
                 this.addNode(product);
-                this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(Product.tagName, this.productsIndex);
         }
         if (tunneling != undefined) {
             this.index.set(Tunneling.tagName, this.nodes.size);
@@ -433,10 +529,10 @@ export class Reaction extends NodeWithNodes {
         }
         if (transitionStates != undefined) {
             transitionStates.forEach(transitionState => {
-                this.addToIndex(Product.tagName, transitionState);
+                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
                 this.addNode(transitionState);
-                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(TransitionState.tagName, this.transitionStatesIndex);
         }
         if (mCRCMethod != undefined) {
             this.index.set(MCRCMethod.tagName, this.nodes.size);
@@ -485,10 +581,10 @@ export class Reaction extends NodeWithNodes {
      */
     setReactants(reactants: Reactant[]): void {
         reactants.forEach(reactant => {
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
             this.addNode(reactant);
-            this.addToIndex(Reactant.tagName, reactant);
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(Reactant.tagName, this.reactantsIndex);
     }
 
     /**
@@ -508,9 +604,8 @@ export class Reaction extends NodeWithNodes {
      * @param reactant The reactant to add.
      */
     addReactant(reactant: Reactant): void {
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
         this.addNode(reactant);
-        this.addToIndex(Reactant.tagName, reactant);
-        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
     }
 
     /**
@@ -518,7 +613,9 @@ export class Reaction extends NodeWithNodes {
      */
     removeReactant(ref: string): void {
         let index: number | undefined = this.reactantsIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Reactant with ref ${ref} not found`);
+        } else {
             this.nodes.delete(index);
             this.reactantsIndex.delete(ref);
         }
@@ -544,10 +641,10 @@ export class Reaction extends NodeWithNodes {
      */
     setProducts(products: Product[]): void {
         products.forEach(product => {
-            this.addToIndex(Product.tagName, product);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
             this.addNode(product);
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(Product.tagName, this.productsIndex);
     }
 
     /**
@@ -567,9 +664,8 @@ export class Reaction extends NodeWithNodes {
      * @param product The product to add.
      */
     addProduct(product: Product): void {
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
         this.addNode(product);
-        this.addToIndex(Product.tagName, product);
-        this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
     }
 
     /**
@@ -577,7 +673,9 @@ export class Reaction extends NodeWithNodes {
      */
     removeProduct(ref: string): void {
         let index: number | undefined = this.productsIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Product with ref ${ref} not found`);
+        } else {
             this.nodes.delete(index);
             this.productsIndex.delete(ref);
         }
@@ -631,12 +729,12 @@ export class Reaction extends NodeWithNodes {
      */
     setTransitionStates(transitionStates: TransitionState[]): void {
         transitionStates.forEach(transitionState => {
-            this.addToIndex(TransitionState.tagName, transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
             this.addNode(transitionState);
-            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(TransitionState.tagName, this.transitionStatesIndex);
     }
-    
+
     /**
      * @returns A particular TransitionState.
      * @param ref The ref of the transition state to return.
@@ -654,9 +752,8 @@ export class Reaction extends NodeWithNodes {
      * @param transitionState The transition state to add.
      */
     addTransitionState(transitionState: TransitionState): void {
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
         this.addNode(transitionState);
-        this.addToIndex(TransitionState.tagName, transitionState);
-        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
     }
 
     /**
@@ -664,7 +761,9 @@ export class Reaction extends NodeWithNodes {
      */
     removeTransitionState(ref: string): void {
         let index: number | undefined = this.transitionStatesIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Transition State with ref ${ref} not found`);
+        } else {
             this.nodes.delete(index);
             this.transitionStatesIndex.delete(ref);
         }

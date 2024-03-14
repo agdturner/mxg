@@ -5,6 +5,9 @@ const xml_js_1 = require("./xml.js");
 /**
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
+ * The attribute "role" is the role of the molecule in the reaction. Expected values are:
+ * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
+ * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
  */
 class ReactionMolecule extends xml_js_1.TagWithAttributes {
     /**
@@ -16,6 +19,10 @@ class ReactionMolecule extends xml_js_1.TagWithAttributes {
      */
     ref;
     /**
+     * The role attribute.
+     */
+    role;
+    /**
      * @param attributes The attributes.
      * @param tagName The tag name.
      * @param molecule The molecule (an abbreviated molecule).
@@ -23,6 +30,13 @@ class ReactionMolecule extends xml_js_1.TagWithAttributes {
     constructor(attributes) {
         super(attributes, ReactionMolecule.tagName);
         this.ref = attributes.get("ref");
+        this.role = attributes.get("role");
+    }
+    /**
+     * @param role The role of the molecule in the reaction.
+     */
+    setRole(role) {
+        this.role = role;
     }
 }
 exports.ReactionMolecule = ReactionMolecule;
@@ -172,6 +186,13 @@ exports.NInfinity = NInfinity;
 /**
  * Extended classes indicate how microcanonical rate constant is to be treated.
  * In the XML, a "me:MCRCMethod" node is a child of a "reaction" node.
+ * A simple MCRCMethod has an attribute name="RRKM".
+ * There are extended classed representing more complicated MCRCMethods:
+ * "me:MesmerILT"
+ * "LandauZenerCrossing"
+ * "ZhuNakamuraCrossing"
+ * "me:CanonicalRateCoefficient"
+ * "DefinedSumOfStates"
  */
 class MCRCMethod extends xml_js_1.NodeWithNodes {
     /**
@@ -274,6 +295,7 @@ class MesmerILT extends MCRCMethod {
 exports.MesmerILT = MesmerILT;
 /**
  * In the XML, the "me:tunneling" node is a child of a "reaction" node.
+ * The "name" attribute is one of: [Eckart, WKB].
  */
 class Tunneling extends xml_js_1.TagWithAttributes {
     /**
@@ -285,6 +307,23 @@ class Tunneling extends xml_js_1.TagWithAttributes {
      */
     constructor(attributes) {
         super(attributes, Tunneling.tagName);
+    }
+    /**
+     * @returns The name of the tunneling method.
+     */
+    getName() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("name");
+        }
+        return "";
+    }
+    /**
+     * @param The name of the tunneling method.
+     */
+    setName(name) {
+        if (this.attributes != undefined) {
+            this.attributes.set("name", name);
+        }
     }
 }
 exports.Tunneling = Tunneling;

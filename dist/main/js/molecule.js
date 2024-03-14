@@ -255,6 +255,13 @@ class ZPE extends Property {
     constructor(attributes, property) {
         super(attributes, property);
     }
+    /**
+     * @param units The units.
+     * Should be one of ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"].
+     */
+    setUnits(units) {
+        this.getProperty().updateUnits(units);
+    }
 }
 exports.ZPE = ZPE;
 /**
@@ -506,6 +513,27 @@ class EnergyTransferModel extends xml_js_1.NodeWithNodes {
                 this.nodes.set(this.nodes.size, deltaEDown);
             });
         }
+    }
+    /**
+     * @returns The DeltaEDowns.
+     */
+    getDeltaEDowns() {
+        let deltaEDowns = [];
+        this.nodes.forEach(node => {
+            if (node instanceof DeltaEDown) {
+                deltaEDowns.push(node);
+            }
+        });
+        return deltaEDowns;
+    }
+    /**
+     * @param deltaEDowns The DeltaEDowns.
+     */
+    setDeltaEDowns(deltaEDowns) {
+        this.nodes.clear();
+        deltaEDowns.forEach(deltaEDown => {
+            this.nodes.set(this.nodes.size, deltaEDown);
+        });
     }
     /**
      * @param index The index of the DeltaEDown to return.

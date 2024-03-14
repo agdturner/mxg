@@ -21,7 +21,7 @@ import {
 } from './util.js';
 
 import {
-    getInput, makeCollapsible, getCollapsibleDiv, resizeInput
+    getInput, makeCollapsible, getCollapsibleDiv, resizeInputElement, getSelectElement, resizeSelectElement
 } from './html.js';
 
 import {
@@ -57,17 +57,28 @@ declare global {
 /**
  * The font sizes for different levels of the GUI.
  */
-let fontSize1 = "1.5em";
-let fontSize2 = "1.25em";
-let fontSize3 = "1.0em";
-let fontSize4 = "0.75em";
+let fontSize1: string = "1.5em";
+let fontSize2: string = "1.25em";
+let fontSize3: string = "1.0em";
+let fontSize4: string = "0.75em";
 /**
  * The margins for different levels of the GUI.
  */
-let margin1 = "0px";
-let margin2 = "25px";
-let margin3 = "50px";
-let margin4 = "75px";
+let margin1: string = "0px";
+let margin2: string = "25px";
+let margin3: string = "50px";
+let margin4: string = "75px";
+/**
+ * The margin to space out components
+ */
+let marginTop: string = "1px";
+let marginBottom: string = "1px";
+
+/**
+ * Units for different things.
+ */
+let unitsEnergy: string[] = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
+let unitsRotConsts: string[] = ["cm-1", "GHz"];
 
 /**
  * A map of molecules with Molecule.id as key and Molecules as values.
@@ -234,6 +245,8 @@ function parse(xml: XMLDocument) {
         let titleElement: HTMLElement = document.getElementById("title") as HTMLElement;
         // Create a new div element for the input.
         let divElement = document.createElement("div");
+        divElement.style.marginTop = marginTop;
+        divElement.style.marginBottom = marginBottom;
         // Create a text node.
         let textNode = document.createTextNode("Title: ");
         divElement.appendChild(textNode);
@@ -248,46 +261,33 @@ function parse(xml: XMLDocument) {
         titleElement.parentNode?.insertBefore(divElement, titleElement);
         // Remove the original titleElement.
         titleElement.parentNode?.removeChild(titleElement);
-        resizeInput(inputElement, 0);
+        resizeInputElement(inputElement, 0);
         console.log("inputElement.value=" + inputElement.value);
         // Add event listener to inputElement.
         inputElement.addEventListener('change', function () {
             if (inputElement.value != title) {
                 titleNode.value = inputElement.value;
             }
-            resizeInput(inputElement, 0);
+            resizeInputElement(inputElement, 0);
         });
 
         // Create a collapsible div for molecules
         let moleculesElement: HTMLElement = document.getElementById("molecules") as HTMLElement;
         let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild(getCollapsibleDiv("molecules_button", fontSize1, margin1, "Molecules", moleculeListElement, "moleculesList"));
+        moleculesElement.appendChild(getCollapsibleDiv(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
 
         // Create a collapsible div for reactions
         let reactionsElement: HTMLElement = document.getElementById("reactions") as HTMLElement;
         let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild(getCollapsibleDiv("reactions_button", fontSize1, margin1, "Reactions", reactionListElement, "reactionsList"));
+        reactionsElement.appendChild(getCollapsibleDiv(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
 
-
-
+        // Display reaction diagram. 
+        displayReactionsDiagram();
 
         // Collapse and set up action listeners for all collapsible content.
         makeCollapsible();
 
     }
-
-    /**
-     * Generate molecules table.
-     */
-    //initMolecules(xml);
-    //displayMolecules();
-    /**
-     * Generate reactions table.
-     */
-    //initReactions(xml);
-    //displayReactions();
-    //addEventListeners();
-    //displayReactionsDiagram();
     /**
      * Generate conditions table.
      */
@@ -432,7 +432,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let plDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
             let buttonId: string = molecule.id + "_" + PropertyList.tagName;
             let contentDivId: string = molecule.id + "_" + PropertyList.tagName + "_";
-            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(buttonId, fontSize3, margin3, PropertyList.tagName, plDiv, contentDivId);
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(plDiv, PropertyList.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
             let pl: PropertyList = new PropertyList(getAttributes(xml_PLs[0]));
@@ -442,7 +442,14 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 let p: Property = new Property(getAttributes(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], plDiv, margin4);
+                if (p.dictRef == ZPE.dictRef) {
+                    processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, margin4);
+
+                } else if (p.dictRef == RotConsts.dictRef) {
+                    processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, margin4);
+                } else {
+                    processProperty(p, undefined, molecule, xml_Ps[j], plDiv, margin4);
+                }
             }
             moleculeTagNames.delete(PropertyList.tagName);
         } else {
@@ -454,11 +461,16 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             // Create a new Property.
             let p: Property = new Property(getAttributes(xml_Ps[0]));
             molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv, margin4);
+            if (p.dictRef == ZPE.dictRef) {
+                processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv, margin4);
+            } else if (p.dictRef == RotConsts.dictRef) {
+                processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv, margin4);
+            } else {
+                processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, margin4);
+            }
+            moleculeTagNames.delete(Property.tagName);
         }
-        moleculeTagNames.delete(Property.tagName);
         // Organise EnergyTransferModel.
-        moleculeTagNames.delete(EnergyTransferModel.tagName);
         let xml_ETMs: HTMLCollectionOf<Element> | null = xml_molecules[i].getElementsByTagName(EnergyTransferModel.tagName);
         if (xml_ETMs.length > 0) {
             if (xml_ETMs.length > 1) {
@@ -466,9 +478,9 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             }
             let etm = new EnergyTransferModel(getAttributes(xml_ETMs[0]));
             processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv, margin4);
+            moleculeTagNames.delete(EnergyTransferModel.tagName);
         }
         // Organise DOSCMethod.
-        moleculeTagNames.delete(DOSCMethod.tagName);
         let xml_DOSCMethod: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(DOSCMethod.tagName);
         if (xml_DOSCMethod.length > 0) {
             if (xml_DOSCMethod.length > 1) {
@@ -476,15 +488,25 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             }
             let dOSCMethod = new DOSCMethod(getAttributes(xml_DOSCMethod[0]));
             processDOSCMethod(dOSCMethod, molecule, margin3, moleculeDiv);
+            moleculeTagNames.delete(DOSCMethod.tagName);
         }
 
         // Organise ExtraDOSCMethod.
-        moleculeTagNames.delete(ExtraDOSCMethod.tagName);
         let xml_ExtraDOSCMethod = xml_molecules[i].getElementsByTagName(ExtraDOSCMethod.tagName);
         if (xml_ExtraDOSCMethod.length > 0) {
             if (xml_ExtraDOSCMethod.length != 1) {
                 throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_ExtraDOSCMethod.length);
             }
+
+            console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
+
+            let extraDOSCMethod: ExtraDOSCMethod = new ExtraDOSCMethod(getAttributes(xml_DOSCMethod[0]));
+            // Create a new collapsible div for the ExtraDOSCMethod.
+            let extraDOSCMethodDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+            let buttonId: string = molecule.id + "_" + ExtraDOSCMethod.tagName;
+            let contentDivId: string = molecule.id + "_" + ExtraDOSCMethod.tagName + "_";
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(extraDOSCMethodDiv, ExtraDOSCMethod.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            moleculeDiv.appendChild(collapsibleDiv);
             // Read bondRef.
             let bondRefs: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(BondRef.tagName);
             let bondRef: BondRef | undefined;
@@ -493,6 +515,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
                 }
                 bondRef = new BondRef(getAttributes(bondRefs[0]), getNodeValue(getFirstChildNode(bondRefs[0])));
+                extraDOSCMethod.setBondRef(bondRef);
             }
             // Read hunderedRotorPotential.
             let hinderedRotorPotentials: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(HinderedRotorPotential.tagName);
@@ -508,6 +531,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     potentialPoints.push(new PotentialPoint(getAttributes(xml_potentialPoints[k])));
                 }
                 hinderedRotorPotential = new HinderedRotorPotential(getAttributes(hinderedRotorPotentials[0]), potentialPoints);
+                extraDOSCMethod.setHinderedRotorPotential(hinderedRotorPotential);
             }
             // Read periodicities.
             let xml_periodicities: HTMLCollectionOf<Element> = xml_DOSCMethod[0].getElementsByTagName(Periodicity.tagName);
@@ -518,28 +542,37 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 }
                 periodicity = new Periodicity(getAttributes(xml_periodicities[0]),
                     parseFloat(getNodeValue(getFirstChildNode(xml_periodicities[0]))));
+                extraDOSCMethod.setPeriodicity(periodicity);
             }
-            molecule.setExtraDOSCMethod(new ExtraDOSCMethod(getAttributes(xml_DOSCMethod[0]), bondRef, hinderedRotorPotential, periodicity));
+            molecule.setExtraDOSCMethod(extraDOSCMethod);
+            moleculeTagNames.delete(ExtraDOSCMethod.tagName);
         }
+
         // Organise ReservoirSize.
         moleculeTagNames.delete(ReservoirSize.tagName);
-        xml_DOSCMethod = xml_molecules[i].getElementsByTagName(ReservoirSize.tagName);
-        if (xml_DOSCMethod.length > 0) {
-            if (xml_DOSCMethod.length != 1) {
-                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_DOSCMethod.length);
+        let xml_ReservoirSize = xml_molecules[i].getElementsByTagName(ReservoirSize.tagName);
+        if (xml_ReservoirSize.length > 0) {
+            if (xml_ReservoirSize.length != 1) {
+                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_ReservoirSize.length);
             }
-            molecule.setReservoirSize(new ReservoirSize(getAttributes(xml_DOSCMethod[0]), parseFloat(getNodeValue(getFirstChildNode(xml_DOSCMethod[0])))));
+
+            console.warn("ReservoirSize detected: This is not displayed in the GUI - more coding needed!");
+
+            molecule.setReservoirSize(new ReservoirSize(getAttributes(xml_ReservoirSize[0]), parseFloat(getNodeValue(getFirstChildNode(xml_ReservoirSize[0])))));
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {
+
             console.warn("There are additional unexpected moleculeTagNames:");
             moleculeTagNames.forEach(x => console.warn(x));
+
             //throw new Error("Unexpected tags in molecule.");
         }
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = getCollapsibleDiv(molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, molecule.getLabel(),
-            moleculeDiv, molecule.tagName + "_" + molecule.id);
+        let collapsibleDiv = getCollapsibleDiv(moleculeDiv, molecule.getLabel(), molecule.tagName + "_" + molecule.id + "_button",
+            fontSize2, margin2, marginTop, marginBottom,
+            molecule.tagName + "_" + molecule.id);
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
@@ -563,12 +596,13 @@ function displayXML(xml: string) {
 /**
  * For processing a molecule property.
  * @param p The property.
+ * @param units The possible units.
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
  * @param margin The margin.
  */
-function processProperty(p: Property, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement, margin: string) {
+function processProperty(p: Property, units: string[] | undefined, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement, margin: string) {
     // Handle scalar or array property
     let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalar.tagName);
     if (scalarNodes.length > 0) {
@@ -577,7 +611,8 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
         }
         let inputString: string = getInputString(scalarNodes[0]);
         let value: number = parseFloat(inputString);
-        let ps: PropertyScalar = new PropertyScalar(getAttributes(scalarNodes[0]), value);
+        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
+        let ps: PropertyScalar = new PropertyScalar(psAttributes, value);
         p.setProperty(ps);
         let label: string = p.dictRef;
         // Create a new div element for the input.
@@ -587,18 +622,32 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
             }
         }, inputString, label);
         inputDiv.style.marginLeft = margin;
-        moleculeDiv.appendChild(inputDiv);
+        inputDiv.style.marginTop = marginTop;
+        inputDiv.style.marginBottom = marginBottom;
         let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
         inputElement.value = inputString;
-        resizeInput(inputElement);
+        resizeInputElement(inputElement);
         inputElement.addEventListener('change', (event) => {
             let eventTarget = event.target as HTMLInputElement;
             inputString = eventTarget.value;
             ps = p.getProperty() as PropertyScalar;
             ps.value = parseFloat(inputString);
             console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-            resizeInput(inputElement);
+            resizeInputElement(inputElement);
+            if (p.dictRef == ZPE.dictRef) {
+                // Update the min and max molecule energy.
+                if (value < minMoleculeEnergy) {
+                    minMoleculeEnergy = value;
+                }
+                if (value > maxMoleculeEnergy) {
+                    maxMoleculeEnergy = value;
+                }
+                // Update the molecule energy diagram.
+                displayReactionsDiagram();
+            }
         });
+        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef);
+        moleculeDiv.appendChild(inputDiv);
     } else {
         let arrayNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyArray.tagName);
         if (arrayNodes.length > 0) {
@@ -607,7 +656,8 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
             }
             let inputString: string = getInputString(arrayNodes[0]);
             let values: number[] = toNumberArray(inputString.split(/\s+/));
-            let pa: PropertyArray = new PropertyArray(getAttributes(arrayNodes[0]), values);
+            let paAttributes: Map<string, string> = getAttributes(arrayNodes[0]);
+            let pa: PropertyArray = new PropertyArray(paAttributes, values);
             p.setProperty(pa);
             let label: string = p.dictRef;
             // Create a new div element for the input.
@@ -617,10 +667,11 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
                 }
             }, inputString, label);
             inputDiv.style.marginLeft = margin;
-            moleculeDiv.appendChild(inputDiv);
+            inputDiv.style.marginTop = marginTop;
+            inputDiv.style.marginBottom = marginBottom;
             let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
             inputElement.value = inputString;
-            resizeInput(inputElement);
+            resizeInputElement(inputElement);
             inputElement.addEventListener('change', (event) => {
                 let eventTarget = event.target as HTMLInputElement;
                 inputString = eventTarget.value;
@@ -628,14 +679,66 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
                 values = toNumberArray(inputString.split(/\s+/));
                 pa.values = values;
                 console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-                resizeInput(inputElement);
+                resizeInputElement(inputElement);
             });
+            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef);
+            moleculeDiv.appendChild(inputDiv);
         } else {
             throw new Error("Expecting " + PropertyScalar.tagName + " or " + PropertyArray.tagName);
         }
     }
 }
 
+/**
+ * If there are a choice of units, then add a new select element to display/select them.
+ * @param units The possible units.
+ * @param attributes The attributes.
+ * @param inputDiv The input div.
+ * @param id The id.
+ * @param tagOrDictRef The tag or dictionary reference.
+ */
+function addAnyUnits(units: string[] | undefined, attributes: Map<string, string>, inputDiv: HTMLDivElement, id: string, tagOrDictRef: string) {
+    if (units != undefined) {
+        let unitsSelectElement: HTMLSelectElement | undefined = getUnitsSelectElement(units, attributes, id, tagOrDictRef);
+        if (unitsSelectElement != undefined) {
+            inputDiv.appendChild(unitsSelectElement);
+        }
+    } else {
+        let units: string | undefined = attributes.get("units");
+        if (units != undefined) {
+            let label: HTMLLabelElement = document.createElement('label');
+            label.textContent = units;
+            inputDiv.appendChild(label);
+        }
+    }
+}
+
+/**
+ * @param attributes The attributes.
+ * @param id The id.
+ * @param tagOrDictRef The tag or dictionary reference.
+ * @returns A select element for setting the units or undefined if there is not attribute for units.
+ */
+function getUnitsSelectElement(units: string[], attributes: Map<string, string>, id: string, tagOrDictRef: string): HTMLSelectElement | undefined {
+    let psUnits: string | undefined = attributes.get("units");
+    if (psUnits != undefined) {
+        // Get a select element for setting the units.
+        let selectElement: HTMLSelectElement = getSelectElement(units, "Units", id);
+        // Set the initial value to the units.
+        selectElement.value = psUnits;
+        // Add event listener to selectElement.
+        resizeSelectElement(selectElement);
+        selectElement.addEventListener('change', (event) => {
+            if (event.target instanceof HTMLSelectElement) {
+                attributes.set("units", event.target.value);
+                console.log("Set " + tagOrDictRef + " units to " + event.target.value);
+            }
+            resizeSelectElement(selectElement);
+        });
+        return selectElement;
+    }
+    return undefined;
+}
 
 /**
  * For processing a molecule energy transfer model.
@@ -644,23 +747,14 @@ function processProperty(p: Property, molecule: Molecule, element: Element, mole
  * @param margin The margin.
  * @param moleculeDiv The molecule div.
  */
-function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, margin: string, moleculeDiv: HTMLDivElement) {
+function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, margin: string, moleculeDiv: HTMLDivElement): void {
     let label: HTMLLabelElement = document.createElement('label');
     label.textContent = DOSCMethod.tagName + ": ";
     let container: HTMLDivElement = document.createElement('div');
     container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
-    let selectElement: HTMLSelectElement = document.createElement('select');
-    selectElement.name = 'DOSCMethod';
-    selectElement.id = 'DOSCMethod-select';
-    let optionCR: HTMLOptionElement = document.createElement('option');
-    optionCR.value = "ClassicalRotors";
-    optionCR.text = "ClassicalRotors";
-    selectElement.appendChild(optionCR);
-    let optionQMR: HTMLOptionElement = document.createElement('option');
-    optionQMR.value = "QMRotors";
-    optionQMR.text = "QMRotors";
-    selectElement.appendChild(optionQMR);
+    let options: string[] = ["ClassicalRotors", "QMRotors"];
+    let selectElement: HTMLSelectElement = getSelectElement(options, "DOSCMethod", molecule.id + "_" + 'Select_DOSCMethod');
     // Set the initial value to the DOSCMethod.
     selectElement.value = dOSCMethod.getXsiType();
     // Add event listener to selectElement.
@@ -668,12 +762,13 @@ function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, margin: s
         if (event.target instanceof HTMLSelectElement) {
             dOSCMethod.setXsiType(event.target.value);
             console.log("Set DOSCMethod to " + event.target.value);
-            molecule.setDOSCMethod(dOSCMethod);
         }
     });
     molecule.setDOSCMethod(dOSCMethod);
     container.appendChild(selectElement);
     container.style.marginLeft = margin;
+    container.style.marginTop = marginTop;
+    container.style.marginBottom = marginBottom;
     moleculeDiv.appendChild(container);
 }
 
@@ -691,13 +786,14 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
         let etmDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
         let buttonId: string = molecule.id + "_" + EnergyTransferModel.tagName;
         let contentDivId: string = molecule.id + "_" + EnergyTransferModel.tagName + "_";
-        let collapsibleDiv = getCollapsibleDiv(buttonId, fontSize3, margin3, EnergyTransferModel.tagName, etmDiv, contentDivId);
+        let collapsibleDiv = getCollapsibleDiv(etmDiv, EnergyTransferModel.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns: DeltaEDown[] = [];
         for (let k = 0; k < xml_deltaEDowns.length; k++) {
             let inputString: string = getInputString(xml_deltaEDowns[k]);
             let value: number = parseFloat(inputString);
-            let deltaEDown: DeltaEDown = new DeltaEDown(getAttributes(xml_deltaEDowns[k]), value);
+            let deltaEDownAttributes: Map<string, string> = getAttributes(xml_deltaEDowns[k]);
+            let deltaEDown: DeltaEDown = new DeltaEDown(deltaEDownAttributes, value);
             deltaEDowns.push(deltaEDown);
             let label: string = DeltaEDown.tagName;
             // Create a new div element for the input.
@@ -708,17 +804,22 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
                 }
             }, inputString, label);
             inputDiv.style.marginLeft = margin;
+            inputDiv.style.marginTop = marginTop;
+            inputDiv.style.marginBottom = marginBottom;
             etmDiv.appendChild(inputDiv);
             let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
             inputElement.value = inputString;
-            resizeInput(inputElement);
+            resizeInputElement(inputElement);
             inputElement.addEventListener('change', (event) => {
                 let eventTarget = event.target as HTMLInputElement;
                 inputString = eventTarget.value;
                 deltaEDowns[k].setValue(parseFloat(inputString));
                 console.log("Set " + id + " to " + inputString);
-                resizeInput(inputElement);
+                resizeInputElement(inputElement);
             });
+            let unitsLabel: HTMLLabelElement = document.createElement('label');
+            unitsLabel.textContent = "cm-1";
+            inputDiv.appendChild(unitsLabel);
         }
         etm.setDeltaEDowns(deltaEDowns);
         molecule.setEnergyTransferModel(etm);
@@ -799,6 +900,8 @@ export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
 function processReactionList(xml: XMLDocument): HTMLDivElement {
     // Create div to contain the reaction list.
     let reactionListDiv: HTMLDivElement = document.createElement("div");
+    reactionListDiv.style.marginTop = marginTop;
+    reactionListDiv.style.marginBottom = marginBottom;
     // Get the XML "reactionList" element.
     let xml_reactionList: Element = getSingularElement(xml, ReactionList.tagName);
     // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
@@ -854,50 +957,142 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
         reactionTagNames.delete(Reactant.tagName);
         //console.log("xml_reactants.length=" + xml_reactants.length);
         if (xml_reactants.length > 0) {
+            // Create a new div for the reactants.
+            let reactantsDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
             let reactants: Reactant[] = [];
             for (let j = 0; j < xml_reactants.length; j++) {
                 let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
-                reactants.push(new Reactant(getAttributes(xml_reactants[j]),
-                    new ReactionMolecule(getAttributes(xml_molecule))));
+                let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
+                let reactant: Reactant = new Reactant(getAttributes(xml_reactants[j]), molecule);
+                reactants.push(reactant);
+                // Create a new div for the role.
+                let container: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+                let label: HTMLLabelElement = document.createElement('label');
+                label.textContent = molecule.ref + " role: ";
+                container.appendChild(label);
+                // Create a HTMLSelectElement to select the Role.
+                let options: string[] = ["deficientReactant", "excessReactant"];
+                let selectElement: HTMLSelectElement = getSelectElement(options, "Role", molecule.ref + "_" + 'Select_Role');
+                // Set the initial value.
+                selectElement.value = molecule.role;
+                // Add event listener to selectElement.
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        molecule.setRole(event.target.value);
+                        console.log("Set Role to " + event.target.value);
+                    }
+                });
+                container.appendChild(selectElement);
+                container.style.marginLeft = margin4;
+                container.style.marginTop = marginTop;
+                container.style.marginBottom = marginBottom;
+                reactantsDiv.appendChild(container);
             }
             reaction.setReactants(reactants);
+            // Create a new collapsible div for the reactants.
+            let buttonId: string = reaction.id + "_" + Reactant.tagName;
+            let contentDivId: string = reaction.id + "_" + Reactant.tagName + "_";
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(reactantsDiv, "Reactants", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
         }
         // Load products.
         let xml_products: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Product.tagName);
         reactionTagNames.delete(Product.tagName);
         //console.log("xml_products.length=" + xml_products.length);
         if (xml_products.length > 0) {
+            let productsDiv: HTMLDivElement = document.createElement("div");
             let products: Product[] = [];
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule: Element = getFirstElement(xml_products[j], Molecule.tagName);
-                products.push(new Product(getAttributes(xml_products[j]),
-                    new ReactionMolecule(getAttributes(xml_molecule))));
-                //processProduct(etm, reaction, xml_ETMs[0], reactionDiv);
+                let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
+                let product: Product = new Product(getAttributes(xml_products[j]), molecule);
+                products.push(product);
+                // Create a new div for the role.
+                let container: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+                let label: HTMLLabelElement = document.createElement('label');
+                label.textContent = molecule.ref + " role: ";
+                container.appendChild(label);
+                // Create a HTMLSelectElement to select the Role.
+                let options: string[] = ["modelled", "sink"];
+                let selectElement: HTMLSelectElement = getSelectElement(options, "Role", molecule.ref + "_" + 'Select_Role');
+                // Set the initial value.
+                selectElement.value = molecule.role;
+                // Add event listener to selectElement.
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        molecule.setRole(event.target.value);
+                        console.log("Set Role to " + event.target.value);
+                    }
+                });
+                container.appendChild(selectElement);
+                container.style.marginLeft = margin4;
+                container.style.marginTop = marginTop;
+                container.style.marginBottom = marginBottom;
+                productsDiv.appendChild(container);
             }
             reaction.setProducts(products);
+            // Create a new collapsible div for the products.
+            let buttonId: string = reaction.id + "_" + Product.tagName;
+            let contentDivId: string = reaction.id + "_" + Product.tagName + "_";
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(productsDiv, "Products", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
+        }
+        // Load tunneling.
+        let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
+        if (xml_tunneling.length > 0) {
+            if (xml_tunneling.length > 1) {
+                throw new Error("Expecting 1 " + Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
+            }
+            let tunneling: Tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
+            reaction.setTunneling(tunneling);
+            // Create a new div for the tunneling.
+            let container: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+            let label: HTMLLabelElement = document.createElement('label');
+            label.textContent = Tunneling.tagName + ": ";
+            container.appendChild(label);
+            // Create a HTMLSelectElement to select the Tunneling.
+            let options: string[] = ["Eckart", "WKB"];
+            let selectElement: HTMLSelectElement = getSelectElement(options, "Tunneling", reaction.id + "_" + 'Select_Tunneling');
+            // Set the initial value.
+            selectElement.value = tunneling.getName();
+            // Add event listener to selectElement.
+            selectElement.addEventListener('change', (event) => {
+                if (event.target instanceof HTMLSelectElement) {
+                    tunneling.setName(event.target.value);
+                    console.log("Set Tunneling to " + event.target.value);
+                }
+            });
+            container.appendChild(selectElement);
+            container.style.marginLeft = margin3;
+            container.style.marginTop = marginTop;
+            container.style.marginBottom = marginBottom;
+            reactionDiv.appendChild(container);
         }
         // Load transition states.
         let xml_transitionStates: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(TransitionState.tagName);
         //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
         if (xml_transitionStates.length > 0) {
+            let transitionStatesDiv: HTMLDivElement = document.createElement("div");
             let transitionStates: TransitionState[] = [];
             for (let j = 0; j < xml_transitionStates.length; j++) {
                 let xml_molecule: Element = getFirstElement(xml_transitionStates[j], Molecule.tagName);
-                transitionStates.push(new TransitionState(getAttributes(xml_transitionStates[j]),
-                    new ReactionMolecule(getAttributes(xml_molecule))));
+                let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
+                let transitionState: TransitionState = new TransitionState(getAttributes(xml_transitionStates[j]), molecule);
+                transitionStates.push(transitionState);
+                // Create a label for the Transition State.
+                let label: HTMLLabelElement = document.createElement('label');
+                label.textContent = molecule.ref + " role: transitionState";
+                label.style.marginLeft = margin4;
+                label.style.marginTop = marginTop;
+                label.style.marginBottom = marginBottom;
+                transitionStatesDiv.appendChild(label);
             }
             reaction.setTransitionStates(transitionStates);
-        }
-        //console.log("transitionStates=" + transitionStates);
-        // Load tunneling.
-        let xml_tunneling = xml_reactions[i].getElementsByTagName(Tunneling.tagName);
-        let tunneling: Tunneling | undefined;
-        if (xml_tunneling.length > 0) {
-            if (xml_tunneling.length > 1) {
-                throw new Error("Expecting 1 " + Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
-            }
-            tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
-            reaction.setTunneling(tunneling);
+            // Create a new collapsible div for the transition states.
+            let buttonId: string = reaction.id + "_" + TransitionState.tagName;
+            let contentDivId: string = reaction.id + "_" + TransitionState.tagName + "_";
+            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(transitionStatesDiv, "Transition States", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
         }
         // Load MCRCMethod.
         //console.log("Load MCRCMethod...");
@@ -908,56 +1103,171 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             if (xml_MCRCMethod.length > 1) {
                 throw new Error("Expecting 1 " + MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
             } else {
+                let mCRCMethodDiv: HTMLDivElement = document.createElement("div");
                 let mCRCMethod: MCRCMethod;
                 let mCRCMethodAttributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
                 let name: string | undefined = mCRCMethodAttributes.get("name");
                 //console.log(MCRCMethod.tagName + " name=" + name);
                 if (name == undefined || name == MesmerILT.xsiType2) {
                     let type: string = mCRCMethodAttributes.get("xsi:type") as string;
+                    mCRCMethod = new MesmerILT(mCRCMethodAttributes);
                     //console.log(MCRCMethod.tagName + "xsi:type=" + type);
                     if (type == MesmerILT.xsiType || type == MesmerILT.xsiType2) {
-                        let preExponential: PreExponential | undefined;
                         let xml_preExponential: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
                         if (xml_preExponential != null) {
                             if (xml_preExponential[0] != null) {
-                                let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_preExponential[0])));
-                                preExponential = new PreExponential(getAttributes(xml_preExponential[0]), value);
+                                let inputString: string = getInputString(xml_preExponential[0]);
+                                let value: number = parseFloat(inputString);
+                                let preExponentialAttributes: Map<string, string> = getAttributes(xml_preExponential[0]);
+                                let preExponential: PreExponential = new PreExponential(preExponentialAttributes, value);
+                                (mCRCMethod as MesmerILT).setPreExponential(preExponential);
+                                let label: string = PreExponential.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + MesmerILT.tagName + "_" + PreExponential.tagName;
+                                let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(preExponential, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                mCRCMethodDiv.appendChild(inputDiv);
+                                let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
+                                inputElement.value = inputString;
+                                resizeInputElement(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target as HTMLInputElement;
+                                    inputString = eventTarget.value;
+                                    preExponential.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    resizeInputElement(inputElement);
+                                });
+                                addAnyUnits(undefined, preExponentialAttributes, inputDiv, reaction.id + "_" + MesmerILT.xsiType + "_" + PreExponential.tagName, PreExponential.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("preExponential " + preExponential);
-                        let activationEnergy: ActivationEnergy | undefined;
                         let xml_activationEnergy: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
                         if (xml_activationEnergy != null) {
                             if (xml_activationEnergy[0] != null) {
-                                let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_activationEnergy[0])));
-                                activationEnergy = new ActivationEnergy(getAttributes(xml_activationEnergy[0]), value);
+                                let inputString: string = getInputString(xml_activationEnergy[0]);
+                                let value: number = parseFloat(inputString);
+                                let activationEnergyAttributes: Map<string, string> = getAttributes(xml_activationEnergy[0]);
+                                let activationEnergy: ActivationEnergy = new ActivationEnergy(activationEnergyAttributes, value);
+                                (mCRCMethod as MesmerILT).setActivationEnergy(activationEnergy);
+                                let label: string = ActivationEnergy.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + MesmerILT.tagName + "_" + ActivationEnergy.tagName;
+                                let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(activationEnergy, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
+                                inputElement.value = inputString;
+                                resizeInputElement(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target as HTMLInputElement;
+                                    inputString = eventTarget.value;
+                                    activationEnergy.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    resizeInputElement(inputElement);
+                                });
+                                addAnyUnits(undefined, activationEnergyAttributes, inputDiv, reaction.id + "_" + MesmerILT.xsiType + "_" + ActivationEnergy.tagName, ActivationEnergy.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("activationEnergy " + activationEnergy);
-                        let tInfinity: TInfinity | undefined;
                         let xml_tInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
                         if (xml_tInfinity != null) {
                             if (xml_tInfinity[0] != null) {
-                                let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_tInfinity[0])));
-                                tInfinity = new NInfinity(getAttributes(xml_tInfinity[0]), value);
+                                let inputString: string = getInputString(xml_tInfinity[0]);
+                                let value: number = parseFloat(inputString);
+                                let tInfinityAttributes: Map<string, string> = getAttributes(xml_tInfinity[0]);
+                                let tInfinity: TInfinity = new TInfinity(tInfinityAttributes, value);
+                                (mCRCMethod as MesmerILT).setTInfinity(tInfinity);
+                                let label: string = TInfinity.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + MesmerILT.tagName + "_" + TInfinity.tagName;
+                                let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(tInfinity, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
+                                inputElement.value = inputString;
+                                resizeInputElement(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target as HTMLInputElement;
+                                    inputString = eventTarget.value;
+                                    tInfinity.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    resizeInputElement(inputElement);
+                                });
+                                addAnyUnits(undefined, tInfinityAttributes, inputDiv, reaction.id + "_" + MesmerILT.xsiType + "_" + TInfinity.tagName, TInfinity.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("tInfinity " + tInfinity);
-                        let nInfinity: NInfinity | undefined;
                         let xml_nInfinity: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
                         if (xml_nInfinity != null) {
                             if (xml_nInfinity[0] != null) {
-                                let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_nInfinity[0])));
-                                nInfinity = new NInfinity(getAttributes(xml_nInfinity[0]), value);
+                                let inputString: string = getInputString(xml_nInfinity[0]);
+                                let value: number = parseFloat(inputString);
+                                let nInfinityAttributes: Map<string, string> = getAttributes(xml_nInfinity[0]);
+                                let nInfinity: NInfinity = new NInfinity(nInfinityAttributes, value);
+                                (mCRCMethod as MesmerILT).setNInfinity(nInfinity);
+                                let label: string = NInfinity.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + MesmerILT.tagName + "_" + NInfinity.tagName;
+                                let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(nInfinity, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                mCRCMethodDiv.appendChild(inputDiv);
+                                let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
+                                inputElement.value = inputString;
+                                resizeInputElement(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target as HTMLInputElement;
+                                    inputString = eventTarget.value;
+                                    nInfinity.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    resizeInputElement(inputElement);
+                                });
+                                addAnyUnits(undefined, nInfinityAttributes, inputDiv, reaction.id + "_" + MesmerILT.xsiType + "_" + NInfinity.tagName, NInfinity.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("nInfinity " + nInfinity);
-                        mCRCMethod = new MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                        // Create a new collapsible div for the MCRCMethod.
+                        let buttonId: string = reaction.id + "_" + MCRCMethod.tagName;
+                        let contentDivId: string = reaction.id + "_" + MCRCMethod.tagName + "_";
+                        let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(mCRCMethodDiv, MCRCMethod.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+                        reactionDiv.appendChild(collapsibleDiv);
                     } else {
                         throw new Error("Unexpected xsi:type=" + type);
                     }
                 } else {
                     mCRCMethod = new MCRCMethod(mCRCMethodAttributes);
+                    let mCRCMethodLabel: HTMLLabelElement = document.createElement('label');
+                    mCRCMethodLabel.textContent = MCRCMethod.tagName + ": " + mCRCMethodAttributes.get("name") as string;
+                    mCRCMethodLabel.style.marginLeft = margin3;
+                    mCRCMethodLabel.style.marginTop = marginTop;
+                    mCRCMethodLabel.style.marginBottom = marginBottom;
+                    mCRCMethodDiv.appendChild(mCRCMethodLabel);
+                    reactionDiv.appendChild(mCRCMethodDiv);
                 }
                 reaction.setMCRCMethod(mCRCMethod);
             }
@@ -974,8 +1284,8 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             reaction.setExcessReactantConc(excessReactantConc);
         }
         // Create a new collapsible div for the reaction.
-        let collapsibleDiv = getCollapsibleDiv(reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, reaction.getLabel(),
-            reactionDiv, reaction.tagName + "_" + reaction.id);
+        let collapsibleDiv = getCollapsibleDiv(reactionDiv, reaction.id + "(" + reaction.getLabel() + ")", reaction.tagName + "_" + reaction.id + "_button",
+            fontSize2, margin2, marginTop, marginBottom, reaction.tagName + "_" + reaction.id);
         // Append the collapsibleDiv to the reactionListDiv.
         reactionListDiv.appendChild(collapsibleDiv);
     }
@@ -1606,7 +1916,7 @@ function displayReactions(): void {
  * Display reactions diagram.
  */
 function displayReactionsDiagram(): void {
-    if (reactions.size > 1) {
+    if (reactions.size > 0) {
         // Display the diagram.
         let canvas: HTMLCanvasElement | null = document.getElementById("reactions_diagram") as HTMLCanvasElement;
         let font: string = "14px Arial";

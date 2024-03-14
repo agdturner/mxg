@@ -27,6 +27,11 @@ let margin2 = "25px";
 let margin3 = "50px";
 let margin4 = "75px";
 /**
+ * The margin to space out components
+ */
+let marginTop = "1px";
+let marginBottom = "1px";
+/**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */
 let molecules = new Map();
@@ -182,6 +187,8 @@ function parse(xml) {
         let titleElement = document.getElementById("title");
         // Create a new div element for the input.
         let divElement = document.createElement("div");
+        divElement.style.marginTop = marginTop;
+        divElement.style.marginBottom = marginBottom;
         // Create a text node.
         let textNode = document.createTextNode("Title: ");
         divElement.appendChild(textNode);
@@ -208,11 +215,11 @@ function parse(xml) {
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
         let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)("molecules_button", fontSize1, margin1, "Molecules", moleculeListElement, "moleculesList"));
+        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
         // Create a collapsible div for reactions
         let reactionsElement = document.getElementById("reactions");
         let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)("reactions_button", fontSize1, margin1, "Reactions", reactionListElement, "reactionsList"));
+        reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
         // Collapse and set up action listeners for all collapsible content.
         (0, html_js_1.makeCollapsible)();
     }
@@ -374,7 +381,7 @@ function processMoleculeList(xml) {
             let plDiv = document.createElement("div");
             let buttonId = molecule.id + "_" + molecule_js_1.PropertyList.tagName;
             let contentDivId = molecule.id + "_" + molecule_js_1.PropertyList.tagName + "_";
-            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, fontSize3, margin3, molecule_js_1.PropertyList.tagName, plDiv, contentDivId);
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(plDiv, molecule_js_1.PropertyList.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
             let pl = new molecule_js_1.PropertyList((0, xml_js_1.getAttributes)(xml_PLs[0]));
@@ -384,7 +391,7 @@ function processMoleculeList(xml) {
                 let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], plDiv);
+                processProperty(p, molecule, xml_Ps[j], plDiv, margin4);
             }
             moleculeTagNames.delete(molecule_js_1.PropertyList.tagName);
         }
@@ -397,7 +404,7 @@ function processMoleculeList(xml) {
             // Create a new Property.
             let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv);
+            processProperty(p, molecule, xml_Ps[0], moleculeDiv, margin4);
         }
         moleculeTagNames.delete(molecule_js_1.Property.tagName);
         // Organise EnergyTransferModel.
@@ -408,7 +415,7 @@ function processMoleculeList(xml) {
                 throw new Error("Expecting 1 or 0 " + molecule_js_1.EnergyTransferModel.tagName + " but finding " + xml_ETMs.length + "!");
             }
             let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(xml_ETMs[0]));
-            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv);
+            processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv, margin4);
         }
         // Organise DOSCMethod.
         moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
@@ -418,7 +425,7 @@ function processMoleculeList(xml) {
                 throw new Error("Expecting 1 or 0 " + molecule_js_1.DOSCMethod.tagName + " but finding " + xml_DOSCMethod.length + "!");
             }
             let dOSCMethod = new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]));
-            processDOSCMethod(dOSCMethod, molecule, xml_DOSCMethod[0], moleculeDiv);
+            processDOSCMethod(dOSCMethod, molecule, margin3, moleculeDiv);
         }
         // Organise ExtraDOSCMethod.
         moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
@@ -479,7 +486,7 @@ function processMoleculeList(xml) {
             //throw new Error("Unexpected tags in molecule.");
         }
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, molecule.getLabel(), moleculeDiv, molecule.tagName + "_" + molecule.id);
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(moleculeDiv, molecule.getLabel(), molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin2, marginTop, marginBottom, molecule.tagName + "_" + molecule.id);
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
@@ -504,8 +511,9 @@ function displayXML(xml) {
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
+ * @param margin The margin.
  */
-function processProperty(p, molecule, element, moleculeDiv) {
+function processProperty(p, molecule, element, moleculeDiv, margin) {
     // Handle scalar or array property
     let scalarNodes = element.getElementsByTagName(molecule_js_1.PropertyScalar.tagName);
     if (scalarNodes.length > 0) {
@@ -514,8 +522,28 @@ function processProperty(p, molecule, element, moleculeDiv) {
         }
         let inputString = (0, xml_js_1.getInputString)(scalarNodes[0]);
         let value = parseFloat(inputString);
-        let ps = new molecule_js_1.PropertyScalar((0, xml_js_1.getAttributes)(scalarNodes[0]), value);
+        let psAttributes = (0, xml_js_1.getAttributes)(scalarNodes[0]);
+        let ps = new molecule_js_1.PropertyScalar(psAttributes, value);
         p.setProperty(ps);
+        let container = document.createElement('div');
+        container.style.marginLeft = margin;
+        // If there are units, then add a new select element to display/select them.
+        let psUnits = psAttributes.get("units");
+        if (psUnits != undefined) {
+            // Get a select element for setting the units.
+            let units = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
+            let selectElement = (0, html_js_1.getSelectElement)(units, "Units", molecule.id + "_" + p.dictRef + "_Select_Units");
+            // Set the initial value to the units.
+            selectElement.value = psUnits;
+            // Add event listener to selectElement.
+            selectElement.addEventListener('change', (event) => {
+                if (event.target instanceof HTMLSelectElement) {
+                    psAttributes.set("units", event.target.value);
+                    console.log("Set " + p.dictRef + " units to " + event.target.value);
+                }
+            });
+            container.appendChild(selectElement);
+        }
         let label = p.dictRef;
         // Create a new div element for the input.
         let inputDiv = (0, html_js_1.getInput)("number", molecule.id + "_" + p.dictRef, (event) => {
@@ -523,7 +551,9 @@ function processProperty(p, molecule, element, moleculeDiv) {
                 setNumberNode(ps, event.target);
             }
         }, inputString, label);
-        moleculeDiv.appendChild(inputDiv);
+        inputDiv.style.marginLeft = margin;
+        container.appendChild(inputDiv);
+        moleculeDiv.appendChild(container);
         let inputElement = inputDiv.querySelector('input');
         inputElement.value = inputString;
         (0, html_js_1.resizeInput)(inputElement);
@@ -553,6 +583,7 @@ function processProperty(p, molecule, element, moleculeDiv) {
                     setNumberArrayNode(pa, event.target);
                 }
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             moleculeDiv.appendChild(inputDiv);
             let inputElement = inputDiv.querySelector('input');
             inputElement.value = inputString;
@@ -576,23 +607,17 @@ function processProperty(p, molecule, element, moleculeDiv) {
  * For processing a molecule energy transfer model.
  * @param etm The energy transfer model.
  * @param molecule The molecule.
- * @param element The element.
+ * @param margin The margin.
  * @param moleculeDiv The molecule div.
  */
-function processDOSCMethod(dOSCMethod, molecule, element, moleculeDiv) {
+function processDOSCMethod(dOSCMethod, molecule, margin, moleculeDiv) {
+    let label = document.createElement('label');
+    label.textContent = molecule_js_1.DOSCMethod.tagName + ": ";
+    let container = document.createElement('div');
+    container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
-    let selectElement = document.createElement('select');
-    selectElement.name = 'DOSCMethod';
-    selectElement.id = 'DOSCMethod-select';
-    let optionCR = document.createElement('option');
-    optionCR.value = "ClassicalRotors";
-    optionCR.text = "ClassicalRotors";
-    selectElement.appendChild(optionCR);
-    let optionQMR = document.createElement('option');
-    optionQMR.value = "QMRotors";
-    optionQMR.text = "QMRotors";
-    selectElement.appendChild(optionQMR);
-    moleculeDiv.appendChild(selectElement);
+    let options = ["ClassicalRotors", "QMRotors"];
+    let selectElement = (0, html_js_1.getSelectElement)(options, "DOSCMethod", molecule.id + "_" + 'Select_DOSCMethod');
     // Set the initial value to the DOSCMethod.
     selectElement.value = dOSCMethod.getXsiType();
     // Add event listener to selectElement.
@@ -600,10 +625,12 @@ function processDOSCMethod(dOSCMethod, molecule, element, moleculeDiv) {
         if (event.target instanceof HTMLSelectElement) {
             dOSCMethod.setXsiType(event.target.value);
             console.log("Set DOSCMethod to " + event.target.value);
-            molecule.setDOSCMethod(dOSCMethod);
         }
     });
     molecule.setDOSCMethod(dOSCMethod);
+    container.appendChild(selectElement);
+    container.style.marginLeft = margin;
+    moleculeDiv.appendChild(container);
 }
 /**
  * For processing a molecule energy transfer model.
@@ -612,14 +639,14 @@ function processDOSCMethod(dOSCMethod, molecule, element, moleculeDiv) {
  * @param element The element.
  * @param moleculeDiv The molecule div.
  */
-function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
+function processEnergyTransferModel(etm, molecule, element, moleculeDiv, margin) {
     let xml_deltaEDowns = element.getElementsByTagName(molecule_js_1.DeltaEDown.tagName);
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
         let etmDiv = document.createElement("div");
         let buttonId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName;
         let contentDivId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName + "_";
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(buttonId, fontSize3, molecule_js_1.EnergyTransferModel.tagName, etmDiv, contentDivId);
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(etmDiv, molecule_js_1.EnergyTransferModel.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns = [];
         for (let k = 0; k < xml_deltaEDowns.length; k++) {
@@ -635,6 +662,7 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
                     setNumberNode(deltaEDown, event.target);
                 }
             }, inputString, label);
+            inputDiv.style.marginLeft = margin;
             etmDiv.appendChild(inputDiv);
             let inputElement = inputDiv.querySelector('input');
             inputElement.value = inputString;
@@ -647,7 +675,7 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
                 (0, html_js_1.resizeInput)(inputElement);
             });
         }
-        let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(element), deltaEDowns);
+        etm.setDeltaEDowns(deltaEDowns);
         molecule.setEnergyTransferModel(etm);
     }
 }
@@ -725,6 +753,8 @@ window.set = setNumberNode;
 function processReactionList(xml) {
     // Create div to contain the reaction list.
     let reactionListDiv = document.createElement("div");
+    reactionListDiv.style.marginTop = marginTop;
+    reactionListDiv.style.marginBottom = marginBottom;
     // Get the XML "reactionList" element.
     let xml_reactionList = (0, xml_js_1.getSingularElement)(xml, mesmer_js_1.ReactionList.tagName);
     // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
@@ -779,47 +809,149 @@ function processReactionList(xml) {
         reactionTagNames.delete(reaction_js_1.Reactant.tagName);
         //console.log("xml_reactants.length=" + xml_reactants.length);
         if (xml_reactants.length > 0) {
+            // Create a new div for the reactants.
+            let reactantsDiv = document.createElement("div");
             let reactants = [];
             for (let j = 0; j < xml_reactants.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_reactants[j], molecule_js_1.Molecule.tagName);
-                reactants.push(new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
+                let molecule = new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule));
+                let reactant = new reaction_js_1.Reactant((0, xml_js_1.getAttributes)(xml_reactants[j]), molecule);
+                reactants.push(reactant);
+                // Create a new div for the role.
+                let container = document.createElement("div");
+                let label = document.createElement('label');
+                label.textContent = molecule.ref + " role: ";
+                container.appendChild(label);
+                // Create a HTMLSelectElement to select the Role.
+                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
+                let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
+                // Set the initial value.
+                selectElement.value = molecule.role;
+                // Add event listener to selectElement.
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        molecule.setRole(event.target.value);
+                        console.log("Set Role to " + event.target.value);
+                    }
+                });
+                container.appendChild(selectElement);
+                container.style.marginLeft = margin4;
+                reactantsDiv.appendChild(container);
             }
             reaction.setReactants(reactants);
+            // Create a new collapsible div for the reactants.
+            let buttonId = reaction.id + "_" + reaction_js_1.Reactant.tagName;
+            let contentDivId = reaction.id + "_" + reaction_js_1.Reactant.tagName + "_";
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reactantsDiv, "Reactants", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
         }
         // Load products.
         let xml_products = xml_reactions[i].getElementsByTagName(reaction_js_1.Product.tagName);
         reactionTagNames.delete(reaction_js_1.Product.tagName);
         //console.log("xml_products.length=" + xml_products.length);
         if (xml_products.length > 0) {
+            let productsDiv = document.createElement("div");
             let products = [];
             for (let j = 0; j < xml_products.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_products[j], molecule_js_1.Molecule.tagName);
-                products.push(new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
-                //processProduct(etm, reaction, xml_ETMs[0], reactionDiv);
+                let molecule = new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule));
+                let product = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), molecule);
+                products.push(product);
+                // Create a new div for the role.
+                let container = document.createElement("div");
+                let label = document.createElement('label');
+                label.textContent = molecule.ref + " role: ";
+                container.appendChild(label);
+                // Create a HTMLSelectElement to select the Role.
+                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
+                let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
+                // Set the initial value.
+                selectElement.value = molecule.role;
+                // Add event listener to selectElement.
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        molecule.setRole(event.target.value);
+                        console.log("Set Role to " + event.target.value);
+                    }
+                });
+                container.appendChild(selectElement);
+                container.style.marginLeft = margin4;
+                productsDiv.appendChild(container);
             }
             reaction.setProducts(products);
+            // Create a new collapsible div for the products.
+            let buttonId = reaction.id + "_" + reaction_js_1.Product.tagName;
+            let contentDivId = reaction.id + "_" + reaction_js_1.Product.tagName + "_";
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(productsDiv, "Products", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
+        }
+        // Load tunneling.
+        let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
+        if (xml_tunneling.length > 0) {
+            if (xml_tunneling.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
+            }
+            let tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
+            reaction.setTunneling(tunneling);
+            // Create a new div for the tunneling.
+            let container = document.createElement("div");
+            let label = document.createElement('label');
+            label.textContent = reaction_js_1.Tunneling.tagName + ": ";
+            container.appendChild(label);
+            // Create a HTMLSelectElement to select the Tunneling.
+            let options = ["Eckart", "WKB"];
+            let selectElement = (0, html_js_1.getSelectElement)(options, "Tunneling", reaction.id + "_" + 'Select_Tunneling');
+            // Set the initial value.
+            selectElement.value = tunneling.getName();
+            // Add event listener to selectElement.
+            selectElement.addEventListener('change', (event) => {
+                if (event.target instanceof HTMLSelectElement) {
+                    tunneling.setName(event.target.value);
+                    console.log("Set Tunneling to " + event.target.value);
+                }
+            });
+            container.appendChild(selectElement);
+            container.style.marginLeft = margin3;
+            reactionDiv.appendChild(container);
         }
         // Load transition states.
         let xml_transitionStates = xml_reactions[i].getElementsByTagName(reaction_js_1.TransitionState.tagName);
         //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
         if (xml_transitionStates.length > 0) {
+            let transitionStatesDiv = document.createElement("div");
             let transitionStates = [];
             for (let j = 0; j < xml_transitionStates.length; j++) {
                 let xml_molecule = (0, xml_js_1.getFirstElement)(xml_transitionStates[j], molecule_js_1.Molecule.tagName);
-                transitionStates.push(new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[j]), new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule))));
+                let molecule = new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule));
+                let transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[j]), molecule);
+                transitionStates.push(transitionState);
+                // Create a new div for the role.
+                let container = document.createElement("div");
+                let label = document.createElement('label');
+                label.textContent = molecule.ref + " role: ";
+                container.appendChild(label);
+                // Create a HTMLSelectElement to select the Role.
+                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
+                let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
+                // Set the initial value.
+                selectElement.value = molecule.role;
+                // Add event listener to selectElement.
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        molecule.setRole(event.target.value);
+                        console.log("Set Role to " + event.target.value);
+                    }
+                });
+                container.appendChild(selectElement);
+                container.style.marginLeft = margin4;
+                transitionStatesDiv.appendChild(container);
             }
             reaction.setTransitionStates(transitionStates);
-        }
-        //console.log("transitionStates=" + transitionStates);
-        // Load tunneling.
-        let xml_tunneling = xml_reactions[i].getElementsByTagName(reaction_js_1.Tunneling.tagName);
-        let tunneling;
-        if (xml_tunneling.length > 0) {
-            if (xml_tunneling.length > 1) {
-                throw new Error("Expecting 1 " + reaction_js_1.Tunneling.tagName + " but finding " + xml_tunneling.length + "!");
-            }
-            tunneling = new reaction_js_1.Tunneling((0, xml_js_1.getAttributes)(xml_tunneling[0]));
-            reaction.setTunneling(tunneling);
+            // Create a new collapsible div for the transition states.
+            let buttonId = reaction.id + "_" + reaction_js_1.TransitionState.tagName;
+            let contentDivId = reaction.id + "_" + reaction_js_1.TransitionState.tagName + "_";
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(transitionStatesDiv, "Transition States", buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            reactionDiv.appendChild(collapsibleDiv);
         }
         // Load MCRCMethod.
         //console.log("Load MCRCMethod...");
@@ -831,6 +963,7 @@ function processReactionList(xml) {
                 throw new Error("Expecting 1 " + reaction_js_1.MCRCMethod.tagName + " but finding " + xml_MCRCMethod.length + "!");
             }
             else {
+                let mCRCMethodDiv = document.createElement("div");
                 let mCRCMethod;
                 let mCRCMethodAttributes = (0, xml_js_1.getAttributes)(xml_MCRCMethod[0]);
                 let name = mCRCMethodAttributes.get("name");
@@ -876,6 +1009,11 @@ function processReactionList(xml) {
                         }
                         //console.log("nInfinity " + nInfinity);
                         mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
+                        // Create a new collapsible div for the MCRCMethod.
+                        let buttonId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName;
+                        let contentDivId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName + "_";
+                        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(mCRCMethodDiv, reaction_js_1.MCRCMethod.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+                        reactionDiv.appendChild(collapsibleDiv);
                     }
                     else {
                         throw new Error("Unexpected xsi:type=" + type);
@@ -883,6 +1021,10 @@ function processReactionList(xml) {
                 }
                 else {
                     mCRCMethod = new reaction_js_1.MCRCMethod(mCRCMethodAttributes);
+                    let mCRCMethodLabel = document.createElement('label');
+                    mCRCMethodLabel.textContent = mCRCMethodAttributes.get("name");
+                    mCRCMethodLabel.style.marginLeft = margin3;
+                    mCRCMethodDiv.appendChild(mCRCMethodLabel);
                 }
                 reaction.setMCRCMethod(mCRCMethod);
             }
@@ -899,7 +1041,7 @@ function processReactionList(xml) {
             reaction.setExcessReactantConc(excessReactantConc);
         }
         // Create a new collapsible div for the reaction.
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, reaction.getLabel(), reactionDiv, reaction.tagName + "_" + reaction.id);
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reactionDiv, reaction.id + "(" + reaction.getLabel() + ")", reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin2, marginTop, marginBottom, reaction.tagName + "_" + reaction.id);
         // Append the collapsibleDiv to the reactionListDiv.
         reactionListDiv.appendChild(collapsibleDiv);
     }

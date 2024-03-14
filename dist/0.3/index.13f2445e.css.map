@@ -1,0 +1,1 @@
+{"mappings":"ACCA","sources":["index.13f2445e.css","src/style.css"],"sourcesContent":[".collapsible + * {\n  display: none;\n}\n\n/*# sourceMappingURL=index.13f2445e.css.map */\n","/* All collapsible elements are hidden by default */\n.collapsible + * {\n  display: none;\n}"],"names":[],"version":3,"file":"index.13f2445e.css.map"}

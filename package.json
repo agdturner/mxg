@@ -7,7 +7,7 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "build": "parcel build",
-    "start": "npx parcel --dist-dir dist/main src/index.html -p 3458"
+    "start": "npx parcel --dist-dir dist/main src/index.html -p 3459"
   },
   "targets": {
     "main": {

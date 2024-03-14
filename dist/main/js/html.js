@@ -1,29 +1,45 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resizeInput = exports.getSelfClosingTag = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
+exports.getSelectElement = exports.resizeInput = exports.getSelfClosingTag = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
 /**
  * Create a collapsible div.
+ * @param content The content that will be collapsible.
+ * @param buttonLabel The label of the button.
  * @param buttonId The id of the button.
  * @param buttonFontSize The font size of the button.
- * @param indent The indent of the button.
- * @param buttonLabel The label of the button.
- * @param content The content that will be collapsible.
+ * @param marginLeft The margin left of the button.
+ * @param marginTop The margin top of the button.
+ * @param marginBottom The margin bottom of the button.
  * @param contentDivId The id of the content div.
  * @param contentDivClassName The class of the content div.
  * @returns A collapsible div.
  */
-function getCollapsibleDiv(buttonId, buttonFontSize, indent, buttonLabel, content, contentDivId, contentDivClassName) {
+function getCollapsibleDiv(content, buttonLabel, buttonId, buttonFontSize, marginLeft, marginTop, marginBottom, contentDivId, contentDivClassName) {
     let contentDiv = document.createElement('div');
-    contentDiv.id = contentDivId;
+    if (contentDivId != undefined) {
+        contentDiv.id = contentDivId;
+    }
     if (contentDivClassName != undefined) {
         contentDiv.className = contentDivClassName;
     }
     let button = document.createElement('button');
-    button.id = buttonId;
+    if (buttonId != undefined) {
+        button.id = buttonId;
+    }
     button.className = 'collapsible';
     button.innerText = buttonLabel;
-    button.style.fontSize = buttonFontSize;
-    button.style.marginLeft = indent;
+    if (buttonFontSize != undefined) {
+        button.style.fontSize = buttonFontSize;
+    }
+    if (marginLeft != undefined) {
+        button.style.marginLeft = marginLeft;
+    }
+    if (marginTop != undefined) {
+        button.style.marginTop = marginTop;
+    }
+    if (marginBottom != undefined) {
+        button.style.marginBottom = marginBottom;
+    }
     contentDiv.appendChild(button);
     contentDiv.appendChild(content);
     return contentDiv;
@@ -111,4 +127,17 @@ function resizeInput(input, minSize) {
     input.style.width = (input.value.length + minSize) + "ch";
 }
 exports.resizeInput = resizeInput;
+function getSelectElement(options, name, id) {
+    let selectElement = document.createElement('select');
+    options.forEach(option => {
+        selectElement.name = name;
+        selectElement.id = id;
+        let optionElement = document.createElement('option');
+        optionElement.value = option;
+        optionElement.text = option;
+        selectElement.appendChild(optionElement);
+    });
+    return selectElement;
+}
+exports.getSelectElement = getSelectElement;
 //# sourceMappingURL=html.js.map
