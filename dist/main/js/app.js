@@ -32,6 +32,11 @@ let margin4 = "75px";
 let marginTop = "1px";
 let marginBottom = "1px";
 /**
+ * Units for different things.
+ */
+let unitsEnergy = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
+let unitsRotConsts = ["cm-1", "GHz"];
+/**
  * A map of molecules with Molecule.id as key and Molecules as values.
  */
 let molecules = new Map();
@@ -203,14 +208,14 @@ function parse(xml) {
         titleElement.parentNode?.insertBefore(divElement, titleElement);
         // Remove the original titleElement.
         titleElement.parentNode?.removeChild(titleElement);
-        (0, html_js_1.resizeInput)(inputElement, 0);
+        (0, html_js_1.resizeInputElement)(inputElement, 0);
         console.log("inputElement.value=" + inputElement.value);
         // Add event listener to inputElement.
         inputElement.addEventListener('change', function () {
             if (inputElement.value != title) {
                 titleNode.value = inputElement.value;
             }
-            (0, html_js_1.resizeInput)(inputElement, 0);
+            (0, html_js_1.resizeInputElement)(inputElement, 0);
         });
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
@@ -220,21 +225,11 @@ function parse(xml) {
         let reactionsElement = document.getElementById("reactions");
         let reactionListElement = processReactionList(xml);
         reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
+        // Display reaction diagram. 
+        displayReactionsDiagram();
         // Collapse and set up action listeners for all collapsible content.
         (0, html_js_1.makeCollapsible)();
     }
-    /**
-     * Generate molecules table.
-     */
-    //initMolecules(xml);
-    //displayMolecules();
-    /**
-     * Generate reactions table.
-     */
-    //initReactions(xml);
-    //displayReactions();
-    //addEventListeners();
-    //displayReactionsDiagram();
     /**
      * Generate conditions table.
      */
@@ -391,7 +386,15 @@ function processMoleculeList(xml) {
                 let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                processProperty(p, molecule, xml_Ps[j], plDiv, margin4);
+                if (p.dictRef == molecule_js_1.ZPE.dictRef) {
+                    processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, margin4);
+                }
+                else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
+                    processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, margin4);
+                }
+                else {
+                    processProperty(p, undefined, molecule, xml_Ps[j], plDiv, margin4);
+                }
             }
             moleculeTagNames.delete(molecule_js_1.PropertyList.tagName);
         }
@@ -404,11 +407,18 @@ function processMoleculeList(xml) {
             // Create a new Property.
             let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
-            processProperty(p, molecule, xml_Ps[0], moleculeDiv, margin4);
+            if (p.dictRef == molecule_js_1.ZPE.dictRef) {
+                processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv, margin4);
+            }
+            else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
+                processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv, margin4);
+            }
+            else {
+                processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, margin4);
+            }
+            moleculeTagNames.delete(molecule_js_1.Property.tagName);
         }
-        moleculeTagNames.delete(molecule_js_1.Property.tagName);
         // Organise EnergyTransferModel.
-        moleculeTagNames.delete(molecule_js_1.EnergyTransferModel.tagName);
         let xml_ETMs = xml_molecules[i].getElementsByTagName(molecule_js_1.EnergyTransferModel.tagName);
         if (xml_ETMs.length > 0) {
             if (xml_ETMs.length > 1) {
@@ -416,9 +426,9 @@ function processMoleculeList(xml) {
             }
             let etm = new molecule_js_1.EnergyTransferModel((0, xml_js_1.getAttributes)(xml_ETMs[0]));
             processEnergyTransferModel(etm, molecule, xml_ETMs[0], moleculeDiv, margin4);
+            moleculeTagNames.delete(molecule_js_1.EnergyTransferModel.tagName);
         }
         // Organise DOSCMethod.
-        moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
         let xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.DOSCMethod.tagName);
         if (xml_DOSCMethod.length > 0) {
             if (xml_DOSCMethod.length > 1) {
@@ -426,14 +436,22 @@ function processMoleculeList(xml) {
             }
             let dOSCMethod = new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]));
             processDOSCMethod(dOSCMethod, molecule, margin3, moleculeDiv);
+            moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
         }
         // Organise ExtraDOSCMethod.
-        moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
         let xml_ExtraDOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ExtraDOSCMethod.tagName);
         if (xml_ExtraDOSCMethod.length > 0) {
             if (xml_ExtraDOSCMethod.length != 1) {
                 throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_ExtraDOSCMethod.length);
             }
+            console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
+            let extraDOSCMethod = new molecule_js_1.ExtraDOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]));
+            // Create a new collapsible div for the ExtraDOSCMethod.
+            let extraDOSCMethodDiv = document.createElement("div");
+            let buttonId = molecule.id + "_" + molecule_js_1.ExtraDOSCMethod.tagName;
+            let contentDivId = molecule.id + "_" + molecule_js_1.ExtraDOSCMethod.tagName + "_";
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(extraDOSCMethodDiv, molecule_js_1.ExtraDOSCMethod.tagName, buttonId, fontSize3, margin3, marginTop, marginBottom, contentDivId);
+            moleculeDiv.appendChild(collapsibleDiv);
             // Read bondRef.
             let bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName(molecule_js_1.BondRef.tagName);
             let bondRef;
@@ -442,6 +460,7 @@ function processMoleculeList(xml) {
                     throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
                 }
                 bondRef = new molecule_js_1.BondRef((0, xml_js_1.getAttributes)(bondRefs[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(bondRefs[0])));
+                extraDOSCMethod.setBondRef(bondRef);
             }
             // Read hunderedRotorPotential.
             let hinderedRotorPotentials = xml_ExtraDOSCMethod[0].getElementsByTagName(molecule_js_1.HinderedRotorPotential.tagName);
@@ -457,6 +476,7 @@ function processMoleculeList(xml) {
                     potentialPoints.push(new molecule_js_1.PotentialPoint((0, xml_js_1.getAttributes)(xml_potentialPoints[k])));
                 }
                 hinderedRotorPotential = new molecule_js_1.HinderedRotorPotential((0, xml_js_1.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
+                extraDOSCMethod.setHinderedRotorPotential(hinderedRotorPotential);
             }
             // Read periodicities.
             let xml_periodicities = xml_DOSCMethod[0].getElementsByTagName(molecule_js_1.Periodicity.tagName);
@@ -466,17 +486,20 @@ function processMoleculeList(xml) {
                     throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
                 }
                 periodicity = new molecule_js_1.Periodicity((0, xml_js_1.getAttributes)(xml_periodicities[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_periodicities[0]))));
+                extraDOSCMethod.setPeriodicity(periodicity);
             }
-            molecule.setExtraDOSCMethod(new molecule_js_1.ExtraDOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), bondRef, hinderedRotorPotential, periodicity));
+            molecule.setExtraDOSCMethod(extraDOSCMethod);
+            moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
         }
         // Organise ReservoirSize.
         moleculeTagNames.delete(molecule_js_1.ReservoirSize.tagName);
-        xml_DOSCMethod = xml_molecules[i].getElementsByTagName(molecule_js_1.ReservoirSize.tagName);
-        if (xml_DOSCMethod.length > 0) {
-            if (xml_DOSCMethod.length != 1) {
-                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_DOSCMethod.length);
+        let xml_ReservoirSize = xml_molecules[i].getElementsByTagName(molecule_js_1.ReservoirSize.tagName);
+        if (xml_ReservoirSize.length > 0) {
+            if (xml_ReservoirSize.length != 1) {
+                throw new Error("Expecting only 1 reservoirSize, but there are " + xml_ReservoirSize.length);
             }
-            molecule.setReservoirSize(new molecule_js_1.ReservoirSize((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_DOSCMethod[0])))));
+            console.warn("ReservoirSize detected: This is not displayed in the GUI - more coding needed!");
+            molecule.setReservoirSize(new molecule_js_1.ReservoirSize((0, xml_js_1.getAttributes)(xml_ReservoirSize[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_ReservoirSize[0])))));
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -508,12 +531,13 @@ function displayXML(xml) {
 /**
  * For processing a molecule property.
  * @param p The property.
+ * @param units The possible units.
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
  * @param margin The margin.
  */
-function processProperty(p, molecule, element, moleculeDiv, margin) {
+function processProperty(p, units, molecule, element, moleculeDiv, margin) {
     // Handle scalar or array property
     let scalarNodes = element.getElementsByTagName(molecule_js_1.PropertyScalar.tagName);
     if (scalarNodes.length > 0) {
@@ -525,25 +549,6 @@ function processProperty(p, molecule, element, moleculeDiv, margin) {
         let psAttributes = (0, xml_js_1.getAttributes)(scalarNodes[0]);
         let ps = new molecule_js_1.PropertyScalar(psAttributes, value);
         p.setProperty(ps);
-        let container = document.createElement('div');
-        container.style.marginLeft = margin;
-        // If there are units, then add a new select element to display/select them.
-        let psUnits = psAttributes.get("units");
-        if (psUnits != undefined) {
-            // Get a select element for setting the units.
-            let units = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
-            let selectElement = (0, html_js_1.getSelectElement)(units, "Units", molecule.id + "_" + p.dictRef + "_Select_Units");
-            // Set the initial value to the units.
-            selectElement.value = psUnits;
-            // Add event listener to selectElement.
-            selectElement.addEventListener('change', (event) => {
-                if (event.target instanceof HTMLSelectElement) {
-                    psAttributes.set("units", event.target.value);
-                    console.log("Set " + p.dictRef + " units to " + event.target.value);
-                }
-            });
-            container.appendChild(selectElement);
-        }
         let label = p.dictRef;
         // Create a new div element for the input.
         let inputDiv = (0, html_js_1.getInput)("number", molecule.id + "_" + p.dictRef, (event) => {
@@ -552,19 +557,32 @@ function processProperty(p, molecule, element, moleculeDiv, margin) {
             }
         }, inputString, label);
         inputDiv.style.marginLeft = margin;
-        container.appendChild(inputDiv);
-        moleculeDiv.appendChild(container);
+        inputDiv.style.marginTop = marginTop;
+        inputDiv.style.marginBottom = marginBottom;
         let inputElement = inputDiv.querySelector('input');
         inputElement.value = inputString;
-        (0, html_js_1.resizeInput)(inputElement);
+        (0, html_js_1.resizeInputElement)(inputElement);
         inputElement.addEventListener('change', (event) => {
             let eventTarget = event.target;
             inputString = eventTarget.value;
             ps = p.getProperty();
             ps.value = parseFloat(inputString);
             console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-            (0, html_js_1.resizeInput)(inputElement);
+            (0, html_js_1.resizeInputElement)(inputElement);
+            if (p.dictRef == molecule_js_1.ZPE.dictRef) {
+                // Update the min and max molecule energy.
+                if (value < minMoleculeEnergy) {
+                    minMoleculeEnergy = value;
+                }
+                if (value > maxMoleculeEnergy) {
+                    maxMoleculeEnergy = value;
+                }
+                // Update the molecule energy diagram.
+                displayReactionsDiagram();
+            }
         });
+        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef);
+        moleculeDiv.appendChild(inputDiv);
     }
     else {
         let arrayNodes = element.getElementsByTagName(molecule_js_1.PropertyArray.tagName);
@@ -574,7 +592,8 @@ function processProperty(p, molecule, element, moleculeDiv, margin) {
             }
             let inputString = (0, xml_js_1.getInputString)(arrayNodes[0]);
             let values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
-            let pa = new molecule_js_1.PropertyArray((0, xml_js_1.getAttributes)(arrayNodes[0]), values);
+            let paAttributes = (0, xml_js_1.getAttributes)(arrayNodes[0]);
+            let pa = new molecule_js_1.PropertyArray(paAttributes, values);
             p.setProperty(pa);
             let label = p.dictRef;
             // Create a new div element for the input.
@@ -584,10 +603,11 @@ function processProperty(p, molecule, element, moleculeDiv, margin) {
                 }
             }, inputString, label);
             inputDiv.style.marginLeft = margin;
-            moleculeDiv.appendChild(inputDiv);
+            inputDiv.style.marginTop = marginTop;
+            inputDiv.style.marginBottom = marginBottom;
             let inputElement = inputDiv.querySelector('input');
             inputElement.value = inputString;
-            (0, html_js_1.resizeInput)(inputElement);
+            (0, html_js_1.resizeInputElement)(inputElement);
             inputElement.addEventListener('change', (event) => {
                 let eventTarget = event.target;
                 inputString = eventTarget.value;
@@ -595,13 +615,65 @@ function processProperty(p, molecule, element, moleculeDiv, margin) {
                 values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
                 pa.values = values;
                 console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
-                (0, html_js_1.resizeInput)(inputElement);
+                (0, html_js_1.resizeInputElement)(inputElement);
             });
+            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef);
+            moleculeDiv.appendChild(inputDiv);
         }
         else {
             throw new Error("Expecting " + molecule_js_1.PropertyScalar.tagName + " or " + molecule_js_1.PropertyArray.tagName);
         }
     }
+}
+/**
+ * If there are a choice of units, then add a new select element to display/select them.
+ * @param units The possible units.
+ * @param attributes The attributes.
+ * @param inputDiv The input div.
+ * @param id The id.
+ * @param tagOrDictRef The tag or dictionary reference.
+ */
+function addAnyUnits(units, attributes, inputDiv, id, tagOrDictRef) {
+    if (units != undefined) {
+        let unitsSelectElement = getUnitsSelectElement(units, attributes, id, tagOrDictRef);
+        if (unitsSelectElement != undefined) {
+            inputDiv.appendChild(unitsSelectElement);
+        }
+    }
+    else {
+        let units = attributes.get("units");
+        if (units != undefined) {
+            let label = document.createElement('label');
+            label.textContent = units;
+            inputDiv.appendChild(label);
+        }
+    }
+}
+/**
+ * @param attributes The attributes.
+ * @param id The id.
+ * @param tagOrDictRef The tag or dictionary reference.
+ * @returns A select element for setting the units or undefined if there is not attribute for units.
+ */
+function getUnitsSelectElement(units, attributes, id, tagOrDictRef) {
+    let psUnits = attributes.get("units");
+    if (psUnits != undefined) {
+        // Get a select element for setting the units.
+        let selectElement = (0, html_js_1.getSelectElement)(units, "Units", id);
+        // Set the initial value to the units.
+        selectElement.value = psUnits;
+        // Add event listener to selectElement.
+        (0, html_js_1.resizeSelectElement)(selectElement);
+        selectElement.addEventListener('change', (event) => {
+            if (event.target instanceof HTMLSelectElement) {
+                attributes.set("units", event.target.value);
+                console.log("Set " + tagOrDictRef + " units to " + event.target.value);
+            }
+            (0, html_js_1.resizeSelectElement)(selectElement);
+        });
+        return selectElement;
+    }
+    return undefined;
 }
 /**
  * For processing a molecule energy transfer model.
@@ -630,6 +702,8 @@ function processDOSCMethod(dOSCMethod, molecule, margin, moleculeDiv) {
     molecule.setDOSCMethod(dOSCMethod);
     container.appendChild(selectElement);
     container.style.marginLeft = margin;
+    container.style.marginTop = marginTop;
+    container.style.marginBottom = marginBottom;
     moleculeDiv.appendChild(container);
 }
 /**
@@ -652,7 +726,8 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv, margin)
         for (let k = 0; k < xml_deltaEDowns.length; k++) {
             let inputString = (0, xml_js_1.getInputString)(xml_deltaEDowns[k]);
             let value = parseFloat(inputString);
-            let deltaEDown = new molecule_js_1.DeltaEDown((0, xml_js_1.getAttributes)(xml_deltaEDowns[k]), value);
+            let deltaEDownAttributes = (0, xml_js_1.getAttributes)(xml_deltaEDowns[k]);
+            let deltaEDown = new molecule_js_1.DeltaEDown(deltaEDownAttributes, value);
             deltaEDowns.push(deltaEDown);
             let label = molecule_js_1.DeltaEDown.tagName;
             // Create a new div element for the input.
@@ -663,17 +738,22 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv, margin)
                 }
             }, inputString, label);
             inputDiv.style.marginLeft = margin;
+            inputDiv.style.marginTop = marginTop;
+            inputDiv.style.marginBottom = marginBottom;
             etmDiv.appendChild(inputDiv);
             let inputElement = inputDiv.querySelector('input');
             inputElement.value = inputString;
-            (0, html_js_1.resizeInput)(inputElement);
+            (0, html_js_1.resizeInputElement)(inputElement);
             inputElement.addEventListener('change', (event) => {
                 let eventTarget = event.target;
                 inputString = eventTarget.value;
                 deltaEDowns[k].setValue(parseFloat(inputString));
                 console.log("Set " + id + " to " + inputString);
-                (0, html_js_1.resizeInput)(inputElement);
+                (0, html_js_1.resizeInputElement)(inputElement);
             });
+            let unitsLabel = document.createElement('label');
+            unitsLabel.textContent = "cm-1";
+            inputDiv.appendChild(unitsLabel);
         }
         etm.setDeltaEDowns(deltaEDowns);
         molecule.setEnergyTransferModel(etm);
@@ -823,7 +903,7 @@ function processReactionList(xml) {
                 label.textContent = molecule.ref + " role: ";
                 container.appendChild(label);
                 // Create a HTMLSelectElement to select the Role.
-                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
+                let options = ["deficientReactant", "excessReactant"];
                 let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
                 // Set the initial value.
                 selectElement.value = molecule.role;
@@ -836,6 +916,8 @@ function processReactionList(xml) {
                 });
                 container.appendChild(selectElement);
                 container.style.marginLeft = margin4;
+                container.style.marginTop = marginTop;
+                container.style.marginBottom = marginBottom;
                 reactantsDiv.appendChild(container);
             }
             reaction.setReactants(reactants);
@@ -863,7 +945,7 @@ function processReactionList(xml) {
                 label.textContent = molecule.ref + " role: ";
                 container.appendChild(label);
                 // Create a HTMLSelectElement to select the Role.
-                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
+                let options = ["modelled", "sink"];
                 let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
                 // Set the initial value.
                 selectElement.value = molecule.role;
@@ -876,6 +958,8 @@ function processReactionList(xml) {
                 });
                 container.appendChild(selectElement);
                 container.style.marginLeft = margin4;
+                container.style.marginTop = marginTop;
+                container.style.marginBottom = marginBottom;
                 productsDiv.appendChild(container);
             }
             reaction.setProducts(products);
@@ -912,6 +996,8 @@ function processReactionList(xml) {
             });
             container.appendChild(selectElement);
             container.style.marginLeft = margin3;
+            container.style.marginTop = marginTop;
+            container.style.marginBottom = marginBottom;
             reactionDiv.appendChild(container);
         }
         // Load transition states.
@@ -925,26 +1011,13 @@ function processReactionList(xml) {
                 let molecule = new reaction_js_1.ReactionMolecule((0, xml_js_1.getAttributes)(xml_molecule));
                 let transitionState = new reaction_js_1.TransitionState((0, xml_js_1.getAttributes)(xml_transitionStates[j]), molecule);
                 transitionStates.push(transitionState);
-                // Create a new div for the role.
-                let container = document.createElement("div");
+                // Create a label for the Transition State.
                 let label = document.createElement('label');
-                label.textContent = molecule.ref + " role: ";
-                container.appendChild(label);
-                // Create a HTMLSelectElement to select the Role.
-                let options = ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"];
-                let selectElement = (0, html_js_1.getSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role');
-                // Set the initial value.
-                selectElement.value = molecule.role;
-                // Add event listener to selectElement.
-                selectElement.addEventListener('change', (event) => {
-                    if (event.target instanceof HTMLSelectElement) {
-                        molecule.setRole(event.target.value);
-                        console.log("Set Role to " + event.target.value);
-                    }
-                });
-                container.appendChild(selectElement);
-                container.style.marginLeft = margin4;
-                transitionStatesDiv.appendChild(container);
+                label.textContent = molecule.ref + " role: transitionState";
+                label.style.marginLeft = margin4;
+                label.style.marginTop = marginTop;
+                label.style.marginBottom = marginBottom;
+                transitionStatesDiv.appendChild(label);
             }
             reaction.setTransitionStates(transitionStates);
             // Create a new collapsible div for the transition states.
@@ -970,45 +1043,147 @@ function processReactionList(xml) {
                 //console.log(MCRCMethod.tagName + " name=" + name);
                 if (name == undefined || name == reaction_js_1.MesmerILT.xsiType2) {
                     let type = mCRCMethodAttributes.get("xsi:type");
+                    mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes);
                     //console.log(MCRCMethod.tagName + "xsi:type=" + type);
                     if (type == reaction_js_1.MesmerILT.xsiType || type == reaction_js_1.MesmerILT.xsiType2) {
-                        let preExponential;
                         let xml_preExponential = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.PreExponential.tagName);
                         if (xml_preExponential != null) {
                             if (xml_preExponential[0] != null) {
-                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_preExponential[0])));
-                                preExponential = new reaction_js_1.PreExponential((0, xml_js_1.getAttributes)(xml_preExponential[0]), value);
+                                let inputString = (0, xml_js_1.getInputString)(xml_preExponential[0]);
+                                let value = parseFloat(inputString);
+                                let preExponentialAttributes = (0, xml_js_1.getAttributes)(xml_preExponential[0]);
+                                let preExponential = new reaction_js_1.PreExponential(preExponentialAttributes, value);
+                                mCRCMethod.setPreExponential(preExponential);
+                                let label = reaction_js_1.PreExponential.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + reaction_js_1.MesmerILT.tagName + "_" + reaction_js_1.PreExponential.tagName;
+                                let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(preExponential, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                mCRCMethodDiv.appendChild(inputDiv);
+                                let inputElement = inputDiv.querySelector('input');
+                                inputElement.value = inputString;
+                                (0, html_js_1.resizeInputElement)(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target;
+                                    inputString = eventTarget.value;
+                                    preExponential.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    (0, html_js_1.resizeInputElement)(inputElement);
+                                });
+                                addAnyUnits(undefined, preExponentialAttributes, inputDiv, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.PreExponential.tagName, reaction_js_1.PreExponential.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("preExponential " + preExponential);
-                        let activationEnergy;
                         let xml_activationEnergy = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.ActivationEnergy.tagName);
                         if (xml_activationEnergy != null) {
                             if (xml_activationEnergy[0] != null) {
-                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_activationEnergy[0])));
-                                activationEnergy = new reaction_js_1.ActivationEnergy((0, xml_js_1.getAttributes)(xml_activationEnergy[0]), value);
+                                let inputString = (0, xml_js_1.getInputString)(xml_activationEnergy[0]);
+                                let value = parseFloat(inputString);
+                                let activationEnergyAttributes = (0, xml_js_1.getAttributes)(xml_activationEnergy[0]);
+                                let activationEnergy = new reaction_js_1.ActivationEnergy(activationEnergyAttributes, value);
+                                mCRCMethod.setActivationEnergy(activationEnergy);
+                                let label = reaction_js_1.ActivationEnergy.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + reaction_js_1.MesmerILT.tagName + "_" + reaction_js_1.ActivationEnergy.tagName;
+                                let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(activationEnergy, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                let inputElement = inputDiv.querySelector('input');
+                                inputElement.value = inputString;
+                                (0, html_js_1.resizeInputElement)(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target;
+                                    inputString = eventTarget.value;
+                                    activationEnergy.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    (0, html_js_1.resizeInputElement)(inputElement);
+                                });
+                                addAnyUnits(undefined, activationEnergyAttributes, inputDiv, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.ActivationEnergy.tagName, reaction_js_1.ActivationEnergy.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("activationEnergy " + activationEnergy);
-                        let tInfinity;
                         let xml_tInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.TInfinity.tagName);
                         if (xml_tInfinity != null) {
                             if (xml_tInfinity[0] != null) {
-                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_tInfinity[0])));
-                                tInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_tInfinity[0]), value);
+                                let inputString = (0, xml_js_1.getInputString)(xml_tInfinity[0]);
+                                let value = parseFloat(inputString);
+                                let tInfinityAttributes = (0, xml_js_1.getAttributes)(xml_tInfinity[0]);
+                                let tInfinity = new reaction_js_1.TInfinity(tInfinityAttributes, value);
+                                mCRCMethod.setTInfinity(tInfinity);
+                                let label = reaction_js_1.TInfinity.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + reaction_js_1.MesmerILT.tagName + "_" + reaction_js_1.TInfinity.tagName;
+                                let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(tInfinity, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                let inputElement = inputDiv.querySelector('input');
+                                inputElement.value = inputString;
+                                (0, html_js_1.resizeInputElement)(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target;
+                                    inputString = eventTarget.value;
+                                    tInfinity.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    (0, html_js_1.resizeInputElement)(inputElement);
+                                });
+                                addAnyUnits(undefined, tInfinityAttributes, inputDiv, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.TInfinity.tagName, reaction_js_1.TInfinity.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("tInfinity " + tInfinity);
-                        let nInfinity;
                         let xml_nInfinity = xml_MCRCMethod[0].getElementsByTagName(reaction_js_1.NInfinity.tagName);
                         if (xml_nInfinity != null) {
                             if (xml_nInfinity[0] != null) {
-                                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_nInfinity[0])));
-                                nInfinity = new reaction_js_1.NInfinity((0, xml_js_1.getAttributes)(xml_nInfinity[0]), value);
+                                let inputString = (0, xml_js_1.getInputString)(xml_nInfinity[0]);
+                                let value = parseFloat(inputString);
+                                let nInfinityAttributes = (0, xml_js_1.getAttributes)(xml_nInfinity[0]);
+                                let nInfinity = new reaction_js_1.NInfinity(nInfinityAttributes, value);
+                                mCRCMethod.setNInfinity(nInfinity);
+                                let label = reaction_js_1.NInfinity.tagName;
+                                // Create a new div element for the input.
+                                let id = reaction.id + "_" + reaction_js_1.MesmerILT.tagName + "_" + reaction_js_1.NInfinity.tagName;
+                                let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                                    if (event.target instanceof HTMLInputElement) {
+                                        setNumberNode(nInfinity, event.target);
+                                    }
+                                }, inputString, label);
+                                inputDiv.style.marginLeft = margin4;
+                                inputDiv.style.marginTop = marginTop;
+                                inputDiv.style.marginBottom = marginBottom;
+                                mCRCMethodDiv.appendChild(inputDiv);
+                                let inputElement = inputDiv.querySelector('input');
+                                inputElement.value = inputString;
+                                (0, html_js_1.resizeInputElement)(inputElement);
+                                inputElement.addEventListener('change', (event) => {
+                                    let eventTarget = event.target;
+                                    inputString = eventTarget.value;
+                                    nInfinity.value = parseFloat(inputString);
+                                    console.log("Set " + id + " to " + inputString);
+                                    (0, html_js_1.resizeInputElement)(inputElement);
+                                });
+                                addAnyUnits(undefined, nInfinityAttributes, inputDiv, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.NInfinity.tagName, reaction_js_1.NInfinity.tagName);
+                                mCRCMethodDiv.appendChild(inputDiv);
                             }
                         }
                         //console.log("nInfinity " + nInfinity);
-                        mCRCMethod = new reaction_js_1.MesmerILT(mCRCMethodAttributes, preExponential, activationEnergy, tInfinity, nInfinity);
                         // Create a new collapsible div for the MCRCMethod.
                         let buttonId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName;
                         let contentDivId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName + "_";
@@ -1022,9 +1197,12 @@ function processReactionList(xml) {
                 else {
                     mCRCMethod = new reaction_js_1.MCRCMethod(mCRCMethodAttributes);
                     let mCRCMethodLabel = document.createElement('label');
-                    mCRCMethodLabel.textContent = mCRCMethodAttributes.get("name");
+                    mCRCMethodLabel.textContent = reaction_js_1.MCRCMethod.tagName + ": " + mCRCMethodAttributes.get("name");
                     mCRCMethodLabel.style.marginLeft = margin3;
+                    mCRCMethodLabel.style.marginTop = marginTop;
+                    mCRCMethodLabel.style.marginBottom = marginBottom;
                     mCRCMethodDiv.appendChild(mCRCMethodLabel);
+                    reactionDiv.appendChild(mCRCMethodDiv);
                 }
                 reaction.setMCRCMethod(mCRCMethod);
             }
@@ -1472,7 +1650,7 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
         let productsLabel = reaction.getProductsLabel();
         let reactantOutXY = (0, util_js_1.get)(reactantsOutXY, reactantsLabel);
         let productInXY = (0, util_js_1.get)(productsInXY, productsLabel);
-        if (reactionTransitionStates != undefined) {
+        if (reactionTransitionStates.length > 0) {
             reactionTransitionStates.forEach(function (ts) {
                 let transitionStateLabel = ts.getMolecule().ref;
                 let transitionStateInXY = (0, util_js_1.get)(transitionStatesInXY, transitionStateLabel);
@@ -1519,55 +1697,6 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
         let energyString = energy.toString();
         (0, canvas_js_1.drawLevel)(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
     });
-}
-function getLabel(key, twa) {
-    let attributes = twa.attributes;
-    let label = key;
-    if (attributes != undefined) {
-        label += " " + (0, util_js_1.mapToString)(attributes, " ");
-    }
-    return label.trim();
-}
-/**
- * Display molecules.
- */
-function displayMolecules() {
-    /*
-    if (molecules.size == 0) {
-        return;
-    }
-    molecules.forEach(function (molecule, id) {
-        //console.log("id=" + id);
-        //console.log("molecule=" + molecule);
-        // Create molecule div.
-        let div = document.createElement("div");
-        // Go through each node
-        molecule.nodes.forEach(function (node) {
-            if (node instanceof NodeWithNodes) {
-                processNodeWithNodes(molecule.tagName, id, div, node);
-            } else if (node instanceof StringNode) {
-                processStringNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof NumberArrayNode) {
-                processNumberArrayNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof NumberNode) {
-                processNumberNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof TagWithAttributes) {
-                processTagWithAttributes(molecule.tagName, id, div, "", node);
-            } else {
-                processTag(molecule.tagName, id, div, node);
-            }
-        });
-        let moleculeDetailDiv = getCollapsibleDiv(div, molecule.getLabel(), id + "_details", "molecule");
-        moleculesDiv = document.getElementById("moleculesList");
-        if (moleculesDiv !== null) {
-            let parentElement = document.getElementById('molecules');
-            if (parentElement != undefined) {
-                parentElement.appendChild(moleculeDetailDiv);
-            }
-        }
-    });
-    makeCollapsible();
-        */
 }
 /**
  * Display reactions table.
@@ -1667,7 +1796,7 @@ function displayReactions() {
  * Display reactions diagram.
  */
 function displayReactionsDiagram() {
-    if (reactions.size > 1) {
+    if (reactions.size > 0) {
         // Display the diagram.
         let canvas = document.getElementById("reactions_diagram");
         let font = "14px Arial";

@@ -262,6 +262,19 @@ class MesmerILT extends MCRCMethod {
         return this.nodes.get(i);
     }
     /**
+     * @param preExponential The pre-exponential factor.
+     */
+    setPreExponential(preExponential) {
+        let i = this.index.get(PreExponential.tagName);
+        if (i == undefined) {
+            this.index.set(PreExponential.tagName, this.nodes.size);
+            this.addNode(preExponential);
+        }
+        else {
+            this.nodes.set(i, preExponential);
+        }
+    }
+    /**
      * @returns The activation energy or undefined if it does not exist.
      */
     getActivationEnergy() {
@@ -270,6 +283,19 @@ class MesmerILT extends MCRCMethod {
             return undefined;
         }
         return this.nodes.get(i);
+    }
+    /**
+     * @param activationEnergy The activation energy.
+     */
+    setActivationEnergy(activationEnergy) {
+        let i = this.index.get(ActivationEnergy.tagName);
+        if (i == undefined) {
+            this.index.set(ActivationEnergy.tagName, this.nodes.size);
+            this.addNode(activationEnergy);
+        }
+        else {
+            this.nodes.set(i, activationEnergy);
+        }
     }
     /**
      * @returns The TInfinity or undefined if it does not exist.
@@ -282,6 +308,19 @@ class MesmerILT extends MCRCMethod {
         return this.nodes.get(i);
     }
     /**
+     * @param tInfinity The TInfinity.
+     */
+    setTInfinity(tInfinity) {
+        let i = this.index.get(TInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(TInfinity.tagName, this.nodes.size);
+            this.addNode(tInfinity);
+        }
+        else {
+            this.nodes.set(i, tInfinity);
+        }
+    }
+    /**
      * @returns The NInfinity or undefined if it does not exist.
      */
     getNInfinity() {
@@ -290,6 +329,19 @@ class MesmerILT extends MCRCMethod {
             return undefined;
         }
         return this.nodes.get(i);
+    }
+    /**
+     * @param nInfinity The NInfinity.
+     */
+    setNInfinity(nInfinity) {
+        let i = this.index.get(NInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(NInfinity.tagName, this.nodes.size);
+            this.addNode(nInfinity);
+        }
+        else {
+            this.nodes.set(i, nInfinity);
+        }
     }
 }
 exports.MesmerILT = MesmerILT;
@@ -404,17 +456,17 @@ class Reaction extends xml_js_1.NodeWithNodes {
         this.id = id;
         if (reactants != undefined) {
             reactants.forEach(reactant => {
+                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
                 this.addNode(reactant);
-                this.addToIndex(Reactant.tagName, reactant);
-                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
             products.forEach(product => {
-                this.addToIndex(Product.tagName, product);
+                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
                 this.addNode(product);
-                this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(Product.tagName, this.productsIndex);
         }
         if (tunneling != undefined) {
             this.index.set(Tunneling.tagName, this.nodes.size);
@@ -422,10 +474,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
         if (transitionStates != undefined) {
             transitionStates.forEach(transitionState => {
-                this.addToIndex(Product.tagName, transitionState);
+                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
                 this.addNode(transitionState);
-                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
             });
+            this.index.set(TransitionState.tagName, this.transitionStatesIndex);
         }
         if (mCRCMethod != undefined) {
             this.index.set(MCRCMethod.tagName, this.nodes.size);
@@ -474,10 +526,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setReactants(reactants) {
         reactants.forEach(reactant => {
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
             this.addNode(reactant);
-            this.addToIndex(Reactant.tagName, reactant);
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(Reactant.tagName, this.reactantsIndex);
     }
     /**
      * @returns A particular Reactant.
@@ -495,16 +547,18 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param reactant The reactant to add.
      */
     addReactant(reactant) {
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
         this.addNode(reactant);
-        this.addToIndex(Reactant.tagName, reactant);
-        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size - 1);
     }
     /**
      * @param ref The ref of the reactant to remove.
      */
     removeReactant(ref) {
         let index = this.reactantsIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Reactant with ref ${ref} not found`);
+        }
+        else {
             this.nodes.delete(index);
             this.reactantsIndex.delete(ref);
         }
@@ -529,10 +583,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setProducts(products) {
         products.forEach(product => {
-            this.addToIndex(Product.tagName, product);
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
             this.addNode(product);
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(Product.tagName, this.productsIndex);
     }
     /**
      * @returns A particular Product.
@@ -550,16 +604,18 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param product The product to add.
      */
     addProduct(product) {
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
         this.addNode(product);
-        this.addToIndex(Product.tagName, product);
-        this.productsIndex.set(product.getMolecule().ref, this.nodes.size - 1);
     }
     /**
      * @param ref The ref of the product to remove.
      */
     removeProduct(ref) {
         let index = this.productsIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Product with ref ${ref} not found`);
+        }
+        else {
             this.nodes.delete(index);
             this.productsIndex.delete(ref);
         }
@@ -612,10 +668,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setTransitionStates(transitionStates) {
         transitionStates.forEach(transitionState => {
-            this.addToIndex(TransitionState.tagName, transitionState);
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
             this.addNode(transitionState);
-            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
         });
+        this.index.set(TransitionState.tagName, this.transitionStatesIndex);
     }
     /**
      * @returns A particular TransitionState.
@@ -633,16 +689,18 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param transitionState The transition state to add.
      */
     addTransitionState(transitionState) {
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
         this.addNode(transitionState);
-        this.addToIndex(TransitionState.tagName, transitionState);
-        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size - 1);
     }
     /**
      * @param ref The ref of the transition state to remove.
      */
     removeTransitionState(ref) {
         let index = this.transitionStatesIndex.get(ref);
-        if (index != undefined) {
+        if (index == undefined) {
+            throw new Error(`Transition State with ref ${ref} not found`);
+        }
+        else {
             this.nodes.delete(index);
             this.transitionStatesIndex.delete(ref);
         }

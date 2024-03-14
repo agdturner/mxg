@@ -695,6 +695,10 @@ class ExtraDOSCMethod extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:ExtraDOSCMethod";
     /**
+     * The index.
+     */
+    index;
+    /**
      * @param attributes The attributes.
      * @param bondRef The bondRef.
      * @param hinderedRotorPotential The HinderedRotorPotential.
@@ -702,54 +706,88 @@ class ExtraDOSCMethod extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, bondRef, hinderedRotorPotential, periodicity) {
         super(attributes, ExtraDOSCMethod.tagName);
+        this.index = new Map();
         if (bondRef) {
             this.nodes.set(this.nodes.size, bondRef);
+            this.index.set(BondRef.tagName, this.nodes.size - 1);
         }
         if (hinderedRotorPotential) {
             this.nodes.set(this.nodes.size, hinderedRotorPotential);
+            this.index.set(HinderedRotorPotential.tagName, this.nodes.size - 1);
         }
         if (periodicity) {
             this.nodes.set(this.nodes.size, periodicity);
+            this.index.set(Periodicity.tagName, this.nodes.size - 1);
         }
     }
     /**
      * @returns The bondRef.
      */
     getBondRef() {
-        return this.nodes.get(0);
+        let i = this.index.get(BondRef.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
     }
     /**
      * Set the bondRef.
      * @param bondRef The bondRef.
      */
     setBondRef(bondRef) {
-        this.nodes.set(0, bondRef);
+        let i = this.index.get(BondRef.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, bondRef);
+        }
+        else {
+            this.nodes.set(this.nodes.size, bondRef);
+            this.index.set(BondRef.tagName, this.nodes.size - 1);
+        }
     }
     /**
      * @returns The hindered rotor potential of the molecule.
      */
     getHinderedRotorPotential() {
-        return this.nodes.get(1);
+        let i = this.index.get(HinderedRotorPotential.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
     }
     /**
      * Set the hindered rotor potential.
      * @param hinderedRotorPotential The hindered rotor potential.
      */
     setHinderedRotorPotential(hinderedRotorPotential) {
-        this.nodes.set(1, hinderedRotorPotential);
+        let i = this.index.get(HinderedRotorPotential.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, hinderedRotorPotential);
+        }
+        else {
+            this.nodes.set(this.nodes.size, hinderedRotorPotential);
+            this.index.set(HinderedRotorPotential.tagName, this.nodes.size - 1);
+        }
     }
     /**
      * @returns The periodicity of the molecule.
      */
     getPeriodicity() {
-        return this.nodes.get(2);
+        let i = this.index.get(Periodicity.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
     }
     /**
      * Set the periodicity.
      * @param periodicity The periodicity.
      */
     setPeriodicity(periodicity) {
-        this.nodes.set(2, periodicity);
+        let i = this.index.get(Periodicity.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, periodicity);
+        }
+        else {
+            this.nodes.set(this.nodes.size, periodicity);
+            this.index.set(Periodicity.tagName, this.nodes.size - 1);
+        }
     }
 }
 exports.ExtraDOSCMethod = ExtraDOSCMethod;

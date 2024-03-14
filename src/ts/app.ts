@@ -1712,7 +1712,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, dark: boolean, font: str
         let productsLabel: string | undefined = reaction.getProductsLabel();
         let reactantOutXY: number[] = get(reactantsOutXY, reactantsLabel);
         let productInXY: number[] = get(productsInXY, productsLabel);
-        if (reactionTransitionStates != undefined) {
+        if (reactionTransitionStates.length > 0) {
             reactionTransitionStates.forEach(function (ts) {
                 let transitionStateLabel: string = ts.getMolecule().ref;
                 let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
@@ -1760,59 +1760,6 @@ function drawReactionDiagram(canvas: HTMLCanvasElement, dark: boolean, font: str
         let energyString: string = energy.toString();
         drawLevel(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
     });
-}
-
-
-
-function getLabel(key: string, twa: TagWithAttributes): string {
-    let attributes: Map<string, string> | undefined = twa.attributes;
-    let label: string = key;
-    if (attributes != undefined) {
-        label += " " + mapToString(attributes, " ");
-    }
-    return label.trim();
-}
-
-/**
- * Display molecules.
- */
-function displayMolecules(): void {
-    /*
-    if (molecules.size == 0) {
-        return;
-    }
-    molecules.forEach(function (molecule, id) {
-        //console.log("id=" + id);
-        //console.log("molecule=" + molecule);
-        // Create molecule div.
-        let div = document.createElement("div");
-        // Go through each node
-        molecule.nodes.forEach(function (node) {
-            if (node instanceof NodeWithNodes) {
-                processNodeWithNodes(molecule.tagName, id, div, node);
-            } else if (node instanceof StringNode) {
-                processStringNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof NumberArrayNode) {
-                processNumberArrayNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof NumberNode) {
-                processNumberNode(molecule.tagName, id, div, "", node);
-            } else if (node instanceof TagWithAttributes) {
-                processTagWithAttributes(molecule.tagName, id, div, "", node);
-            } else {
-                processTag(molecule.tagName, id, div, node);
-            }
-        });
-        let moleculeDetailDiv = getCollapsibleDiv(div, molecule.getLabel(), id + "_details", "molecule");
-        moleculesDiv = document.getElementById("moleculesList");
-        if (moleculesDiv !== null) {
-            let parentElement = document.getElementById('molecules');
-            if (parentElement != undefined) {
-                parentElement.appendChild(moleculeDetailDiv);
-            }
-        }
-    });
-    makeCollapsible();
-        */
 }
 
 /**

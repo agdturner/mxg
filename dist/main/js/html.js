@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSelectElement = exports.resizeInput = exports.getSelfClosingTag = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
+exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
 /**
  * Create a collapsible div.
  * @param content The content that will be collapsible.
@@ -116,17 +116,35 @@ function getSelfClosingTag(attributes, tagName) {
 }
 exports.getSelfClosingTag = getSelfClosingTag;
 /**
- * For resizing an input to the width of what it contains.
+ * For resizing an HTMLInputElement to the width of what it contains.
  * @param input The input to resize.
  * @param minSize The minimum size of the input.
  */
-function resizeInput(input, minSize) {
+function resizeInputElement(input, minSize) {
     if (minSize == undefined) {
         minSize = 4;
     }
     input.style.width = (input.value.length + minSize) + "ch";
 }
-exports.resizeInput = resizeInput;
+exports.resizeInputElement = resizeInputElement;
+/**
+ * For resizing an HTMLSelectElement to the width of what it contains.
+ * @param input The input to resize.
+ * @param minSize The minimum size of the input.
+ */
+function resizeSelectElement(input, minSize) {
+    if (minSize == undefined) {
+        minSize = 6;
+    }
+    input.style.width = (input.value.length + minSize) + "ch";
+}
+exports.resizeSelectElement = resizeSelectElement;
+/**
+ * @param options The options.
+ * @param name The name.
+ * @param id The id.
+ * @returns An HTMLSelectElement.
+ */
 function getSelectElement(options, name, id) {
     let selectElement = document.createElement('select');
     options.forEach(option => {
