@@ -446,7 +446,6 @@ export function getAttributes(element: Element): Map<string, string> {
  * @throws An error if there is not exactly one element with the given tag name.
  */
 export function getSingularElement(xml: XMLDocument | Element, tagName: string): Element {
-    ;
     let e: HTMLCollectionOf<Element> = xml.getElementsByTagName(tagName);
     if (e.length != 1) {
         throw new Error("Expecting 1 " + tagName + " but finding " + e.length);

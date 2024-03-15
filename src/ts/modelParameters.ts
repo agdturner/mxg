@@ -51,23 +51,67 @@ export class ModelParameters extends NodeWithNodes {
      */
     static readonly tagName: string = "me:modelParameters";
 
-    constructor(grainSize: GrainSize, energyAboveTheTopHill: EnergyAboveTheTopHill) {
-        super(new Map<string, string>(), ModelParameters.tagName);
-        this.addNode(grainSize);
-        this.addNode(energyAboveTheTopHill);
+    /**
+     * The index.
+     */
+    index: Map<string, number>;
+
+    constructor(attributes: Map<string, string> | undefined, grainSize?: GrainSize, energyAboveTheTopHill?: EnergyAboveTheTopHill) {
+        super(attributes, ModelParameters.tagName);
+        this.index = new Map<string, number>();
+        if (grainSize != undefined) {
+            this.index.set(GrainSize.tagName, this.nodes.size);
+            this.addNode(grainSize);
+        }
+        if (energyAboveTheTopHill != undefined) {
+            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
+            this.addNode(energyAboveTheTopHill);
+        }
     }
 
     /**
-     * @returns The grain size.
+     * @returns The grain size or undefined.
      */
-    getGrainSize(): GrainSize {
-        return this.nodes.get(0) as GrainSize;
+    getGrainSize(): GrainSize | undefined {
+        let i: number | undefined = this.index.get(GrainSize.tagName);
+        if (i) {
+            return this.nodes.get(i) as GrainSize;
+        }
     }
 
     /**
-     * @returns The energy above the top hill.
+     * @param grainSize The grain size.
      */
-    getEnergyAboveTheTopHill(): EnergyAboveTheTopHill {
-        return this.nodes.get(1) as EnergyAboveTheTopHill;
+    setGrainSize(grainSize: GrainSize) {
+        let i: number | undefined = this.index.get(GrainSize.tagName);
+        if (i) {
+            this.nodes.set(i, grainSize);
+        } else {
+            this.index.set(GrainSize.tagName, this.nodes.size);
+            this.addNode(grainSize);
+        }
+    }
+
+    /**
+     * @returns The energy above the top hill or undefined.
+     */
+    getEnergyAboveTheTopHill(): EnergyAboveTheTopHill | undefined {
+        let i: number | undefined = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i) {
+            return this.nodes.get(i) as EnergyAboveTheTopHill;
+        }
+    }
+
+    /**
+     * @param energyAboveTheTopHill The energy above the top hill.
+     */
+    setEnergyAboveTheTopHill(energyAboveTheTopHill: EnergyAboveTheTopHill) {
+        let i: number | undefined = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i) {
+            this.nodes.set(i, energyAboveTheTopHill);
+        } else {
+            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
+            this.addNode(energyAboveTheTopHill);
+        }
     }
 }

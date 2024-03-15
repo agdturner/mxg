@@ -6,13 +6,6 @@ import { Reaction } from "./reaction.js";
 import { NodeWithNodes, StringNode } from "./xml.js";
 
 /**
- * The header of the XML file.
- */
-const header: string = `<?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
-
-/**
  * The title.
  */
 export class Title extends StringNode {
@@ -22,7 +15,7 @@ export class Title extends StringNode {
     /**
      * @param value 
      */
-    constructor(attributes:  Map<string, string>, value: string) {
+    constructor(attributes: Map<string, string>, value: string) {
         super(attributes, Title.tagName, value);
     }
 
@@ -180,14 +173,33 @@ export class Mesmer extends NodeWithNodes {
     static readonly tagName: string = "me:mesmer";
 
     /**
+     * The header of the XML file.
+     */
+    static header: string = `<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
+
+    /**
      * The index. The keys are the node names and the values are the node indexes.
      */
     index: Map<string, number>;
 
-    constructor(attributes: Map<string, string>, moleculeList?: MoleculeList, reactionList?: ReactionList,
+    /**
+     * @param attributes The attributes.
+     * @param moleculeList The molecule list.
+     * @param reactionList The reaction list.
+     * @param conditions The conditions.
+     * @param modelParameters The model parameters.
+     * @param control The control.
+     */
+    constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
         conditions?: Conditions, modelParameters?: ModelParameters, control?: Control) {
         super(attributes, Mesmer.tagName);
         this.index = new Map();
+        if (title != undefined) {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
+        }
         if (moleculeList != undefined) {
             this.index.set(MoleculeList.tagName, this.nodes.size);
             this.addNode(moleculeList);
@@ -207,6 +219,31 @@ export class Mesmer extends NodeWithNodes {
         if (control != undefined) {
             this.index.set(Control.tagName, this.nodes.size);
             this.addNode(control);
+        }
+    }
+
+    /**
+     * @returns The title.
+     */
+    getTitle() {
+        let i: number | undefined = this.index.get(Title.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as Title;
+    }
+
+    /**
+     * Set the title.
+     * @param title The title.
+     */
+    setTitle(title: Title) {
+        let i: number | undefined = this.index.get(Title.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, title);
+        } else {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
         }
     }
 
