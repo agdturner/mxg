@@ -17,23 +17,11 @@ export class BathGas extends StringNode {
     static readonly tagName: string = "me:bathGas";
 
     /**
-     * The molecules.
-     */
-    molecules: Map<string, Molecule>;
-
-    /**
      * @param attributes The attributes.
      * @param moleculeID The moleculeID.
-     * @param molecules The molecules.
      */
-    constructor(attributes: Map<string, string> | undefined, moleculeID: string,
-        molecules: Map<string, Molecule>) {
+    constructor(attributes: Map<string, string> | undefined, moleculeID: string) {
         super(attributes, BathGas.tagName, moleculeID);
-        this.molecules = molecules;
-    }
-
-    getMolecule(): Molecule {
-        return this.molecules.get(this.value) as Molecule;
     }
 }
 
@@ -54,13 +42,36 @@ export class ExperimentRate extends NumberNode {
     constructor(attributes: Map<string, string> | undefined, value: number) {
         super(attributes, ExperimentRate.tagName, value);
     }
+
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */
+    getError(): number | undefined {
+        if (this.attributes != undefined) {
+            let error: string | undefined = this.attributes.get("error");
+            if (error) {
+                return parseFloat(error);
+            }
+        }
+    }
+
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */
+    setError(error: number) {
+        if (this.attributes != undefined) {
+            this.attributes.set("error", error.toString());
+        }
+    }
+
 }
 
 /**
  * A class for representing a Pressure and Temperature pair with optional BathGas and ExperimentRate.
  * Can there be multiple BathGases and ExperimentRates?
  */
-export class PT extends NodeWithNodes {
+export class PTpair extends NodeWithNodes {
 
     /**
      * The tag name.
@@ -78,7 +89,7 @@ export class PT extends NodeWithNodes {
      * @param experimentRate The experiment rate.
      */
     constructor(attributes: Map<string, string>, bathGas?: BathGas, experimentRate?: ExperimentRate) {
-        super(attributes, PT.tagName);
+        super(attributes, PTpair.tagName);
         this.index = new Map();
         if (bathGas) {
             this.index.set(BathGas.tagName, this.nodes.size);
@@ -200,29 +211,31 @@ export class PTs extends NodeWithNodes {
     static readonly tagName: string = "me:PTs";
 
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PT[]} pTs The PTs.
+     * @param attributes The attributes.
+     * @param pTs The PTs.
      */
-    constructor(attributes: Map<string, string>, pTs: PT[]) {
+    constructor(attributes: Map<string, string>, pTs?: PTpair[]) {
         super(attributes, PTs.tagName);
-        pTs.forEach((pTpair) => {
-            this.addNode(pTpair);
-        });
+        if (pTs) {
+            pTs.forEach((pTpair) => {
+                this.addNode(pTpair);
+            });
+        }
     }
 
     /**
-     * @param index The index of the PT pair to return.
-     * @returns The PT pair at the given index.
+     * @param index 
+     * @returns The PT pair at the given index or undefined if the index is out of range.
      */
-    getPTpair(index: number): PT {
-        return this.nodes.get(index) as PT;
+    getPTpair(index: number): PTpair | undefined {
+        return this.nodes.get(index) as PTpair;
     }
 
     /**
      * Set the PT at the given index.
      * @returns The PT pairs.
      */
-    setPTpair(index: number, pT: PT): void {
+    setPTpair(index: number, pT: PTpair): void {
         this.nodes.set(index, pT);
     }
 
@@ -231,7 +244,7 @@ export class PTs extends NodeWithNodes {
      * @param pTPair The PT to add.
      * @returns The index of the PT added.
      */
-    addPTpair(pT: PT): number {
+    addPTpair(pT: PTpair): number {
         return this.addNode(pT);
     }
 }
@@ -247,27 +260,71 @@ export class Conditions extends NodeWithNodes {
     static tagName: string = "me:conditions";
 
     /**
+     * The index. The keys are the node names and the values are the node indexes.
+     */
+    index : Map<string, number>;
+
+    /**
      * @param attributes The attributes.
      * @param bathGas The bath gas.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
-    constructor(attributes: Map<string, string> | undefined, bathGas: BathGas, pTs: PTs) {
+    constructor(attributes: Map<string, string> | undefined, bathGas?: BathGas, pTs?: PTs) {
         super(attributes, Conditions.tagName);
-        this.addNode(bathGas);
-        this.addNode(pTs);
+        this.index = new Map();
+        if (bathGas) {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+        if (pTs) {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
 
     /**
      * @returns The bath gas.
      */
-    getBathGas(): BathGas {
-        return this.nodes.get(0) as BathGas;
+    getBathGas(): BathGas | undefined {
+        let i: number | undefined = this.index.get(BathGas.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as BathGas;
+        }
+    }
+
+    /**
+     * @param bathGas The bath gas.
+     */
+    setBathGas(bathGas: BathGas) {
+        let i: number | undefined = this.index.get(BathGas.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, bathGas);
+        } else {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
     }
 
     /**
      * @returns The Pressure and Temperature pairs.
      */
-    getPTs(): PTs {
-        return this.nodes.get(1) as PTs;
+    getPTs(): PTs | undefined {
+        let i: number | undefined = this.index.get(PTs.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PTs;
+        }
+    }
+
+    /**
+     * @param pTs The PTs.
+     */
+    setPTs(pTs: PTs) {
+        let i: number | undefined = this.index.get(PTs.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, pTs);
+        } else {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
 }

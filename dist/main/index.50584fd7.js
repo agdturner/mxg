@@ -642,6 +642,15 @@ let unitsRotConsts = [
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */ let reactions = new Map();
 /**
+ * The conditions.
+ */ let conditions;
+/**
+ * The model parameters.
+ */ let modelParameters;
+/**
+ * The control.
+ */ let control;
+/**
  * The filename of the mesmer input file loaded.
  */ let input_xml_filename;
 /**
@@ -787,29 +796,44 @@ let xml_text;
         });
         // Create a collapsible div for molecules
         let moleculesElement = document.getElementById("molecules");
-        let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
+        if (moleculesElement == null) ;
+        else {
+            let moleculeListElement = processMoleculeList(xml);
+            moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
+        }
         // Create a collapsible div for reactions
         let reactionsElement = document.getElementById("reactions");
-        let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
+        if (reactionsElement == null) ;
+        else {
+            let reactionListElement = processReactionList(xml);
+            reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
+        }
         // Display reaction diagram. 
         displayReactionsDiagram();
+        // Create a collapsible div for conditions
+        let conditionsElement = document.getElementById("conditions");
+        if (conditionsElement == null) ;
+        else {
+            let conditionsListElement = processConditions(xml);
+            conditionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin1, marginTop, marginBottom, "conditionsList"));
+        }
+        // Create a collapsible div for model parameters
+        let modelParametersElement = document.getElementById("modelParameters");
+        if (modelParametersElement == null) ;
+        else {
+            let modelParametersListElement = processModelParameters(xml);
+            modelParametersElement.appendChild((0, _htmlJs.getCollapsibleDiv)(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin1, marginTop, marginBottom, "modelParametersList"));
+        }
+        // Create a collapsible div for control
+        let controlElement = document.getElementById("control");
+        if (controlElement == null) ;
+        else {
+            let controlListElement = processControl(xml);
+            controlElement.appendChild((0, _htmlJs.getCollapsibleDiv)(controlListElement, "Control", "control_button", fontSize1, margin1, marginTop, marginBottom, "controlList"));
+        }
         // Collapse and set up action listeners for all collapsible content.
         (0, _htmlJs.makeCollapsible)();
     }
-/**
-     * Generate conditions table.
-     */ //initConditions(xml);
-//displayConditions();
-/**
-     * Generate parameters table.
-     */ //initModelParameters(xml);
-//displayModelParameters();
-/**
-     * Generate control table.
-     */ //initControl(xml);
-//displayControl();
 }
 /**
  * Parse XML and create HTMLDivElement for molecules.
@@ -1351,7 +1375,8 @@ window.set = setNumberNode;
                 // Create a HTMLSelectElement to select the Role.
                 let options = [
                     "deficientReactant",
-                    "excessReactant"
+                    "excessReactant",
+                    "modelled"
                 ];
                 let selectElement = (0, _htmlJs.getSelectElement)(options, "Role", molecule.ref + "_" + "Select_Role");
                 // Set the initial value.
@@ -1662,58 +1687,143 @@ window.set = setNumberNode;
     }
     return reactionListDiv;
 }
-let conditions;
 /**
  * Parse xml to initialise conditions.
- * @param {XMLDocument} xml The XML document.
- */ function initConditions(xml) {
+ * @param xml The XML document.
+ * @returns The conditions div.
+ */ function processConditions(xml) {
     console.log((0, _conditionsJs.Conditions).tagName);
+    // Create div to contain the conditions.
+    let conditionsDiv = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_conditions = (0, _xmlJs.getSingularElement)(xml, (0, _conditionsJs.Conditions).tagName);
-    // Set conditions_title.
-    conditions_title = document.getElementById("conditions_title");
-    if (conditions_title != null) conditions_title.innerHTML = "Conditions";
-    // BathGas
-    let xml_bathGas = (0, _xmlJs.getFirstElement)(xml_conditions, (0, _conditionsJs.BathGas).tagName);
-    let attributes = (0, _xmlJs.getAttributes)(xml_bathGas);
-    let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGas));
-    let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID, molecules);
-    // PTs
-    let xml_PTs = (0, _xmlJs.getSingularElement)(xml_conditions, "me:PTs");
-    let xml_PTPairs = xml_PTs.getElementsByTagName((0, _conditionsJs.PT).tagName);
-    // Process each PTpair.
-    let pTs = [];
-    for(let i = 0; i < xml_PTPairs.length; i++){
-        // Add optional BathGas
-        let xml_bathGass = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.BathGas).tagName);
-        let pTBathGas;
-        if (xml_bathGass.length > 0) {
-            if (xml_bathGass.length > 1) console.warn("xml_bathGass.length=" + xml_bathGass.length);
-            pTBathGas = new (0, _conditionsJs.BathGas)((0, _xmlJs.getAttributes)(xml_bathGass[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGass[0])), molecules);
-            console.log("pTBathGas" + pTBathGas.toString());
-        }
-        // Add optional ExperimentRate
-        let xml_experimentRates = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.ExperimentRate).tagName);
-        let experimentRate;
-        if (xml_experimentRates.length > 0) {
-            if (xml_experimentRates.length > 1) console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
-            experimentRate = new (0, _conditionsJs.ExperimentRate)((0, _xmlJs.getAttributes)(xml_experimentRates[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_experimentRates[0]))));
-            console.log("experimentRate" + experimentRate.toString());
-        }
-        pTs.push(new (0, _conditionsJs.PT)((0, _xmlJs.getAttributes)(xml_PTPairs[i]), pTBathGas, experimentRate));
-    //console.log(pTs[i].toString()); // For debugging.
+    conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions));
+    // Process any "bathGas" element.
+    let xml_bathGases = xml_conditions.getElementsByTagName((0, _conditionsJs.BathGas).tagName);
+    if (xml_bathGases.length > 0) {
+        if (xml_bathGases.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.BathGas).tagName + " but finding " + xml_bathGases.length + "!");
+        let attributes = (0, _xmlJs.getAttributes)(xml_bathGases[0]);
+        let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGases[0]));
+        let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID);
+        console.log("bathGas" + bathGas.toString());
+        conditions.setBathGas(bathGas);
+        let bathGasLabel = document.createElement("label");
+        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": " + bathGas.value;
+        bathGasLabel.style.marginLeft = margin2;
+        bathGasLabel.style.marginTop = marginTop;
+        bathGasLabel.style.marginBottom = marginBottom;
+        conditionsDiv.appendChild(bathGasLabel);
     }
-    conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions), bathGas, new (0, _conditionsJs.PTs)((0, _xmlJs.getAttributes)(xml_PTs), pTs));
+    // PTs
+    let xml_PTss = xml_conditions.getElementsByTagName((0, _conditionsJs.PTs).tagName);
+    if (xml_PTss.length > 0) {
+        if (xml_PTss.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.PTs).tagName + " but finding " + xml_PTss.length + "!");
+        let pTsDiv = document.createElement("div");
+        conditionsDiv.appendChild(pTsDiv);
+        let attributes = (0, _xmlJs.getAttributes)(xml_PTss[0]);
+        let xml_PTPairs = xml_PTss[0].getElementsByTagName((0, _conditionsJs.PTpair).tagName);
+        if (xml_PTPairs.length == 0) throw new Error("Expecting 1 or more " + (0, _conditionsJs.PTpair).tagName + " but finding 0!");
+        else {
+            let pTs = new (0, _conditionsJs.PTs)(attributes);
+            for(let i = 0; i < xml_PTPairs.length; i++){
+                let pTPair = new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i]));
+                // Create div for the pTPair.
+                let pTPairDiv = document.createElement("div");
+                pTPairDiv.style.marginLeft = margin2;
+                pTPairDiv.style.marginTop = marginTop;
+                pTPairDiv.style.marginBottom = marginBottom;
+                pTsDiv.appendChild(pTPairDiv);
+                // Add optional BathGas
+                let xml_bathGass = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.BathGas).tagName);
+                if (xml_bathGass.length > 0) {
+                    if (xml_bathGass.length > 1) console.warn("xml_bathGass.length=" + xml_bathGass.length);
+                    let bathGas = new (0, _conditionsJs.BathGas)((0, _xmlJs.getAttributes)(xml_bathGass[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGass[0])));
+                    pTPair.setBathGas(bathGas);
+                    // Create HTMLLabelElement for the BathGas.
+                    let bathGasLabel = document.createElement("label");
+                    bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": " + bathGas.value;
+                    bathGasLabel.style.marginLeft = margin3;
+                    bathGasLabel.style.marginTop = marginTop;
+                    bathGasLabel.style.marginBottom = marginBottom;
+                    pTPairDiv.appendChild(bathGasLabel);
+                }
+                // Add optional ExperimentRate
+                let xml_experimentRates = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.ExperimentRate).tagName);
+                if (xml_experimentRates.length > 0) {
+                    if (xml_experimentRates.length > 1) console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
+                    let experimentRate = new (0, _conditionsJs.ExperimentRate)((0, _xmlJs.getAttributes)(xml_experimentRates[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_experimentRates[0]))));
+                    pTPair.setExperimentRate(experimentRate);
+                    // Create a new div for the ExperimentRate.
+                    let id = (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.ExperimentRate).tagName;
+                    let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
+                        if (event.target instanceof HTMLInputElement) setNumberNode(experimentRate, event.target);
+                    }, experimentRate.value.toString(), (0, _conditionsJs.ExperimentRate).tagName);
+                    inputDiv.style.marginLeft = margin3;
+                    inputDiv.style.marginTop = marginTop;
+                    inputDiv.style.marginBottom = marginBottom;
+                    pTPairDiv.appendChild(inputDiv);
+                }
+                // Create a new input element for the P.
+                let p = pTPair.getP();
+                let pId = (0, _conditionsJs.PTpair).tagName + "_" + "P";
+                let t = pTPair.getT();
+                let tId = (0, _conditionsJs.PTpair).tagName + "_" + "T";
+                // Create a container div for P, T and units.
+                let containerDiv = document.createElement("div");
+                containerDiv.style.display = "flex";
+                // Add the P input element to the container.
+                let pInputDiv = (0, _htmlJs.getInput)("number", pId, (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        pTPair.setP(parseFloat(event.target.value));
+                        console.log("Set P to " + event.target.value);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, p.toString(), "P");
+                let pInputElement = pInputDiv.querySelector("input");
+                pInputElement.value = p.toString();
+                (0, _htmlJs.resizeInputElement)(pInputElement);
+                pInputDiv.style.marginLeft = margin2;
+                pInputDiv.style.marginTop = marginTop;
+                pInputDiv.style.marginBottom = marginBottom;
+                containerDiv.appendChild(pInputDiv);
+                // Add the T input element to the container.
+                let tInputDiv = (0, _htmlJs.getInput)("number", tId, (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        pTPair.setT(parseFloat(event.target.value));
+                        console.log("Set T to " + event.target.value);
+                    }
+                }, t.toString(), "T");
+                let tInputElement = tInputDiv.querySelector("input");
+                tInputElement.value = t.toString();
+                (0, _htmlJs.resizeInputElement)(tInputElement);
+                tInputDiv.style.marginTop = marginTop;
+                tInputDiv.style.marginBottom = marginBottom;
+                containerDiv.appendChild(tInputDiv);
+                // Add any units to the container.
+                addAnyUnits(undefined, (0, _xmlJs.getAttributes)(xml_PTPairs[i]), containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName);
+                // Append the container div to the pTPairDiv.
+                pTPairDiv.appendChild(containerDiv);
+                // Create a collapsible container for the pTPairs.
+                let buttonId = (0, _conditionsJs.PTpair).tagName + "_" + i;
+                let contentDivId = (0, _conditionsJs.PTpair).tagName + "_" + i + "_";
+                let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(pTPairDiv, (0, _conditionsJs.PTpair).tagName, buttonId, fontSize2, margin2, marginTop, marginBottom, contentDivId);
+                pTsDiv.appendChild(collapsibleDiv);
+                pTs.addPTpair(pTPair);
+            }
+            conditions.setPTs(pTs);
+        }
+    }
+    return conditionsDiv;
 }
-let modelParameters;
 /**
  * Parses xml to initialise modelParameters.
  * @param xml The XML document.
- */ function initModelParameters(xml) {
+ */ function processModelParameters(xml) {
     console.log((0, _modelParametersJs.ModelParameters).tagName);
+    // Create div to contain the modelParameters.
+    let modelParametersDiv = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, (0, _modelParametersJs.ModelParameters).tagName);
-    // Set modelParameters_title.
-    modelParameters_title = document.getElementById("modelParameters_title");
-    if (modelParameters_title != null) modelParameters_title.innerHTML = "Model Parameters";
     // GrainSize
     let xml_grainSize = (0, _xmlJs.getSingularElement)(xml_modelParameters, (0, _modelParametersJs.GrainSize).tagName);
     let attributes = (0, _xmlJs.getAttributes)(xml_grainSize);
@@ -1723,17 +1833,18 @@ let modelParameters;
     let xml_energyAboveTheTopHill = (0, _xmlJs.getSingularElement)(xml_modelParameters, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
     let energyAboveTheTopHill = new (0, _modelParametersJs.EnergyAboveTheTopHill)((0, _xmlJs.getAttributes)(xml_energyAboveTheTopHill), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_energyAboveTheTopHill))));
     modelParameters = new (0, _modelParametersJs.ModelParameters)(grainSize, energyAboveTheTopHill);
+    return modelParametersDiv;
 }
-let control;
 /**
- * Parses xml to initialise control.
- * @param {XMLDocument} xml The XML document.
- */ function initControl(xml) {
+ * Parses xml to initialise controls.
+ * @param xml The XML document.
+ * @returns The controls div.
+ */ function processControl(xml) {
     console.log((0, _controlJs.Control).tagName);
+    // Create div to contain the controls.
+    let controlsDiv = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
-    // Set control_title.
-    let control_title = document.getElementById("control_title");
-    if (control_title != null) control_title.innerHTML = "Control";
     // me:testDOS
     let xml_testDOS = xml_control.getElementsByTagName((0, _controlJs.TestDOS).tagName);
     let testDOS;
@@ -1807,6 +1918,7 @@ let control;
         diagramEnergyOffset = new (0, _controlJs.DiagramEnergyOffset)((0, _xmlJs.getAttributes)(xml_diagramEnergyOffset[0]), value);
     } else console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
     control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control), testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
+    return controlsDiv;
 }
 /**
  * Create a diagram.
@@ -2305,11 +2417,11 @@ let control;
     });
     reactionList = (0, _xmlJs.getTag)(reactionList, "reactionList", undefined, pad, true);
     // Create me.Conditions
-    //    let xml_conditions: string = conditions.toXML(pad, pad);
+    let xml_conditions = conditions.toXML(pad, pad);
     // Create modelParameters
-    //   let xml_modelParameters: string = modelParameters.toXML(pad, pad);
+    let xml_modelParameters = modelParameters.toXML(pad, pad);
     // create me.control
-    //   let xml_control: string = control.toXML(pad, pad);
+    let xml_control = control.toXML(pad, pad);
     // Create a new Blob object from the data
     let blob = new Blob([
         moleculeList,
@@ -2823,7 +2935,11 @@ function getCollapsibleDiv(content, buttonLabel, buttonId, buttonFontSize, margi
     let button = document.createElement("button");
     if (buttonId != undefined) button.id = buttonId;
     button.className = "collapsible";
-    button.innerText = buttonLabel;
+    button.innerText = buttonLabel + " \u25BC";
+    button.addEventListener("click", function() {
+        if (button.innerText.includes("\u25BC")) button.innerText = buttonLabel + " \u25B2"; // Change to up content is expanded
+        else button.innerText = buttonLabel + " \u25BC"; // Change to down arrow when content is collapsed
+    });
     if (buttonFontSize != undefined) button.style.fontSize = buttonFontSize;
     if (marginLeft != undefined) button.style.marginLeft = marginLeft;
     if (marginTop != undefined) button.style.marginTop = marginTop;
@@ -4589,7 +4705,7 @@ parcelHelpers.defineInteropFlag(exports);
 /**
  * A class for representing a Pressure and Temperature pair with optional BathGas and ExperimentRate.
  * Can there be multiple BathGases and ExperimentRates?
- */ parcelHelpers.export(exports, "PT", ()=>PT);
+ */ parcelHelpers.export(exports, "PTpair", ()=>PTpair);
 /**
  * A class for representing a set of Pressure and Temperature pairs.
  */ parcelHelpers.export(exports, "PTs", ()=>PTs);
@@ -4606,13 +4722,8 @@ class BathGas extends (0, _xmlJs.StringNode) {
     /**
      * @param attributes The attributes.
      * @param moleculeID The moleculeID.
-     * @param molecules The molecules.
-     */ constructor(attributes, moleculeID, molecules){
+     */ constructor(attributes, moleculeID){
         super(attributes, BathGas.tagName, moleculeID);
-        this.molecules = molecules;
-    }
-    getMolecule() {
-        return this.molecules.get(this.value);
     }
 }
 class ExperimentRate extends (0, _xmlJs.NumberNode) {
@@ -4627,8 +4738,22 @@ class ExperimentRate extends (0, _xmlJs.NumberNode) {
      */ constructor(attributes, value){
         super(attributes, ExperimentRate.tagName, value);
     }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) return parseFloat(error);
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+    }
 }
-class PT extends (0, _xmlJs.NodeWithNodes) {
+class PTpair extends (0, _xmlJs.NodeWithNodes) {
     static{
         /**
      * The tag name.
@@ -4639,7 +4764,7 @@ class PT extends (0, _xmlJs.NodeWithNodes) {
      * @param bathGas The bath gas.
      * @param experimentRate The experiment rate.
      */ constructor(attributes, bathGas, experimentRate){
-        super(attributes, PT.tagName);
+        super(attributes, PTpair.tagName);
         this.index = new Map();
         if (bathGas) {
             this.index.set(BathGas.tagName, this.nodes.size);
@@ -4722,17 +4847,17 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
      */ this.tagName = "me:PTs";
     }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PT[]} pTs The PTs.
+     * @param attributes The attributes.
+     * @param pTs The PTs.
      */ constructor(attributes, pTs){
         super(attributes, PTs.tagName);
-        pTs.forEach((pTpair)=>{
+        if (pTs) pTs.forEach((pTpair)=>{
             this.addNode(pTpair);
         });
     }
     /**
-     * @param index The index of the PT pair to return.
-     * @returns The PT pair at the given index.
+     * @param index 
+     * @returns The PT pair at the given index or undefined if the index is out of range.
      */ getPTpair(index) {
         return this.nodes.get(index);
     }
@@ -4762,18 +4887,47 @@ class Conditions extends (0, _xmlJs.NodeWithNodes) {
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */ constructor(attributes, bathGas, pTs){
         super(attributes, Conditions.tagName);
-        this.addNode(bathGas);
-        this.addNode(pTs);
+        this.index = new Map();
+        if (bathGas) {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+        if (pTs) {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
     /**
      * @returns The bath gas.
      */ getBathGas() {
-        return this.nodes.get(0);
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) return this.nodes.get(i);
+    }
+    /**
+     * @param bathGas The bath gas.
+     */ setBathGas(bathGas) {
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) this.nodes.set(i, bathGas);
+        else {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
     }
     /**
      * @returns The Pressure and Temperature pairs.
      */ getPTs() {
-        return this.nodes.get(1);
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) return this.nodes.get(i);
+    }
+    /**
+     * @param pTs The PTs.
+     */ setPTs(pTs) {
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) this.nodes.set(i, pTs);
+        else {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
 }
 

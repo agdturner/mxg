@@ -29,7 +29,7 @@ import {
 } from './canvas.js';
 
 import {
-    BathGas, Conditions, ExperimentRate, PT, PTs
+    BathGas, Conditions, ExperimentRate, PTpair, PTs
 } from './conditions.js';
 
 import {
@@ -99,6 +99,21 @@ let minMoleculeEnergy: number = Infinity;
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
 let reactions: Map<string, Reaction> = new Map();
+
+/**
+ * The conditions.
+ */
+let conditions: Conditions;
+
+/**
+ * The model parameters.
+ */
+let modelParameters: ModelParameters;
+
+/**
+ * The control.
+ */
+let control: Control;
 
 /**
  * The filename of the mesmer input file loaded.
@@ -272,37 +287,53 @@ function parse(xml: XMLDocument) {
         });
 
         // Create a collapsible div for molecules
-        let moleculesElement: HTMLElement = document.getElementById("molecules") as HTMLElement;
-        let moleculeListElement = processMoleculeList(xml);
-        moleculesElement.appendChild(getCollapsibleDiv(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
-
+        let moleculesElement: HTMLElement | null = document.getElementById("molecules");
+        if (moleculesElement == null) {
+            // Create a molecules section from scratch?
+        } else {
+            let moleculeListElement: HTMLDivElement = processMoleculeList(xml);
+            moleculesElement.appendChild(getCollapsibleDiv(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin1, marginTop, marginBottom, "moleculesList"));
+        }
         // Create a collapsible div for reactions
-        let reactionsElement: HTMLElement = document.getElementById("reactions") as HTMLElement;
-        let reactionListElement = processReactionList(xml);
-        reactionsElement.appendChild(getCollapsibleDiv(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
-
+        let reactionsElement: HTMLElement | null = document.getElementById("reactions");
+        if (reactionsElement == null) {
+            // Create a reactions section from scratch?
+        } else {
+            let reactionListElement: HTMLDivElement = processReactionList(xml);
+            reactionsElement.appendChild(getCollapsibleDiv(reactionListElement, "Reactions", "reactions_button", fontSize1, margin1, marginTop, marginBottom, "reactionsList"));
+        }
         // Display reaction diagram. 
         displayReactionsDiagram();
 
+        // Create a collapsible div for conditions
+        let conditionsElement: HTMLElement | null = document.getElementById("conditions");
+        if (conditionsElement == null) {
+            // Create a conditions section from scratch?
+        } else {
+            let conditionsListElement: HTMLDivElement = processConditions(xml);
+            conditionsElement.appendChild(getCollapsibleDiv(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin1, marginTop, marginBottom, "conditionsList"));
+        }
+
+        // Create a collapsible div for model parameters
+        let modelParametersElement: HTMLElement | null = document.getElementById("modelParameters");
+        if (modelParametersElement == null) {
+            // Create a model parameters section from scratch?
+        } else {
+            let modelParametersListElement: HTMLDivElement = processModelParameters(xml);
+            modelParametersElement.appendChild(getCollapsibleDiv(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin1, marginTop, marginBottom, "modelParametersList"));
+        }
+
+        // Create a collapsible div for control
+        let controlElement: HTMLElement | null = document.getElementById("control");
+        if (controlElement == null) {
+            // Create a control section from scratch?
+        } else {
+            let controlListElement: HTMLDivElement = processControl(xml);
+            controlElement.appendChild(getCollapsibleDiv(controlListElement, "Control", "control_button", fontSize1, margin1, marginTop, marginBottom, "controlList"));
+        }
         // Collapse and set up action listeners for all collapsible content.
         makeCollapsible();
-
     }
-    /**
-     * Generate conditions table.
-     */
-    //initConditions(xml);
-    //displayConditions();
-    /**
-     * Generate parameters table.
-     */
-    //initModelParameters(xml);
-    //displayModelParameters();
-    /**
-     * Generate control table.
-     */
-    //initControl(xml);
-    //displayControl();
 }
 
 /**
@@ -444,7 +475,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 molecule.setProperties(pl);
                 if (p.dictRef == ZPE.dictRef) {
                     processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, margin4);
-
                 } else if (p.dictRef == RotConsts.dictRef) {
                     processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, margin4);
                 } else {
@@ -971,7 +1001,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 label.textContent = molecule.ref + " role: ";
                 container.appendChild(label);
                 // Create a HTMLSelectElement to select the Role.
-                let options: string[] = ["deficientReactant", "excessReactant"];
+                let options: string[] = ["deficientReactant", "excessReactant", "modelled"];
                 let selectElement: HTMLSelectElement = getSelectElement(options, "Role", molecule.ref + "_" + 'Select_Role');
                 // Set the initial value.
                 selectElement.value = molecule.role;
@@ -1292,71 +1322,159 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
     return reactionListDiv;
 }
 
-let conditions: Conditions;
-
 /**
  * Parse xml to initialise conditions.
- * @param {XMLDocument} xml The XML document.
+ * @param xml The XML document.
+ * @returns The conditions div.
  */
-function initConditions(xml: XMLDocument): void {
+function processConditions(xml: XMLDocument): HTMLDivElement {
     console.log(Conditions.tagName);
+    // Create div to contain the conditions.
+    let conditionsDiv: HTMLDivElement = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_conditions: Element = getSingularElement(xml, Conditions.tagName);
-    // Set conditions_title.
-    conditions_title = document.getElementById("conditions_title");
-    if (conditions_title != null) {
-        conditions_title.innerHTML = "Conditions";
+    conditions = new Conditions(getAttributes(xml_conditions));
+    // Process any "bathGas" element.
+    let xml_bathGases: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(BathGas.tagName);
+    if (xml_bathGases.length > 0) {
+        if (xml_bathGases.length > 1) {
+            throw new Error("Expecting 1 " + BathGas.tagName + " but finding " + xml_bathGases.length + "!");
+        }
+        let attributes: Map<string, string> = getAttributes(xml_bathGases[0]);
+        let moleculeID: string = getNodeValue(getFirstChildNode(xml_bathGases[0]));
+        let bathGas: BathGas = new BathGas(attributes, moleculeID);
+        console.log("bathGas" + bathGas.toString());
+        conditions.setBathGas(bathGas);
+        let bathGasLabel: HTMLLabelElement = document.createElement('label');
+        bathGasLabel.textContent = BathGas.tagName + ": " + bathGas.value;
+        bathGasLabel.style.marginLeft = margin2;
+        bathGasLabel.style.marginTop = marginTop;
+        bathGasLabel.style.marginBottom = marginBottom;
+        conditionsDiv.appendChild(bathGasLabel);
     }
-    // BathGas
-    let xml_bathGas: Element = getFirstElement(xml_conditions, BathGas.tagName);
-    let attributes: Map<string, string> = getAttributes(xml_bathGas);
-    let moleculeID: string = getNodeValue(getFirstChildNode(xml_bathGas));
-    let bathGas: BathGas = new BathGas(attributes, moleculeID, molecules);
     // PTs
-    let xml_PTs: Element = getSingularElement(xml_conditions, 'me:PTs');
-    let xml_PTPairs: HTMLCollectionOf<Element> = xml_PTs.getElementsByTagName(PT.tagName);
-    // Process each PTpair.
-    let pTs: PT[] = [];
-    for (let i = 0; i < xml_PTPairs.length; i++) {
-        // Add optional BathGas
-        let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
-        let pTBathGas: BathGas | undefined;
-        if (xml_bathGass.length > 0) {
-            if (xml_bathGass.length > 1) {
-                console.warn("xml_bathGass.length=" + xml_bathGass.length);
-            }
-            pTBathGas = new BathGas(getAttributes(xml_bathGass[0]), getNodeValue(getFirstChildNode(xml_bathGass[0])), molecules);
-            console.log("pTBathGas" + pTBathGas.toString());
+    let xml_PTss: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(PTs.tagName);
+    if (xml_PTss.length > 0) {
+        if (xml_PTss.length > 1) {
+            throw new Error("Expecting 1 " + PTs.tagName + " but finding " + xml_PTss.length + "!");
         }
-        // Add optional ExperimentRate
-        let xml_experimentRates: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(ExperimentRate.tagName);
-        let experimentRate: ExperimentRate | undefined;
-        if (xml_experimentRates.length > 0) {
-            if (xml_experimentRates.length > 1) {
-                console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
+        let pTsDiv: HTMLDivElement = document.createElement("div");
+        conditionsDiv.appendChild(pTsDiv);
+        let attributes: Map<string, string> = getAttributes(xml_PTss[0]);
+        let xml_PTPairs: HTMLCollectionOf<Element> = xml_PTss[0].getElementsByTagName(PTpair.tagName);
+        if (xml_PTPairs.length == 0) {
+            throw new Error("Expecting 1 or more " + PTpair.tagName + " but finding 0!");
+        } else {
+            let pTs: PTs = new PTs(attributes);
+            for (let i = 0; i < xml_PTPairs.length; i++) {
+                let pTPair = new PTpair(getAttributes(xml_PTPairs[i]));
+                // Create div for the pTPair.
+                let pTPairDiv: HTMLDivElement = document.createElement("div");
+                pTPairDiv.style.marginLeft = margin2;
+                pTPairDiv.style.marginTop = marginTop;
+                pTPairDiv.style.marginBottom = marginBottom;
+                pTsDiv.appendChild(pTPairDiv);
+                // Add optional BathGas
+                let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
+                if (xml_bathGass.length > 0) {
+                    if (xml_bathGass.length > 1) {
+                        console.warn("xml_bathGass.length=" + xml_bathGass.length);
+                    }
+                    let bathGas: BathGas = new BathGas(getAttributes(xml_bathGass[0]), getNodeValue(getFirstChildNode(xml_bathGass[0])));
+                    pTPair.setBathGas(bathGas);
+                    // Create HTMLLabelElement for the BathGas.
+                    let bathGasLabel: HTMLLabelElement = document.createElement('label');
+                    bathGasLabel.textContent = BathGas.tagName + ": " + bathGas.value;
+                    bathGasLabel.style.marginLeft = margin3;
+                    bathGasLabel.style.marginTop = marginTop;
+                    bathGasLabel.style.marginBottom = marginBottom;
+                    pTPairDiv.appendChild(bathGasLabel);
+                }
+                // Add optional ExperimentRate
+                let xml_experimentRates: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(ExperimentRate.tagName);
+                if (xml_experimentRates.length > 0) {
+                    if (xml_experimentRates.length > 1) {
+                        console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
+                    }
+                    let experimentRate: ExperimentRate = new ExperimentRate(getAttributes(xml_experimentRates[0]), parseFloat(getNodeValue(getFirstChildNode(xml_experimentRates[0]))));
+                    pTPair.setExperimentRate(experimentRate);
+                    // Create a new div for the ExperimentRate.
+                    let id = PTpair.tagName + "_" + ExperimentRate.tagName;
+                    let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+                        if (event.target instanceof HTMLInputElement) {
+                            setNumberNode(experimentRate, event.target);
+                        }
+                    }, experimentRate.value.toString(), ExperimentRate.tagName);
+                    inputDiv.style.marginLeft = margin3;
+                    inputDiv.style.marginTop = marginTop;
+                    inputDiv.style.marginBottom = marginBottom;
+                    pTPairDiv.appendChild(inputDiv);
+                }
+                // Create a new input element for the P.
+                let p: number = pTPair.getP();
+                let pId: string = PTpair.tagName + "_" + "P";
+                let t: number = pTPair.getT();
+                let tId: string = PTpair.tagName + "_" + "T";
+                // Create a container div for P, T and units.
+                let containerDiv: HTMLDivElement = document.createElement("div");
+                containerDiv.style.display = 'flex';
+                // Add the P input element to the container.
+                let pInputDiv: HTMLDivElement = getInput("number", pId, (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        pTPair.setP(parseFloat(event.target.value));
+                        console.log("Set P to " + event.target.value);
+                        resizeInputElement(event.target);
+                    }
+                }, p.toString(), "P");
+                let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
+                pInputElement.value = p.toString();
+                resizeInputElement(pInputElement);
+                pInputDiv.style.marginLeft = margin2;
+                pInputDiv.style.marginTop = marginTop;
+                pInputDiv.style.marginBottom = marginBottom;
+                containerDiv.appendChild(pInputDiv);
+                // Add the T input element to the container.
+                let tInputDiv: HTMLDivElement = getInput("number", tId, (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        pTPair.setT(parseFloat(event.target.value));
+                        console.log("Set T to " + event.target.value);
+                    }
+                }, t.toString(), "T");
+                let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
+                tInputElement.value = t.toString();
+                resizeInputElement(tInputElement);
+                tInputDiv.style.marginTop = marginTop;
+                tInputDiv.style.marginBottom = marginBottom;
+                containerDiv.appendChild(tInputDiv);
+                // Add any units to the container.
+                addAnyUnits(undefined, getAttributes(xml_PTPairs[i]), containerDiv, PTpair.tagName, PTpair.tagName);
+                // Append the container div to the pTPairDiv.
+                pTPairDiv.appendChild(containerDiv);
+                // Create a collapsible container for the pTPairs.
+                let buttonId: string = PTpair.tagName + "_" + i;
+                let contentDivId: string = PTpair.tagName + "_" + i + "_";
+                let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(pTPairDiv, PTpair.tagName, buttonId, fontSize2, margin2, marginTop, marginBottom, contentDivId);
+                pTsDiv.appendChild(collapsibleDiv);
+                pTs.addPTpair(pTPair);
             }
-            experimentRate = new ExperimentRate(getAttributes(xml_experimentRates[0]), parseFloat(getNodeValue(getFirstChildNode(xml_experimentRates[0]))));
-            console.log("experimentRate" + experimentRate.toString());
+            conditions.setPTs(pTs);
         }
-        pTs.push(new PT(getAttributes(xml_PTPairs[i]), pTBathGas, experimentRate));
-        //console.log(pTs[i].toString()); // For debugging.
     }
-    conditions = new Conditions(getAttributes(xml_conditions), bathGas, new PTs(getAttributes(xml_PTs), pTs));
+    return conditionsDiv;
 }
-
-let modelParameters: ModelParameters;
 
 /**
  * Parses xml to initialise modelParameters.
  * @param xml The XML document.
  */
-function initModelParameters(xml: XMLDocument): void {
+function processModelParameters(xml: XMLDocument): HTMLDivElement {
     console.log(ModelParameters.tagName);
+    // Create div to contain the modelParameters.
+    let modelParametersDiv: HTMLDivElement = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_modelParameters: Element = getSingularElement(xml, ModelParameters.tagName);
-    // Set modelParameters_title.
-    modelParameters_title = document.getElementById("modelParameters_title");
-    if (modelParameters_title != null) {
-        modelParameters_title.innerHTML = "Model Parameters";
-    }
+
+
     // GrainSize
     let xml_grainSize: Element = getSingularElement(xml_modelParameters, GrainSize.tagName);
     let attributes: Map<string, string> = getAttributes(xml_grainSize);
@@ -1368,22 +1486,22 @@ function initModelParameters(xml: XMLDocument): void {
         parseFloat(getNodeValue(getFirstChildNode(xml_energyAboveTheTopHill))));
 
     modelParameters = new ModelParameters(grainSize, energyAboveTheTopHill);
+    return modelParametersDiv;
 }
 
-let control: Control;
-
 /**
- * Parses xml to initialise control.
- * @param {XMLDocument} xml The XML document.
+ * Parses xml to initialise controls.
+ * @param xml The XML document.
+ * @returns The controls div.
  */
-function initControl(xml: XMLDocument): void {
+function processControl(xml: XMLDocument): HTMLDivElement {
     console.log(Control.tagName);
+    // Create div to contain the controls.
+    let controlsDiv: HTMLDivElement = document.createElement("div");
+    // Get the XML "moleculeList" element.
     let xml_control: Element = getSingularElement(xml, Control.tagName);
-    // Set control_title.
-    let control_title = document.getElementById("control_title");
-    if (control_title != null) {
-        control_title.innerHTML = "Control";
-    }
+
+
     // me:testDOS
     let xml_testDOS: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestDOS.tagName);
     let testDOS: TestDOS | undefined;
@@ -1522,6 +1640,8 @@ function initControl(xml: XMLDocument): void {
     control = new Control(getAttributes(xml_control), testDOS, printSpeciesProfile, testMicroRates, testRateConstant,
         printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE,
         printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset);
+
+    return controlsDiv;
 }
 
 /**
@@ -2045,13 +2165,13 @@ window.saveXML = function () {
     reactionList = getTag(reactionList, "reactionList", undefined, pad, true);
 
     // Create me.Conditions
-    //    let xml_conditions: string = conditions.toXML(pad, pad);
+    let xml_conditions: string = conditions.toXML(pad, pad);
 
     // Create modelParameters
-    //   let xml_modelParameters: string = modelParameters.toXML(pad, pad);
+    let xml_modelParameters: string = modelParameters.toXML(pad, pad);
 
     // create me.control
-    //   let xml_control: string = control.toXML(pad, pad);
+    let xml_control: string = control.toXML(pad, pad);
 
     // Create a new Blob object from the data
     let blob = new Blob([moleculeList, reactionList],

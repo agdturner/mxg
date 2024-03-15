@@ -26,7 +26,14 @@ export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, but
         button.id = buttonId;
     }
     button.className = 'collapsible';
-    button.innerText = buttonLabel;
+    button.innerText = buttonLabel + ' ▼';
+    button.addEventListener('click', function() {
+        if (button.innerText.includes('▼')) {
+            button.innerText = buttonLabel + ' ▲'; // Change to up content is expanded
+        } else {
+            button.innerText = buttonLabel + ' ▼'; // Change to down arrow when content is collapsed
+        }
+    });
     if (buttonFontSize != undefined) {
         button.style.fontSize = buttonFontSize;
     }
