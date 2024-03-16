@@ -6,12 +6,6 @@ const control_js_1 = require("./control.js");
 const modelParameters_js_1 = require("./modelParameters.js");
 const xml_js_1 = require("./xml.js");
 /**
- * The header of the XML file.
- */
-const header = `<?xml version="1.0" encoding="utf-8" ?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
-<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
-/**
  * The title.
  */
 class Title extends xml_js_1.StringNode {
@@ -163,12 +157,30 @@ exports.ReactionList = ReactionList;
 class Mesmer extends xml_js_1.NodeWithNodes {
     static tagName = "me:mesmer";
     /**
+     * The header of the XML file.
+     */
+    static header = `<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>`;
+    /**
      * The index. The keys are the node names and the values are the node indexes.
      */
     index;
-    constructor(attributes, moleculeList, reactionList, conditions, modelParameters, control) {
+    /**
+     * @param attributes The attributes.
+     * @param moleculeList The molecule list.
+     * @param reactionList The reaction list.
+     * @param conditions The conditions.
+     * @param modelParameters The model parameters.
+     * @param control The control.
+     */
+    constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, control) {
         super(attributes, Mesmer.tagName);
         this.index = new Map();
+        if (title != undefined) {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
+        }
         if (moleculeList != undefined) {
             this.index.set(MoleculeList.tagName, this.nodes.size);
             this.addNode(moleculeList);
@@ -188,6 +200,30 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         if (control != undefined) {
             this.index.set(control_js_1.Control.tagName, this.nodes.size);
             this.addNode(control);
+        }
+    }
+    /**
+     * @returns The title.
+     */
+    getTitle() {
+        let i = this.index.get(Title.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the title.
+     * @param title The title.
+     */
+    setTitle(title) {
+        let i = this.index.get(Title.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, title);
+        }
+        else {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
         }
     }
     /**

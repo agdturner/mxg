@@ -107,10 +107,8 @@ export class PTpair extends NodeWithNodes {
     getP(): number {
         if (this.attributes != undefined) {
             let p: string | undefined = this.attributes.get("P");
-            if (p) {
+            if (p != undefined) {
                 return parseFloat(p);
-            } else {
-                throw new Error("P is undefined");
             }
         }
         return NaN;
@@ -131,10 +129,8 @@ export class PTpair extends NodeWithNodes {
     getT(): number {
         if (this.attributes != undefined) {
             let t: string | undefined = this.attributes.get("T");
-            if (t) {
+            if (t != undefined) {
                 return parseFloat(t);
-            } else {
-                throw new Error("T is undefined");
             }
         }
         return NaN;
@@ -224,28 +220,46 @@ export class PTs extends NodeWithNodes {
     }
 
     /**
-     * @param index 
-     * @returns The PT pair at the given index or undefined if the index is out of range.
+     * @param i The index of the PTpair to return. 
+     * @returns The PTpair at the given index or undefined if the index is out of range.
      */
-    getPTpair(index: number): PTpair | undefined {
-        return this.nodes.get(index) as PTpair;
+    getPTpair(i: number): PTpair | undefined {
+        return this.nodes.get(i) as PTpair;
     }
 
     /**
      * Set the PT at the given index.
+     * @param i The index.
      * @returns The PT pairs.
      */
-    setPTpair(index: number, pT: PTpair): void {
-        this.nodes.set(index, pT);
+    setPTpair(i: number, pT: PTpair): void {
+        this.nodes.set(i, pT);
     }
 
     /**
      * Add a PT.
      * @param pTPair The PT to add.
-     * @returns The index of the PT added.
      */
-    addPTpair(pT: PTpair): number {
-        return this.addNode(pT);
+    addPTpair(pT: PTpair): void {
+        this.addNode(pT);
+    }
+
+    /**
+     * Add a PT.
+     * @param pTPair The PT to add.
+     */
+    addPTpairs(pTs: PTpair[]): void {
+        pTs.forEach((pT) => {
+            this.addNode(pT);
+        });
+    }
+
+    /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */
+    removePTpair(i: number): void {
+        this.nodes.delete(i);
     }
 }
 

@@ -1730,6 +1730,11 @@ window.set = setNumberNode;
         let pTsDiv = document.createElement("div");
         conditionsDiv.appendChild(pTsDiv);
         let attributes = (0, _xmlJs.getAttributes)(xml_PTss[0]);
+        // Create a new collapsible div for the PTs.
+        let buttonId = (0, _conditionsJs.PTs).tagName + "_button";
+        let contentDivId = (0, _conditionsJs.PTs).tagName + "_";
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(pTsDiv, (0, _conditionsJs.PTs).tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
+        conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs = xml_PTss[0].getElementsByTagName((0, _conditionsJs.PTpair).tagName);
         if (xml_PTPairs.length == 0) throw new Error("Expecting 1 or more " + (0, _conditionsJs.PTpair).tagName + " but finding 0!");
         else {
@@ -1742,7 +1747,7 @@ window.set = setNumberNode;
                 pTPairDiv.style.marginTop = margin1;
                 pTPairDiv.style.marginBottom = margin1;
                 pTsDiv.appendChild(pTPairDiv);
-                // Add optional BathGas
+                // Add any optional BathGas
                 let xml_bathGass = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.BathGas).tagName);
                 if (xml_bathGass.length > 0) {
                     if (xml_bathGass.length > 1) console.warn("xml_bathGass.length=" + xml_bathGass.length);
@@ -1756,7 +1761,7 @@ window.set = setNumberNode;
                     bathGasLabel.style.marginBottom = margin1;
                     pTPairDiv.appendChild(bathGasLabel);
                 }
-                // Add optional ExperimentRate
+                // Add any optional ExperimentRate
                 let xml_experimentRates = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.ExperimentRate).tagName);
                 if (xml_experimentRates.length > 0) {
                     if (xml_experimentRates.length > 1) console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
@@ -1812,6 +1817,7 @@ window.set = setNumberNode;
                             let inputElement = document.getElementById(tId);
                             inputElement.value = pTPair.getT().toString();
                         }
+                        (0, _htmlJs.resizeInputElement)(event.target);
                     }
                 }, t.toString(), "T");
                 let tInputElement = tInputDiv.querySelector("input");
@@ -1825,13 +1831,161 @@ window.set = setNumberNode;
                 addAnyUnits(undefined, (0, _xmlJs.getAttributes)(xml_PTPairs[i]), containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
                 // Append the container div to the pTPairDiv.
                 pTPairDiv.appendChild(containerDiv);
-                // Create a collapsible container for the pTPairs.
-                let buttonId = (0, _conditionsJs.PTpair).tagName + "_" + i;
-                let contentDivId = (0, _conditionsJs.PTpair).tagName + "_" + i + "_";
-                let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(pTPairDiv, (0, _conditionsJs.PTpair).tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
-                pTsDiv.appendChild(collapsibleDiv);
                 pTs.addPTpair(pTPair);
+                // Add the pTPairDiv to the pTsDiv.
+                pTsDiv.appendChild(pTPairDiv);
             }
+            // Create an add button to add a new PTPair.
+            let addButton = document.createElement("button");
+            addButton.textContent = "Add";
+            addButton.style.marginLeft = margin50;
+            addButton.style.marginTop = margin1;
+            addButton.style.marginBottom = margin1;
+            pTsDiv.appendChild(addButton);
+            // Add event listener to the addButton.
+            addButton.addEventListener("click", ()=>{
+                let pTPairAttributes = new Map();
+                pTPairAttributes.set("units", "Torr");
+                let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
+                // add the new pTPair to the PTs.
+                pTs.addPTpair(pTPair);
+                let pTPairDiv = document.createElement("div");
+                pTPairDiv.style.marginLeft = margin25;
+                pTPairDiv.style.marginTop = margin1;
+                pTPairDiv.style.marginBottom = margin1;
+                pTsDiv.insertBefore(pTPairDiv, addButton);
+                let containerDiv = document.createElement("div");
+                containerDiv.style.display = "flex";
+                let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        if ((0, _utilJs.isNumeric)(event.target.value)) {
+                            pTPair.setP(parseFloat(event.target.value));
+                            console.log("Set P to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = pTPair.getP().toString();
+                        }
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, pTPair.getP().toString(), "P");
+                let pInputElement = pInputDiv.querySelector("input");
+                pInputElement.value = pTPair.getP().toString();
+                (0, _htmlJs.resizeInputElement)(pInputElement);
+                pInputDiv.style.marginLeft = margin25;
+                pInputDiv.style.marginTop = margin1;
+                pInputDiv.style.marginBottom = margin1;
+                containerDiv.appendChild(pInputDiv);
+                let tInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        if ((0, _utilJs.isNumeric)(event.target.value)) {
+                            pTPair.setT(parseFloat(event.target.value));
+                            console.log("Set T to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = pTPair.getT().toString();
+                        }
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, pTPair.getT().toString(), "T");
+                let tInputElement = tInputDiv.querySelector("input");
+                tInputElement.value = pTPair.getT().toString();
+                (0, _htmlJs.resizeInputElement)(tInputElement);
+                tInputDiv.style.marginLeft = margin5;
+                tInputDiv.style.marginTop = margin1;
+                tInputDiv.style.marginBottom = margin1;
+                containerDiv.appendChild(tInputDiv);
+                addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
+                pTPairDiv.appendChild(containerDiv);
+            });
+            // Create an add multiple button to add multiple PTPairs.
+            let addMultipleButton = document.createElement("button");
+            addMultipleButton.textContent = "Add from spreadsheet";
+            addMultipleButton.style.marginLeft = margin50;
+            addMultipleButton.style.marginTop = margin1;
+            addMultipleButton.style.marginBottom = margin1;
+            pTsDiv.appendChild(addMultipleButton);
+            // Add event listener to the addMultipleButton.
+            addMultipleButton.addEventListener("click", ()=>{
+                // Add a new text input for the user to paste the PTPairs.
+                let inputDiv = document.createElement("div");
+                inputDiv.style.display = "flex";
+                let inputElement = document.createElement("input");
+                inputElement.type = "text";
+                inputElement.style.marginLeft = margin50;
+                inputElement.style.marginTop = margin1;
+                inputElement.style.marginBottom = margin1;
+                inputDiv.appendChild(inputElement);
+                pTsDiv.insertBefore(inputDiv, addButton);
+                // Add an event listener to the inputElement.
+                inputElement.addEventListener("change", ()=>{
+                    console.log("inputElement.value=" + inputElement.value);
+                    console.log("inputElement.value.length=" + inputElement.value.length);
+                    if (inputElement.value.length > 0) {
+                        let pTPairsArray = inputElement.value.split(" ");
+                        console.log("pTPairsArray.length=" + pTPairsArray.length);
+                        for(let i = 0; i < pTPairsArray.length; i++){
+                            let pTPairAttributes = new Map();
+                            pTPairAttributes.set("units", "Torr");
+                            let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
+                            let pTPairArray = pTPairsArray[i].split("	");
+                            if (pTPairArray.length == 2) {
+                                let p = parseFloat(pTPairArray[0]);
+                                let t = parseFloat(pTPairArray[1]);
+                                pTPair.setP(p);
+                                pTPair.setT(t);
+                                console.log("pTPair=" + pTPair);
+                            } else console.warn("pTPairArray.length=" + pTPairArray.length);
+                            let containerDiv = document.createElement("div");
+                            containerDiv.style.display = "flex";
+                            containerDiv.style.marginLeft = margin50;
+                            let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
+                                if (event.target instanceof HTMLInputElement) {
+                                    if ((0, _utilJs.isNumeric)(event.target.value)) {
+                                        pTPair.setP(parseFloat(event.target.value));
+                                        console.log("Set P to " + event.target.value);
+                                    } else {
+                                        alert("Value is not numeric, resetting...");
+                                        event.target.value = pTPair.getP().toString();
+                                    }
+                                    (0, _htmlJs.resizeInputElement)(event.target);
+                                }
+                            }, pTPair.getP().toString(), "P");
+                            let pInputElement = pInputDiv.querySelector("input");
+                            pInputElement.value = pTPair.getP().toString();
+                            (0, _htmlJs.resizeInputElement)(pInputElement);
+                            pInputDiv.style.marginTop = margin1;
+                            pInputDiv.style.marginBottom = margin1;
+                            containerDiv.appendChild(pInputDiv);
+                            let tInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", (event)=>{
+                                if (event.target instanceof HTMLInputElement) {
+                                    if ((0, _utilJs.isNumeric)(event.target.value)) {
+                                        pTPair.setT(parseFloat(event.target.value));
+                                        console.log("Set T to " + event.target.value);
+                                    } else {
+                                        alert("Value is not numeric, resetting...");
+                                        event.target.value = pTPair.getT().toString();
+                                    }
+                                    (0, _htmlJs.resizeInputElement)(event.target);
+                                }
+                            }, pTPair.getT().toString(), "T");
+                            let tInputElement = tInputDiv.querySelector("input");
+                            tInputElement.value = pTPair.getT().toString();
+                            (0, _htmlJs.resizeInputElement)(tInputElement);
+                            tInputDiv.style.marginLeft = margin5;
+                            tInputDiv.style.marginTop = margin1;
+                            tInputDiv.style.marginBottom = margin1;
+                            containerDiv.appendChild(tInputDiv);
+                            addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
+                            console.log(addButton); // Check the value of addButton
+                            console.log(pTsDiv); // Check the value of pTsDiv
+                            pTsDiv.insertBefore(containerDiv, addButton);
+                            pTs.addPTpair(pTPair);
+                        }
+                        //pTs.addPTpairs(pTPairs);
+                        pTsDiv.removeChild(inputDiv);
+                    }
+                });
+            });
             conditions.setPTs(pTs);
         }
     }
@@ -2457,50 +2611,20 @@ window.set = setNumberNode;
  */ window.saveXML = function() {
     console.log("saveXML");
     const pad = "  ";
-    /*
-    const padding2: string = pad.repeat(2);
-
-    // Create moleculeList.
-    let moleculeList: string = "";
-    molecules.forEach(function (molecule, id) {
-        moleculeList += molecule.toXML(pad, padding2);
-        //moleculeList += molecule.toXML("molecule", pad, level);
-    });
-    moleculeList = getTag(moleculeList, "moleculeList", undefined, pad, true);
-
-    // Create reactionList.
-    let reactionList: string = "";
-    reactions.forEach(function (reaction, id) {
-        reactionList += reaction.toXML(pad, padding2);
-        //reactionList += reaction.toXML("reaction", pad, level);
-    });
-    reactionList = getTag(reactionList, "reactionList", undefined, pad, true);
-
-    // Create me.Conditions
-    let xml_conditions: string = conditions.toXML(pad, pad);
-
-    // Create modelParameters
-    let xml_modelParameters: string = modelParameters.toXML(pad, pad);
-
-    // create me.control
-    let xml_control: string = control.toXML(pad, pad);
-*/ // Create a new Blob object from the data
+    // Create a Blob object from the data
     let blob = new Blob([
         (0, _mesmerJs.Mesmer).header,
         mesmer.toXML(pad, pad)
     ], {
         type: "text/plain"
     });
-    //     let blob = new Blob([moleculeList, reactionList,
-    //         xml_conditions, xml_modelParameters, xml_control],
-    //         { type: "text/plain" });
     // Create a new object URL for the blob
     let url = URL.createObjectURL(blob);
     // Create a new 'a' element
     let a = document.createElement("a");
     // Set the href and download attributes for the 'a' element
     a.href = url;
-    a.download = input_xml_filename; // Replace with your desired filename
+    a.download = input_xml_filename; // Replace with the desired filename...
     // Append the 'a' element to the body and click it to start the download
     document.body.appendChild(a);
     a.click();
@@ -4842,8 +4966,7 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
      */ getP() {
         if (this.attributes != undefined) {
             let p = this.attributes.get("P");
-            if (p) return parseFloat(p);
-            else throw new Error("P is undefined");
+            if (p != undefined) return parseFloat(p);
         }
         return NaN;
     }
@@ -4857,8 +4980,7 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
      */ getT() {
         if (this.attributes != undefined) {
             let t = this.attributes.get("T");
-            if (t) return parseFloat(t);
-            else throw new Error("T is undefined");
+            if (t != undefined) return parseFloat(t);
         }
         return NaN;
     }
@@ -4918,23 +5040,37 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
         });
     }
     /**
-     * @param index 
-     * @returns The PT pair at the given index or undefined if the index is out of range.
-     */ getPTpair(index) {
-        return this.nodes.get(index);
+     * @param i The index of the PTpair to return. 
+     * @returns The PTpair at the given index or undefined if the index is out of range.
+     */ getPTpair(i) {
+        return this.nodes.get(i);
     }
     /**
      * Set the PT at the given index.
+     * @param i The index.
      * @returns The PT pairs.
-     */ setPTpair(index, pT) {
-        this.nodes.set(index, pT);
+     */ setPTpair(i, pT) {
+        this.nodes.set(i, pT);
     }
     /**
      * Add a PT.
      * @param pTPair The PT to add.
-     * @returns The index of the PT added.
      */ addPTpair(pT) {
-        return this.addNode(pT);
+        this.addNode(pT);
+    }
+    /**
+     * Add a PT.
+     * @param pTPair The PT to add.
+     */ addPTpairs(pTs) {
+        pTs.forEach((pT)=>{
+            this.addNode(pT);
+        });
+    }
+    /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */ removePTpair(i) {
+        this.nodes.delete(i);
     }
 }
 class Conditions extends (0, _xmlJs.NodeWithNodes) {

@@ -1375,6 +1375,11 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         let pTsDiv: HTMLDivElement = document.createElement("div");
         conditionsDiv.appendChild(pTsDiv);
         let attributes: Map<string, string> = getAttributes(xml_PTss[0]);
+        // Create a new collapsible div for the PTs.
+        let buttonId: string = PTs.tagName + "_button";
+        let contentDivId: string = PTs.tagName + "_";
+        let collapsibleDiv = getCollapsibleDiv(pTsDiv, PTs.tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
+        conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs: HTMLCollectionOf<Element> = xml_PTss[0].getElementsByTagName(PTpair.tagName);
         if (xml_PTPairs.length == 0) {
             throw new Error("Expecting 1 or more " + PTpair.tagName + " but finding 0!");
@@ -1388,7 +1393,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 pTPairDiv.style.marginTop = margin1;
                 pTPairDiv.style.marginBottom = margin1;
                 pTsDiv.appendChild(pTPairDiv);
-                // Add optional BathGas
+                // Add any optional BathGas
                 let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
                 if (xml_bathGass.length > 0) {
                     if (xml_bathGass.length > 1) {
@@ -1404,7 +1409,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                     bathGasLabel.style.marginBottom = margin1;
                     pTPairDiv.appendChild(bathGasLabel);
                 }
-                // Add optional ExperimentRate
+                // Add any optional ExperimentRate
                 let xml_experimentRates: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(ExperimentRate.tagName);
                 if (xml_experimentRates.length > 0) {
                     if (xml_experimentRates.length > 1) {
@@ -1464,6 +1469,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                             let inputElement = document.getElementById(tId) as HTMLInputElement;
                             inputElement.value = pTPair.getT().toString();
                         }
+                        resizeInputElement(event.target);
                     }
                 }, t.toString(), "T");
                 let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
@@ -1477,13 +1483,163 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 addAnyUnits(undefined, getAttributes(xml_PTPairs[i]), containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
                 // Append the container div to the pTPairDiv.
                 pTPairDiv.appendChild(containerDiv);
-                // Create a collapsible container for the pTPairs.
-                let buttonId: string = PTpair.tagName + "_" + i;
-                let contentDivId: string = PTpair.tagName + "_" + i + "_";
-                let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(pTPairDiv, PTpair.tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
-                pTsDiv.appendChild(collapsibleDiv);
                 pTs.addPTpair(pTPair);
+                // Add the pTPairDiv to the pTsDiv.
+                pTsDiv.appendChild(pTPairDiv);
             }
+            // Create an add button to add a new PTPair.
+            let addButton: HTMLButtonElement = document.createElement("button");
+            addButton.textContent = "Add";
+            addButton.style.marginLeft = margin50;
+            addButton.style.marginTop = margin1;
+            addButton.style.marginBottom = margin1;
+            pTsDiv.appendChild(addButton);
+            // Add event listener to the addButton.
+            addButton.addEventListener('click', () => {
+                let pTPairAttributes: Map<string, string> = new Map();
+                pTPairAttributes.set("units", "Torr");
+                let pTPair: PTpair = new PTpair(pTPairAttributes);
+                // add the new pTPair to the PTs.
+                pTs.addPTpair(pTPair);
+                let pTPairDiv: HTMLDivElement = document.createElement("div");
+                pTPairDiv.style.marginLeft = margin25;
+                pTPairDiv.style.marginTop = margin1;
+                pTPairDiv.style.marginBottom = margin1;
+                pTsDiv.insertBefore(pTPairDiv, addButton);
+                let containerDiv: HTMLDivElement = document.createElement("div");
+                containerDiv.style.display = 'flex';
+                let pInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "P", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        if (isNumeric(event.target.value)) {
+                            pTPair.setP(parseFloat(event.target.value));
+                            console.log("Set P to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = pTPair.getP().toString();
+                        }
+                        resizeInputElement(event.target);
+                    }
+                }, pTPair.getP().toString(), "P");
+                let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
+                pInputElement.value = pTPair.getP().toString();
+                resizeInputElement(pInputElement);
+                pInputDiv.style.marginLeft = margin25;
+                pInputDiv.style.marginTop = margin1;
+                pInputDiv.style.marginBottom = margin1;
+                containerDiv.appendChild(pInputDiv);
+                let tInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "T", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        if (isNumeric(event.target.value)) {
+                            pTPair.setT(parseFloat(event.target.value));
+                            console.log("Set T to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = pTPair.getT().toString();
+                        }
+                        resizeInputElement(event.target);
+                    }
+                }, pTPair.getT().toString(), "T");
+                let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
+                tInputElement.value = pTPair.getT().toString();
+                resizeInputElement(tInputElement);
+                tInputDiv.style.marginLeft = margin5;
+                tInputDiv.style.marginTop = margin1;
+                tInputDiv.style.marginBottom = margin1;
+                containerDiv.appendChild(tInputDiv);
+                addAnyUnits(undefined, pTPairAttributes, containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
+                pTPairDiv.appendChild(containerDiv);
+            });
+            // Create an add multiple button to add multiple PTPairs.
+            let addMultipleButton: HTMLButtonElement = document.createElement("button");
+            addMultipleButton.textContent = "Add from spreadsheet";
+            addMultipleButton.style.marginLeft = margin50;
+            addMultipleButton.style.marginTop = margin1;
+            addMultipleButton.style.marginBottom = margin1;
+            pTsDiv.appendChild(addMultipleButton);
+            // Add event listener to the addMultipleButton.
+            addMultipleButton.addEventListener('click', () => {
+                // Add a new text input for the user to paste the PTPairs.
+                let inputDiv: HTMLDivElement = document.createElement("div");
+                inputDiv.style.display = 'flex';
+                let inputElement: HTMLInputElement = document.createElement("input");
+                inputElement.type = "text";
+                inputElement.style.marginLeft = margin50;
+                inputElement.style.marginTop = margin1;
+                inputElement.style.marginBottom = margin1;
+                inputDiv.appendChild(inputElement);
+                pTsDiv.insertBefore(inputDiv, addButton);
+                // Add an event listener to the inputElement.
+                inputElement.addEventListener('change', () => {
+                    console.log("inputElement.value=" + inputElement.value);
+                    console.log("inputElement.value.length=" + inputElement.value.length);
+                    if (inputElement.value.length > 0) {
+                        let pTPairsArray: string[] = inputElement.value.split(" ");
+                        console.log("pTPairsArray.length=" + pTPairsArray.length);
+                        for (let i = 0; i < pTPairsArray.length; i++) {
+                            let pTPairAttributes: Map<string, string> = new Map();
+                            pTPairAttributes.set("units", "Torr");
+                            let pTPair: PTpair = new PTpair(pTPairAttributes);
+                            let pTPairArray: string[] = pTPairsArray[i].split("\t");
+                            if (pTPairArray.length == 2) {
+                                let p: number = parseFloat(pTPairArray[0]);
+                                let t: number = parseFloat(pTPairArray[1]);
+                                pTPair.setP(p);
+                                pTPair.setT(t);
+                                console.log("pTPair=" + pTPair);
+                            } else {
+                                console.warn("pTPairArray.length=" + pTPairArray.length);
+                            }
+                            let containerDiv: HTMLDivElement = document.createElement("div");
+                            containerDiv.style.display = 'flex';
+                            containerDiv.style.marginLeft = margin50;
+                            let pInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "P", (event) => {
+                                if (event.target instanceof HTMLInputElement) {
+                                    if (isNumeric(event.target.value)) {
+                                        pTPair.setP(parseFloat(event.target.value));
+                                        console.log("Set P to " + event.target.value);
+                                    } else {
+                                        alert("Value is not numeric, resetting...");
+                                        event.target.value = pTPair.getP().toString();
+                                    }
+                                    resizeInputElement(event.target);
+                                }
+                            }, pTPair.getP().toString(), "P");
+                            let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
+                            pInputElement.value = pTPair.getP().toString();
+                            resizeInputElement(pInputElement);
+                            pInputDiv.style.marginTop = margin1;
+                            pInputDiv.style.marginBottom = margin1;
+                            containerDiv.appendChild(pInputDiv);
+                            let tInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "T", (event) => {
+                                if (event.target instanceof HTMLInputElement) {
+                                    if (isNumeric(event.target.value)) {
+                                        pTPair.setT(parseFloat(event.target.value));
+                                        console.log("Set T to " + event.target.value);
+                                    } else {
+                                        alert("Value is not numeric, resetting...");
+                                        event.target.value = pTPair.getT().toString();
+                                    }
+                                    resizeInputElement(event.target);
+                                }
+                            }, pTPair.getT().toString(), "T");
+                            let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
+                            tInputElement.value = pTPair.getT().toString();
+                            resizeInputElement(tInputElement);
+                            tInputDiv.style.marginLeft = margin5;
+                            tInputDiv.style.marginTop = margin1;
+                            tInputDiv.style.marginBottom = margin1;
+                            containerDiv.appendChild(tInputDiv);
+                            addAnyUnits(undefined, pTPairAttributes, containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
+                            console.log(addButton);  // Check the value of addButton
+                            console.log(pTsDiv);  // Check the value of pTsDiv
+                            pTsDiv.insertBefore(containerDiv, addButton);
+                            pTs.addPTpair(pTPair);
+                        }
+                        //pTs.addPTpairs(pTPairs);
+                        pTsDiv.removeChild(inputDiv);
+                    }
+                });
+            });
             conditions.setPTs(pTs);
         }
     }
@@ -1655,7 +1811,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         if (xml_testMicroRates.length > 1) {
             console.warn("xml_testMicroRates.length=" + xml_testMicroRates.length);
         }
-    }    
+    }
     // me:testRateConstant
     let testRateConstantDiv: HTMLDivElement = document.createElement("div");
     testRateConstantDiv.style.display = 'flex';
@@ -2187,59 +2343,20 @@ function displayReactionsDiagram(): void {
  */
 window.saveXML = function () {
     console.log("saveXML");
-    
     const pad: string = "  ";
-    
-    /*
-    const padding2: string = pad.repeat(2);
-
-    // Create moleculeList.
-    let moleculeList: string = "";
-    molecules.forEach(function (molecule, id) {
-        moleculeList += molecule.toXML(pad, padding2);
-        //moleculeList += molecule.toXML("molecule", pad, level);
-    });
-    moleculeList = getTag(moleculeList, "moleculeList", undefined, pad, true);
-
-    // Create reactionList.
-    let reactionList: string = "";
-    reactions.forEach(function (reaction, id) {
-        reactionList += reaction.toXML(pad, padding2);
-        //reactionList += reaction.toXML("reaction", pad, level);
-    });
-    reactionList = getTag(reactionList, "reactionList", undefined, pad, true);
-
-    // Create me.Conditions
-    let xml_conditions: string = conditions.toXML(pad, pad);
-
-    // Create modelParameters
-    let xml_modelParameters: string = modelParameters.toXML(pad, pad);
-
-    // create me.control
-    let xml_control: string = control.toXML(pad, pad);
-*/
-    // Create a new Blob object from the data
+    // Create a Blob object from the data
     let blob = new Blob([Mesmer.header, mesmer.toXML(pad, pad)],
         { type: "text/plain" });
-    //     let blob = new Blob([moleculeList, reactionList,
-    //         xml_conditions, xml_modelParameters, xml_control],
-    //         { type: "text/plain" });
-
     // Create a new object URL for the blob
     let url = URL.createObjectURL(blob);
-
     // Create a new 'a' element
     let a = document.createElement("a");
-
     // Set the href and download attributes for the 'a' element
     a.href = url;
-    a.download = input_xml_filename; // Replace with your desired filename
-
+    a.download = input_xml_filename; // Replace with the desired filename...
     // Append the 'a' element to the body and click it to start the download
     document.body.appendChild(a);
     a.click();
-
     // Remove the 'a' element after the download starts
     document.body.removeChild(a);
-
 }

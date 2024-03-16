@@ -423,7 +423,6 @@ exports.getAttributes = getAttributes;
  * @throws An error if there is not exactly one element with the given tag name.
  */
 function getSingularElement(xml, tagName) {
-    ;
     let e = xml.getElementsByTagName(tagName);
     if (e.length != 1) {
         throw new Error("Expecting 1 " + tagName + " but finding " + e.length);

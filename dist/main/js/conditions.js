@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Conditions = exports.PTs = exports.PT = exports.ExperimentRate = exports.BathGas = void 0;
+exports.Conditions = exports.PTs = exports.PTpair = exports.ExperimentRate = exports.BathGas = void 0;
 const xml_js_1 = require("./xml.js");
 /**
  * A class for representing a bath gas reaction molecule.
@@ -11,20 +11,11 @@ class BathGas extends xml_js_1.StringNode {
      */
     static tagName = "me:bathGas";
     /**
-     * The molecules.
-     */
-    molecules;
-    /**
      * @param attributes The attributes.
      * @param moleculeID The moleculeID.
-     * @param molecules The molecules.
      */
-    constructor(attributes, moleculeID, molecules) {
+    constructor(attributes, moleculeID) {
         super(attributes, BathGas.tagName, moleculeID);
-        this.molecules = molecules;
-    }
-    getMolecule() {
-        return this.molecules.get(this.value);
     }
 }
 exports.BathGas = BathGas;
@@ -43,13 +34,33 @@ class ExperimentRate extends xml_js_1.NumberNode {
     constructor(attributes, value) {
         super(attributes, ExperimentRate.tagName, value);
     }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */
+    getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) {
+                return parseFloat(error);
+            }
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */
+    setError(error) {
+        if (this.attributes != undefined) {
+            this.attributes.set("error", error.toString());
+        }
+    }
 }
 exports.ExperimentRate = ExperimentRate;
 /**
  * A class for representing a Pressure and Temperature pair with optional BathGas and ExperimentRate.
  * Can there be multiple BathGases and ExperimentRates?
  */
-class PT extends xml_js_1.NodeWithNodes {
+class PTpair extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
@@ -64,7 +75,7 @@ class PT extends xml_js_1.NodeWithNodes {
      * @param experimentRate The experiment rate.
      */
     constructor(attributes, bathGas, experimentRate) {
-        super(attributes, PT.tagName);
+        super(attributes, PTpair.tagName);
         this.index = new Map();
         if (bathGas) {
             this.index.set(BathGas.tagName, this.nodes.size);
@@ -81,11 +92,8 @@ class PT extends xml_js_1.NodeWithNodes {
     getP() {
         if (this.attributes != undefined) {
             let p = this.attributes.get("P");
-            if (p) {
+            if (p != undefined) {
                 return parseFloat(p);
-            }
-            else {
-                throw new Error("P is undefined");
             }
         }
         return NaN;
@@ -104,11 +112,8 @@ class PT extends xml_js_1.NodeWithNodes {
     getT() {
         if (this.attributes != undefined) {
             let t = this.attributes.get("T");
-            if (t) {
+            if (t != undefined) {
                 return parseFloat(t);
-            }
-            else {
-                throw new Error("T is undefined");
             }
         }
         return NaN;
@@ -172,7 +177,7 @@ class PT extends xml_js_1.NodeWithNodes {
         }
     }
 }
-exports.PT = PT;
+exports.PTpair = PTpair;
 /**
  * A class for representing a set of Pressure and Temperature pairs.
  */
@@ -182,36 +187,54 @@ class PTs extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:PTs";
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PT[]} pTs The PTs.
+     * @param attributes The attributes.
+     * @param pTs The PTs.
      */
     constructor(attributes, pTs) {
         super(attributes, PTs.tagName);
-        pTs.forEach((pTpair) => {
-            this.addNode(pTpair);
-        });
+        if (pTs) {
+            pTs.forEach((pTpair) => {
+                this.addNode(pTpair);
+            });
+        }
     }
     /**
-     * @param index The index of the PT pair to return.
-     * @returns The PT pair at the given index.
+     * @param i The index of the PTpair to return.
+     * @returns The PTpair at the given index or undefined if the index is out of range.
      */
-    getPTpair(index) {
-        return this.nodes.get(index);
+    getPTpair(i) {
+        return this.nodes.get(i);
     }
     /**
      * Set the PT at the given index.
+     * @param i The index.
      * @returns The PT pairs.
      */
-    setPTpair(index, pT) {
-        this.nodes.set(index, pT);
+    setPTpair(i, pT) {
+        this.nodes.set(i, pT);
     }
     /**
      * Add a PT.
      * @param pTPair The PT to add.
-     * @returns The index of the PT added.
      */
     addPTpair(pT) {
-        return this.addNode(pT);
+        this.addNode(pT);
+    }
+    /**
+     * Add a PT.
+     * @param pTPair The PT to add.
+     */
+    addPTpairs(pTs) {
+        pTs.forEach((pT) => {
+            this.addNode(pT);
+        });
+    }
+    /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */
+    removePTpair(i) {
+        this.nodes.delete(i);
     }
 }
 exports.PTs = PTs;
@@ -224,26 +247,69 @@ class Conditions extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:conditions";
     /**
+     * The index. The keys are the node names and the values are the node indexes.
+     */
+    index;
+    /**
      * @param attributes The attributes.
      * @param bathGas The bath gas.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
     constructor(attributes, bathGas, pTs) {
         super(attributes, Conditions.tagName);
-        this.addNode(bathGas);
-        this.addNode(pTs);
+        this.index = new Map();
+        if (bathGas) {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+        if (pTs) {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
     /**
      * @returns The bath gas.
      */
     getBathGas() {
-        return this.nodes.get(0);
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param bathGas The bath gas.
+     */
+    setBathGas(bathGas) {
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, bathGas);
+        }
+        else {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
     }
     /**
      * @returns The Pressure and Temperature pairs.
      */
     getPTs() {
-        return this.nodes.get(1);
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param pTs The PTs.
+     */
+    setPTs(pTs) {
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, pTs);
+        }
+        else {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
     }
 }
 exports.Conditions = Conditions;
