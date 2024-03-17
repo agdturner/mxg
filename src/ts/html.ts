@@ -86,7 +86,7 @@ function toggleCollapsible(this: HTMLElement): void {
  * @param labelText The label text.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-export function getInput(type: string, id: string, func: (event: Event) => void, value: string, labelText?: string): HTMLDivElement {
+export function getInput(type: string, id: string, func: (event: Event) => any, value: string, labelText?: string): HTMLDivElement {
     let input: HTMLInputElement = document.createElement('input');
     input.type = type;
     input.id = id;
@@ -103,6 +103,29 @@ export function getInput(type: string, id: string, func: (event: Event) => void,
     container.appendChild(label);
     container.appendChild(input);
     return container;
+}
+
+/**
+ * @param type The input type e.g. "text", "number".
+ * @param id The id of the input.
+ * @param onchange The function called on a change to the input.
+ * @param inputString The value of the input.
+ * @param label The label text.
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @returns An HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
+ */
+export function createInputDiv(type: string, id: string, onchange: (event: Event) => any, inputString: string, label: string, 
+    marginLeft: string, marginTop: string, marginBottom: string): HTMLDivElement {
+    let inputDiv: HTMLDivElement = getInput(type, id, onchange, inputString, label);
+    inputDiv.style.marginLeft = marginLeft;
+    inputDiv.style.marginTop = marginTop;
+    inputDiv.style.marginBottom = marginBottom;
+    let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
+    inputElement.value = inputString;
+    resizeInputElement(inputElement);
+    return inputDiv;
 }
 
 /**
@@ -161,4 +184,29 @@ export function getSelectElement(options: string[] | Set<string>, name: string, 
         selectElement.appendChild(optionElement);
     });
     return selectElement;
+}
+
+/**
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @param marginRight The margin right.
+ * @returns An HTMLDivElement with a 'flex' display style.
+ */
+export function createFlexDiv(marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string): HTMLDivElement {
+    let div: HTMLDivElement = document.createElement("div");
+    div.style.display = 'flex';
+    if (marginLeft) {
+        div.style.marginLeft = marginLeft;
+    }
+    if (marginTop) {
+        div.style.marginTop = marginTop;
+    }
+    if (marginBottom) {
+        div.style.marginBottom = marginBottom;
+    }
+    if (marginRight) {
+        div.style.marginRight = marginRight;
+    }
+    return div;
 }

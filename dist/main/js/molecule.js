@@ -820,6 +820,14 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     units;
     /**
+     * The expansionSize stored for convenience, this is also an attribute.
+     */
+    expansionSize;
+    /**
+     * The useSineTerms stored for convenience, this is also an attribute.
+     */
+    useSineTerms;
+    /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */
@@ -840,6 +848,16 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
                 this.nodes.set(this.nodes.size, p);
             });
         }
+        let expansionSize = attributes.get("expansionSize");
+        if (expansionSize == undefined) {
+            throw new Error('expansionSize is undefined');
+        }
+        this.expansionSize = parseFloat(expansionSize);
+        let useSineTerms = attributes.get("useSineTerms");
+        if (useSineTerms == undefined) {
+            throw new Error('useSineTerms is undefined');
+        }
+        this.useSineTerms = (useSineTerms == "yes");
     }
     /**
      * @returns The format of the HinderedRotorPotential.
@@ -873,6 +891,36 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
         this.units = units;
         if (this.attributes != undefined) {
             this.attributes.set("units", units);
+        }
+    }
+    /**
+     * @returns The expansionSize of the HinderedRotorPotential.
+     */
+    getExpansionSize() {
+        return this.expansionSize;
+    }
+    /**
+     * @param expansionSize The expansionSize of the HinderedRotorPotential.
+     */
+    setExpansionSize(expansionSize) {
+        this.expansionSize = expansionSize;
+        if (this.attributes != undefined) {
+            this.attributes.set("expansionSize", expansionSize.toString());
+        }
+    }
+    /**
+     * @returns The useSineTerms of the HinderedRotorPotential.
+     */
+    getUseSineTerms() {
+        return this.useSineTerms;
+    }
+    /**
+     * @param useSineTerms The useSineTerms of the HinderedRotorPotential.
+     */
+    setUseSineTerms(useSineTerms) {
+        this.useSineTerms = useSineTerms;
+        if (this.attributes != undefined) {
+            this.attributes.set("useSineTerms", useSineTerms ? "yes" : "no");
         }
     }
     /**

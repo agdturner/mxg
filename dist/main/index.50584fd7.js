@@ -579,6 +579,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"dPB9w":[function(require,module,exports) {
+//import * as $3Dmol from '3dmol';
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -1115,12 +1116,8 @@ let xml_text;
                 for(let k = 0; k < xml_potentialPoints.length; k++){
                     let potentialPoint = new (0, _moleculeJs.PotentialPoint)((0, _xmlJs.getAttributes)(xml_potentialPoints[k]));
                     potentialPoints.push(potentialPoint);
-                    let potentialPointDiv = document.createElement("div");
-                    potentialPointDiv.style.marginLeft = margin125;
-                    potentialPointDiv.style.marginTop = margin1;
-                    potentialPointDiv.style.marginBottom = margin1;
+                    let potentialPointDiv = (0, _htmlJs.createFlexDiv)(margin125, margin1, margin1);
                     potentialPointCollapsibleDiv.appendChild(potentialPointDiv);
-                    potentialPointDiv.style.display = "flex";
                     // Process angle
                     let angleLabel = document.createElement("label");
                     angleLabel.textContent = "Angle: ";
@@ -1213,7 +1210,28 @@ let xml_text;
         if (xml_ReservoirSize.length > 0) {
             if (xml_ReservoirSize.length != 1) throw new Error("Expecting only 1 reservoirSize, but there are " + xml_ReservoirSize.length);
             let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_ReservoirSize[0]));
-            molecule.setReservoirSize(new (0, _moleculeJs.ReservoirSize)((0, _xmlJs.getAttributes)(xml_ReservoirSize[0]), parseFloat(valueString)));
+            let value = parseFloat(valueString);
+            let reservoirSizeAttributes = (0, _xmlJs.getAttributes)(xml_ReservoirSize[0]);
+            let reservoirSize = new (0, _moleculeJs.ReservoirSize)(reservoirSizeAttributes, value);
+            molecule.setReservoirSize(reservoirSize);
+            // Create a container for the reservoirSize.
+            let container = document.createElement("div");
+            container.style.marginLeft = margin75;
+            container.style.marginTop = margin1;
+            container.style.marginBottom = margin1;
+            let label = document.createElement("label");
+            label.textContent = (0, _moleculeJs.ReservoirSize).tagName + ": ";
+            container.appendChild(label);
+            // Create a new div element for the input.
+            let inputDiv = (0, _htmlJs.getInput)("number", molecule.id + "_" + (0, _moleculeJs.ReservoirSize).tagName, (event)=>{
+                if (event.target instanceof HTMLInputElement) {
+                    reservoirSize.value = parseFloat(event.target.value);
+                    (0, _htmlJs.resizeInputElement)(event.target);
+                }
+            }, valueString, (0, _moleculeJs.ReservoirSize).tagName);
+            (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+            container.appendChild(inputDiv);
+            moleculeDiv.appendChild(container);
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -1222,12 +1240,30 @@ let xml_text;
             moleculeTagNames.forEach((x)=>console.warn(x));
         //throw new Error("Unexpected tags in molecule.");
         }
+        // Create a molstar molecule visualisation
+        let molstarDiv = document.createElement("div");
+        molstarDiv.id = molecule.id + "_molstar";
+        moleculeDiv.appendChild(molstarDiv);
         // Create a new collapsible div for the molecule.
         let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(moleculeDiv, molecule.getLabel(), molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin25, margin1, margin1, molecule.tagName + "_" + molecule.id);
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
     return moleculeListDiv;
+}
+/**
+ * 
+ * @param xml_P 
+ * @param units 
+ * @param molecule 
+ * @param div 
+ * @param margin 
+ */ function createAndProcessProperty(xml_P, units, molecule, div, margin) {
+    let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_P));
+    molecule.setProperties(p);
+    if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_P, div, margin);
+    else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_P, div, margin);
+    else processProperty(p, undefined, molecule, xml_P, div, margin);
 }
 /**
  * Display the XML.
@@ -1948,11 +1984,7 @@ window.set = setNumberNode;
             for(let i = 0; i < xml_PTPairs.length; i++){
                 let pTPair = new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i]));
                 // Create a container div for P, T and units.
-                let containerDiv = document.createElement("div");
-                containerDiv.style.display = "flex";
-                containerDiv.style.marginLeft = margin50;
-                containerDiv.style.marginTop = margin1;
-                containerDiv.style.marginBottom = margin1;
+                let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
                 pTsDiv.appendChild(containerDiv);
                 // Add any optional BathGas
                 let xml_bathGass = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.BathGas).tagName);
@@ -2070,8 +2102,7 @@ window.set = setNumberNode;
                 pTPairDiv.style.marginTop = margin1;
                 pTPairDiv.style.marginBottom = margin1;
                 pTsDiv.insertBefore(pTPairDiv, addButton);
-                let containerDiv = document.createElement("div");
-                containerDiv.style.display = "flex";
+                let containerDiv = (0, _htmlJs.createFlexDiv)();
                 let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         if ((0, _utilJs.isNumeric)(event.target.value)) {
@@ -2123,8 +2154,7 @@ window.set = setNumberNode;
             // Add event listener to the addMultipleButton.
             addMultipleButton.addEventListener("click", ()=>{
                 // Add a new text input for the user to paste the PTPairs.
-                let inputDiv = document.createElement("div");
-                inputDiv.style.display = "flex";
+                let inputDiv = (0, _htmlJs.createFlexDiv)();
                 let inputElement = document.createElement("input");
                 inputElement.type = "text";
                 inputElement.style.marginLeft = margin50;
@@ -2151,9 +2181,7 @@ window.set = setNumberNode;
                                 pTPair.setT(t);
                                 console.log("pTPair=" + pTPair);
                             } else console.warn("pTPairArray.length=" + pTPairArray.length);
-                            let containerDiv = document.createElement("div");
-                            containerDiv.style.display = "flex";
-                            containerDiv.style.marginLeft = margin50;
+                            let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
                             let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
                                 if (event.target instanceof HTMLInputElement) {
                                     if ((0, _utilJs.isNumeric)(event.target.value)) {
@@ -2225,8 +2253,7 @@ window.set = setNumberNode;
         let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_grainSizess[0])));
         let grainSize = new (0, _modelParametersJs.GrainSize)(attributes, value);
         modelParameters.setGrainSize(grainSize);
-        let grainSizeDiv = document.createElement("div");
-        grainSizeDiv.style.display = "flex";
+        let grainSizeDiv = (0, _htmlJs.createFlexDiv)();
         // Create a new div for the grainSize.
         let id = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName;
         let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
@@ -2275,9 +2302,7 @@ window.set = setNumberNode;
     let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
     control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
     // me:testDOS
-    let testDOSDiv = document.createElement("div");
-    testDOSDiv.style.display = "flex";
-    testDOSDiv.style.marginLeft = margin25;
+    let testDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(testDOSDiv);
     let xml_testDOS = xml_control.getElementsByTagName((0, _controlJs.TestDOS).tagName);
     // Create a input checkbox for the TestDOS.
@@ -2299,9 +2324,7 @@ window.set = setNumberNode;
         control.setTestDOS(new (0, _controlJs.TestDOS)());
     } else if (xml_testDOS.length > 1) console.warn("xml_testDOS.length=" + xml_testDOS.length);
     // me:printSpeciesProfile
-    let printSpeciesProfileDiv = document.createElement("div");
-    printSpeciesProfileDiv.style.display = "flex";
-    printSpeciesProfileDiv.style.marginLeft = margin25;
+    let printSpeciesProfileDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printSpeciesProfileDiv);
     let xml_printSpeciesProfile = xml_control.getElementsByTagName((0, _controlJs.PrintSpeciesProfile).tagName);
     // Create a input checkbox for the PrintSpeciesProfile.
@@ -2323,9 +2346,7 @@ window.set = setNumberNode;
         control.setTestDOS(new (0, _controlJs.PrintSpeciesProfile)());
     } else if (xml_testDOS.length > 1) console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
     // me:testMicroRates
-    let testMicroRatesDiv = document.createElement("div");
-    testMicroRatesDiv.style.display = "flex";
-    testMicroRatesDiv.style.marginLeft = margin25;
+    let testMicroRatesDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(testMicroRatesDiv);
     let xml_testMicroRates = xml_control.getElementsByTagName((0, _controlJs.TestMicroRates).tagName);
     // Create a input checkbox for the TestMicroRates.
@@ -2347,9 +2368,7 @@ window.set = setNumberNode;
         control.setTestMicroRates(new (0, _controlJs.TestMicroRates)());
     } else if (xml_testMicroRates.length > 1) console.warn("xml_testMicroRates.length=" + xml_testMicroRates.length);
     // me:testRateConstant
-    let testRateConstantDiv = document.createElement("div");
-    testRateConstantDiv.style.display = "flex";
-    testRateConstantDiv.style.marginLeft = margin25;
+    let testRateConstantDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(testRateConstantDiv);
     let xml_testRateConstant = xml_control.getElementsByTagName((0, _controlJs.TestRateConstant).tagName);
     // Create a input checkbox for the TestRateConstant.
@@ -2371,9 +2390,7 @@ window.set = setNumberNode;
         control.setTestRateConstant(new (0, _controlJs.TestRateConstant)());
     } else if (xml_testRateConstant.length > 1) console.warn("xml_testRateConstant.length=" + xml_testRateConstant.length);
     // me:printGrainDOS
-    let printGrainDOSDiv = document.createElement("div");
-    printGrainDOSDiv.style.display = "flex";
-    printGrainDOSDiv.style.marginLeft = margin25;
+    let printGrainDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainDOSDiv);
     let xml_printGrainDOS = xml_control.getElementsByTagName((0, _controlJs.PrintGrainDOS).tagName);
     // Create a input checkbox for the PrintGrainDOS.
@@ -2395,9 +2412,7 @@ window.set = setNumberNode;
         control.setPrintGrainDOS(new (0, _controlJs.PrintGrainDOS)());
     } else if (xml_printGrainDOS.length > 1) console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
     // me:printCellDOS
-    let printCellDOSDiv = document.createElement("div");
-    printCellDOSDiv.style.display = "flex";
-    printCellDOSDiv.style.marginLeft = margin25;
+    let printCellDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printCellDOSDiv);
     let xml_printCellDOS = xml_control.getElementsByTagName((0, _controlJs.PrintCellDOS).tagName);
     // Create a input checkbox for the PrintCellDOS.
@@ -2419,9 +2434,7 @@ window.set = setNumberNode;
         control.setPrintCellDOS(new (0, _controlJs.PrintCellDOS)());
     } else if (xml_printCellDOS.length > 1) console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
     // me:printReactionOperatorColumnSums
-    let printReactionOperatorColumnSumsDiv = document.createElement("div");
-    printReactionOperatorColumnSumsDiv.style.display = "flex";
-    printReactionOperatorColumnSumsDiv.style.marginLeft = margin25;
+    let printReactionOperatorColumnSumsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printReactionOperatorColumnSumsDiv);
     let xml_printReactionOperatorColumnSums = xml_control.getElementsByTagName((0, _controlJs.PrintReactionOperatorColumnSums).tagName);
     // Create a input checkbox for the PrintReactionOperatorColumnSums.
@@ -2443,9 +2456,7 @@ window.set = setNumberNode;
         control.setPrintReactionOperatorColumnSums(new (0, _controlJs.PrintReactionOperatorColumnSums)());
     } else if (xml_printReactionOperatorColumnSums.length > 1) console.warn("xml_printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
     // me:printTunnellingCoefficients
-    let printTunnellingCoefficientsDiv = document.createElement("div");
-    printTunnellingCoefficientsDiv.style.display = "flex";
-    printTunnellingCoefficientsDiv.style.marginLeft = margin25;
+    let printTunnellingCoefficientsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printTunnellingCoefficientsDiv);
     let xml_printTunnellingCoefficients = xml_control.getElementsByTagName((0, _controlJs.PrintTunnellingCoefficients).tagName);
     // Create a input checkbox for the PrintTunnellingCoefficients.
@@ -2467,9 +2478,7 @@ window.set = setNumberNode;
         control.setPrintTunnellingCoefficients(new (0, _controlJs.PrintTunnellingCoefficients)());
     } else if (xml_printTunnellingCoefficients.length > 1) console.warn("xml_printTunnellingCoefficients.length=" + xml_printTunnellingCoefficients.length);
     // me:printGrainkfE
-    let printGrainkfEDiv = document.createElement("div");
-    printGrainkfEDiv.style.display = "flex";
-    printGrainkfEDiv.style.marginLeft = margin25;
+    let printGrainkfEDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainkfEDiv);
     let xml_printGrainkfE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkfE).tagName);
     // Create a input checkbox for the PrintGrainkfE.
@@ -2487,9 +2496,7 @@ window.set = setNumberNode;
         }
     });
     // me:printGrainBoltzmann
-    let printGrainBoltzmannDiv = document.createElement("div");
-    printGrainBoltzmannDiv.style.display = "flex";
-    printGrainBoltzmannDiv.style.marginLeft = margin25;
+    let printGrainBoltzmannDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainBoltzmannDiv);
     let xml_printGrainBoltzmann = xml_control.getElementsByTagName((0, _controlJs.PrintGrainBoltzmann).tagName);
     // Create a input checkbox for the PrintGrainBoltzmann.
@@ -2507,9 +2514,7 @@ window.set = setNumberNode;
         }
     });
     // me:printGrainkbE
-    let printGrainkbEDiv = document.createElement("div");
-    printGrainkbEDiv.style.display = "flex";
-    printGrainkbEDiv.style.marginLeft = margin25;
+    let printGrainkbEDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainkbEDiv);
     let xml_printGrainkbE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkbE).tagName);
     // Create a input checkbox for the PrintGrainkbE.
@@ -2595,7 +2600,7 @@ window.set = setNumberNode;
     // 1. Create sets of reactants, end products, intermediate products and transition states.
     // 2. Create maps of orders and energies.
     // 3. Calculate maximum energy.
-    let reactants = new Set();
+    let reactants = [];
     let products = new Set();
     let intProducts = new Set();
     let transitionStates = new Set();
@@ -2610,7 +2615,7 @@ window.set = setNumberNode;
         //console.log("reactant=" + reactant);
         let reactantsLabel = reaction.getReactantsLabel();
         if (reactantsLabel != undefined) {
-            reactants.add(reactantsLabel);
+            reactants.push(reactantsLabel);
             if (products.has(reactantsLabel)) intProducts.add(reactantsLabel);
             let energy = reaction.getReactantsEnergy(molecules);
             energyMin = Math.min(energyMin, energy);
@@ -3310,6 +3315,17 @@ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */ parcelHelpers.export(exports, "getInput", ()=>getInput);
 /**
+ * @param type The input type e.g. "text", "number".
+ * @param id The id of the input.
+ * @param onchange The function called on a change to the input.
+ * @param inputString The value of the input.
+ * @param label The label text.
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @returns An HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
+ */ parcelHelpers.export(exports, "createInputDiv", ()=>createInputDiv);
+/**
  * Create a self closing tag.
  * @param attributes The attributes.
  * @param tagName The tag name.
@@ -3330,6 +3346,13 @@ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
  * @param id The id.
  * @returns An HTMLSelectElement.
  */ parcelHelpers.export(exports, "getSelectElement", ()=>getSelectElement);
+/**
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @param marginRight The margin right.
+ * @returns An HTMLDivElement with a 'flex' display style.
+ */ parcelHelpers.export(exports, "createFlexDiv", ()=>createFlexDiv);
 function getCollapsibleDiv(content, buttonLabel, buttonId, buttonFontSize, marginLeft, marginTop, marginBottom, contentDivId, contentDivClassName) {
     let contentDiv = document.createElement("div");
     if (contentDivId != undefined) contentDiv.id = contentDivId;
@@ -3382,6 +3405,16 @@ function getInput(type, id, func, value, labelText) {
     container.appendChild(input);
     return container;
 }
+function createInputDiv(type, id, onchange, inputString, label, marginLeft, marginTop, marginBottom) {
+    let inputDiv = getInput(type, id, onchange, inputString, label);
+    inputDiv.style.marginLeft = marginLeft;
+    inputDiv.style.marginTop = marginTop;
+    inputDiv.style.marginBottom = marginBottom;
+    let inputElement = inputDiv.querySelector("input");
+    inputElement.value = inputString;
+    resizeInputElement(inputElement);
+    return inputDiv;
+}
 function getSelfClosingTag(attributes, tagName) {
     let s = "<" + tagName;
     if (attributes) for (let [key, value] of attributes)s += " " + key + '="' + value + '"';
@@ -3406,6 +3439,15 @@ function getSelectElement(options, name, id) {
         selectElement.appendChild(optionElement);
     });
     return selectElement;
+}
+function createFlexDiv(marginLeft, marginTop, marginBottom, marginRight) {
+    let div = document.createElement("div");
+    div.style.display = "flex";
+    if (marginLeft) div.style.marginLeft = marginLeft;
+    if (marginTop) div.style.marginTop = marginTop;
+    if (marginBottom) div.style.marginBottom = marginBottom;
+    if (marginRight) div.style.marginRight = marginRight;
+    return div;
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ahQNx":[function(require,module,exports) {

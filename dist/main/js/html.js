@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
+exports.createFlexDiv = exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInputDiv = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
 /**
  * Create a collapsible div.
  * @param content The content that will be collapsible.
@@ -109,6 +109,28 @@ function getInput(type, id, func, value, labelText) {
 }
 exports.getInput = getInput;
 /**
+ * @param type The input type e.g. "text", "number".
+ * @param id The id of the input.
+ * @param onchange The function called on a change to the input.
+ * @param inputString The value of the input.
+ * @param label The label text.
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @returns An HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
+ */
+function createInputDiv(type, id, onchange, inputString, label, marginLeft, marginTop, marginBottom) {
+    let inputDiv = getInput(type, id, onchange, inputString, label);
+    inputDiv.style.marginLeft = marginLeft;
+    inputDiv.style.marginTop = marginTop;
+    inputDiv.style.marginBottom = marginBottom;
+    let inputElement = inputDiv.querySelector('input');
+    inputElement.value = inputString;
+    resizeInputElement(inputElement);
+    return inputDiv;
+}
+exports.createInputDiv = createInputDiv;
+/**
  * Create a self closing tag.
  * @param attributes The attributes.
  * @param tagName The tag name.
@@ -166,4 +188,29 @@ function getSelectElement(options, name, id) {
     return selectElement;
 }
 exports.getSelectElement = getSelectElement;
+/**
+ * @param marginLeft The margin left.
+ * @param marginTop The margin top.
+ * @param marginBottom The margin bottom.
+ * @param marginRight The margin right.
+ * @returns An HTMLDivElement with a 'flex' display style.
+ */
+function createFlexDiv(marginLeft, marginTop, marginBottom, marginRight) {
+    let div = document.createElement("div");
+    div.style.display = 'flex';
+    if (marginLeft) {
+        div.style.marginLeft = marginLeft;
+    }
+    if (marginTop) {
+        div.style.marginTop = marginTop;
+    }
+    if (marginBottom) {
+        div.style.marginBottom = marginBottom;
+    }
+    if (marginRight) {
+        div.style.marginRight = marginRight;
+    }
+    return div;
+}
+exports.createFlexDiv = createFlexDiv;
 //# sourceMappingURL=html.js.map
