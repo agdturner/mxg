@@ -185,10 +185,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
 });
 /**
+ * Remove a top level element.
+ * @param id The id of the element to remove.
+ */
+function remove(id) {
+    let e = document.getElementById(id);
+    if (e != null) {
+        e.parentNode?.removeChild(e);
+    }
+}
+/**
  * Parse the XML.
  * @param {XMLDocument} xml
  */
 function parse(xml) {
+    console.log("parse: " + xml);
     // Process the XML.
     let xml_mesmer = (0, xml_js_1.getSingularElement)(xml, mesmer_js_1.Mesmer.tagName);
     mesmer = new mesmer_js_1.Mesmer((0, xml_js_1.getAttributes)(xml_mesmer));
@@ -202,87 +213,105 @@ function parse(xml) {
         let titleNode = new mesmer_js_1.Title((0, xml_js_1.getAttributes)(xml_title[0]), title);
         let titleElement = document.getElementById("title");
         mesmer.setTitle(titleNode);
+        let titleDivId = 'titleDivId';
+        // If there is an existing titleDiv remove it.
+        remove(titleDivId);
         // Create a new div element for the input.
-        let divElement = document.createElement("div");
-        divElement.style.marginTop = margin1;
-        divElement.style.marginBottom = margin1;
+        let titleDiv = document.createElement("div");
+        titleDiv.id = titleDivId;
+        titleDiv.style.marginTop = margin1;
+        titleDiv.style.marginBottom = margin1;
         // Create a text node.
         let textNode = document.createTextNode("Title: ");
-        divElement.appendChild(textNode);
+        titleDiv.appendChild(textNode);
         // Create a new input element.
-        let inputElement = document.createElement("input");
-        inputElement.type = "text";
-        inputElement.value = title;
-        inputElement.style.fontSize = fontSize1;
-        divElement.appendChild(inputElement);
-        // Add the new div element to the parent of the titleElement.
-        titleElement.parentNode?.insertBefore(divElement, titleElement);
-        // Remove the original titleElement.
-        titleElement.parentNode?.removeChild(titleElement);
-        (0, html_js_1.resizeInputElement)(inputElement, 0);
-        console.log("inputElement.value=" + inputElement.value);
+        let titleInput = document.createElement("input");
+        titleInput.type = "text";
+        titleInput.value = title;
+        titleInput.style.fontSize = fontSize1;
+        titleDiv.appendChild(titleInput);
         // Add event listener to inputElement.
-        inputElement.addEventListener('change', function () {
-            if (inputElement.value != title) {
-                titleNode.value = inputElement.value;
+        titleInput.addEventListener('change', function () {
+            if (titleInput.value != title) {
+                titleNode.value = titleInput.value;
             }
-            (0, html_js_1.resizeInputElement)(inputElement, 0);
+            (0, html_js_1.resizeInputElement)(titleInput, 0);
         });
-        // Create a collapsible div for molecules
-        let moleculesElement = document.getElementById("molecules");
-        if (moleculesElement == null) {
-            // Create a molecules section from scratch?
-        }
-        else {
-            let moleculeListElement = processMoleculeList(xml);
-            moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)(moleculeListElement, "Molecules", "molecules_button", fontSize1, margin0, margin1, margin1, "moleculesList"));
-            mesmer.setMoleculeList(new mesmer_js_1.MoleculeList((0, xml_js_1.getAttributes)(moleculeListElement), Array.from(molecules.values())));
-        }
-        // Create a collapsible div for reactions
-        let reactionsElement = document.getElementById("reactions");
-        if (reactionsElement == null) {
-            // Create a reactions section from scratch?
-        }
-        else {
-            let reactionListElement = processReactionList(xml);
-            reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(reactionListElement, "Reactions", "reactions_button", fontSize1, margin0, margin1, margin1, "reactionsList"));
-            mesmer.setReactionList(new mesmer_js_1.ReactionList((0, xml_js_1.getAttributes)(reactionListElement), Array.from(reactions.values())));
-        }
-        // Display reaction diagram. 
-        displayReactionsDiagram();
-        // Create a collapsible div for conditions
-        let conditionsElement = document.getElementById("conditions");
-        if (conditionsElement == null) {
-            // Create a conditions section from scratch?
-        }
-        else {
-            let conditionsListElement = processConditions(xml);
-            conditionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin0, margin1, margin1, "conditionsList"));
-            mesmer.setConditions(conditions);
-        }
-        // Create a collapsible div for model parameters
-        let modelParametersElement = document.getElementById("modelParameters");
-        if (modelParametersElement == null) {
-            // Create a model parameters section from scratch?
-        }
-        else {
-            let modelParametersListElement = processModelParameters(xml);
-            modelParametersElement.appendChild((0, html_js_1.getCollapsibleDiv)(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin0, margin1, margin1, "modelParametersList"));
-            mesmer.setModelParameters(modelParameters);
-        }
-        // Create a collapsible div for control
-        let controlElement = document.getElementById("control");
-        if (controlElement == null) {
-            // Create a control section from scratch?
-        }
-        else {
-            let controlListElement = processControl(xml);
-            controlElement.appendChild((0, html_js_1.getCollapsibleDiv)(controlListElement, "Control", "control_button", fontSize1, margin0, margin1, margin1, "controlList"));
-            mesmer.setControl(control);
-        }
-        // Collapse and set up action listeners for all collapsible content.
-        (0, html_js_1.makeCollapsible)();
+        (0, html_js_1.resizeInputElement)(titleInput, 0);
+        console.log("titleInput.value=" + titleInput.value);
+        // Insert.
+        titleElement.parentNode?.insertBefore(titleDiv, titleElement);
     }
+    // Molecules.
+    let moleculesElement = document.getElementById("molecules");
+    let moleculesDivId = 'moleculesDivId';
+    // If there is an existing moleculesDiv remove it.
+    remove(moleculesDivId);
+    if (moleculesElement == null) {
+        // Create a molecules section from scratch?
+    }
+    else {
+        let moleculeDiv = processMoleculeList(xml);
+        moleculeDiv.id = moleculesDivId;
+        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)(moleculeDiv, "Molecules", "molecules_button", fontSize1, margin0, margin1, margin1, moleculesDivId));
+        mesmer.setMoleculeList(new mesmer_js_1.MoleculeList((0, xml_js_1.getAttributes)(moleculeDiv), Array.from(molecules.values())));
+    }
+    // Reactions.
+    let reactionsElement = document.getElementById("reactions");
+    let reactionsDivId = 'reactionsDivId';
+    // If there is an existing reactionsDiv remove it.
+    remove(reactionsDivId);
+    if (reactionsElement == null) {
+        // Create a reactions section from scratch?
+    }
+    else {
+        let reactionDiv = processReactionList(xml);
+        reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(reactionDiv, "Reactions", "reactions_button", fontSize1, margin0, margin1, margin1, reactionsDivId));
+        mesmer.setReactionList(new mesmer_js_1.ReactionList((0, xml_js_1.getAttributes)(reactionDiv), Array.from(reactions.values())));
+    }
+    // Display reaction diagram. 
+    displayReactionsDiagram();
+    // Conditions
+    let conditionsElement = document.getElementById("conditions");
+    let conditionsDivId = 'conditionsDivId';
+    // If there is an existing conditionsDiv remove it.
+    remove(conditionsDivId);
+    if (conditionsElement == null) {
+        // Create a conditions section from scratch?
+    }
+    else {
+        let conditionsListElement = processConditions(xml);
+        conditionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin0, margin1, margin1, conditionsDivId));
+        mesmer.setConditions(conditions);
+    }
+    // Model Parameters.
+    let modelParametersElement = document.getElementById("modelParameters");
+    let modelParametersDivId = 'modelParametersDivId';
+    // If there is an existing modelParametersDiv remove it.
+    remove(modelParametersDivId);
+    if (modelParametersElement == null) {
+        // Create a model parameters section from scratch?
+    }
+    else {
+        let modelParametersListElement = processModelParameters(xml);
+        modelParametersElement.appendChild((0, html_js_1.getCollapsibleDiv)(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin0, margin1, margin1, modelParametersDivId));
+        mesmer.setModelParameters(modelParameters);
+    }
+    // Control.
+    let controlElement = document.getElementById("control");
+    let controlDivId = 'controlDivId';
+    // If there is an existing controlDiv remove it.
+    remove(controlDivId);
+    if (controlElement == null) {
+        // Create a control section from scratch?
+    }
+    else {
+        let controlListElement = processControl(xml);
+        controlElement.appendChild((0, html_js_1.getCollapsibleDiv)(controlListElement, "Control", "control_button", fontSize1, margin0, margin1, margin1, controlDivId));
+        mesmer.setControl(control);
+    }
+    // Initiate action listeners for collapsible content.
+    (0, html_js_1.makeCollapsible)();
 }
 /**
  * Parse XML and create HTMLDivElement for molecules.

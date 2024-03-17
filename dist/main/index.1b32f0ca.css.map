@@ -1,1 +1,1 @@
-{"mappings":"AACA","sources":["src/style.css"],"sourcesContent":["/* All collapsible elements are hidden by default */\n.collapsible + * {\n  display: none;\n}"],"names":[],"version":3,"file":"index.1b32f0ca.css.map"}
+{"mappings":"AACA","sources":["src/style.css"],"sourcesContent":["/* All collapsible elements are hidden by default */\n.collapsible + * {\n  display: none;\n}\n\n/*\n.mol-container {\n  width: 60%;\n  height: 400px;\n  position: relative;\n}\n*/"],"names":[],"version":3,"file":"index.1b32f0ca.css.map"}
