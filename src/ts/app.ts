@@ -71,6 +71,8 @@ let margin5: string = "5px";
 let margin25: string = "25px";
 let margin50: string = "50px";
 let margin75: string = "75px";
+let margin100: string = "100px";
+let margin125: string = "125px";
 
 /**
  * Units for different things.
@@ -523,7 +525,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             processDOSCMethod(dOSCMethod, molecule, margin50, moleculeDiv);
             moleculeTagNames.delete(DOSCMethod.tagName);
         }
-
         // Organise ExtraDOSCMethod.
         let xml_ExtraDOSCMethod = xml_molecules[i].getElementsByTagName(ExtraDOSCMethod.tagName);
         if (xml_ExtraDOSCMethod.length > 0) {
@@ -531,51 +532,244 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_ExtraDOSCMethod.length);
             }
 
-            console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
-
+            //console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
+            
             let extraDOSCMethod: ExtraDOSCMethod = new ExtraDOSCMethod(getAttributes(xml_DOSCMethod[0]));
             // Create a new collapsible div for the ExtraDOSCMethod.
             let extraDOSCMethodDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
             let buttonId: string = molecule.id + "_" + ExtraDOSCMethod.tagName;
             let contentDivId: string = molecule.id + "_" + ExtraDOSCMethod.tagName + "_";
-            let collapsibleDiv: HTMLDivElement = getCollapsibleDiv(extraDOSCMethodDiv, ExtraDOSCMethod.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-            moleculeDiv.appendChild(collapsibleDiv);
+            let extraDOSCMethodCollapsibleDiv: HTMLDivElement = getCollapsibleDiv(extraDOSCMethodDiv, ExtraDOSCMethod.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            moleculeDiv.appendChild(extraDOSCMethodCollapsibleDiv);
             // Read bondRef.
-            let bondRefs: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(BondRef.tagName);
-            let bondRef: BondRef | undefined;
-            if (bondRefs.length > 0) {
-                if (bondRefs.length != 1) {
-                    throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
+            let xml_bondRefs: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(BondRef.tagName);
+            if (xml_bondRefs.length > 0) {
+                if (xml_bondRefs.length != 1) {
+                    throw new Error("Expecting only 1 bondRef, but there are " + xml_bondRefs.length);
                 }
-                bondRef = new BondRef(getAttributes(bondRefs[0]), getNodeValue(getFirstChildNode(bondRefs[0])));
+                let container: HTMLDivElement = document.createElement("div");
+                container.style.marginLeft = margin75;
+                container.style.marginTop = margin1;
+                container.style.marginBottom = margin1;
+                let label: HTMLLabelElement = document.createElement("label");
+                label.textContent = BondRef.tagName + ": ";
+                container.appendChild(label);
+                let bondRef: BondRef = new BondRef(getAttributes(xml_bondRefs[0]), getNodeValue(getFirstChildNode(xml_bondRefs[0])));
                 extraDOSCMethod.setBondRef(bondRef);
+                // Create a HTMLSelectElement to select the bondRef.
+                let bondIds : Set<string> = (molecule.getBonds() as BondArray).getBondIds();
+                let selectElement: HTMLSelectElement = getSelectElement(bondIds, bondRef.value, molecule.id + "_" + BondRef.tagName);
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        bondRef.value = event.target.value;
+                        resizeSelectElement(event.target);
+                    }
+                });
+                resizeSelectElement(selectElement);
+                container.appendChild(selectElement);
+                extraDOSCMethodDiv.appendChild(container);
             }
-            // Read hunderedRotorPotential.
-            let hinderedRotorPotentials: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(HinderedRotorPotential.tagName);
-            let hinderedRotorPotential: HinderedRotorPotential | undefined;
-            if (hinderedRotorPotentials.length > 0) {
-                if (hinderedRotorPotentials.length != 1) {
-                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+            // Read hinderedRotorPotential.
+            let xml_hinderedRotorPotentials: HTMLCollectionOf<Element> = xml_ExtraDOSCMethod[0].getElementsByTagName(HinderedRotorPotential.tagName);
+            if (xml_hinderedRotorPotentials.length > 0) {
+                if (xml_hinderedRotorPotentials.length != 1) {
+                    throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + xml_hinderedRotorPotentials.length);
                 }
+                let hinderedRotorPotentialAttributes: Map<string, string> = getAttributes(xml_hinderedRotorPotentials[0]);
+                let hinderedRotorPotential: HinderedRotorPotential = new HinderedRotorPotential(hinderedRotorPotentialAttributes);
+                // Create a new collapsible div for the HinderedRotorPotential.
+                let hinderedRotorPotentialDiv: HTMLDivElement = document.createElement("div") as HTMLDivElement;
+                let buttonId: string = molecule.id + "_" + HinderedRotorPotential.tagName;
+                let contentDivId: string = molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName;
+                let hinderedRotorPotentialCollapsibleDiv: HTMLDivElement = getCollapsibleDiv(hinderedRotorPotentialDiv, HinderedRotorPotential.tagName, buttonId, fontSize3, margin75, margin1, margin1, contentDivId);
+                //hinderedRotorPotentialCollapsibleDiv.style.marginLeft = margin100;
+                hinderedRotorPotentialCollapsibleDiv.style.marginTop = margin1;
+                hinderedRotorPotentialCollapsibleDiv.style.marginBottom = margin1;
+                extraDOSCMethodDiv.appendChild(hinderedRotorPotentialCollapsibleDiv);
+                // Formats
+                let formatLabel: HTMLLabelElement = document.createElement("label");
+                formatLabel.style.marginLeft = margin100;
+                formatLabel.style.marginTop = margin1;
+                formatLabel.style.marginBottom = margin1;
+                formatLabel.textContent = "Format: ";
+                hinderedRotorPotentialDiv.appendChild(formatLabel);
+                let selectElement: HTMLSelectElement = getSelectElement(HinderedRotorPotential.formats, 
+                    hinderedRotorPotential.format, molecule.id + "_" + HinderedRotorPotential.tagName);
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        hinderedRotorPotential.format = event.target.value;
+                        resizeSelectElement(event.target);
+                    }
+                });
+                resizeSelectElement(selectElement);
+                hinderedRotorPotentialDiv.appendChild(selectElement);
+                // Add any units.
+                let unitsLabel: HTMLLabelElement = document.createElement("label");
+                unitsLabel.textContent = "Units: ";
+                unitsLabel.style.marginLeft = margin2;
+                unitsLabel.style.marginTop = margin1;
+                unitsLabel.style.marginBottom = margin1;
+                hinderedRotorPotentialDiv.appendChild(unitsLabel);
+                addAnyUnits(HinderedRotorPotential.units, hinderedRotorPotentialAttributes, hinderedRotorPotentialDiv, 
+                    molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName, 
+                    HinderedRotorPotential.tagName, margin2, margin1, margin1);
+                // Add expansionSize.
+                let expansionSizeLabel: HTMLLabelElement = document.createElement("label");
+                expansionSizeLabel.style.marginLeft = margin2;
+                expansionSizeLabel.style.marginTop = margin1;
+                expansionSizeLabel.style.marginBottom = margin1;
+                expansionSizeLabel.textContent = "Expansion size: ";
+                hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
+                let expansionSizeInputElement: HTMLInputElement = document.createElement("input");
+                expansionSizeInputElement.type = "number";
+                expansionSizeInputElement.style.marginLeft = margin2;
+                expansionSizeInputElement.style.marginTop = margin1;
+                expansionSizeInputElement.style.marginBottom = margin1;
+                expansionSizeInputElement.id = molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName + "_expansionSize";
+                expansionSizeInputElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the input is a number.
+                        if (isNumeric(event.target.value)) {
+                            hinderedRotorPotential.setExpansionSize(parseInt(event.target.value));
+                        } else {
+                            // Reset the input to the current value.
+                            alert("Expansion size input is not a number, resetting...");
+                            expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                            console.warn("Expansion size input is not a number.");
+                        }
+                        resizeInputElement(expansionSizeInputElement);
+                    }
+                });
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                resizeInputElement(expansionSizeInputElement);
+                hinderedRotorPotentialDiv.appendChild(expansionSizeInputElement);
+                // Add useSineTerms.
+                let useSineTermsLabel: HTMLLabelElement = document.createElement("label");
+                useSineTermsLabel.style.marginLeft = margin2;
+                useSineTermsLabel.style.marginTop = margin1;
+                useSineTermsLabel.style.marginBottom = margin1;
+                useSineTermsLabel.textContent = "Use sine terms: ";
+                hinderedRotorPotentialDiv.appendChild(useSineTermsLabel);
+                let useSineTermsInput: HTMLInputElement = document.createElement("input");
+                useSineTermsInput.type = "checkbox";
+                useSineTermsInput.style.marginLeft = margin2;
+                useSineTermsInput.style.marginTop = margin1;
+                useSineTermsInput.style.marginBottom = margin1;
+                useSineTermsInput.id = molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName + "_useSineTerms";
+                useSineTermsInput.checked = hinderedRotorPotential.getUseSineTerms();
+                useSineTermsInput.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        hinderedRotorPotential.setUseSineTerms(event.target.checked);
+                    }
+                });
+                hinderedRotorPotentialDiv.appendChild(useSineTermsInput);
                 // Load PotentialPoints.
+                // Create a new collapsible div for the potential points.
+                let potentialPointsDiv: HTMLDivElement = document.createElement("div");
+                let potentialPointButtonId: string = molecule.id + "_" + HinderedRotorPotential.tagName + "_" + PotentialPoint.tagName;
+                let potentialPointContentDivId: string = molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName + "_" + PotentialPoint.tagName;
+                let potentialPointCollapsibleDiv: HTMLDivElement = getCollapsibleDiv(potentialPointsDiv, PotentialPoint.tagName,
+                     potentialPointButtonId, fontSize3, margin100, margin1, margin1, potentialPointContentDivId);
+                hinderedRotorPotentialDiv.appendChild(potentialPointCollapsibleDiv);
                 let potentialPoints: PotentialPoint[] = [];
-                let xml_potentialPoints: HTMLCollectionOf<Element> = hinderedRotorPotentials[0].getElementsByTagName(PotentialPoint.tagName);
+                let xml_potentialPoints: HTMLCollectionOf<Element> = xml_hinderedRotorPotentials[0].getElementsByTagName(PotentialPoint.tagName);
                 for (let k = 0; k < xml_potentialPoints.length; k++) {
-                    potentialPoints.push(new PotentialPoint(getAttributes(xml_potentialPoints[k])));
+                    let potentialPoint: PotentialPoint = new PotentialPoint(getAttributes(xml_potentialPoints[k]));
+                    potentialPoints.push(potentialPoint);
+                    let potentialPointDiv: HTMLDivElement = document.createElement("div");
+                    potentialPointDiv.style.marginLeft = margin125;
+                    potentialPointDiv.style.marginTop = margin1;
+                    potentialPointDiv.style.marginBottom = margin1;
+                    potentialPointCollapsibleDiv.appendChild(potentialPointDiv);
+                    potentialPointDiv.style.display = 'flex';
+                    // Process angle
+                    let angleLabel: HTMLLabelElement = document.createElement("label");
+                    angleLabel.textContent = "Angle: ";
+                    potentialPointDiv.appendChild(angleLabel);
+                    let angleInputElement: HTMLInputElement = document.createElement("input");
+                    angleInputElement.type = "number";
+                    angleInputElement.style.marginLeft = margin2;
+                    angleInputElement.style.marginTop = margin1;
+                    angleInputElement.style.marginBottom = margin1;
+                    angleInputElement.id = molecule.id + "_" + PotentialPoint.tagName + "_angle";
+                    angleInputElement.addEventListener('change', (event) => {
+                        if (event.target instanceof HTMLInputElement) {
+                            // Check the input is a number.
+                            if (isNumeric(event.target.value)) {
+                                potentialPoint.setAngle(parseFloat(event.target.value));
+                            } else {
+                                // Reset the input to the current value.
+                                alert("Angle input is not a number, resetting...");
+                                angleInputElement.value = potentialPoint.getAngle().toString();
+                                console.warn("Angle input is not a number.");
+                            }
+                            resizeInputElement(angleInputElement);
+                        }
+                    });
+                    angleInputElement.value = potentialPoint.getAngle().toString();
+                    resizeInputElement(angleInputElement);
+                    potentialPointDiv.appendChild(angleInputElement);
+                    // Create a new div element for the potential.
+                    let potentialLabel: HTMLLabelElement = document.createElement("label");
+                    potentialLabel.style.marginLeft = margin2;
+                    potentialLabel.style.marginTop = margin1;
+                    potentialLabel.style.marginBottom = margin1;
+                    potentialLabel.textContent = "Potential: ";
+                    potentialPointDiv.appendChild(potentialLabel);
+                    let potentialInputElement: HTMLInputElement = document.createElement("input");
+                    potentialInputElement.style.marginLeft = margin2;
+                    potentialInputElement.style.marginTop = margin1;
+                    potentialInputElement.style.marginBottom = margin1;
+                    potentialInputElement.type = "number";
+                    potentialInputElement.id = molecule.id + "_" + PotentialPoint.tagName + "_potential";
+                    potentialInputElement.addEventListener('change', (event) => {
+                        if (event.target instanceof HTMLInputElement) {
+                            // Check the input is a number.
+                            if (isNumeric(event.target.value)) {
+                                potentialPoint.setPotential(parseFloat(event.target.value));
+                            } else {
+                                // Reset the input to the current value.
+                                alert("Potential input is not a number, resetting...");
+                                potentialInputElement.value = potentialPoint.getPotential().toString();
+                                console.warn("Potential input is not a number.");
+                            }
+                            resizeInputElement(potentialInputElement);
+                        }
+                    });
+                    potentialInputElement.value = potentialPoint.getPotential().toString();
+                    resizeInputElement(potentialInputElement);
+                    potentialPointDiv.appendChild(potentialInputElement);
+                    potentialPointsDiv.appendChild(potentialPointDiv);
                 }
-                hinderedRotorPotential = new HinderedRotorPotential(getAttributes(hinderedRotorPotentials[0]), potentialPoints);
+                potentialPointCollapsibleDiv.appendChild(potentialPointsDiv);
+                hinderedRotorPotential.setPotentialPoints(potentialPoints);
                 extraDOSCMethod.setHinderedRotorPotential(hinderedRotorPotential);
             }
             // Read periodicities.
             let xml_periodicities: HTMLCollectionOf<Element> = xml_DOSCMethod[0].getElementsByTagName(Periodicity.tagName);
-            let periodicity: Periodicity | undefined;
             if (xml_periodicities.length > 0) {
                 if (xml_periodicities.length != 1) {
                     throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
                 }
-                periodicity = new Periodicity(getAttributes(xml_periodicities[0]),
-                    parseFloat(getNodeValue(getFirstChildNode(xml_periodicities[0]))));
-                extraDOSCMethod.setPeriodicity(periodicity);
+                let valueString: string = getNodeValue(getFirstChildNode(xml_periodicities[0]));
+                let periodicity: Periodicity = new Periodicity(getAttributes(xml_periodicities[0]), parseFloat(valueString));
+                    extraDOSCMethod.setPeriodicity(periodicity);
+                // Create a container for the periodicity.
+                let container: HTMLDivElement = document.createElement("div");
+                container.style.marginLeft = margin75;
+                container.style.marginTop = margin1;
+                container.style.marginBottom = margin1;
+                let label: HTMLLabelElement = document.createElement("label");
+                label.textContent = Periodicity.tagName + ": ";
+                container.appendChild(label);
+                // Create a new div element for the input.
+                let inputDiv: HTMLDivElement = getInput("number", molecule.id + "_" + Periodicity.tagName, (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        periodicity.value = parseFloat(event.target.value);
+                    }
+                }, valueString, Periodicity.tagName);
+                container.appendChild(inputDiv);
+                extraDOSCMethodDiv.appendChild(container);
             }
             molecule.setExtraDOSCMethod(extraDOSCMethod);
             moleculeTagNames.delete(ExtraDOSCMethod.tagName);
@@ -588,10 +782,9 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             if (xml_ReservoirSize.length != 1) {
                 throw new Error("Expecting only 1 reservoirSize, but there are " + xml_ReservoirSize.length);
             }
-
-            console.warn("ReservoirSize detected: This is not displayed in the GUI - more coding needed!");
-
-            molecule.setReservoirSize(new ReservoirSize(getAttributes(xml_ReservoirSize[0]), parseFloat(getNodeValue(getFirstChildNode(xml_ReservoirSize[0])))));
+            let valueString: string = getNodeValue(getFirstChildNode(xml_ReservoirSize[0]));
+            molecule.setReservoirSize(new ReservoirSize(getAttributes(xml_ReservoirSize[0]), parseFloat(valueString)));
+            
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -793,7 +986,7 @@ function processDOSCMethod(dOSCMethod: DOSCMethod, molecule: Molecule, margin: s
     let container: HTMLDivElement = document.createElement('div');
     container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
-    let options: string[] = ["ClassicalRotors", "QMRotors"];
+    let options: string[] = ["ClassicalRotors", "me:QMRotors", "QMRotors"];
     let selectElement: HTMLSelectElement = getSelectElement(options, "DOSCMethod", molecule.id + "_" + 'Select_DOSCMethod');
     // Set the initial value to the DOSCMethod.
     selectElement.value = dOSCMethod.getXsiType();
@@ -1348,8 +1541,9 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
     // Get the XML "moleculeList" element.
     let xml_conditions: Element = getSingularElement(xml, Conditions.tagName);
     conditions = new Conditions(getAttributes(xml_conditions));
-    // Process any "bathGas" element.
-    let xml_bathGases: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(BathGas.tagName);
+
+    // Process any "bathGas" elements that are immediate children of xml_conditions.
+    let xml_bathGases: Element[] = Array.from(xml_conditions.children).filter(child => child.tagName === BathGas.tagName);
     if (xml_bathGases.length > 0) {
         if (xml_bathGases.length > 1) {
             throw new Error("Expecting 1 " + BathGas.tagName + " but finding " + xml_bathGases.length + "!");
@@ -1359,12 +1553,30 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         let bathGas: BathGas = new BathGas(attributes, moleculeID);
         console.log("bathGas" + bathGas.toString());
         conditions.setBathGas(bathGas);
+        let containerDiv: HTMLDivElement = document.createElement("div");
         let bathGasLabel: HTMLLabelElement = document.createElement('label');
-        bathGasLabel.textContent = BathGas.tagName + ": " + bathGas.value;
-        bathGasLabel.style.marginLeft = margin25;
-        bathGasLabel.style.marginTop = margin1;
-        bathGasLabel.style.marginBottom = margin1;
-        conditionsDiv.appendChild(bathGasLabel);
+            bathGasLabel.textContent = BathGas.tagName + ": ";
+            containerDiv.appendChild(bathGasLabel);
+        // Create a HTMLSelectInput for the BathGas.
+        // Get the ids of all the molecules.
+        let moleculeIDs: Set<string> = new Set(molecules.keys());
+        let selectElement: HTMLSelectElement = getSelectElement(Array.from(moleculeIDs), BathGas.tagName, Conditions.tagName + "_" + BathGas.tagName);
+        // Set the initial value.
+        selectElement.value = bathGas.value;
+        // Add event listener to selectElement.
+        selectElement.addEventListener('change', (event) => {
+            if (event.target instanceof HTMLSelectElement) {
+                bathGas.value = event.target.value;
+                console.log("Set " + PTpair.tagName + "_" + BathGas.tagName + " to " + event.target.value);
+                resizeSelectElement(event.target);
+            }
+        });
+        resizeSelectElement(selectElement);
+        containerDiv.style.marginLeft = margin25;
+        containerDiv.style.marginTop = margin1;
+        containerDiv.style.marginBottom = margin1;
+        containerDiv.appendChild(selectElement);
+        conditionsDiv.appendChild(containerDiv);
     }
     // PTs
     let xml_PTss: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(PTs.tagName);
@@ -1387,27 +1599,42 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
             let pTs: PTs = new PTs(attributes);
             for (let i = 0; i < xml_PTPairs.length; i++) {
                 let pTPair = new PTpair(getAttributes(xml_PTPairs[i]));
-                // Create div for the pTPair.
-                let pTPairDiv: HTMLDivElement = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin25;
-                pTPairDiv.style.marginTop = margin1;
-                pTPairDiv.style.marginBottom = margin1;
-                pTsDiv.appendChild(pTPairDiv);
+                // Create a container div for P, T and units.
+                let containerDiv: HTMLDivElement = document.createElement("div");
+                containerDiv.style.display = 'flex';
+                containerDiv.style.marginLeft = margin50;
+                containerDiv.style.marginTop = margin1;
+                containerDiv.style.marginBottom = margin1;
+                pTsDiv.appendChild(containerDiv);
                 // Add any optional BathGas
                 let xml_bathGass: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(BathGas.tagName);
                 if (xml_bathGass.length > 0) {
                     if (xml_bathGass.length > 1) {
                         console.warn("xml_bathGass.length=" + xml_bathGass.length);
                     }
-                    let bathGas: BathGas = new BathGas(getAttributes(xml_bathGass[0]), getNodeValue(getFirstChildNode(xml_bathGass[0])));
-                    pTPair.setBathGas(bathGas);
-                    // Create HTMLLabelElement for the BathGas.
+                    // Add a label for the BathGas.
                     let bathGasLabel: HTMLLabelElement = document.createElement('label');
-                    bathGasLabel.textContent = BathGas.tagName + ": " + bathGas.value;
-                    bathGasLabel.style.marginLeft = margin50;
-                    bathGasLabel.style.marginTop = margin1;
-                    bathGasLabel.style.marginBottom = margin1;
-                    pTPairDiv.appendChild(bathGasLabel);
+                    bathGasLabel.textContent = BathGas.tagName + ": ";
+                    containerDiv.appendChild(bathGasLabel);
+                    let bathGasValue = getNodeValue(getFirstChildNode(xml_bathGass[0]));
+                    let bathGas: BathGas = new BathGas(getAttributes(xml_bathGass[0]), bathGasValue);
+                    pTPair.setBathGas(bathGas);
+                    // Create a HTMLSelectInput for the BathGas.
+                    // Get the ids of all the molecules.
+                    let moleculeIDs: Set<string> = new Set(molecules.keys());
+                    let selectElement: HTMLSelectElement = getSelectElement(Array.from(moleculeIDs), BathGas.tagName, PTpair.tagName + "_" + BathGas.tagName);
+                    // Set the initial value.
+                    selectElement.value = bathGas.value;
+                    // Add event listener to selectElement.
+                    selectElement.addEventListener('change', (event) => {
+                        if (event.target instanceof HTMLSelectElement) {
+                            bathGas.value = event.target.value;
+                            console.log("Set " + PTpair.tagName + "_" + BathGas.tagName + " to " + event.target.value);
+                            resizeSelectElement(event.target);
+                        }
+                    });
+                    resizeSelectElement(selectElement);
+                    containerDiv.appendChild(selectElement);
                 }
                 // Add any optional ExperimentRate
                 let xml_experimentRates: HTMLCollectionOf<Element> = xml_PTPairs[i].getElementsByTagName(ExperimentRate.tagName);
@@ -1415,7 +1642,8 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                     if (xml_experimentRates.length > 1) {
                         console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
                     }
-                    let experimentRate: ExperimentRate = new ExperimentRate(getAttributes(xml_experimentRates[0]), parseFloat(getNodeValue(getFirstChildNode(xml_experimentRates[0]))));
+                    let valueString: string = getNodeValue(getFirstChildNode(xml_experimentRates[0]));
+                    let experimentRate: ExperimentRate = new ExperimentRate(getAttributes(xml_experimentRates[0]), parseFloat(valueString));
                     pTPair.setExperimentRate(experimentRate);
                     // Create a new div for the ExperimentRate.
                     let id = PTpair.tagName + "_" + ExperimentRate.tagName;
@@ -1424,19 +1652,15 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                             setNumberNode(experimentRate, event.target);
                         }
                     }, experimentRate.value.toString(), ExperimentRate.tagName);
-                    inputDiv.style.marginLeft = margin50;
                     inputDiv.style.marginTop = margin1;
                     inputDiv.style.marginBottom = margin1;
-                    pTPairDiv.appendChild(inputDiv);
+                    containerDiv.appendChild(inputDiv);
                 }
                 // Create a new input element for the P.
                 let p: number = pTPair.getP();
                 let pId: string = PTpair.tagName + "_" + "P";
                 let t: number = pTPair.getT();
                 let tId: string = PTpair.tagName + "_" + "T";
-                // Create a container div for P, T and units.
-                let containerDiv: HTMLDivElement = document.createElement("div");
-                containerDiv.style.display = 'flex';
                 // Add the P input element to the container.
                 let pInputDiv: HTMLDivElement = getInput("number", pId, (event) => {
                     if (event.target instanceof HTMLInputElement) {
@@ -1454,7 +1678,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
                 pInputElement.value = p.toString();
                 resizeInputElement(pInputElement);
-                pInputDiv.style.marginLeft = margin25;
+                pInputDiv.style.marginLeft = margin5;
                 pInputDiv.style.marginTop = margin1;
                 pInputDiv.style.marginBottom = margin1;
                 containerDiv.appendChild(pInputDiv);
@@ -1481,11 +1705,9 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 containerDiv.appendChild(tInputDiv);
                 // Add any units to the container.
                 addAnyUnits(undefined, getAttributes(xml_PTPairs[i]), containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
-                // Append the container div to the pTPairDiv.
-                pTPairDiv.appendChild(containerDiv);
                 pTs.addPTpair(pTPair);
                 // Add the pTPairDiv to the pTsDiv.
-                pTsDiv.appendChild(pTPairDiv);
+                pTsDiv.appendChild(containerDiv);
             }
             // Create an add button to add a new PTPair.
             let addButton: HTMLButtonElement = document.createElement("button");

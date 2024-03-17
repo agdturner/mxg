@@ -616,6 +616,8 @@ let margin5 = "5px";
 let margin25 = "25px";
 let margin50 = "50px";
 let margin75 = "75px";
+let margin100 = "100px";
+let margin125 = "125px";
 /**
  * Units for different things.
  */ let unitsEnergy = [
@@ -981,41 +983,226 @@ let xml_text;
         let xml_ExtraDOSCMethod = xml_molecules[i].getElementsByTagName((0, _moleculeJs.ExtraDOSCMethod).tagName);
         if (xml_ExtraDOSCMethod.length > 0) {
             if (xml_ExtraDOSCMethod.length != 1) throw new Error("Expecting only 1 extra DOSCMethod, but there are " + xml_ExtraDOSCMethod.length);
-            console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
+            //console.warn("ExtraDOSCMethod detected: This is not displayed in the GUI - more coding needed!");
             let extraDOSCMethod = new (0, _moleculeJs.ExtraDOSCMethod)((0, _xmlJs.getAttributes)(xml_DOSCMethod[0]));
             // Create a new collapsible div for the ExtraDOSCMethod.
             let extraDOSCMethodDiv = document.createElement("div");
             let buttonId = molecule.id + "_" + (0, _moleculeJs.ExtraDOSCMethod).tagName;
             let contentDivId = molecule.id + "_" + (0, _moleculeJs.ExtraDOSCMethod).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(extraDOSCMethodDiv, (0, _moleculeJs.ExtraDOSCMethod).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-            moleculeDiv.appendChild(collapsibleDiv);
+            let extraDOSCMethodCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(extraDOSCMethodDiv, (0, _moleculeJs.ExtraDOSCMethod).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            moleculeDiv.appendChild(extraDOSCMethodCollapsibleDiv);
             // Read bondRef.
-            let bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
-            let bondRef;
-            if (bondRefs.length > 0) {
-                if (bondRefs.length != 1) throw new Error("Expecting only 1 bondRef, but there are " + bondRefs.length);
-                bondRef = new (0, _moleculeJs.BondRef)((0, _xmlJs.getAttributes)(bondRefs[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(bondRefs[0])));
+            let xml_bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
+            if (xml_bondRefs.length > 0) {
+                if (xml_bondRefs.length != 1) throw new Error("Expecting only 1 bondRef, but there are " + xml_bondRefs.length);
+                let container = document.createElement("div");
+                container.style.marginLeft = margin75;
+                container.style.marginTop = margin1;
+                container.style.marginBottom = margin1;
+                let label = document.createElement("label");
+                label.textContent = (0, _moleculeJs.BondRef).tagName + ": ";
+                container.appendChild(label);
+                let bondRef = new (0, _moleculeJs.BondRef)((0, _xmlJs.getAttributes)(xml_bondRefs[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bondRefs[0])));
                 extraDOSCMethod.setBondRef(bondRef);
+                // Create a HTMLSelectElement to select the bondRef.
+                let bondIds = molecule.getBonds().getBondIds();
+                let selectElement = (0, _htmlJs.getSelectElement)(bondIds, bondRef.value, molecule.id + "_" + (0, _moleculeJs.BondRef).tagName);
+                selectElement.addEventListener("change", (event)=>{
+                    if (event.target instanceof HTMLSelectElement) {
+                        bondRef.value = event.target.value;
+                        (0, _htmlJs.resizeSelectElement)(event.target);
+                    }
+                });
+                (0, _htmlJs.resizeSelectElement)(selectElement);
+                container.appendChild(selectElement);
+                extraDOSCMethodDiv.appendChild(container);
             }
-            // Read hunderedRotorPotential.
-            let hinderedRotorPotentials = xml_ExtraDOSCMethod[0].getElementsByTagName((0, _moleculeJs.HinderedRotorPotential).tagName);
-            let hinderedRotorPotential;
-            if (hinderedRotorPotentials.length > 0) {
-                if (hinderedRotorPotentials.length != 1) throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + hinderedRotorPotentials.length);
+            // Read hinderedRotorPotential.
+            let xml_hinderedRotorPotentials = xml_ExtraDOSCMethod[0].getElementsByTagName((0, _moleculeJs.HinderedRotorPotential).tagName);
+            if (xml_hinderedRotorPotentials.length > 0) {
+                if (xml_hinderedRotorPotentials.length != 1) throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + xml_hinderedRotorPotentials.length);
+                let hinderedRotorPotentialAttributes = (0, _xmlJs.getAttributes)(xml_hinderedRotorPotentials[0]);
+                let hinderedRotorPotential = new (0, _moleculeJs.HinderedRotorPotential)(hinderedRotorPotentialAttributes);
+                // Create a new collapsible div for the HinderedRotorPotential.
+                let hinderedRotorPotentialDiv = document.createElement("div");
+                let buttonId = molecule.id + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName;
+                let contentDivId = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName;
+                let hinderedRotorPotentialCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(hinderedRotorPotentialDiv, (0, _moleculeJs.HinderedRotorPotential).tagName, buttonId, fontSize3, margin75, margin1, margin1, contentDivId);
+                //hinderedRotorPotentialCollapsibleDiv.style.marginLeft = margin100;
+                hinderedRotorPotentialCollapsibleDiv.style.marginTop = margin1;
+                hinderedRotorPotentialCollapsibleDiv.style.marginBottom = margin1;
+                extraDOSCMethodDiv.appendChild(hinderedRotorPotentialCollapsibleDiv);
+                // Formats
+                let formatLabel = document.createElement("label");
+                formatLabel.style.marginLeft = margin100;
+                formatLabel.style.marginTop = margin1;
+                formatLabel.style.marginBottom = margin1;
+                formatLabel.textContent = "Format: ";
+                hinderedRotorPotentialDiv.appendChild(formatLabel);
+                let selectElement = (0, _htmlJs.getSelectElement)((0, _moleculeJs.HinderedRotorPotential).formats, hinderedRotorPotential.format, molecule.id + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName);
+                selectElement.addEventListener("change", (event)=>{
+                    if (event.target instanceof HTMLSelectElement) {
+                        hinderedRotorPotential.format = event.target.value;
+                        (0, _htmlJs.resizeSelectElement)(event.target);
+                    }
+                });
+                (0, _htmlJs.resizeSelectElement)(selectElement);
+                hinderedRotorPotentialDiv.appendChild(selectElement);
+                // Add any units.
+                let unitsLabel = document.createElement("label");
+                unitsLabel.textContent = "Units: ";
+                unitsLabel.style.marginLeft = margin2;
+                unitsLabel.style.marginTop = margin1;
+                unitsLabel.style.marginBottom = margin1;
+                hinderedRotorPotentialDiv.appendChild(unitsLabel);
+                addAnyUnits((0, _moleculeJs.HinderedRotorPotential).units, hinderedRotorPotentialAttributes, hinderedRotorPotentialDiv, molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName, (0, _moleculeJs.HinderedRotorPotential).tagName, margin2, margin1, margin1);
+                // Add expansionSize.
+                let expansionSizeLabel = document.createElement("label");
+                expansionSizeLabel.style.marginLeft = margin2;
+                expansionSizeLabel.style.marginTop = margin1;
+                expansionSizeLabel.style.marginBottom = margin1;
+                expansionSizeLabel.textContent = "Expansion size: ";
+                hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
+                let expansionSizeInputElement = document.createElement("input");
+                expansionSizeInputElement.type = "number";
+                expansionSizeInputElement.style.marginLeft = margin2;
+                expansionSizeInputElement.style.marginTop = margin1;
+                expansionSizeInputElement.style.marginBottom = margin1;
+                expansionSizeInputElement.id = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_expansionSize";
+                expansionSizeInputElement.addEventListener("change", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the input is a number.
+                        if ((0, _utilJs.isNumeric)(event.target.value)) hinderedRotorPotential.setExpansionSize(parseInt(event.target.value));
+                        else {
+                            // Reset the input to the current value.
+                            alert("Expansion size input is not a number, resetting...");
+                            expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                            console.warn("Expansion size input is not a number.");
+                        }
+                        (0, _htmlJs.resizeInputElement)(expansionSizeInputElement);
+                    }
+                });
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                (0, _htmlJs.resizeInputElement)(expansionSizeInputElement);
+                hinderedRotorPotentialDiv.appendChild(expansionSizeInputElement);
+                // Add useSineTerms.
+                let useSineTermsLabel = document.createElement("label");
+                useSineTermsLabel.style.marginLeft = margin2;
+                useSineTermsLabel.style.marginTop = margin1;
+                useSineTermsLabel.style.marginBottom = margin1;
+                useSineTermsLabel.textContent = "Use sine terms: ";
+                hinderedRotorPotentialDiv.appendChild(useSineTermsLabel);
+                let useSineTermsInput = document.createElement("input");
+                useSineTermsInput.type = "checkbox";
+                useSineTermsInput.style.marginLeft = margin2;
+                useSineTermsInput.style.marginTop = margin1;
+                useSineTermsInput.style.marginBottom = margin1;
+                useSineTermsInput.id = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_useSineTerms";
+                useSineTermsInput.checked = hinderedRotorPotential.getUseSineTerms();
+                useSineTermsInput.addEventListener("change", (event)=>{
+                    if (event.target instanceof HTMLInputElement) hinderedRotorPotential.setUseSineTerms(event.target.checked);
+                });
+                hinderedRotorPotentialDiv.appendChild(useSineTermsInput);
                 // Load PotentialPoints.
+                // Create a new collapsible div for the potential points.
+                let potentialPointsDiv = document.createElement("div");
+                let potentialPointButtonId = molecule.id + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_" + (0, _moleculeJs.PotentialPoint).tagName;
+                let potentialPointContentDivId = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_" + (0, _moleculeJs.PotentialPoint).tagName;
+                let potentialPointCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(potentialPointsDiv, (0, _moleculeJs.PotentialPoint).tagName, potentialPointButtonId, fontSize3, margin100, margin1, margin1, potentialPointContentDivId);
+                hinderedRotorPotentialDiv.appendChild(potentialPointCollapsibleDiv);
                 let potentialPoints = [];
-                let xml_potentialPoints = hinderedRotorPotentials[0].getElementsByTagName((0, _moleculeJs.PotentialPoint).tagName);
-                for(let k = 0; k < xml_potentialPoints.length; k++)potentialPoints.push(new (0, _moleculeJs.PotentialPoint)((0, _xmlJs.getAttributes)(xml_potentialPoints[k])));
-                hinderedRotorPotential = new (0, _moleculeJs.HinderedRotorPotential)((0, _xmlJs.getAttributes)(hinderedRotorPotentials[0]), potentialPoints);
+                let xml_potentialPoints = xml_hinderedRotorPotentials[0].getElementsByTagName((0, _moleculeJs.PotentialPoint).tagName);
+                for(let k = 0; k < xml_potentialPoints.length; k++){
+                    let potentialPoint = new (0, _moleculeJs.PotentialPoint)((0, _xmlJs.getAttributes)(xml_potentialPoints[k]));
+                    potentialPoints.push(potentialPoint);
+                    let potentialPointDiv = document.createElement("div");
+                    potentialPointDiv.style.marginLeft = margin125;
+                    potentialPointDiv.style.marginTop = margin1;
+                    potentialPointDiv.style.marginBottom = margin1;
+                    potentialPointCollapsibleDiv.appendChild(potentialPointDiv);
+                    potentialPointDiv.style.display = "flex";
+                    // Process angle
+                    let angleLabel = document.createElement("label");
+                    angleLabel.textContent = "Angle: ";
+                    potentialPointDiv.appendChild(angleLabel);
+                    let angleInputElement = document.createElement("input");
+                    angleInputElement.type = "number";
+                    angleInputElement.style.marginLeft = margin2;
+                    angleInputElement.style.marginTop = margin1;
+                    angleInputElement.style.marginBottom = margin1;
+                    angleInputElement.id = molecule.id + "_" + (0, _moleculeJs.PotentialPoint).tagName + "_angle";
+                    angleInputElement.addEventListener("change", (event)=>{
+                        if (event.target instanceof HTMLInputElement) {
+                            // Check the input is a number.
+                            if ((0, _utilJs.isNumeric)(event.target.value)) potentialPoint.setAngle(parseFloat(event.target.value));
+                            else {
+                                // Reset the input to the current value.
+                                alert("Angle input is not a number, resetting...");
+                                angleInputElement.value = potentialPoint.getAngle().toString();
+                                console.warn("Angle input is not a number.");
+                            }
+                            (0, _htmlJs.resizeInputElement)(angleInputElement);
+                        }
+                    });
+                    angleInputElement.value = potentialPoint.getAngle().toString();
+                    (0, _htmlJs.resizeInputElement)(angleInputElement);
+                    potentialPointDiv.appendChild(angleInputElement);
+                    // Create a new div element for the potential.
+                    let potentialLabel = document.createElement("label");
+                    potentialLabel.style.marginLeft = margin2;
+                    potentialLabel.style.marginTop = margin1;
+                    potentialLabel.style.marginBottom = margin1;
+                    potentialLabel.textContent = "Potential: ";
+                    potentialPointDiv.appendChild(potentialLabel);
+                    let potentialInputElement = document.createElement("input");
+                    potentialInputElement.style.marginLeft = margin2;
+                    potentialInputElement.style.marginTop = margin1;
+                    potentialInputElement.style.marginBottom = margin1;
+                    potentialInputElement.type = "number";
+                    potentialInputElement.id = molecule.id + "_" + (0, _moleculeJs.PotentialPoint).tagName + "_potential";
+                    potentialInputElement.addEventListener("change", (event)=>{
+                        if (event.target instanceof HTMLInputElement) {
+                            // Check the input is a number.
+                            if ((0, _utilJs.isNumeric)(event.target.value)) potentialPoint.setPotential(parseFloat(event.target.value));
+                            else {
+                                // Reset the input to the current value.
+                                alert("Potential input is not a number, resetting...");
+                                potentialInputElement.value = potentialPoint.getPotential().toString();
+                                console.warn("Potential input is not a number.");
+                            }
+                            (0, _htmlJs.resizeInputElement)(potentialInputElement);
+                        }
+                    });
+                    potentialInputElement.value = potentialPoint.getPotential().toString();
+                    (0, _htmlJs.resizeInputElement)(potentialInputElement);
+                    potentialPointDiv.appendChild(potentialInputElement);
+                    potentialPointsDiv.appendChild(potentialPointDiv);
+                }
+                potentialPointCollapsibleDiv.appendChild(potentialPointsDiv);
+                hinderedRotorPotential.setPotentialPoints(potentialPoints);
                 extraDOSCMethod.setHinderedRotorPotential(hinderedRotorPotential);
             }
             // Read periodicities.
             let xml_periodicities = xml_DOSCMethod[0].getElementsByTagName((0, _moleculeJs.Periodicity).tagName);
-            let periodicity;
             if (xml_periodicities.length > 0) {
                 if (xml_periodicities.length != 1) throw new Error("Expecting only 1 Periodicity, but there are " + xml_periodicities.length);
-                periodicity = new (0, _moleculeJs.Periodicity)((0, _xmlJs.getAttributes)(xml_periodicities[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_periodicities[0]))));
+                let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_periodicities[0]));
+                let periodicity = new (0, _moleculeJs.Periodicity)((0, _xmlJs.getAttributes)(xml_periodicities[0]), parseFloat(valueString));
                 extraDOSCMethod.setPeriodicity(periodicity);
+                // Create a container for the periodicity.
+                let container = document.createElement("div");
+                container.style.marginLeft = margin75;
+                container.style.marginTop = margin1;
+                container.style.marginBottom = margin1;
+                let label = document.createElement("label");
+                label.textContent = (0, _moleculeJs.Periodicity).tagName + ": ";
+                container.appendChild(label);
+                // Create a new div element for the input.
+                let inputDiv = (0, _htmlJs.getInput)("number", molecule.id + "_" + (0, _moleculeJs.Periodicity).tagName, (event)=>{
+                    if (event.target instanceof HTMLInputElement) periodicity.value = parseFloat(event.target.value);
+                }, valueString, (0, _moleculeJs.Periodicity).tagName);
+                container.appendChild(inputDiv);
+                extraDOSCMethodDiv.appendChild(container);
             }
             molecule.setExtraDOSCMethod(extraDOSCMethod);
             moleculeTagNames.delete((0, _moleculeJs.ExtraDOSCMethod).tagName);
@@ -1025,8 +1212,8 @@ let xml_text;
         let xml_ReservoirSize = xml_molecules[i].getElementsByTagName((0, _moleculeJs.ReservoirSize).tagName);
         if (xml_ReservoirSize.length > 0) {
             if (xml_ReservoirSize.length != 1) throw new Error("Expecting only 1 reservoirSize, but there are " + xml_ReservoirSize.length);
-            console.warn("ReservoirSize detected: This is not displayed in the GUI - more coding needed!");
-            molecule.setReservoirSize(new (0, _moleculeJs.ReservoirSize)((0, _xmlJs.getAttributes)(xml_ReservoirSize[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_ReservoirSize[0])))));
+            let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_ReservoirSize[0]));
+            molecule.setReservoirSize(new (0, _moleculeJs.ReservoirSize)((0, _xmlJs.getAttributes)(xml_ReservoirSize[0]), parseFloat(valueString)));
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
@@ -1197,6 +1384,7 @@ let xml_text;
     // Create a HTMLSelectElement to select the DOSCMethod.
     let options = [
         "ClassicalRotors",
+        "me:QMRotors",
         "QMRotors"
     ];
     let selectElement = (0, _htmlJs.getSelectElement)(options, "DOSCMethod", molecule.id + "_" + "Select_DOSCMethod");
@@ -1707,8 +1895,8 @@ window.set = setNumberNode;
     // Get the XML "moleculeList" element.
     let xml_conditions = (0, _xmlJs.getSingularElement)(xml, (0, _conditionsJs.Conditions).tagName);
     conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions));
-    // Process any "bathGas" element.
-    let xml_bathGases = xml_conditions.getElementsByTagName((0, _conditionsJs.BathGas).tagName);
+    // Process any "bathGas" elements that are immediate children of xml_conditions.
+    let xml_bathGases = Array.from(xml_conditions.children).filter((child)=>child.tagName === (0, _conditionsJs.BathGas).tagName);
     if (xml_bathGases.length > 0) {
         if (xml_bathGases.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.BathGas).tagName + " but finding " + xml_bathGases.length + "!");
         let attributes = (0, _xmlJs.getAttributes)(xml_bathGases[0]);
@@ -1716,12 +1904,30 @@ window.set = setNumberNode;
         let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID);
         console.log("bathGas" + bathGas.toString());
         conditions.setBathGas(bathGas);
+        let containerDiv = document.createElement("div");
         let bathGasLabel = document.createElement("label");
-        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": " + bathGas.value;
-        bathGasLabel.style.marginLeft = margin25;
-        bathGasLabel.style.marginTop = margin1;
-        bathGasLabel.style.marginBottom = margin1;
-        conditionsDiv.appendChild(bathGasLabel);
+        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+        containerDiv.appendChild(bathGasLabel);
+        // Create a HTMLSelectInput for the BathGas.
+        // Get the ids of all the molecules.
+        let moleculeIDs = new Set(molecules.keys());
+        let selectElement = (0, _htmlJs.getSelectElement)(Array.from(moleculeIDs), (0, _conditionsJs.BathGas).tagName, (0, _conditionsJs.Conditions).tagName + "_" + (0, _conditionsJs.BathGas).tagName);
+        // Set the initial value.
+        selectElement.value = bathGas.value;
+        // Add event listener to selectElement.
+        selectElement.addEventListener("change", (event)=>{
+            if (event.target instanceof HTMLSelectElement) {
+                bathGas.value = event.target.value;
+                console.log("Set " + (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.BathGas).tagName + " to " + event.target.value);
+                (0, _htmlJs.resizeSelectElement)(event.target);
+            }
+        });
+        (0, _htmlJs.resizeSelectElement)(selectElement);
+        containerDiv.style.marginLeft = margin25;
+        containerDiv.style.marginTop = margin1;
+        containerDiv.style.marginBottom = margin1;
+        containerDiv.appendChild(selectElement);
+        conditionsDiv.appendChild(containerDiv);
     }
     // PTs
     let xml_PTss = xml_conditions.getElementsByTagName((0, _conditionsJs.PTs).tagName);
@@ -1741,50 +1947,62 @@ window.set = setNumberNode;
             let pTs = new (0, _conditionsJs.PTs)(attributes);
             for(let i = 0; i < xml_PTPairs.length; i++){
                 let pTPair = new (0, _conditionsJs.PTpair)((0, _xmlJs.getAttributes)(xml_PTPairs[i]));
-                // Create div for the pTPair.
-                let pTPairDiv = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin25;
-                pTPairDiv.style.marginTop = margin1;
-                pTPairDiv.style.marginBottom = margin1;
-                pTsDiv.appendChild(pTPairDiv);
+                // Create a container div for P, T and units.
+                let containerDiv = document.createElement("div");
+                containerDiv.style.display = "flex";
+                containerDiv.style.marginLeft = margin50;
+                containerDiv.style.marginTop = margin1;
+                containerDiv.style.marginBottom = margin1;
+                pTsDiv.appendChild(containerDiv);
                 // Add any optional BathGas
                 let xml_bathGass = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.BathGas).tagName);
                 if (xml_bathGass.length > 0) {
                     if (xml_bathGass.length > 1) console.warn("xml_bathGass.length=" + xml_bathGass.length);
-                    let bathGas = new (0, _conditionsJs.BathGas)((0, _xmlJs.getAttributes)(xml_bathGass[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGass[0])));
-                    pTPair.setBathGas(bathGas);
-                    // Create HTMLLabelElement for the BathGas.
+                    // Add a label for the BathGas.
                     let bathGasLabel = document.createElement("label");
-                    bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": " + bathGas.value;
-                    bathGasLabel.style.marginLeft = margin50;
-                    bathGasLabel.style.marginTop = margin1;
-                    bathGasLabel.style.marginBottom = margin1;
-                    pTPairDiv.appendChild(bathGasLabel);
+                    bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+                    containerDiv.appendChild(bathGasLabel);
+                    let bathGasValue = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGass[0]));
+                    let bathGas = new (0, _conditionsJs.BathGas)((0, _xmlJs.getAttributes)(xml_bathGass[0]), bathGasValue);
+                    pTPair.setBathGas(bathGas);
+                    // Create a HTMLSelectInput for the BathGas.
+                    // Get the ids of all the molecules.
+                    let moleculeIDs = new Set(molecules.keys());
+                    let selectElement = (0, _htmlJs.getSelectElement)(Array.from(moleculeIDs), (0, _conditionsJs.BathGas).tagName, (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.BathGas).tagName);
+                    // Set the initial value.
+                    selectElement.value = bathGas.value;
+                    // Add event listener to selectElement.
+                    selectElement.addEventListener("change", (event)=>{
+                        if (event.target instanceof HTMLSelectElement) {
+                            bathGas.value = event.target.value;
+                            console.log("Set " + (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.BathGas).tagName + " to " + event.target.value);
+                            (0, _htmlJs.resizeSelectElement)(event.target);
+                        }
+                    });
+                    (0, _htmlJs.resizeSelectElement)(selectElement);
+                    containerDiv.appendChild(selectElement);
                 }
                 // Add any optional ExperimentRate
                 let xml_experimentRates = xml_PTPairs[i].getElementsByTagName((0, _conditionsJs.ExperimentRate).tagName);
                 if (xml_experimentRates.length > 0) {
                     if (xml_experimentRates.length > 1) console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
-                    let experimentRate = new (0, _conditionsJs.ExperimentRate)((0, _xmlJs.getAttributes)(xml_experimentRates[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_experimentRates[0]))));
+                    let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_experimentRates[0]));
+                    let experimentRate = new (0, _conditionsJs.ExperimentRate)((0, _xmlJs.getAttributes)(xml_experimentRates[0]), parseFloat(valueString));
                     pTPair.setExperimentRate(experimentRate);
                     // Create a new div for the ExperimentRate.
                     let id = (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.ExperimentRate).tagName;
                     let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
                         if (event.target instanceof HTMLInputElement) setNumberNode(experimentRate, event.target);
                     }, experimentRate.value.toString(), (0, _conditionsJs.ExperimentRate).tagName);
-                    inputDiv.style.marginLeft = margin50;
                     inputDiv.style.marginTop = margin1;
                     inputDiv.style.marginBottom = margin1;
-                    pTPairDiv.appendChild(inputDiv);
+                    containerDiv.appendChild(inputDiv);
                 }
                 // Create a new input element for the P.
                 let p = pTPair.getP();
                 let pId = (0, _conditionsJs.PTpair).tagName + "_" + "P";
                 let t = pTPair.getT();
                 let tId = (0, _conditionsJs.PTpair).tagName + "_" + "T";
-                // Create a container div for P, T and units.
-                let containerDiv = document.createElement("div");
-                containerDiv.style.display = "flex";
                 // Add the P input element to the container.
                 let pInputDiv = (0, _htmlJs.getInput)("number", pId, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
@@ -1802,7 +2020,7 @@ window.set = setNumberNode;
                 let pInputElement = pInputDiv.querySelector("input");
                 pInputElement.value = p.toString();
                 (0, _htmlJs.resizeInputElement)(pInputElement);
-                pInputDiv.style.marginLeft = margin25;
+                pInputDiv.style.marginLeft = margin5;
                 pInputDiv.style.marginTop = margin1;
                 pInputDiv.style.marginBottom = margin1;
                 containerDiv.appendChild(pInputDiv);
@@ -1829,11 +2047,9 @@ window.set = setNumberNode;
                 containerDiv.appendChild(tInputDiv);
                 // Add any units to the container.
                 addAnyUnits(undefined, (0, _xmlJs.getAttributes)(xml_PTPairs[i]), containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
-                // Append the container div to the pTPairDiv.
-                pTPairDiv.appendChild(containerDiv);
                 pTs.addPTpair(pTPair);
                 // Add the pTPairDiv to the pTsDiv.
-                pTsDiv.appendChild(pTPairDiv);
+                pTsDiv.appendChild(containerDiv);
             }
             // Create an add button to add a new PTPair.
             let addButton = document.createElement("button");
@@ -3276,16 +3492,19 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "EnergyTransferModel", ()=>EnergyTransferModel);
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
- * The attributes are expected to include "xsi:type" - expected values are either "ClassicalRotors" or "QMRotors".
+ * The attributes are expected to include either "xsi:type" or "name" - expected values are either "ClassicalRotors" or "QMRotors".
  */ parcelHelpers.export(exports, "DOSCMethod", ()=>DOSCMethod);
 /**
  * In the XML, a "me:bondRef" node is a child node of a "me:ExtraDOSCMethod" node.
  */ parcelHelpers.export(exports, "BondRef", ()=>BondRef);
 /**
  * In the XML, a "me:PotentialPoint" node is a child node of a "me:HinderedRotorPotential" node.
+ * The attributes must include "angle" and "potential".
  */ parcelHelpers.export(exports, "PotentialPoint", ()=>PotentialPoint);
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
+ * It may have one or more "me:PotentialPoint" child nodes.
+ * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (with a value from ["kJ/mol", "cm-1", "Hartree"]).
  */ parcelHelpers.export(exports, "HinderedRotorPotential", ()=>HinderedRotorPotential);
 /**
  * In the XML, a "me:periodicity" node is a child node of a "me:ExtraDOSCMethod" node.
@@ -3352,6 +3571,35 @@ class Bond extends (0, _xmlJs.TagWithAttributes) {
         if (atomRefs2 == undefined) throw new Error("atomRefs2 is undefined");
         this.atomRefs2 = atomRefs2;
     }
+    /**
+     * @param atomRefs2 The atomRefs2 to set.
+     */ setAtomRefs2(atomRefs2) {
+        this.atomRefs2 = atomRefs2;
+        if (this.attributes != undefined) this.attributes.set("atomRefs2", atomRefs2);
+    }
+    /**
+     * @returns The attribute value referred to by "id" or undefined.
+     */ getId() {
+        if (this.attributes != undefined) return this.attributes.get("id");
+    }
+    /**
+     * @param id The id to set the attribute value referred to by "id".
+     */ setId(id) {
+        if (this.attributes != undefined) this.attributes.set("id", id);
+    }
+    /**
+     * @returns The attribute value referred to by "order" as a number or undefined.
+     */ getOrder() {
+        if (this.attributes != undefined) {
+            let order = this.attributes.get("order");
+            if (order != undefined) return parseFloat(order);
+        }
+    }
+    /**
+     * @param order The order to set the attribute value referred to by "order".
+     */ setOrder(order) {
+        if (this.attributes != undefined) this.attributes.set("order", order.toString());
+    }
 }
 class BondArray extends (0, _xmlJs.NodeWithNodes) {
     static{
@@ -3364,9 +3612,53 @@ class BondArray extends (0, _xmlJs.NodeWithNodes) {
      * @param bonds A Map of bonds with keys as ids.
      */ constructor(attributes, bonds){
         super(attributes, BondArray.tagName);
+        this.bonds = bonds;
         bonds.forEach((bond)=>{
             this.nodes.set(this.nodes.size, bond);
         });
+    }
+    /**
+     * @param i The index of the bond.
+     * @returns The bond at the given index.
+     * @throws Error if this.bonds has no such index.
+     */ getBond(i) {
+        return this.bonds[i];
+    }
+    /**
+     * @returns The bonds.
+     */ getBonds() {
+        return this.bonds;
+    }
+    /**
+     * Set the bond at the given index.
+     * @param i The index.
+     * @param bond The bond.
+     * @throws Error if this.bonds has no such index.
+     */ setBond(i, bond) {
+        this.bonds[i] = bond;
+        this.nodes.set(i, bond);
+    }
+    /**
+     * Adds a bond to the array.
+     * @param bond The bond to add.
+     */ addBond(bond) {
+        this.bonds.push(bond);
+        this.nodes.set(this.nodes.size, bond);
+    }
+    /**
+     * @param i The index of the bond to remove.
+     */ removeBond(i) {
+        this.bonds.splice(i, 1);
+        this.nodes.delete(i);
+    }
+    /**
+     * Get a set of all the bond ids.
+     */ getBondIds() {
+        let bondIds = new Set();
+        this.bonds.forEach((bond)=>{
+            bondIds.add(bond.getId());
+        });
+        return bondIds;
     }
 }
 class PropertyScalar extends (0, _xmlJs.NumberNode) {
@@ -3696,19 +3988,26 @@ class DOSCMethod extends (0, _xmlJs.TagWithAttributes) {
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, DOSCMethod.tagName);
-        if (attributes.get("xsi:type") == undefined) throw new Error("xsi:type is undefined");
+        if (attributes.get("xsi:type") == undefined) {
+            let name = attributes.get("name");
+            if (name == undefined) throw new Error("Neither xsi:type or name are defined.");
+            else {
+                attributes.set("xsi:type", name);
+                attributes.delete("name");
+            }
+        }
     }
     /**
-     * @returns The xsi type of the DOSCMethod.
+     * @returns The xsi:type.
      */ getXsiType() {
-        if (this.attributes == undefined) throw new Error("attributes is undefined");
-        return this.attributes.get("xsi:type");
+        if (this.attributes != undefined) return this.attributes.get("xsi:type");
+        else throw new Error("xsi:type is undefined");
     }
     /**
-     * @param xsiType The xsi type of the DOSCMethod.
+     * @param xsiType The xsi:type.
      */ setXsiType(xsiType) {
-        if (this.attributes == undefined) throw new Error("attributes is undefined");
-        this.attributes.set("xsi:type", xsiType);
+        if (this.attributes != undefined) this.attributes.set("xsi:type", xsiType);
+        else throw new Error("xsi:type is undefined");
     }
 }
 class BondRef extends (0, _xmlJs.StringNode) {
@@ -3726,38 +4025,156 @@ class BondRef extends (0, _xmlJs.StringNode) {
 }
 class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
     static{
-        this.tagName = "me:PotentialPoint";
+        /**
+     * The tag name.
+     */ this.tagName = "me:PotentialPoint";
     }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, PotentialPoint.tagName);
+        let angle = attributes.get("angle");
+        if (angle == undefined) throw new Error("angle is undefined");
+        this.angle = parseFloat(angle);
+        let potential = attributes.get("potential");
+        if (potential == undefined) throw new Error("potential is undefined");
+        this.potential = parseFloat(potential);
+    }
+    /**
+     * @returns The angle.
+     */ getAngle() {
+        return this.angle;
+    }
+    /**
+     * @param angle The angle of the PotentialPoint.
+     */ setAngle(angle) {
+        this.angle = angle;
+        if (this.attributes != undefined) this.attributes.set("angle", angle.toString());
+    }
+    /**
+     * @returns The potential.
+     */ getPotential() {
+        return this.potential;
+    }
+    /**
+     * @param potential The potential of the PotentialPoint.
+     */ setPotential(potential) {
+        this.potential = potential;
+        if (this.attributes != undefined) this.attributes.set("potential", potential.toString());
     }
 }
 class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
     static{
-        this.tagName = "me:HinderedRotorPotential";
+        /**
+     * The tag name.
+     */ this.tagName = "me:HinderedRotorPotential";
+    }
+    static{
+        /**
+     * The permitted formats.
+     */ this.formats = [
+            "numerical",
+            "analytical"
+        ];
+    }
+    static{
+        /**
+     * The permitted units.
+     */ this.units = [
+            "kJ/mol",
+            "cm-1",
+            "Hartree"
+        ];
     }
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */ constructor(attributes, potentialPoints){
         super(attributes, HinderedRotorPotential.tagName);
-        potentialPoints.forEach((p)=>{
+        let format = attributes.get("format");
+        if (format == undefined) throw new Error("format is undefined");
+        this.format = format;
+        let units = attributes.get("units");
+        if (units == undefined) throw new Error("units is undefined");
+        this.units = units;
+        if (potentialPoints != undefined) potentialPoints.forEach((p)=>{
             this.nodes.set(this.nodes.size, p);
         });
+        let expansionSize = attributes.get("expansionSize");
+        if (expansionSize == undefined) throw new Error("expansionSize is undefined");
+        this.expansionSize = parseFloat(expansionSize);
+        let useSineTerms = attributes.get("useSineTerms");
+        if (useSineTerms == undefined) throw new Error("useSineTerms is undefined");
+        this.useSineTerms = useSineTerms == "yes";
+    }
+    /**
+     * @returns The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */ getFormat() {
+        return this.format;
+    }
+    /**
+     * @param format The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */ setFormat(format) {
+        this.format = format;
+        if (this.attributes != undefined) this.attributes.set("format", format);
+    }
+    /**
+     * @returns The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */ getUnits() {
+        return this.units;
+    }
+    /**
+     * @param units The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */ setUnits(units) {
+        this.units = units;
+        if (this.attributes != undefined) this.attributes.set("units", units);
+    }
+    /**
+     * @returns The expansionSize of the HinderedRotorPotential.
+     */ getExpansionSize() {
+        return this.expansionSize;
+    }
+    /**
+     * @param expansionSize The expansionSize of the HinderedRotorPotential.
+     */ setExpansionSize(expansionSize) {
+        this.expansionSize = expansionSize;
+        if (this.attributes != undefined) this.attributes.set("expansionSize", expansionSize.toString());
+    }
+    /**
+     * @returns The useSineTerms of the HinderedRotorPotential.
+     */ getUseSineTerms() {
+        return this.useSineTerms;
+    }
+    /**
+     * @param useSineTerms The useSineTerms of the HinderedRotorPotential.
+     */ setUseSineTerms(useSineTerms) {
+        this.useSineTerms = useSineTerms;
+        if (this.attributes != undefined) this.attributes.set("useSineTerms", useSineTerms ? "yes" : "no");
     }
     /**
      * @returns The potential point with the given index.
-     */ getPotentialPoint(index) {
-        return this.nodes.get(index);
+     */ getPotentialPoint(i) {
+        return this.nodes.get(i);
     }
     /**
      * Set the potential point at the given index.
-     * @param index The index to set the potential point at.
+     * @param i The index to set the potential point at.
      * @param p The potential point to set at the index.
-     */ setPotentialPoints(index, p) {
-        this.nodes.set(index, p);
+     */ setPotentialPoint(i, p) {
+        this.nodes.set(i, p);
+    }
+    /**
+     * Sets the potential points.
+     * @param potentialPoints The potential points.
+     */ setPotentialPoints(potentialPoints) {
+        this.nodes.clear();
+        potentialPoints.forEach((p)=>{
+            this.nodes.set(this.nodes.size, p);
+        });
     }
     /**
      * Add the potential point.
@@ -3766,6 +4183,11 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
      */ addPotentialPoint(p) {
         this.nodes.set(this.nodes.size, p);
         return this.nodes.size - 1;
+    }
+    /**
+     * @param i The index of the potential point to remove.
+     */ removePotentialPoint(i) {
+        this.nodes.delete(i);
     }
 }
 class Periodicity extends (0, _xmlJs.NumberNode) {
@@ -4040,8 +4462,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @returns The bonds of the molecule.
      */ getBonds() {
         let i = this.index.get(BondArray.tagName);
-        if (i == undefined) return undefined;
-        else return this.nodes.get(i);
+        if (i != undefined) return this.nodes.get(i);
     }
     /**
      * @returns The energy transfer model of the molecule.

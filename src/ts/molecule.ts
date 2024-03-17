@@ -98,7 +98,7 @@ export class Bond extends TagWithAttributes {
     static readonly tagName: string = "bond";
 
     /**
-     * The atomRefs2.
+     * The atomRefs2 stored for convenience, this is also stored as an attribute.
      */
     atomRefs2: string;
 
@@ -113,6 +113,57 @@ export class Bond extends TagWithAttributes {
         }
         this.atomRefs2 = atomRefs2;
     }
+
+    /**
+     * @param atomRefs2 The atomRefs2 to set.
+     */
+    setAtomRefs2(atomRefs2: string): void {
+        this.atomRefs2 = atomRefs2;
+        if (this.attributes != undefined) {
+            this.attributes.set("atomRefs2", atomRefs2);
+        }
+    }
+
+
+    /**
+     * @returns The attribute value referred to by "id" or undefined.
+     */
+    getId(): string | undefined {
+        if (this.attributes != undefined) {
+            return this.attributes.get("id");
+        }
+    }
+
+    /**
+     * @param id The id to set the attribute value referred to by "id".
+     */
+    setId(id: string): void {
+        if (this.attributes != undefined) {
+            this.attributes.set("id", id);
+        }
+    }
+
+    /**
+     * @returns The attribute value referred to by "order" as a number or undefined.
+     */
+    getOrder(): number | undefined {
+        if (this.attributes != undefined) {
+            let order: string | undefined = this.attributes.get("order");
+            if (order != undefined) {
+                return parseFloat(order);
+            }
+        }
+    }
+
+    /**
+     * @param order The order to set the attribute value referred to by "order".
+     */
+    setOrder(order: number): void {
+        if (this.attributes != undefined) {
+            this.attributes.set("order", order.toString());
+        }
+    }
+
 }
 
 /**
@@ -126,15 +177,77 @@ export class BondArray extends NodeWithNodes {
      */
     static readonly tagName: string = "bondArray";
 
+
+    /**
+     * The bonds stored for convenience.
+     */
+    bonds: Bond[];
+
     /**
      * @param attributes The attributes.
      * @param bonds A Map of bonds with keys as ids.
      */
     constructor(attributes: Map<string, string>, bonds: Bond[]) {
         super(attributes, BondArray.tagName);
+        this.bonds = bonds;
         bonds.forEach(bond => {
             this.nodes.set(this.nodes.size, bond);
         });
+    }
+
+    /**
+     * @param i The index of the bond.
+     * @returns The bond at the given index.
+     * @throws Error if this.bonds has no such index.
+     */
+    getBond(i: number): Bond | undefined {
+        return this.bonds[i];
+    }
+
+    /**
+     * @returns The bonds.
+     */
+    getBonds(): Bond[] {
+        return this.bonds;
+    }
+
+    /**
+     * Set the bond at the given index.
+     * @param i The index.
+     * @param bond The bond.
+     * @throws Error if this.bonds has no such index.
+     */
+    setBond(i: number, bond: Bond): void {
+        this.bonds[i] = bond;
+        this.nodes.set(i, bond);
+    }
+
+    /**
+     * Adds a bond to the array.
+     * @param bond The bond to add.
+     */
+    addBond(bond: Bond): void {
+        this.bonds.push(bond);
+        this.nodes.set(this.nodes.size, bond);
+    }
+
+    /**
+     * @param i The index of the bond to remove.
+     */
+    removeBond(i: number): void {
+        this.bonds.splice(i, 1);
+        this.nodes.delete(i);
+    }
+
+    /**
+     * Get a set of all the bond ids.
+     */
+    getBondIds(): Set<string> {
+        let bondIds: Set<string> = new Set();
+        this.bonds.forEach((bond) => {
+            bondIds.add(bond.getId() as string);
+        });
+        return bondIds;
     }
 }
 
@@ -627,7 +740,7 @@ export class EnergyTransferModel extends NodeWithNodes {
 
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
- * The attributes are expected to include "xsi:type" - expected values are either "ClassicalRotors" or "QMRotors".
+ * The attributes are expected to include either "xsi:type" or "name" - expected values are either "ClassicalRotors" or "QMRotors".
  */
 export class DOSCMethod extends TagWithAttributes {
 
@@ -642,28 +755,36 @@ export class DOSCMethod extends TagWithAttributes {
     constructor(attributes: Map<string, string>) {
         super(attributes, DOSCMethod.tagName);
         if (attributes.get("xsi:type") == undefined) {
+            let name: string | undefined = attributes.get("name");
+            if (name == undefined) {
+                throw new Error('Neither xsi:type or name are defined.');
+            } else {
+                attributes.set("xsi:type", name);
+                attributes.delete("name");
+            }
+        }
+    }
+
+    /**
+     * @returns The xsi:type.
+     */
+    getXsiType(): string {
+        if (this.attributes != undefined) {
+            return this.attributes.get("xsi:type") as string;
+        } else {
             throw new Error('xsi:type is undefined');
         }
     }
 
     /**
-     * @returns The xsi type of the DOSCMethod.
-     */
-    getXsiType(): string {
-        if (this.attributes == undefined) {
-            throw new Error('attributes is undefined');
-        }
-        return this.attributes.get("xsi:type") as string;
-    }
-
-    /**
-     * @param xsiType The xsi type of the DOSCMethod.
+     * @param xsiType The xsi:type.
      */
     setXsiType(xsiType: string): void {
-        if (this.attributes == undefined) {
-            throw new Error('attributes is undefined');
+        if (this.attributes != undefined) {
+            this.attributes.set("xsi:type", xsiType);
+        } else {
+            throw new Error('xsi:type is undefined');
         }
-        this.attributes.set("xsi:type", xsiType);
     }
 }
 
@@ -688,51 +809,250 @@ export class BondRef extends StringNode {
 
 /**
  * In the XML, a "me:PotentialPoint" node is a child node of a "me:HinderedRotorPotential" node.
+ * The attributes must include "angle" and "potential".
  */
 export class PotentialPoint extends TagWithAttributes {
 
+    /**
+     * The tag name.
+     */
     static readonly tagName: string = "me:PotentialPoint";
+
+    /**
+     * The angle stored for convenience, this is also an attribute.
+     */
+    angle: number;
+
+    /**
+     * The potential stored for convenience, this is also an attribute.
+     */
+    potential: number;
 
     /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, PotentialPoint.tagName);
+        let angle: string | undefined = attributes.get("angle");
+        if (angle == undefined) {
+            throw new Error('angle is undefined');
+        }
+        this.angle = parseFloat(angle);
+        let potential: string | undefined = attributes.get("potential");
+        if (potential == undefined) {
+            throw new Error('potential is undefined');
+        }
+        this.potential = parseFloat(potential);
     }
+
+    /**
+     * @returns The angle.
+     */
+    getAngle(): number {
+        return this.angle;
+    }
+
+    /**
+     * @param angle The angle of the PotentialPoint.
+     */
+    setAngle(angle: number): void {
+        this.angle = angle;
+        if (this.attributes != undefined) {
+            this.attributes.set("angle", angle.toString());
+        }
+    }
+
+    /**
+     * @returns The potential.
+     */
+    getPotential(): number {
+        return this.potential;
+    }
+
+    /**
+     * @param potential The potential of the PotentialPoint.
+     */
+    setPotential(potential: number): void {
+        this.potential = potential;
+        if (this.attributes != undefined) {
+            this.attributes.set("potential", potential.toString());
+        }
+    }
+
 }
 
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
+ * It may have one or more "me:PotentialPoint" child nodes.
+ * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (with a value from ["kJ/mol", "cm-1", "Hartree"]).
  */
 export class HinderedRotorPotential extends NodeWithNodes {
 
+    /**
+     * The tag name.
+     */
     static readonly tagName: string = "me:HinderedRotorPotential";
+
+    /**
+     * The permitted formats.
+     */
+    static readonly formats: string[] = ["numerical", "analytical"];
+
+    /**
+     * The permitted units.
+     */
+    static readonly units: string[] = ["kJ/mol", "cm-1", "Hartree"];
+
+    /**
+     * The format stored for convenience, this is also an attribute.
+     */
+    format: string;
+
+    /**
+     * The units stored for convenience, this is also an attribute.
+     */ 
+    units: string;
+
+    /**
+     * The expansionSize stored for convenience, this is also an attribute.
+     */
+    expansionSize: number;
+
+    /**
+     * The useSineTerms stored for convenience, this is also an attribute.
+     */
+    useSineTerms: boolean;
 
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */
-    constructor(attributes: Map<string, string>, potentialPoints: PotentialPoint[]) {
+    constructor(attributes: Map<string, string>, potentialPoints?: PotentialPoint[]) {
         super(attributes, HinderedRotorPotential.tagName);
-        potentialPoints.forEach(p => {
-            this.nodes.set(this.nodes.size, p);
-        });
+        let format: string | undefined = attributes.get("format");
+        if (format == undefined) {
+            throw new Error('format is undefined');
+        }
+        this.format = format;
+        let units: string | undefined = attributes.get("units");
+        if (units == undefined) {
+            throw new Error('units is undefined');
+        }
+        this.units = units;
+        if (potentialPoints != undefined) {
+            potentialPoints.forEach(p => {
+                this.nodes.set(this.nodes.size, p);
+            });
+        }
+        let expansionSize: string | undefined = attributes.get("expansionSize");
+        if (expansionSize == undefined) {
+            throw new Error('expansionSize is undefined');
+        }
+        this.expansionSize = parseFloat(expansionSize);
+        let useSineTerms: string | undefined = attributes.get("useSineTerms");
+        if (useSineTerms == undefined) {
+            throw new Error('useSineTerms is undefined');
+        }
+        this.useSineTerms = (useSineTerms == "yes");
+    }
+
+    /**
+     * @returns The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */
+    getFormat(): string {
+        return this.format;
+    }
+
+    /**
+     * @param format The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */
+    setFormat(format: string): void {
+        this.format = format;
+        if (this.attributes != undefined) {
+            this.attributes.set("format", format);
+        }
+    }
+
+    /**
+     * @returns The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */
+    getUnits(): string {
+        return this.units;
+    }
+
+    /**
+     * @param units The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */
+    setUnits(units: string): void {
+        this.units = units;
+        if (this.attributes != undefined) {
+            this.attributes.set("units", units);
+        }
+    }
+
+    /**
+     * @returns The expansionSize of the HinderedRotorPotential.
+     */
+    getExpansionSize(): number {
+        return this.expansionSize;
+    }
+
+    /**
+     * @param expansionSize The expansionSize of the HinderedRotorPotential.
+     */
+    setExpansionSize(expansionSize: number): void {
+        this.expansionSize = expansionSize;
+        if (this.attributes != undefined) {
+            this.attributes.set("expansionSize", expansionSize.toString());
+        }
+    }
+
+    /**
+     * @returns The useSineTerms of the HinderedRotorPotential.
+     */
+    getUseSineTerms(): boolean {
+        return this.useSineTerms;
+    }
+
+    /**
+     * @param useSineTerms The useSineTerms of the HinderedRotorPotential.
+     */
+    setUseSineTerms(useSineTerms: boolean): void {
+        this.useSineTerms = useSineTerms;
+        if (this.attributes != undefined) {
+            this.attributes.set("useSineTerms", useSineTerms ? "yes" : "no");
+        }
     }
 
     /**
      * @returns The potential point with the given index.
      */
-    getPotentialPoint(index: number): PotentialPoint {
-        return this.nodes.get(index) as PotentialPoint;
+    getPotentialPoint(i: number): PotentialPoint {
+        return this.nodes.get(i) as PotentialPoint;
     }
 
     /**
      * Set the potential point at the given index.
-     * @param index The index to set the potential point at.
+     * @param i The index to set the potential point at.
      * @param p The potential point to set at the index.
      */
-    setPotentialPoints(index: number, p: PotentialPoint): void {
-        this.nodes.set(index, p);
+    setPotentialPoint(i: number, p: PotentialPoint): void {
+        this.nodes.set(i, p);
+    }
+
+    /**
+     * Sets the potential points.
+     * @param potentialPoints The potential points.
+     */
+    setPotentialPoints(potentialPoints: PotentialPoint[]): void {
+        this.nodes.clear();
+        potentialPoints.forEach(p => {
+            this.nodes.set(this.nodes.size, p);
+        });
     }
 
     /**
@@ -745,6 +1065,12 @@ export class HinderedRotorPotential extends NodeWithNodes {
         return this.nodes.size - 1;
     }
 
+    /**
+     * @param i The index of the potential point to remove.
+     */
+    removePotentialPoint(i: number): void {
+        this.nodes.delete(i);
+    }
 }
 
 /**
@@ -1151,12 +1477,10 @@ export class Molecule extends NodeWithNodes {
     /**
      * @returns The bonds of the molecule.
      */
-    getBonds(): Bond | undefined {
+    getBonds(): BondArray | undefined {
         let i: number | undefined = this.index.get(BondArray.tagName);
-        if (i == undefined) {
-            return undefined;
-        } else {
-            return this.nodes.get(i) as Bond;
+        if (i != undefined) {
+            return this.nodes.get(i) as BondArray;
         }
     }
 

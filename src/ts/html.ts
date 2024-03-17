@@ -150,7 +150,7 @@ export function resizeSelectElement(input: HTMLSelectElement, minSize?: number) 
  * @param id The id.
  * @returns An HTMLSelectElement.
  */
-export function getSelectElement(options: string[], name: string, id: string): HTMLSelectElement {
+export function getSelectElement(options: string[] | Set<string>, name: string, id: string): HTMLSelectElement {
     let selectElement: HTMLSelectElement = document.createElement('select');
     options.forEach(option => {
         selectElement.name = name;

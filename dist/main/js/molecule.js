@@ -87,7 +87,7 @@ class Bond extends xml_js_1.TagWithAttributes {
      */
     static tagName = "bond";
     /**
-     * The atomRefs2.
+     * The atomRefs2 stored for convenience, this is also stored as an attribute.
      */
     atomRefs2;
     /**
@@ -101,6 +101,50 @@ class Bond extends xml_js_1.TagWithAttributes {
         }
         this.atomRefs2 = atomRefs2;
     }
+    /**
+     * @param atomRefs2 The atomRefs2 to set.
+     */
+    setAtomRefs2(atomRefs2) {
+        this.atomRefs2 = atomRefs2;
+        if (this.attributes != undefined) {
+            this.attributes.set("atomRefs2", atomRefs2);
+        }
+    }
+    /**
+     * @returns The attribute value referred to by "id" or undefined.
+     */
+    getId() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("id");
+        }
+    }
+    /**
+     * @param id The id to set the attribute value referred to by "id".
+     */
+    setId(id) {
+        if (this.attributes != undefined) {
+            this.attributes.set("id", id);
+        }
+    }
+    /**
+     * @returns The attribute value referred to by "order" as a number or undefined.
+     */
+    getOrder() {
+        if (this.attributes != undefined) {
+            let order = this.attributes.get("order");
+            if (order != undefined) {
+                return parseFloat(order);
+            }
+        }
+    }
+    /**
+     * @param order The order to set the attribute value referred to by "order".
+     */
+    setOrder(order) {
+        if (this.attributes != undefined) {
+            this.attributes.set("order", order.toString());
+        }
+    }
 }
 exports.Bond = Bond;
 /**
@@ -113,14 +157,68 @@ class BondArray extends xml_js_1.NodeWithNodes {
      */
     static tagName = "bondArray";
     /**
+     * The bonds stored for convenience.
+     */
+    bonds;
+    /**
      * @param attributes The attributes.
      * @param bonds A Map of bonds with keys as ids.
      */
     constructor(attributes, bonds) {
         super(attributes, BondArray.tagName);
+        this.bonds = bonds;
         bonds.forEach(bond => {
             this.nodes.set(this.nodes.size, bond);
         });
+    }
+    /**
+     * @param i The index of the bond.
+     * @returns The bond at the given index.
+     * @throws Error if this.bonds has no such index.
+     */
+    getBond(i) {
+        return this.bonds[i];
+    }
+    /**
+     * @returns The bonds.
+     */
+    getBonds() {
+        return this.bonds;
+    }
+    /**
+     * Set the bond at the given index.
+     * @param i The index.
+     * @param bond The bond.
+     * @throws Error if this.bonds has no such index.
+     */
+    setBond(i, bond) {
+        this.bonds[i] = bond;
+        this.nodes.set(i, bond);
+    }
+    /**
+     * Adds a bond to the array.
+     * @param bond The bond to add.
+     */
+    addBond(bond) {
+        this.bonds.push(bond);
+        this.nodes.set(this.nodes.size, bond);
+    }
+    /**
+     * @param i The index of the bond to remove.
+     */
+    removeBond(i) {
+        this.bonds.splice(i, 1);
+        this.nodes.delete(i);
+    }
+    /**
+     * Get a set of all the bond ids.
+     */
+    getBondIds() {
+        let bondIds = new Set();
+        this.bonds.forEach((bond) => {
+            bondIds.add(bond.getId());
+        });
+        return bondIds;
     }
 }
 exports.BondArray = BondArray;
@@ -566,7 +664,7 @@ class EnergyTransferModel extends xml_js_1.NodeWithNodes {
 exports.EnergyTransferModel = EnergyTransferModel;
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
- * The attributes are expected to include "xsi:type" - expected values are either "ClassicalRotors" or "QMRotors".
+ * The attributes are expected to include either "xsi:type" or "name" - expected values are either "ClassicalRotors" or "QMRotors".
  */
 class DOSCMethod extends xml_js_1.TagWithAttributes {
     /**
@@ -579,26 +677,37 @@ class DOSCMethod extends xml_js_1.TagWithAttributes {
     constructor(attributes) {
         super(attributes, DOSCMethod.tagName);
         if (attributes.get("xsi:type") == undefined) {
+            let name = attributes.get("name");
+            if (name == undefined) {
+                throw new Error('Neither xsi:type or name are defined.');
+            }
+            else {
+                attributes.set("xsi:type", name);
+                attributes.delete("name");
+            }
+        }
+    }
+    /**
+     * @returns The xsi:type.
+     */
+    getXsiType() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("xsi:type");
+        }
+        else {
             throw new Error('xsi:type is undefined');
         }
     }
     /**
-     * @returns The xsi type of the DOSCMethod.
-     */
-    getXsiType() {
-        if (this.attributes == undefined) {
-            throw new Error('attributes is undefined');
-        }
-        return this.attributes.get("xsi:type");
-    }
-    /**
-     * @param xsiType The xsi type of the DOSCMethod.
+     * @param xsiType The xsi:type.
      */
     setXsiType(xsiType) {
-        if (this.attributes == undefined) {
-            throw new Error('attributes is undefined');
+        if (this.attributes != undefined) {
+            this.attributes.set("xsi:type", xsiType);
         }
-        this.attributes.set("xsi:type", xsiType);
+        else {
+            throw new Error('xsi:type is undefined');
+        }
     }
 }
 exports.DOSCMethod = DOSCMethod;
@@ -621,45 +730,174 @@ class BondRef extends xml_js_1.StringNode {
 exports.BondRef = BondRef;
 /**
  * In the XML, a "me:PotentialPoint" node is a child node of a "me:HinderedRotorPotential" node.
+ * The attributes must include "angle" and "potential".
  */
 class PotentialPoint extends xml_js_1.TagWithAttributes {
+    /**
+     * The tag name.
+     */
     static tagName = "me:PotentialPoint";
+    /**
+     * The angle stored for convenience, this is also an attribute.
+     */
+    angle;
+    /**
+     * The potential stored for convenience, this is also an attribute.
+     */
+    potential;
     /**
      * @param attributes The attributes.
      */
     constructor(attributes) {
         super(attributes, PotentialPoint.tagName);
+        let angle = attributes.get("angle");
+        if (angle == undefined) {
+            throw new Error('angle is undefined');
+        }
+        this.angle = parseFloat(angle);
+        let potential = attributes.get("potential");
+        if (potential == undefined) {
+            throw new Error('potential is undefined');
+        }
+        this.potential = parseFloat(potential);
+    }
+    /**
+     * @returns The angle.
+     */
+    getAngle() {
+        return this.angle;
+    }
+    /**
+     * @param angle The angle of the PotentialPoint.
+     */
+    setAngle(angle) {
+        this.angle = angle;
+        if (this.attributes != undefined) {
+            this.attributes.set("angle", angle.toString());
+        }
+    }
+    /**
+     * @returns The potential.
+     */
+    getPotential() {
+        return this.potential;
+    }
+    /**
+     * @param potential The potential of the PotentialPoint.
+     */
+    setPotential(potential) {
+        this.potential = potential;
+        if (this.attributes != undefined) {
+            this.attributes.set("potential", potential.toString());
+        }
     }
 }
 exports.PotentialPoint = PotentialPoint;
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
+ * It may have one or more "me:PotentialPoint" child nodes.
+ * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (with a value from ["kJ/mol", "cm-1", "Hartree"]).
  */
 class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
+    /**
+     * The tag name.
+     */
     static tagName = "me:HinderedRotorPotential";
+    /**
+     * The permitted formats.
+     */
+    static formats = ["numerical", "analytical"];
+    /**
+     * The permitted units.
+     */
+    static units = ["kJ/mol", "cm-1", "Hartree"];
+    /**
+     * The format stored for convenience, this is also an attribute.
+     */
+    format;
+    /**
+     * The units stored for convenience, this is also an attribute.
+     */
+    units;
     /**
      * @param {Map<string, string>} attributes The attributes.
      * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
      */
     constructor(attributes, potentialPoints) {
         super(attributes, HinderedRotorPotential.tagName);
-        potentialPoints.forEach(p => {
-            this.nodes.set(this.nodes.size, p);
-        });
+        let format = attributes.get("format");
+        if (format == undefined) {
+            throw new Error('format is undefined');
+        }
+        this.format = format;
+        let units = attributes.get("units");
+        if (units == undefined) {
+            throw new Error('units is undefined');
+        }
+        this.units = units;
+        if (potentialPoints != undefined) {
+            potentialPoints.forEach(p => {
+                this.nodes.set(this.nodes.size, p);
+            });
+        }
+    }
+    /**
+     * @returns The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */
+    getFormat() {
+        return this.format;
+    }
+    /**
+     * @param format The format of the HinderedRotorPotential.
+     * Should be one of ["numerical", "analytical"].
+     */
+    setFormat(format) {
+        this.format = format;
+        if (this.attributes != undefined) {
+            this.attributes.set("format", format);
+        }
+    }
+    /**
+     * @returns The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */
+    getUnits() {
+        return this.units;
+    }
+    /**
+     * @param units The units of the HinderedRotorPotential.
+     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     */
+    setUnits(units) {
+        this.units = units;
+        if (this.attributes != undefined) {
+            this.attributes.set("units", units);
+        }
     }
     /**
      * @returns The potential point with the given index.
      */
-    getPotentialPoint(index) {
-        return this.nodes.get(index);
+    getPotentialPoint(i) {
+        return this.nodes.get(i);
     }
     /**
      * Set the potential point at the given index.
-     * @param index The index to set the potential point at.
+     * @param i The index to set the potential point at.
      * @param p The potential point to set at the index.
      */
-    setPotentialPoints(index, p) {
-        this.nodes.set(index, p);
+    setPotentialPoint(i, p) {
+        this.nodes.set(i, p);
+    }
+    /**
+     * Sets the potential points.
+     * @param potentialPoints The potential points.
+     */
+    setPotentialPoints(potentialPoints) {
+        this.nodes.clear();
+        potentialPoints.forEach(p => {
+            this.nodes.set(this.nodes.size, p);
+        });
     }
     /**
      * Add the potential point.
@@ -669,6 +907,12 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
     addPotentialPoint(p) {
         this.nodes.set(this.nodes.size, p);
         return this.nodes.size - 1;
+    }
+    /**
+     * @param i The index of the potential point to remove.
+     */
+    removePotentialPoint(i) {
+        this.nodes.delete(i);
     }
 }
 exports.HinderedRotorPotential = HinderedRotorPotential;
@@ -1050,10 +1294,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     getBonds() {
         let i = this.index.get(BondArray.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        else {
+        if (i != undefined) {
             return this.nodes.get(i);
         }
     }
