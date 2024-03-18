@@ -1,84 +1,24 @@
 import {
-    Tag, NodeWithNodes, NumberNode
+    Tag, NodeWithNodes, NumberNode, TagWithAttributes, StringNode
 } from "./xml";
 
 /**
- * A class for me:testDOS.
+ * A class for "me:calculateRateCoefficientsOnly".
  */
-export class TestDOS extends Tag {
+export class CalculateRateCoefficientsOnly extends Tag {
 
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:testDOS";
+    static readonly tagName: string = "me:calculateRateCoefficientsOnly";
 
     constructor() {
-        super(TestDOS.tagName);
+        super(CalculateRateCoefficientsOnly.tagName);
     }
 }
 
 /**
- * A class for me:printSpeciesProfile.
- */
-export class PrintSpeciesProfile extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:printSpeciesProfile";
-
-    constructor() {
-        super(PrintSpeciesProfile.tagName);
-    }
-}
-
-/**
- * A class for me:testMicroRates.
- */
-export class TestMicroRates extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:testMicroRates";
-
-    constructor() {
-        super(TestMicroRates.tagName);
-    }
-}
-
-/**
- * A class for me:testRateConstant.
- */
-export class TestRateConstant extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:testRateConstant";
-
-    constructor() {
-        super(TestRateConstant.tagName);
-    }
-}
-
-/**
- * A class for me:printGrainDOS.
- */
-export class PrintGrainDOS extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:printGrainDOS";
-
-    constructor() {
-        super(PrintGrainDOS.tagName);
-    }
-}
-
-/**
- * A class for me:printCellDOS.
+ * A class for "me:printCellDOS".
  */
 export class PrintCellDOS extends Tag {
 
@@ -93,7 +33,22 @@ export class PrintCellDOS extends Tag {
 }
 
 /**
- * A class for me:printReactionOperatorColumnSums.
+ * A class for "me:printCellTransitionStateFlux".
+ */
+export class PrintCellTransitionStateFlux extends Tag {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:printCellTransitionStateFlux";
+
+    constructor() {
+        super(PrintCellTransitionStateFlux.tagName);
+    }
+}
+
+/**
+ * A class for "me:printReactionOperatorColumnSums".
  */
 export class PrintReactionOperatorColumnSums extends Tag {
 
@@ -108,37 +63,7 @@ export class PrintReactionOperatorColumnSums extends Tag {
 }
 
 /**
- * A class for me:printTunnellingCoefficients.
- */
-export class PrintTunnellingCoefficients extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:printTunnellingCoefficients";
-
-    constructor() {
-        super(PrintTunnellingCoefficients.tagName);
-    }
-}
-
-/**
- * A class for me:printGrainkfE.
- */
-export class PrintGrainkfE extends Tag {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:printGrainkfE";
-
-    constructor() {
-        super(PrintGrainkfE.tagName);
-    }
-}
-
-/**
- * A class for me:printGrainBoltzmann.
+ * A class for "me:printGrainBoltzmann".
  */
 export class PrintGrainBoltzmann extends Tag {
 
@@ -153,7 +78,22 @@ export class PrintGrainBoltzmann extends Tag {
 }
 
 /**
- * A class for me:printGrainkbE.
+ * A class for "me:printGrainDOS".
+ */
+export class PrintGrainDOS extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainDOS";
+
+    constructor() {
+        super(PrintGrainDOS.tagName);
+    }
+}
+
+/**
+ * A class for "me:printGrainkbE".
  */
 export class PrintGrainkbE extends Tag {
 
@@ -168,22 +108,202 @@ export class PrintGrainkbE extends Tag {
 }
 
 /**
- * A class for me:eigenvalues.
+ * A class for "me:printGrainkfE".
  */
-export class Eigenvalues extends NumberNode {
+export class PrintGrainkfE extends Tag {
 
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:eigenvalues";
+    static readonly tagName: string = "me:printGrainkfE";
 
-    constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Eigenvalues.tagName, value);
+    constructor() {
+        super(PrintGrainkfE.tagName);
     }
 }
 
 /**
- * A class for me:hideInactive.
+ * A class for "me:printTSsos".
+ */
+export class PrintTSsos extends Tag {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:printTSsos";
+
+    constructor() {
+        super(PrintTSsos.tagName);
+    }
+}
+
+/**
+ * A class for "me:printGrainedSpeciesProfile".
+ */
+export class PrintGrainedSpeciesProfile extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainedSpeciesProfile";
+
+    constructor() {
+        super(PrintGrainedSpeciesProfile.tagName);
+    }
+}
+
+/**
+ * A class for "me:printGrainTransitionStateFlux".
+ */
+export class PrintGrainTransitionStateFlux extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printGrainTransitionStateFlux";
+
+    constructor() {
+        super(PrintGrainTransitionStateFlux.tagName);
+    }
+}
+
+/**
+ * A class for "me:printReactionOperatorSize".
+ */
+export class PrintReactionOperatorSize extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printReactionOperatorSize";
+
+    constructor() {
+        super(PrintReactionOperatorSize.tagName);
+    }
+}
+
+/**
+ * A class for "me:printSpeciesProfile".
+ */
+export class PrintSpeciesProfile extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printSpeciesProfile";
+
+    constructor() {
+        super(PrintSpeciesProfile.tagName);
+    }
+}
+
+/**
+ * A class for "me:printPhenomenologicalEvolution".
+ */
+export class PrintPhenomenologicalEvolution extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printPhenomenologicalEvolution";
+
+    constructor() {
+        super(PrintPhenomenologicalEvolution.tagName);
+    }
+}
+
+/**
+ * A class for "me:printTunnelingCoefficients".
+ */
+export class PrintTunnelingCoefficients extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printTunnelingCoefficients";
+
+    constructor() {
+        super(PrintTunnelingCoefficients.tagName);
+    }
+}
+
+/**
+ * A class for "me:printCrossingCoefficients".
+ */
+export class PrintCrossingCoefficients extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:printCrossingCoefficients";
+
+    constructor() {
+        super(PrintCrossingCoefficients.tagName);
+    }
+}
+
+/**
+ * A class for "me:testDOS".
+ */
+export class TestDOS extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:testDOS";
+
+    constructor() {
+        super(TestDOS.tagName);
+    }
+}
+
+/**
+ * A class for "me:testRateConstant".
+ */
+export class TestRateConstants extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:testRateConstants";
+
+    constructor() {
+        super(TestRateConstants.tagName);
+    }
+}
+
+/**
+ * A class for "me:useTheSameCellNumberForAllConditions.
+ */
+export class UseTheSameCellNumberForAllConditions extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:useTheSameCellNumberForAllConditions";
+
+    constructor() {
+        super(UseTheSameCellNumberForAllConditions.tagName);
+    }
+}
+
+/**
+ * A class for "me:ForceMacroDetailedBalance".
+ */
+export class ForceMacroDetailedBalance extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:ForceMacroDetailedBalance";
+
+    constructor() {
+        super(ForceMacroDetailedBalance.tagName);
+    }
+}
+
+/**
+ * A class for "me:hideInactive".
  */
 export class HideInactive extends Tag {
 
@@ -198,7 +318,103 @@ export class HideInactive extends Tag {
 }
 
 /**
- * A class for me:diagramEnergyOffset.
+ * A class for "me:calcMethod".
+ */
+export class CalcMethod extends StringNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:calcMethod";
+
+    /**
+     * The possible values.
+     */
+    static readonly options: string[] = ["simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation",
+        "ThermodynamicTable", "sensitivityAnalysis"];
+
+    /**
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: string) {
+        super(attributes, CalcMethod.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:eigenvalues".
+ */
+export class Eigenvalues extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:eigenvalues";
+
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Eigenvalues.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:shortestTimeOfInterest".
+ */
+export class ShortestTimeOfInterest extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:shortestTimeOfInterest";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, ShortestTimeOfInterest.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:MaximumEvolutionTime".
+ */
+export class MaximumEvolutionTime extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:MaximumEvolutionTime";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, MaximumEvolutionTime.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:automaticallySetMaxEne".
+ */
+export class AutomaticallySetMaxEne extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:automaticallySetMaxEne";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, AutomaticallySetMaxEne.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:diagramEnergyOffset".
  */
 export class DiagramEnergyOffset extends NumberNode {
 
@@ -207,8 +423,94 @@ export class DiagramEnergyOffset extends NumberNode {
      */
     static readonly tagName: string = "me:diagramEnergyOffset";
 
+    /**
+      * @param attributes The attributes.
+      * @param value The value.
+      */
     constructor(attributes: Map<string, string>, value: number) {
         super(attributes, DiagramEnergyOffset.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:testMicroRates".
+ * Expected numerical attributes: Tmin, Tmax, Tstep.
+ */
+export class TestMicroRates extends TagWithAttributes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:testMicroRates";
+
+    /**
+     * The minimum temperature.
+     */
+    tMin: number;
+
+    /**
+     * The maximum temperature.
+     */
+    tMax: number;
+
+    /**
+     * The temperature step.
+     */
+    tStep: number;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, TestMicroRates.tagName);
+        this.tMin = parseFloat(attributes.get("Tmin") as string);
+        this.tMax = parseFloat(attributes.get("Tmax") as string);
+        this.tStep = parseFloat(attributes.get("Tstep") as string);
+    }
+
+    /**
+     * @returns The maximum temperature.
+     */
+    getTmin(): number {
+        return this.tMin;
+    }
+
+    /**
+     * @param tMin The minimum temperature.
+     */
+    setTmin(tMin: number) {
+        this.tMin = tMin;
+        this.attributes?.set("Tmin", tMin.toString());
+    }
+
+    /**
+     * @returns The maximum temperature.
+     */
+    getTmax(): number {
+        return this.tMax;
+    }
+
+    /**
+     * @param tMax The maximum temperature.
+     */
+    setTmax(tMax: number) {
+        this.tMax = tMax;
+        this.attributes?.set("Tmax", tMax.toString());
+    }
+
+    /**
+     * @returns The temperature step.
+     */
+    getTstep(): number {
+        return this.tStep;
+    }
+
+    /**
+     * @param tStep The temperature step.
+     */
+    setTstep(tStep: number) {
+        this.tStep = tStep;
+        this.attributes?.set("Tstep", tStep.toString());
     }
 }
 
@@ -226,266 +528,52 @@ export class Control extends NodeWithNodes {
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
     index: Map<string, number>;
-    
+
     /**
      * @param attributes The attributes.
-     * @param testDOS The testDOS.
-     * @param printSpeciesProfile The printSpeciesProfile.
-     * @param testMicroRates The testMicroRates.
-     * @param testRateConstant T
-     * @param printGrainDOS The printGrainDOS.
-     * @param printCellDOS The printCellDOS.
-     * @param printReactionOperatorColumnSums The printReactionOperatorColumnSums.
-     * @param printTunnellingCoefficients The printTunnellingCoefficients.
-     * @param printGrainkfE The printGrainkfE.
-     * @param printGrainBoltzmann The printGrainBoltzmann.
-     * @param printGrainkbE The printGrainkbE.
-     * @param eigenvalues The eigenvalues.
-     * @param hideInactive The hideInactive.
-     * @param diagramEnergyOffset The diagramEnergyOffset.
      */
-    constructor(attributes: Map<string,string>, testDOS?: TestDOS, printSpeciesProfile?: PrintSpeciesProfile, 
-        testMicroRates?: TestMicroRates, testRateConstant?: TestRateConstant, printGrainDOS?: PrintGrainDOS, 
-        printCellDOS?: PrintCellDOS, printReactionOperatorColumnSums?: PrintReactionOperatorColumnSums, 
-        printTunnellingCoefficients?: PrintTunnellingCoefficients, printGrainkfE?: PrintGrainkfE, 
-        printGrainBoltzmann?: PrintGrainBoltzmann, printGrainkbE?: PrintGrainkbE, eigenvalues?: Eigenvalues, 
-        hideInactive?: HideInactive, diagramEnergyOffset?: DiagramEnergyOffset) {
+    constructor(attributes: Map<string, string>) {
         super(attributes, Control.tagName);
         this.index = new Map<string, number>();
-        if (testDOS != undefined) {
-            this.addNode(testDOS);
-            this.index.set(TestDOS.tagName, this.index.size);
-        }
-        if (printSpeciesProfile != undefined) {
-            this.addNode(printSpeciesProfile);
-            this.index.set(PrintSpeciesProfile.tagName, this.index.size);
-        }
-        if (testMicroRates != undefined) {
-            this.addNode(testMicroRates);
-            this.index.set(TestMicroRates.tagName, this.index.size);
-        }
-        if (testRateConstant != undefined) {
-            this.addNode(testRateConstant);
-            this.index.set(TestRateConstant.tagName, this.index.size);
-        }
-        if (printGrainDOS != undefined) {
-            this.addNode(printGrainDOS);
-            this.index.set(PrintGrainDOS.tagName, this.index.size);
-        }
-        if (printCellDOS != undefined) {
-            this.addNode(printCellDOS);
-            this.index.set(PrintCellDOS.tagName, this.index.size);
-        }
-        if (printReactionOperatorColumnSums != undefined) {
-            this.addNode(printReactionOperatorColumnSums);
-            this.index.set(PrintReactionOperatorColumnSums.tagName, this.index.size);
-        }
-        if (printTunnellingCoefficients != undefined) {
-            this.addNode(printTunnellingCoefficients);
-            this.index.set(PrintTunnellingCoefficients.tagName, this.index.size);
-        }
-        if (printGrainkfE != undefined) {
-            this.addNode(printGrainkfE);
-            this.index.set(PrintGrainkfE.tagName, this.index.size);
-        }
-        if (printGrainBoltzmann != undefined) {
-            this.addNode(printGrainBoltzmann);
-            this.index.set(PrintGrainBoltzmann.tagName, this.index.size);
-        }
-        if (printGrainkbE != undefined) {
-            this.addNode(printGrainkbE);
-            this.index.set(PrintGrainkbE.tagName, this.index.size);
-        }
-        if (eigenvalues != undefined) {
-            this.addNode(eigenvalues);
-            this.index.set(Eigenvalues.tagName, this.index.size);
-        }
-        if (hideInactive != undefined) {
-            this.addNode(hideInactive);
-            this.index.set(HideInactive.tagName, this.index.size);
-        }
-        if (diagramEnergyOffset != undefined) {
-            this.addNode(diagramEnergyOffset);
-            this.index.set(DiagramEnergyOffset.tagName, this.index.size);
-        }
     }
 
     /**
-     * @returns The testDOS or undefined.
+     * @returns The calculateRateCoefficientsOnly or undefined.
      */
-    getTestDOS(): TestDOS | undefined {
-        let i = this.index.get(TestDOS.tagName);
+    getCalculateRateCoefficientsOnly(): CalculateRateCoefficientsOnly | undefined {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
         if (i != undefined) {
-            return this.nodes.get(i) as TestDOS;
-        }
-    }
-
-    /**
-     * @param testDOS The testDOS.
-     */
-    setTestDOS(testDOS: TestDOS) {
-        let i = this.index.get(TestDOS.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, testDOS);
-        } else {
-            this.index.set(TestDOS.tagName, this.nodes.size);
-            this.addNode(testDOS);
-        }
-    }
-
-    /**
-     * Remove the testDOS.
-     */
-    removeTestDOS() {
-        let i = this.index.get(TestDOS.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestDOS.tagName);
-        }
-    }
-
-    /**
-     * @returns The PrintSpeciesProfile or undefined.
-     */
-    getPrintSpeciesProfile(): PrintSpeciesProfile | undefined {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as PrintSpeciesProfile;
+            return this.nodes.get(i) as CalculateRateCoefficientsOnly;
         }
         return undefined;
     }
 
     /**
-     * @param printSpeciesProfile The printSpeciesProfile.
+     * @param calculateRateCoefficientsOnly The calculateRateCoefficientsOnly.
      */
-    setPrintSpeciesProfile(printSpeciesProfile: PrintSpeciesProfile) {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
+    setCalculateRateCoefficientsOnly(calculateRateCoefficientsOnly: CalculateRateCoefficientsOnly) {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
         if (i != undefined) {
-            this.nodes.set(i, printSpeciesProfile);
+            this.nodes.set(i, calculateRateCoefficientsOnly);
         } else {
-            this.index.set(PrintSpeciesProfile.tagName, this.nodes.size);
-            this.addNode(printSpeciesProfile);
+            this.index.set(CalculateRateCoefficientsOnly.tagName, this.nodes.size);
+            this.addNode(calculateRateCoefficientsOnly);
         }
     }
 
     /**
-     * Remove the printSpeciesProfile.
+     * Remove the calculateRateCoefficientsOnly.
      */
-    removePrintSpeciesProfile() {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
+    removeCalculateRateCoefficientsOnly() {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(PrintSpeciesProfile.tagName);
+            this.index.delete(CalculateRateCoefficientsOnly.tagName);
         }
     }
 
     /**
-     * @returns The TestMicroRates or undefined.
-     */
-    getTestMicroRates(): TestMicroRates | undefined {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as TestMicroRates;
-        }
-        return undefined;
-    }
-
-    /**
-     * @param testMicroRates The testMicroRates.
-     */
-    setTestMicroRates(testMicroRates: TestMicroRates) {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, testMicroRates);
-        } else {
-            this.index.set(TestMicroRates.tagName, this.nodes.size);
-            this.addNode(testMicroRates);
-        }
-    }
-
-    /**
-     * Remove the testMicroRates.
-     */
-    removeTestMicroRates() {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestMicroRates.tagName);
-        }
-    }
-
-    /**
-     * @returns The TestRateConstant or undefined.
-     */
-    getTestRateConstant(): TestRateConstant | undefined {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as TestRateConstant;
-        }
-        return undefined;
-    }
-
-    /**
-     * @param testRateConstant The testRateConstant.
-     */
-    setTestRateConstant(testRateConstant: TestRateConstant) {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, testRateConstant);
-        } else {
-            this.index.set(TestRateConstant.tagName, this.nodes.size);
-            this.addNode(testRateConstant);
-        }
-    }
-
-    /**
-     * Remove the testRateConstant.
-     */
-    removeTestRateConstant() {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestRateConstant.tagName);
-        }
-    }
-
-    /**
-     * @returns The PrintGrainDOS or undefined.
-     */
-    getPrintGrainDOS(): PrintGrainDOS | undefined {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as PrintGrainDOS;
-        }
-        return undefined;
-    }
-
-    /**
-     * @param printGrainDOS The printGrainDOS.
-     */
-    setPrintGrainDOS(printGrainDOS: PrintGrainDOS) {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, printGrainDOS);
-        } else {
-            this.index.set(PrintGrainDOS.tagName, this.nodes.size);
-            this.addNode(printGrainDOS);
-        }
-    }
-
-    /**
-     * Remove the printGrainDOS.
-     */
-    removePrintGrainDOS() {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintGrainDOS.tagName);
-        }
-    }
-
-    /**
-     * @returns The PrintCellDOS or undefined.
+     * @returns The printCellDOS or undefined.
      */
     getPrintCellDOS(): PrintCellDOS | undefined {
         let i = this.index.get(PrintCellDOS.tagName);
@@ -520,7 +608,42 @@ export class Control extends NodeWithNodes {
     }
 
     /**
-     * @returns The PrintReactionOperatorColumnSums or undefined.
+     * @returns The printCellTransitionStateFlux or undefined.
+     */
+    getPrintCellTransitionStateFlux(): PrintCellTransitionStateFlux | undefined {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintCellTransitionStateFlux;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printCellTransitionStateFlux The printCellTransitionStateFlux.
+     */
+    setPrintCellTransitionStateFlux(printCellTransitionStateFlux: PrintCellTransitionStateFlux) {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printCellTransitionStateFlux);
+        } else {
+            this.index.set(PrintCellTransitionStateFlux.tagName, this.nodes.size);
+            this.addNode(printCellTransitionStateFlux);
+        }
+    }
+
+    /**
+     * Remove the printCellTransitionStateFlux.
+     */
+    removePrintCellTransitionStateFlux() {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintCellTransitionStateFlux.tagName);
+        }
+    }
+
+    /**
+     * @returns The printReactionOperatorColumnSums or undefined.
      */
     getPrintReactionOperatorColumnSums(): PrintReactionOperatorColumnSums | undefined {
         let i = this.index.get(PrintReactionOperatorColumnSums.tagName);
@@ -555,77 +678,7 @@ export class Control extends NodeWithNodes {
     }
 
     /**
-     * @returns The PrintTunnellingCoefficients or undefined.
-     */
-    getPrintTunnellingCoefficients(): PrintTunnellingCoefficients | undefined {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as PrintTunnellingCoefficients;
-        }
-        return undefined;
-    }
-
-    /**
-     * @param printTunnellingCoefficients The printTunnellingCoefficients.
-     */
-    setPrintTunnellingCoefficients(printTunnellingCoefficients: PrintTunnellingCoefficients) {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, printTunnellingCoefficients);
-        } else {
-            this.index.set(PrintTunnellingCoefficients.tagName, this.nodes.size);
-            this.addNode(printTunnellingCoefficients);
-        }
-    }
-
-    /**
-     * Remove the printTunnellingCoefficients.
-     */
-    removePrintTunnellingCoefficients() {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintTunnellingCoefficients.tagName);
-        }
-    }
-
-    /**
-     * @returns The PrintGrainkfE or undefined.
-     */
-    getPrintGrainkfE(): PrintGrainkfE | undefined {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as PrintGrainkfE;
-        }
-        return undefined;
-    }
-
-    /**
-     * @param printGrainkfE The printGrainkfE.
-     */
-    setPrintGrainkfE(printGrainkfE: PrintGrainkfE) {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, printGrainkfE);
-        } else {
-            this.index.set(PrintGrainkfE.tagName, this.nodes.size);
-            this.addNode(printGrainkfE);
-        }
-    }
-
-    /**
-     * Remove the printGrainkfE.
-     */
-    removePrintGrainkfE() {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintGrainkfE.tagName);
-        }
-    }
-
-    /**
-     * @returns The PrintGrainBoltzmann or undefined.
+     * @returns The printGrainBoltzmann or undefined.
      */
     getPrintGrainBoltzmann(): PrintGrainBoltzmann | undefined {
         let i = this.index.get(PrintGrainBoltzmann.tagName);
@@ -660,7 +713,42 @@ export class Control extends NodeWithNodes {
     }
 
     /**
-     * @returns The PrintGrainkbE or undefined.
+     * @returns The printGrainDOS or undefined.
+     */
+    getPrintGrainDOS(): PrintGrainDOS | undefined {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintGrainDOS;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printGrainDOS The printGrainDOS.
+     */
+    setPrintGrainDOS(printGrainDOS: PrintGrainDOS) {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printGrainDOS);
+        } else {
+            this.index.set(PrintGrainDOS.tagName, this.nodes.size);
+            this.addNode(printGrainDOS);
+        }
+    }
+
+    /**
+     * Remove the printGrainDOS.
+     */
+    removePrintGrainDOS() {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainDOS.tagName);
+        }
+    }
+
+    /**
+     * @returns The printGrainkbE or undefined.
      */
     getPrintGrainkbE(): PrintGrainkbE | undefined {
         let i = this.index.get(PrintGrainkbE.tagName);
@@ -695,37 +783,422 @@ export class Control extends NodeWithNodes {
     }
 
     /**
-     * @returns The eigenvalues or undefined.
+     * @returns The printGrainkfE or undefined.
      */
-    getEigenvalues(): Eigenvalues | undefined {
-        let i = this.index.get(Eigenvalues.tagName);
+    getPrintGrainkfE(): PrintGrainkfE | undefined {
+        let i = this.index.get(PrintGrainkfE.tagName);
         if (i != undefined) {
-            return this.nodes.get(i) as Eigenvalues;
+            return this.nodes.get(i) as PrintGrainkfE;
         }
         return undefined;
     }
 
     /**
-     * @param eigenvalues The eigenvalues.
+     * @param printGrainkfE The printGrainkfE.
      */
-    setEigenvalues(eigenvalues: Eigenvalues) {
-        let i = this.index.get(Eigenvalues.tagName);
+    setPrintGrainkfE(printGrainkfE: PrintGrainkfE) {
+        let i = this.index.get(PrintGrainkfE.tagName);
         if (i != undefined) {
-            this.nodes.set(i, eigenvalues);
+            this.nodes.set(i, printGrainkfE);
         } else {
-            this.index.set(Eigenvalues.tagName, this.nodes.size);
-            this.addNode(eigenvalues);
+            this.index.set(PrintGrainkfE.tagName, this.nodes.size);
+            this.addNode(printGrainkfE);
         }
     }
 
     /**
-     * Remove the eigenvalues.
+     * Remove the printGrainkfE.
      */
-    removeEigenvalues() {
-        let i = this.index.get(Eigenvalues.tagName);
+    removePrintGrainkfE() {
+        let i = this.index.get(PrintGrainkfE.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(Eigenvalues.tagName);
+            this.index.delete(PrintGrainkfE.tagName);
+        }
+    }
+
+    /**
+     * @returns The printTSsos or undefined.
+     */
+    getPrintTSsos(): PrintTSsos | undefined {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintTSsos;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printTSsos The printTSsos.
+     */
+    setPrintTSsos(printTSsos: PrintTSsos) {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printTSsos);
+        } else {
+            this.index.set(PrintTSsos.tagName, this.nodes.size);
+            this.addNode(printTSsos);
+        }
+    }
+
+    /**
+     * Remove the printTSsos.
+     */
+    removePrintTSsos() {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintTSsos.tagName);
+        }
+    }
+
+    /**
+     * @returns The printGrainedSpeciesProfile or undefined.
+     */
+    getPrintGrainedSpeciesProfile(): PrintGrainedSpeciesProfile | undefined {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintGrainedSpeciesProfile;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printGrainedSpeciesProfile The printGrainedSpeciesProfile.
+     */
+    setPrintGrainedSpeciesProfile(printGrainedSpeciesProfile: PrintGrainedSpeciesProfile) {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printGrainedSpeciesProfile);
+        } else {
+            this.index.set(PrintGrainedSpeciesProfile.tagName, this.nodes.size);
+            this.addNode(printGrainedSpeciesProfile);
+        }
+    }
+
+    /**
+     * Remove the printGrainedSpeciesProfile.
+     */
+    removePrintGrainedSpeciesProfile() {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainedSpeciesProfile.tagName);
+        }
+    }
+
+    /**
+     * @returns The printGrainTransitionStateFlux or undefined.
+     */
+    getPrintGrainTransitionStateFlux(): PrintGrainTransitionStateFlux | undefined {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintGrainTransitionStateFlux;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printGrainTransitionStateFlux The printGrainTransitionStateFlux.
+     */
+    setPrintGrainTransitionStateFlux(printGrainTransitionStateFlux: PrintGrainTransitionStateFlux) {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printGrainTransitionStateFlux);
+        } else {
+            this.index.set(PrintGrainTransitionStateFlux.tagName, this.nodes.size);
+            this.addNode(printGrainTransitionStateFlux);
+        }
+    }
+
+    /**
+     * Remove the printGrainTransitionStateFlux.
+     */
+    removePrintGrainTransitionStateFlux() {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainTransitionStateFlux.tagName);
+        }
+    }
+
+    /**
+     * @returns The printReactionOperatorSize or undefined.
+     */
+    getPrintReactionOperatorSize(): PrintReactionOperatorSize | undefined {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintReactionOperatorSize;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printReactionOperatorSize The printReactionOperatorSize.
+     */
+    setPrintReactionOperatorSize(printReactionOperatorSize: PrintReactionOperatorSize) {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printReactionOperatorSize);
+        } else {
+            this.index.set(PrintReactionOperatorSize.tagName, this.nodes.size);
+            this.addNode(printReactionOperatorSize);
+        }
+    }
+
+    /**
+     * Remove the printReactionOperatorSize.
+     */
+    removePrintReactionOperatorSize() {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintReactionOperatorSize.tagName);
+        }
+    }
+
+    /**
+     * @returns The printSpeciesProfile or undefined.
+     */
+    getPrintSpeciesProfile(): PrintSpeciesProfile | undefined {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintSpeciesProfile;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printSpeciesProfile The printSpeciesProfile.
+     */
+    setPrintSpeciesProfile(printSpeciesProfile: PrintSpeciesProfile) {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printSpeciesProfile);
+        } else {
+            this.index.set(PrintSpeciesProfile.tagName, this.nodes.size);
+            this.addNode(printSpeciesProfile);
+        }
+    }
+
+    /**
+     * Remove the printSpeciesProfile.
+     */
+    removePrintSpeciesProfile() {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintSpeciesProfile.tagName);
+        }
+    }
+
+    /**
+     * @returns The printPhenomenologicalEvolution or undefined.
+     */
+    getPrintPhenomenologicalEvolution(): PrintPhenomenologicalEvolution | undefined {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintPhenomenologicalEvolution;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printPhenomenologicalEvolution The printPhenomenologicalEvolution.
+     */
+    setPrintPhenomenologicalEvolution(printPhenomenologicalEvolution: PrintPhenomenologicalEvolution) {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printPhenomenologicalEvolution);
+        } else {
+            this.index.set(PrintPhenomenologicalEvolution.tagName, this.nodes.size);
+            this.addNode(printPhenomenologicalEvolution);
+        }
+    }
+
+    /**
+     * Remove the printPhenomenologicalEvolution.
+     */
+    removePrintPhenomenologicalEvolution() {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintPhenomenologicalEvolution.tagName);
+        }
+    }
+
+    /**
+     * @returns The printTunnelingCoefficients or undefined.
+     */
+    getPrintTunnelingCoefficients(): PrintTunnelingCoefficients | undefined {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintTunnelingCoefficients;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printTunnelingCoefficients The printTunnelingCoefficients.
+     */
+    setPrintTunnelingCoefficients(printTunnelingCoefficients: PrintTunnelingCoefficients) {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printTunnelingCoefficients);
+        } else {
+            this.index.set(PrintTunnelingCoefficients.tagName, this.nodes.size);
+            this.addNode(printTunnelingCoefficients);
+        }
+    }
+
+    /**
+     * Remove the printTunnelingCoefficients.
+     */
+    removePrintTunnelingCoefficients() {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintTunnelingCoefficients.tagName);
+        }
+    }
+
+    /**
+     * @returns The printCrossingCoefficients or undefined.
+     */
+    getPrintCrossingCoefficients(): PrintCrossingCoefficients | undefined {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as PrintCrossingCoefficients;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param printCrossingCoefficients The printCrossingCoefficients.
+     */
+    setPrintCrossingCoefficients(printCrossingCoefficients: PrintCrossingCoefficients) {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, printCrossingCoefficients);
+        } else {
+            this.index.set(PrintCrossingCoefficients.tagName, this.nodes.size);
+            this.addNode(printCrossingCoefficients);
+        }
+    }
+
+    /**
+     * Remove the printCrossingCoefficients.
+     */
+    removePrintCrossingCoefficients() {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintCrossingCoefficients.tagName);
+        }
+    }
+
+    /**
+     * @returns The testDOS or undefined.
+     */
+    getTestDOS(): TestDOS | undefined {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as TestDOS;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param testDOS The testDOS.
+     */
+    setTestDOS(testDOS: TestDOS) {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, testDOS);
+        } else {
+            this.index.set(TestDOS.tagName, this.nodes.size);
+            this.addNode(testDOS);
+        }
+    }
+
+    /**
+     * Remove the testDOS.
+     */
+    removeTestDOS() {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestDOS.tagName);
+        }
+    }
+
+    /**
+     * @returns The testRateConstant or undefined.
+     */
+    getTestRateConstants(): TestRateConstants | undefined {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as TestRateConstants;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param testRateConstant The testRateConstant.
+     */
+    setTestRateConstants(testRateConstant: TestRateConstants) {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, testRateConstant);
+        } else {
+            this.index.set(TestRateConstants.tagName, this.nodes.size);
+            this.addNode(testRateConstant);
+        }
+    }
+
+    /**
+     * Remove the testRateConstant.
+     */
+    removeTestRateConstants() {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestRateConstants.tagName);
+        }
+    }
+
+    /**
+     * @returns The useTheSameCellNumberForAllConditions or undefined.
+     */
+    getUseTheSameCellNumberForAllConditions(): UseTheSameCellNumberForAllConditions | undefined {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as UseTheSameCellNumberForAllConditions;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param useTheSameCellNumberForAllConditions The useTheSameCellNumberForAllConditions.
+     */
+    setUseTheSameCellNumberForAllConditions(useTheSameCellNumberForAllConditions: UseTheSameCellNumberForAllConditions) {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, useTheSameCellNumberForAllConditions);
+        } else {
+            this.index.set(UseTheSameCellNumberForAllConditions.tagName, this.nodes.size);
+            this.addNode(useTheSameCellNumberForAllConditions);
+        }
+    }
+
+    /**
+     * Remove the useTheSameCellNumberForAllConditions.
+     */
+    removeUseTheSameCellNumberForAllConditions() {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(UseTheSameCellNumberForAllConditions.tagName);
         }
     }
 
@@ -765,7 +1238,217 @@ export class Control extends NodeWithNodes {
     }
 
     /**
-     * @returns The diagramEnergyOffset or undefined.
+     * @returns The ForceMacroDetailedBalance or undefined.
+     */
+    getForceMacroDetailedBalance(): ForceMacroDetailedBalance | undefined {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ForceMacroDetailedBalance;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param forceMacroDetailedBalance The forceMacroDetailedBalance.
+     */
+    setForceMacroDetailedBalance(forceMacroDetailedBalance: ForceMacroDetailedBalance) {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, forceMacroDetailedBalance);
+        } else {
+            this.index.set(ForceMacroDetailedBalance.tagName, this.nodes.size);
+            this.addNode(forceMacroDetailedBalance);
+        }
+    }
+
+    /**
+     * Remove the forceMacroDetailedBalance.
+     */
+    removeForceMacroDetailedBalance() {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ForceMacroDetailedBalance.tagName);
+        }
+    }
+
+    /**
+     * @returns The calcMethod or undefined.
+     */
+    getCalcMethod(): CalcMethod | undefined {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as CalcMethod;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param calcMethod The calcMethod.
+     */
+    setCalcMethod(calcMethod: CalcMethod) {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, calcMethod);
+        } else {
+            this.index.set(CalcMethod.tagName, this.nodes.size);
+            this.addNode(calcMethod);
+        }
+    }
+
+    /**
+     * Remove the calcMethod.
+     */
+    removeCalcMethod() {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(CalcMethod.tagName);
+        }
+    }
+
+    /**
+     * @returns The eigenvalues or undefined.
+     */
+    getEigenvalues(): Eigenvalues | undefined {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Eigenvalues;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param eigenvalues The eigenvalues.
+     */
+    setEigenvalues(eigenvalues: Eigenvalues) {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, eigenvalues);
+        } else {
+            this.index.set(Eigenvalues.tagName, this.nodes.size);
+            this.addNode(eigenvalues);
+        }
+    }
+
+    /**
+     * Remove the eigenvalues.
+     */
+    removeEigenvalues() {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Eigenvalues.tagName);
+        }
+    }
+
+    /**
+     * @returns The shortestTimeOfInterest.
+     */
+    getShortestTimeOfInterest(): ShortestTimeOfInterest | undefined {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ShortestTimeOfInterest;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param shortestTimeOfInterest The shortestTimeOfInterest.
+     */
+    setShortestTimeOfInterest(shortestTimeOfInterest: ShortestTimeOfInterest) {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, shortestTimeOfInterest);
+        } else {
+            this.index.set(ShortestTimeOfInterest.tagName, this.nodes.size);
+            this.addNode(shortestTimeOfInterest);
+        }
+    }
+
+    /**
+     * Remove the shortestTimeOfInterest.
+     */
+    removeShortestTimeOfInterest() {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ShortestTimeOfInterest.tagName);
+        }
+    }
+
+    /**
+     * @returns The MaximumEvolutionTime.
+     */
+    getMaximumEvolutionTime(): MaximumEvolutionTime | undefined {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MaximumEvolutionTime;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param MaximumEvolutionTime The MaximumEvolutionTime.
+     */
+    setMaximumEvolutionTime(MaximumEvolutionTime: MaximumEvolutionTime) {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, MaximumEvolutionTime);
+        } else {
+            this.index.set(MaximumEvolutionTime.tagName, this.nodes.size);
+            this.addNode(MaximumEvolutionTime);
+        }
+    }
+
+    /**
+     * Remove the MaximumEvolutionTime.
+     */
+    removeMaximumEvolutionTime() {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaximumEvolutionTime.tagName);
+        }
+    }
+
+    /**
+     * @returns The automaticallySetMaxEne.
+     */
+    getAutomaticallySetMaxEne(): AutomaticallySetMaxEne | undefined {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as AutomaticallySetMaxEne;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param automaticallySetMaxEne The automaticallySetMaxEne.
+     */
+    setAutomaticallySetMaxEne(automaticallySetMaxEne: AutomaticallySetMaxEne) {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, automaticallySetMaxEne);
+        } else {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
+    }
+
+    /**
+     * Remove the automaticallySetMaxEne.
+     */
+    removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
+        }
+    }
+
+    /**
+     * @returns The diagramEnergyOffset.
      */
     getDiagramEnergyOffset(): DiagramEnergyOffset | undefined {
         let i = this.index.get(DiagramEnergyOffset.tagName);
@@ -796,6 +1479,41 @@ export class Control extends NodeWithNodes {
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(DiagramEnergyOffset.tagName);
+        }
+    }
+
+    /**
+     * @returns The testMicroRates or undefined.
+     */
+    getTestMicroRates(): TestMicroRates | undefined {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as TestMicroRates;
+        }
+        return undefined;
+    }
+
+    /**
+     * @param testMicroRates The testMicroRates.
+     */
+    setTestMicroRates(testMicroRates: TestMicroRates) {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, testMicroRates);
+        } else {
+            this.index.set(TestMicroRates.tagName, this.nodes.size);
+            this.addNode(testMicroRates);
+        }
+    }
+
+    /**
+     * Remove the testMicroRates.
+     */
+    removeTestMicroRates() {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestMicroRates.tagName);
         }
     }
 

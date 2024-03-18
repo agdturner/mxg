@@ -41,8 +41,10 @@ import {
 
 import {
     Control, DiagramEnergyOffset, Eigenvalues, HideInactive, TestDOS, PrintSpeciesProfile,
-    TestMicroRates, TestRateConstant, PrintGrainDOS, PrintCellDOS, PrintReactionOperatorColumnSums,
-    PrintTunnellingCoefficients, PrintGrainkfE, PrintGrainBoltzmann, PrintGrainkbE
+    TestMicroRates, TestRateConstants, PrintGrainDOS, PrintCellDOS, PrintReactionOperatorColumnSums,
+    PrintTunnelingCoefficients, PrintGrainkfE, PrintGrainBoltzmann, PrintGrainkbE, CalculateRateCoefficientsOnly,
+    PrintCellTransitionStateFlux, PrintTSsos, PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux,
+    PrintReactionOperatorSize, PrintPhenomenologicalEvolution, PrintCrossingCoefficients, UseTheSameCellNumberForAllConditions, ForceMacroDetailedBalance, CalcMethod, ShortestTimeOfInterest, MaximumEvolutionTime, AutomaticallySetMaxEne
 } from './control.js';
 import { Mesmer, MoleculeList, ReactionList, Title } from './mesmer.js';
 
@@ -749,7 +751,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                             // Reset the input to the current value.
                             alert("Expansion size input is not a number, resetting...");
                             expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
-                            console.warn("Expansion size input is not a number.");
                         }
                         resizeInputElement(expansionSizeInputElement);
                     }
@@ -818,7 +819,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                                 // Reset the input to the current value.
                                 alert("Angle input is not a number, resetting...");
                                 angleInputElement.value = potentialPoint.getAngle().toString();
-                                console.warn("Angle input is not a number.");
                             }
                             resizeInputElement(angleInputElement);
                         }
@@ -848,7 +848,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                                 // Reset the input to the current value.
                                 alert("Potential input is not a number, resetting...");
                                 potentialInputElement.value = potentialPoint.getPotential().toString();
-                                console.warn("Potential input is not a number.");
                             }
                             resizeInputElement(potentialInputElement);
                         }
@@ -1218,11 +1217,9 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
  * @param input The input element.
  */
 export function setNumberArrayNode(node: NumberArrayNode, input: HTMLInputElement): void {
-    let inputId: string = input.id;
     let inputString: string = input.value.trim();
     if (inputString == "") {
         alert("Empty input resetting...");
-        let input = document.getElementById(inputId) as HTMLInputElement;
         input.value = arrayToString(node.values, " ");
         return;
     }
@@ -1237,7 +1234,6 @@ export function setNumberArrayNode(node: NumberArrayNode, input: HTMLInputElemen
     });
     if (!success) {
         alert("An input is not a number, resetting...");
-        let input = document.getElementById(inputId) as HTMLInputElement;
         input.value = arrayToString(node.values, " ");
         return;
     }
@@ -1247,7 +1243,6 @@ export function setNumberArrayNode(node: NumberArrayNode, input: HTMLInputElemen
         //console.log("molecule=" + molecule);
     } else {
         alert("Expecting " + node.values.length + " values for, but finding " + values.length + " resetting...");
-        let input = document.getElementById(inputId) as HTMLInputElement;
         input.value = arrayToString(node.values, " ");
     }
 }
@@ -1260,21 +1255,14 @@ export function setNumberArrayNode(node: NumberArrayNode, input: HTMLInputElemen
  * @param input The input element.
  */
 export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
-    let inputId: string = input.id;
-    //let moleculeID: string = inputId.split("_")[0];
-    //let molecule: Molecule | undefined = molecules.get(moleculeID);
-    //if (molecule != undefined) {
     if (isNumeric(input.value)) {
         let inputNumber: number = parseFloat(input.value);
         node.value = inputNumber;
         console.log("Value set to " + inputNumber);
     } else {
         alert("Value is not numeric, resetting...");
-        let inputElement = document.getElementById(inputId) as HTMLInputElement;
-        inputElement.value = node.value.toString();
+        input.value = node.value.toString();
     }
-    //console.log("molecule=" + molecule);
-    //}
 }
 
 (window as any).set = setNumberNode;
@@ -1848,53 +1836,10 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                     inputDiv.style.marginBottom = margin1;
                     containerDiv.appendChild(inputDiv);
                 }
-                // Create a new input element for the P.
-                let p: number = pTPair.getP();
-                let pId: string = PTpair.tagName + "_" + "P";
-                let t: number = pTPair.getT();
-                let tId: string = PTpair.tagName + "_" + "T";
-                // Add the P input element to the container.
-                let pInputDiv: HTMLDivElement = getInput("number", pId, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        if (isNumeric(event.target.value)) {
-                            pTPair.setP(parseFloat(event.target.value));
-                            console.log("Set P to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            let inputElement = document.getElementById(pId) as HTMLInputElement;
-                            inputElement.value = pTPair.getP().toString();
-                        }
-                        resizeInputElement(event.target);
-                    }
-                }, p.toString(), "P");
-                let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
-                pInputElement.value = p.toString();
-                resizeInputElement(pInputElement);
-                pInputDiv.style.marginLeft = margin5;
-                pInputDiv.style.marginTop = margin1;
-                pInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(pInputDiv);
-                // Add the T input element to the container.
-                let tInputDiv: HTMLDivElement = getInput("number", tId, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        if (isNumeric(event.target.value)) {
-                            pTPair.setT(parseFloat(event.target.value));
-                            console.log("Set T to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            let inputElement = document.getElementById(tId) as HTMLInputElement;
-                            inputElement.value = pTPair.getT().toString();
-                        }
-                        resizeInputElement(event.target);
-                    }
-                }, t.toString(), "T");
-                let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
-                tInputElement.value = t.toString();
-                resizeInputElement(tInputElement);
-                tInputDiv.style.marginLeft = margin5;
-                tInputDiv.style.marginTop = margin1;
-                tInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(tInputDiv);
+                // Add P input element to the container.
+                addPInput(containerDiv, pTPair);
+                // Add T input element to the container.
+                addTInput(containerDiv, pTPair);
                 // Add any units to the container.
                 addAnyUnits(undefined, getAttributes(xml_PTPairs[i]), containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
                 pTs.addPTpair(pTPair);
@@ -1916,49 +1861,15 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 // add the new pTPair to the PTs.
                 pTs.addPTpair(pTPair);
                 let pTPairDiv: HTMLDivElement = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin25;
+                pTPairDiv.style.marginLeft = margin50;
                 pTPairDiv.style.marginTop = margin1;
                 pTPairDiv.style.marginBottom = margin1;
                 pTsDiv.insertBefore(pTPairDiv, addButton);
                 let containerDiv: HTMLDivElement = createFlexDiv();
-                let pInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "P", (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        if (isNumeric(event.target.value)) {
-                            pTPair.setP(parseFloat(event.target.value));
-                            console.log("Set P to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = pTPair.getP().toString();
-                        }
-                        resizeInputElement(event.target);
-                    }
-                }, pTPair.getP().toString(), "P");
-                let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
-                pInputElement.value = pTPair.getP().toString();
-                resizeInputElement(pInputElement);
-                pInputDiv.style.marginLeft = margin25;
-                pInputDiv.style.marginTop = margin1;
-                pInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(pInputDiv);
-                let tInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "T", (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        if (isNumeric(event.target.value)) {
-                            pTPair.setT(parseFloat(event.target.value));
-                            console.log("Set T to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = pTPair.getT().toString();
-                        }
-                        resizeInputElement(event.target);
-                    }
-                }, pTPair.getT().toString(), "T");
-                let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
-                tInputElement.value = pTPair.getT().toString();
-                resizeInputElement(tInputElement);
-                tInputDiv.style.marginLeft = margin5;
-                tInputDiv.style.marginTop = margin1;
-                tInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(tInputDiv);
+                // Add P input to the container
+                addPInput(containerDiv, pTPair);
+                // Add T input element to the container.
+                addTInput(containerDiv, pTPair);
                 addAnyUnits(undefined, pTPairAttributes, containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
                 pTPairDiv.appendChild(containerDiv);
             });
@@ -2002,43 +1913,10 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                                 console.warn("pTPairArray.length=" + pTPairArray.length);
                             }
                             let containerDiv: HTMLDivElement = createFlexDiv(margin50, margin1, margin1);
-                            let pInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "P", (event) => {
-                                if (event.target instanceof HTMLInputElement) {
-                                    if (isNumeric(event.target.value)) {
-                                        pTPair.setP(parseFloat(event.target.value));
-                                        console.log("Set P to " + event.target.value);
-                                    } else {
-                                        alert("Value is not numeric, resetting...");
-                                        event.target.value = pTPair.getP().toString();
-                                    }
-                                    resizeInputElement(event.target);
-                                }
-                            }, pTPair.getP().toString(), "P");
-                            let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
-                            pInputElement.value = pTPair.getP().toString();
-                            resizeInputElement(pInputElement);
-                            pInputDiv.style.marginTop = margin1;
-                            pInputDiv.style.marginBottom = margin1;
-                            containerDiv.appendChild(pInputDiv);
-                            let tInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "T", (event) => {
-                                if (event.target instanceof HTMLInputElement) {
-                                    if (isNumeric(event.target.value)) {
-                                        pTPair.setT(parseFloat(event.target.value));
-                                        console.log("Set T to " + event.target.value);
-                                    } else {
-                                        alert("Value is not numeric, resetting...");
-                                        event.target.value = pTPair.getT().toString();
-                                    }
-                                    resizeInputElement(event.target);
-                                }
-                            }, pTPair.getT().toString(), "T");
-                            let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
-                            tInputElement.value = pTPair.getT().toString();
-                            resizeInputElement(tInputElement);
-                            tInputDiv.style.marginLeft = margin5;
-                            tInputDiv.style.marginTop = margin1;
-                            tInputDiv.style.marginBottom = margin1;
-                            containerDiv.appendChild(tInputDiv);
+                            // Add P input to the container
+                            addPInput(containerDiv, pTPair);
+                            // Add T input element to the container.
+                            addTInput(containerDiv, pTPair);
                             addAnyUnits(undefined, pTPairAttributes, containerDiv, PTpair.tagName, PTpair.tagName, margin2, margin1, margin1);
                             console.log(addButton);  // Check the value of addButton
                             console.log(pTsDiv);  // Check the value of pTsDiv
@@ -2054,6 +1932,57 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         }
     }
     return conditionsDiv;
+}
+
+/**
+ * @param containerDiv The container div.
+ * @param pTPair The PTpair.
+ */
+function addPInput(containerDiv: HTMLDivElement, pTPair: PTpair) {
+    let pInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "P", (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (isNumeric(event.target.value)) {
+                pTPair.setP(parseFloat(event.target.value));
+                console.log("Set P to " + event.target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = pTPair.getP().toString();
+            }
+            resizeInputElement(event.target);
+        }
+    }, pTPair.getP().toString(), "P");
+    let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
+    pInputElement.value = pTPair.getP().toString();
+    resizeInputElement(pInputElement);
+    pInputDiv.style.marginTop = margin1;
+    pInputDiv.style.marginBottom = margin1;
+    containerDiv.appendChild(pInputDiv);
+}
+
+/**
+ * @param containerDiv The container div.
+ * @param pTPair The PTpair.
+ */
+function addTInput(containerDiv: HTMLDivElement, pTPair: PTpair) {
+    let tInputDiv: HTMLDivElement = getInput("number", PTpair.tagName + "_" + "T", (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (isNumeric(event.target.value)) {
+                pTPair.setT(parseFloat(event.target.value));
+                console.log("Set T to " + event.target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = pTPair.getT().toString();
+            }
+            resizeInputElement(event.target);
+        }
+    }, pTPair.getT().toString(), "T");
+    let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
+    tInputElement.value = pTPair.getT().toString();
+    resizeInputElement(tInputElement);
+    tInputDiv.style.marginLeft = margin5;
+    tInputDiv.style.marginTop = margin1;
+    tInputDiv.style.marginBottom = margin1;
+    containerDiv.appendChild(tInputDiv);
 }
 
 /**
@@ -2120,6 +2049,42 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
  * Parses xml to initialise controls.
  * @param xml The XML document.
  * @returns The controls div.
+ * 
+ * Tag control options:
+ * me:calculateRateCoefficientsOnly
+ * me:printCellDOS
+ * me:printCellTransitionStateFlux
+ * me:printReactionOperatorColumnSums
+ * me:printGrainBoltzmann
+ * me:printGrainDOS
+ * me:printGrainkbE
+ * me:printGrainkfE
+ * me:printTSsos
+ * me:printGrainedSpeciesProfile
+ * me:printGrainTransitionStateFlux
+ * me:printReactionOperatorSize
+ * me:printSpeciesProfile
+ * me:printPhenomenologicalEvolution
+ * me:printTunnelingCoefficients
+ * me:printCrossingCoefficients
+ * me:testDOS
+ * me:testRateConstants
+ * me:useTheSameCellNumberForAllConditions
+ * me:hideInactive
+ * me:ForceMacroDetailedBalance
+ * 
+ * TagWithAttribute control options:
+ * me:testMicroRates
+ * 
+ * StringNode control options:
+ * me:calcMethod "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis"
+ * 
+ * NumberNode control options:
+ * me:eigenvalues
+ * me:shortestTimeOfInterest
+ * me:MaximumEvolutionTime
+ * me:automaticallySetMaxEne
+ * me:diagramEnergyOffset
  */
 function processControl(xml: XMLDocument): HTMLDivElement {
     console.log(Control.tagName);
@@ -2128,122 +2093,157 @@ function processControl(xml: XMLDocument): HTMLDivElement {
     // Get the XML "me:control" element.
     let xml_control: Element = getSingularElement(xml, Control.tagName);
     control = new Control(getAttributes(xml_control));
-    // me:testDOS
-    let testDOSDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(testDOSDiv);
-    let xml_testDOS: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestDOS.tagName);
-    // Create a input checkbox for the TestDOS.
-    let testDOSLabel: HTMLLabelElement = document.createElement("label");
-    testDOSDiv.appendChild(testDOSLabel);
-    testDOSLabel.textContent = TestDOS.tagName;
-    let testDOSInput: HTMLInputElement = document.createElement("input");
-    testDOSDiv.appendChild(testDOSInput);
-    testDOSInput.type = "checkbox";
-    testDOSInput.id = TestDOS.tagName;
-    testDOSInput.addEventListener('change', (event) => {
+
+    // me:calculateRateCoefficientsOnly
+    let calculateRateCoefficientsOnlyDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(calculateRateCoefficientsOnlyDiv);
+    let xml_calculateRateCoefficientsOnly: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(CalculateRateCoefficientsOnly.tagName);
+    // Create a input checkbox for the CalculateRateCoefficientsOnly.
+    let calculateRateCoefficientsOnlyLabel: HTMLLabelElement = document.createElement("label");
+    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyLabel);
+    calculateRateCoefficientsOnlyLabel.textContent = CalculateRateCoefficientsOnly.tagName;
+    let calculateRateCoefficientsOnlyInput: HTMLInputElement = document.createElement("input");
+    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyInput);
+    calculateRateCoefficientsOnlyInput.type = "checkbox";
+    calculateRateCoefficientsOnlyInput.id = CalculateRateCoefficientsOnly.tagName;
+    if (xml_calculateRateCoefficientsOnly.length == 1) {
+        calculateRateCoefficientsOnlyInput.checked = true;
+        control.setCalculateRateCoefficientsOnly(new CalculateRateCoefficientsOnly());
+    } else {
+        if (xml_calculateRateCoefficientsOnly.length > 1) {
+            console.warn("xml_calculateRateCoefficientsOnly.length=" + xml_calculateRateCoefficientsOnly.length);
+        }
+    }
+    calculateRateCoefficientsOnlyInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setTestDOS(new TestDOS());
+                control.setCalculateRateCoefficientsOnly(new CalculateRateCoefficientsOnly());
             } else {
-                control.removeTestDOS();
+                control.removeCalculateRateCoefficientsOnly();
             }
         }
     });
-    if (xml_testDOS.length == 1) {
-        testDOSInput.checked = true;
-        control.setTestDOS(new TestDOS());
+
+    // me:printCellDOS
+    let printCellDOSDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printCellDOSDiv);
+    let xml_printCellDOS: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintCellDOS.tagName);
+    // Create a input checkbox for the PrintCellDOS.
+    let printCellDOSLabel: HTMLLabelElement = document.createElement("label");
+    printCellDOSDiv.appendChild(printCellDOSLabel);
+    printCellDOSLabel.textContent = PrintCellDOS.tagName;
+    let printCellDOSInput: HTMLInputElement = document.createElement("input");
+    printCellDOSDiv.appendChild(printCellDOSInput);
+    printCellDOSInput.type = "checkbox";
+    printCellDOSInput.id = PrintCellDOS.tagName;
+    if (xml_printCellDOS.length == 1) {
+        printCellDOSInput.checked = true;
+        control.setPrintCellDOS(new PrintCellDOS());
     } else {
-        if (xml_testDOS.length > 1) {
-            console.warn("xml_testDOS.length=" + xml_testDOS.length);
+        if (xml_printCellDOS.length > 1) {
+            console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
         }
     }
-    // me:printSpeciesProfile
-    let printSpeciesProfileDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printSpeciesProfileDiv);
-    let xml_printSpeciesProfile: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintSpeciesProfile.tagName);
-    // Create a input checkbox for the PrintSpeciesProfile.
-    let printSpeciesProfileLabel: HTMLLabelElement = document.createElement("label");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileLabel);
-    printSpeciesProfileLabel.textContent = PrintSpeciesProfile.tagName;
-    let printSpeciesProfileInput: HTMLInputElement = document.createElement("input");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileInput);
-    printSpeciesProfileInput.type = "checkbox";
-    printSpeciesProfileInput.id = PrintSpeciesProfile.tagName;
-    printSpeciesProfileInput.addEventListener('change', (event) => {
+    printCellDOSInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setPrintSpeciesProfile(new PrintSpeciesProfile());
+                control.setPrintCellDOS(new PrintCellDOS());
             } else {
-                control.removePrintSpeciesProfile();
+                control.removePrintCellDOS();
             }
         }
     });
-    if (xml_printSpeciesProfile.length == 1) {
-        printSpeciesProfileInput.checked = true;
-        control.setTestDOS(new PrintSpeciesProfile());
+
+    // me:printCellTransitionStateFlux
+    let printCellTransitionStateFluxDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printCellTransitionStateFluxDiv);
+    let xml_printCellTransitionStateFlux: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintCellTransitionStateFlux.tagName);
+    // Create a input checkbox for the PrintCellTransitionStateFlux.
+    let printCellTransitionStateFluxLabel: HTMLLabelElement = document.createElement("label");
+    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxLabel);
+    printCellTransitionStateFluxLabel.textContent = PrintCellTransitionStateFlux.tagName;
+    let printCellTransitionStateFluxInput: HTMLInputElement = document.createElement("input");
+    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxInput);
+    printCellTransitionStateFluxInput.type = "checkbox";
+    printCellTransitionStateFluxInput.id = PrintCellTransitionStateFlux.tagName;
+    if (xml_printCellTransitionStateFlux.length == 1) {
+        printCellTransitionStateFluxInput.checked = true;
+        control.setPrintCellTransitionStateFlux(new PrintCellTransitionStateFlux());
     } else {
-        if (xml_testDOS.length > 1) {
-            console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
+        if (xml_printCellTransitionStateFlux.length > 1) {
+            console.warn("xml_printCellTransitionStateFlux.length=" + xml_printCellTransitionStateFlux.length);
         }
     }
-    // me:testMicroRates
-    let testMicroRatesDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(testMicroRatesDiv);
-    let xml_testMicroRates: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestMicroRates.tagName);
-    // Create a input checkbox for the TestMicroRates.
-    let testMicroRatesLabel: HTMLLabelElement = document.createElement("label");
-    testMicroRatesDiv.appendChild(testMicroRatesLabel);
-    testMicroRatesLabel.textContent = TestMicroRates.tagName;
-    let testMicroRatesInput: HTMLInputElement = document.createElement("input");
-    testMicroRatesDiv.appendChild(testMicroRatesInput);
-    testMicroRatesInput.type = "checkbox";
-    testMicroRatesInput.id = TestMicroRates.tagName;
-    testMicroRatesInput.addEventListener('change', (event) => {
+    printCellTransitionStateFluxInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setTestMicroRates(new TestMicroRates());
+                control.setPrintCellTransitionStateFlux(new PrintCellTransitionStateFlux());
             } else {
-                control.removeTestMicroRates();
+                control.removePrintCellTransitionStateFlux();
             }
         }
     });
-    if (xml_testMicroRates.length == 1) {
-        testMicroRatesInput.checked = true;
-        control.setTestMicroRates(new TestMicroRates());
+
+    // me:printReactionOperatorColumnSums
+    let printReactionOperatorColumnSumsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printReactionOperatorColumnSumsDiv);
+    let xml_printReactionOperatorColumnSums: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintReactionOperatorColumnSums.tagName);
+    // Create a input checkbox for the PrintReactionOperatorColumnSums.
+    let printReactionOperatorColumnSumsLabel: HTMLLabelElement = document.createElement("label");
+    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsLabel);
+    printReactionOperatorColumnSumsLabel.textContent = PrintReactionOperatorColumnSums.tagName;
+    let printReactionOperatorColumnSumsInput: HTMLInputElement = document.createElement("input");
+    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsInput);
+    printReactionOperatorColumnSumsInput.type = "checkbox";
+    printReactionOperatorColumnSumsInput.id = PrintReactionOperatorColumnSums.tagName;
+    if (xml_printReactionOperatorColumnSums.length == 1) {
+        printReactionOperatorColumnSumsInput.checked = true;
+        control.setPrintReactionOperatorColumnSums(new PrintReactionOperatorColumnSums());
     } else {
-        if (xml_testMicroRates.length > 1) {
-            console.warn("xml_testMicroRates.length=" + xml_testMicroRates.length);
+        if (xml_printReactionOperatorColumnSums.length > 1) {
+            console.warn("xml_printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
         }
     }
-    // me:testRateConstant
-    let testRateConstantDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(testRateConstantDiv);
-    let xml_testRateConstant: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestRateConstant.tagName);
-    // Create a input checkbox for the TestRateConstant.
-    let testRateConstantLabel: HTMLLabelElement = document.createElement("label");
-    testRateConstantDiv.appendChild(testRateConstantLabel);
-    testRateConstantLabel.textContent = TestRateConstant.tagName;
-    let testRateConstantInput: HTMLInputElement = document.createElement("input");
-    testRateConstantDiv.appendChild(testRateConstantInput);
-    testRateConstantInput.type = "checkbox";
-    testRateConstantInput.id = TestRateConstant.tagName;
-    testRateConstantInput.addEventListener('change', (event) => {
+    printReactionOperatorColumnSumsInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setTestRateConstant(new TestRateConstant());
+                control.setPrintReactionOperatorColumnSums(new PrintReactionOperatorColumnSums());
             } else {
-                control.removeTestRateConstant();
+                control.removePrintReactionOperatorColumnSums();
             }
         }
     });
-    if (xml_testRateConstant.length == 1) {
-        testRateConstantInput.checked = true;
-        control.setTestRateConstant(new TestRateConstant());
+
+    // me:printGrainBoltzmann
+    let printGrainBoltzmannDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainBoltzmannDiv);
+    let xml_printGrainBoltzmann: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainBoltzmann.tagName);
+    // Create a input checkbox for the PrintGrainBoltzmann.
+    let printGrainBoltzmannLabel: HTMLLabelElement = document.createElement("label");
+    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannLabel);
+    printGrainBoltzmannLabel.textContent = PrintGrainBoltzmann.tagName;
+    let printGrainBoltzmannInput: HTMLInputElement = document.createElement("input");
+    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannInput);
+    printGrainBoltzmannInput.type = "checkbox";
+    printGrainBoltzmannInput.id = PrintGrainBoltzmann.tagName;
+    if (xml_printGrainBoltzmann.length == 1) {
+        printGrainBoltzmannInput.checked = true;
+        control.setPrintGrainBoltzmann(new PrintGrainBoltzmann());
     } else {
-        if (xml_testRateConstant.length > 1) {
-            console.warn("xml_testRateConstant.length=" + xml_testRateConstant.length);
+        if (xml_printGrainBoltzmann.length > 1) {
+            console.warn("xml_printGrainBoltzmann.length=" + xml_printGrainBoltzmann.length);
         }
     }
+    printGrainBoltzmannInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintGrainBoltzmann(new PrintGrainBoltzmann());
+            } else {
+                control.removePrintGrainBoltzmann();
+            }
+        }
+    });
+
     // me:printGrainDOS
     let printGrainDOSDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainDOSDiv);
@@ -2256,6 +2256,14 @@ function processControl(xml: XMLDocument): HTMLDivElement {
     printGrainDOSDiv.appendChild(printGrainDOSInput);
     printGrainDOSInput.type = "checkbox";
     printGrainDOSInput.id = PrintGrainDOS.tagName;
+    if (xml_printGrainDOS.length == 1) {
+        printGrainDOSInput.checked = true;
+        control.setPrintGrainDOS(new PrintGrainDOS());
+    } else {
+        if (xml_printGrainDOS.length > 1) {
+            console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
+        }
+    }
     printGrainDOSInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
@@ -2265,155 +2273,27 @@ function processControl(xml: XMLDocument): HTMLDivElement {
             }
         }
     });
-    if (xml_printGrainDOS.length == 1) {
-        printGrainDOSInput.checked = true;
-        control.setPrintGrainDOS(new PrintGrainDOS());
-    } else {
-        if (xml_printGrainDOS.length > 1) {
-            console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
-        }
-    }
-    // me:printCellDOS
-    let printCellDOSDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printCellDOSDiv);
-    let xml_printCellDOS: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintCellDOS.tagName);
-    // Create a input checkbox for the PrintCellDOS.
-    let printCellDOSLabel: HTMLLabelElement = document.createElement('label');
-    printCellDOSDiv.appendChild(printCellDOSLabel);
-    printCellDOSLabel.textContent = PrintCellDOS.tagName;
-    let printCellDOSInput: HTMLInputElement = document.createElement('input');
-    printCellDOSDiv.appendChild(printCellDOSInput);
-    printCellDOSInput.type = "checkbox";
-    printCellDOSInput.id = PrintCellDOS.tagName;
-    printCellDOSInput.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setPrintCellDOS(new PrintCellDOS());
-            } else {
-                control.removePrintCellDOS();
-            }
-        }
-    });
-    if (xml_printCellDOS.length == 1) {
-        printCellDOSInput.checked = true;
-        control.setPrintCellDOS(new PrintCellDOS());
-    } else {
-        if (xml_printCellDOS.length > 1) {
-            console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
-        }
-    }
-    // me:printReactionOperatorColumnSums
-    let printReactionOperatorColumnSumsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printReactionOperatorColumnSumsDiv);
-    let xml_printReactionOperatorColumnSums: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintReactionOperatorColumnSums.tagName);
-    // Create a input checkbox for the PrintReactionOperatorColumnSums.
-    let printReactionOperatorColumnSumsLabel: HTMLLabelElement = document.createElement('label');
-    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsLabel);
-    printReactionOperatorColumnSumsLabel.textContent = PrintReactionOperatorColumnSums.tagName;
-    let printReactionOperatorColumnSumsInput: HTMLInputElement = document.createElement('input');
-    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsInput);
-    printReactionOperatorColumnSumsInput.type = "checkbox";
-    printReactionOperatorColumnSumsInput.id = PrintReactionOperatorColumnSums.tagName;
-    printReactionOperatorColumnSumsInput.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setPrintReactionOperatorColumnSums(new PrintReactionOperatorColumnSums());
-            } else {
-                control.removePrintReactionOperatorColumnSums();
-            }
-        }
-    });
-    if (xml_printReactionOperatorColumnSums.length == 1) {
-        printReactionOperatorColumnSumsInput.checked = true;
-        control.setPrintReactionOperatorColumnSums(new PrintReactionOperatorColumnSums());
-    } else {
-        if (xml_printReactionOperatorColumnSums.length > 1) {
-            console.warn("xml_printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
-        }
-    }
-    // me:printTunnellingCoefficients
-    let printTunnellingCoefficientsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printTunnellingCoefficientsDiv);
-    let xml_printTunnellingCoefficients: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintTunnellingCoefficients.tagName);
-    // Create a input checkbox for the PrintTunnellingCoefficients.
-    let printTunnellingCoefficientsLabel: HTMLLabelElement = document.createElement('label');
-    printTunnellingCoefficientsDiv.appendChild(printTunnellingCoefficientsLabel);
-    printTunnellingCoefficientsLabel.textContent = PrintTunnellingCoefficients.tagName;
-    let printTunnellingCoefficientsInput: HTMLInputElement = document.createElement('input');
-    printTunnellingCoefficientsDiv.appendChild(printTunnellingCoefficientsInput);
-    printTunnellingCoefficientsInput.type = "checkbox";
-    printTunnellingCoefficientsInput.id = PrintTunnellingCoefficients.tagName;
-    printTunnellingCoefficientsInput.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setPrintTunnellingCoefficients(new PrintTunnellingCoefficients());
-            } else {
-                control.removePrintTunnellingCoefficients();
-            }
-        }
-    });
-    if (xml_printTunnellingCoefficients.length == 1) {
-        printTunnellingCoefficientsInput.checked = true;
-        control.setPrintTunnellingCoefficients(new PrintTunnellingCoefficients());
-    } else {
-        if (xml_printTunnellingCoefficients.length > 1) {
-            console.warn("xml_printTunnellingCoefficients.length=" + xml_printTunnellingCoefficients.length);
-        }
-    }
-    // me:printGrainkfE
-    let printGrainkfEDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printGrainkfEDiv);
-    let xml_printGrainkfE: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainkfE.tagName);
-    // Create a input checkbox for the PrintGrainkfE.
-    let printGrainkfELabel: HTMLLabelElement = document.createElement('label');
-    printGrainkfEDiv.appendChild(printGrainkfELabel);
-    printGrainkfELabel.textContent = PrintGrainkfE.tagName;
-    let printGrainkfEInput: HTMLInputElement = document.createElement('input');
-    printGrainkfEDiv.appendChild(printGrainkfEInput);
-    printGrainkfEInput.type = "checkbox";
-    printGrainkfEInput.id = PrintGrainkfE.tagName;
-    printGrainkfEInput.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setPrintGrainkfE(new PrintGrainkfE());
-            } else {
-                control.removePrintGrainkfE();
-            }
-        }
-    });
-    // me:printGrainBoltzmann
-    let printGrainBoltzmannDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
-    controlsDiv.appendChild(printGrainBoltzmannDiv);
-    let xml_printGrainBoltzmann: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainBoltzmann.tagName);
-    // Create a input checkbox for the PrintGrainBoltzmann.
-    let printGrainBoltzmannLabel: HTMLLabelElement = document.createElement('label');
-    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannLabel);
-    printGrainBoltzmannLabel.textContent = PrintGrainBoltzmann.tagName;
-    let printGrainBoltzmannInput: HTMLInputElement = document.createElement('input');
-    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannInput);
-    printGrainBoltzmannInput.type = "checkbox";
-    printGrainBoltzmannInput.id = PrintGrainBoltzmann.tagName;
-    printGrainBoltzmannInput.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setPrintGrainBoltzmann(new PrintGrainBoltzmann());
-            } else {
-                control.removePrintGrainBoltzmann();
-            }
-        }
-    });
+
     // me:printGrainkbE
     let printGrainkbEDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
     controlsDiv.appendChild(printGrainkbEDiv);
     let xml_printGrainkbE: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainkbE.tagName);
     // Create a input checkbox for the PrintGrainkbE.
-    let printGrainkbELabel: HTMLLabelElement = document.createElement('label');
+    let printGrainkbELabel: HTMLLabelElement = document.createElement("label");
     printGrainkbEDiv.appendChild(printGrainkbELabel);
     printGrainkbELabel.textContent = PrintGrainkbE.tagName;
-    let printGrainkbEInput: HTMLInputElement = document.createElement('input');
+    let printGrainkbEInput: HTMLInputElement = document.createElement("input");
     printGrainkbEDiv.appendChild(printGrainkbEInput);
     printGrainkbEInput.type = "checkbox";
     printGrainkbEInput.id = PrintGrainkbE.tagName;
+    if (xml_printGrainkbE.length == 1) {
+        printGrainkbEInput.checked = true;
+        control.setPrintGrainkbE(new PrintGrainkbE());
+    } else {
+        if (xml_printGrainkbE.length > 1) {
+            console.warn("xml_printGrainkbE.length=" + xml_printGrainkbE.length);
+        }
+    }
     printGrainkbEInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
@@ -2423,49 +2303,946 @@ function processControl(xml: XMLDocument): HTMLDivElement {
             }
         }
     });
+
+    // me:printGrainkfE
+    let printGrainkfEDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainkfEDiv);
+    let xml_printGrainkfE: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainkfE.tagName);
+    // Create a input checkbox for the PrintGrainkfE.
+    let printGrainkfELabel: HTMLLabelElement = document.createElement("label");
+    printGrainkfEDiv.appendChild(printGrainkfELabel);
+    printGrainkfELabel.textContent = PrintGrainkfE.tagName;
+    let printGrainkfEInput: HTMLInputElement = document.createElement("input");
+    printGrainkfEDiv.appendChild(printGrainkfEInput);
+    printGrainkfEInput.type = "checkbox";
+    printGrainkfEInput.id = PrintGrainkfE.tagName;
+    if (xml_printGrainkfE.length == 1) {
+        printGrainkfEInput.checked = true;
+        control.setPrintGrainkfE(new PrintGrainkfE());
+    } else {
+        if (xml_printGrainkfE.length > 1) {
+            console.warn("xml_printGrainkfE.length=" + xml_printGrainkfE.length);
+        }
+    }
+    printGrainkfEInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintGrainkfE(new PrintGrainkfE());
+            } else {
+                control.removePrintGrainkfE();
+            }
+        }
+    });
+
+    // me:printTSsos
+    let printTSsosDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printTSsosDiv);
+    let xml_printTSsos: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintTSsos.tagName);
+    // Create a input checkbox for the PrintTSsos.
+    let printTSsosLabel: HTMLLabelElement = document.createElement("label");
+    printTSsosDiv.appendChild(printTSsosLabel);
+    printTSsosLabel.textContent = PrintTSsos.tagName;
+    let printTSsosInput: HTMLInputElement = document.createElement("input");
+    printTSsosDiv.appendChild(printTSsosInput);
+    printTSsosInput.type = "checkbox";
+    printTSsosInput.id = PrintTSsos.tagName;
+    if (xml_printTSsos.length == 1) {
+        printTSsosInput.checked = true;
+        control.setPrintTSsos(new PrintTSsos());
+    } else {
+        if (xml_printTSsos.length > 1) {
+            console.warn("xml_printTSsos.length=" + xml_printTSsos.length);
+        }
+    }
+    printTSsosInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintTSsos(new PrintTSsos());
+            } else {
+                control.removePrintTSsos();
+            }
+        }
+    });
+
+    // me:printGrainedSpeciesProfile
+    let printGrainedSpeciesProfileDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainedSpeciesProfileDiv);
+    let xml_printGrainedSpeciesProfile: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainedSpeciesProfile.tagName);
+    // Create a input checkbox for the PrintGrainedSpeciesProfile.
+    let printGrainedSpeciesProfileLabel: HTMLLabelElement = document.createElement("label");
+    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileLabel);
+    printGrainedSpeciesProfileLabel.textContent = PrintGrainedSpeciesProfile.tagName;
+    let printGrainedSpeciesProfileInput: HTMLInputElement = document.createElement("input");
+    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileInput);
+    printGrainedSpeciesProfileInput.type = "checkbox";
+    printGrainedSpeciesProfileInput.id = PrintGrainedSpeciesProfile.tagName;
+    if (xml_printGrainedSpeciesProfile.length == 1) {
+        printGrainedSpeciesProfileInput.checked = true;
+        control.setPrintGrainedSpeciesProfile(new PrintGrainedSpeciesProfile());
+    } else {
+        if (xml_printGrainedSpeciesProfile.length > 1) {
+            console.warn("xml_printGrainedSpeciesProfile.length=" + xml_printGrainedSpeciesProfile.length);
+        }
+    }
+    printGrainedSpeciesProfileInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintGrainedSpeciesProfile(new PrintGrainedSpeciesProfile());
+            } else {
+                control.removePrintGrainedSpeciesProfile();
+            }
+        }
+    });
+
+    // me:printGrainTransitionStateFlux
+    let printGrainTransitionStateFluxDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainTransitionStateFluxDiv);
+    let xml_printGrainTransitionStateFlux: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintGrainTransitionStateFlux.tagName);
+    // Create a input checkbox for the PrintGrainTransitionStateFlux.
+    let printGrainTransitionStateFluxLabel: HTMLLabelElement = document.createElement("label");
+    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxLabel);
+    printGrainTransitionStateFluxLabel.textContent = PrintGrainTransitionStateFlux.tagName;
+    let printGrainTransitionStateFluxInput: HTMLInputElement = document.createElement("input");
+    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxInput);
+    printGrainTransitionStateFluxInput.type = "checkbox";
+    printGrainTransitionStateFluxInput.id = PrintGrainTransitionStateFlux.tagName;
+    if (xml_printGrainTransitionStateFlux.length == 1) {
+        printGrainTransitionStateFluxInput.checked = true;
+        control.setPrintGrainTransitionStateFlux(new PrintGrainTransitionStateFlux());
+    } else {
+        if (xml_printGrainTransitionStateFlux.length > 1) {
+            console.warn("xml_printGrainTransitionStateFlux.length=" + xml_printGrainTransitionStateFlux.length);
+        }
+    }
+    printGrainTransitionStateFluxInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintGrainTransitionStateFlux(new PrintGrainTransitionStateFlux());
+            } else {
+                control.removePrintGrainTransitionStateFlux();
+            }
+        }
+    });
+
+    // me:printReactionOperatorSize
+    let printReactionOperatorSizeDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printReactionOperatorSizeDiv);
+    let xml_printReactionOperatorSize: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintReactionOperatorSize.tagName);
+    // Create a input checkbox for the PrintReactionOperatorSize.
+    let printReactionOperatorSizeLabel: HTMLLabelElement = document.createElement("label");
+    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeLabel);
+    printReactionOperatorSizeLabel.textContent = PrintReactionOperatorSize.tagName;
+    let printReactionOperatorSizeInput: HTMLInputElement = document.createElement("input");
+    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeInput);
+    printReactionOperatorSizeInput.type = "checkbox";
+    printReactionOperatorSizeInput.id = PrintReactionOperatorSize.tagName;
+    if (xml_printReactionOperatorSize.length == 1) {
+        printReactionOperatorSizeInput.checked = true;
+        control.setPrintReactionOperatorSize(new PrintReactionOperatorSize());
+    } else {
+        if (xml_printReactionOperatorSize.length > 1) {
+            console.warn("xml_printReactionOperatorSize.length=" + xml_printReactionOperatorSize.length);
+        }
+    }
+    printReactionOperatorSizeInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintReactionOperatorSize(new PrintReactionOperatorSize());
+            } else {
+                control.removePrintReactionOperatorSize();
+            }
+        }
+    });
+
+    // me:printSpeciesProfile
+    let printSpeciesProfileDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printSpeciesProfileDiv);
+    let xml_printSpeciesProfile: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintSpeciesProfile.tagName);
+    // Create a input checkbox for the PrintSpeciesProfile.
+    let printSpeciesProfileLabel: HTMLLabelElement = document.createElement("label");
+    printSpeciesProfileDiv.appendChild(printSpeciesProfileLabel);
+    printSpeciesProfileLabel.textContent = PrintSpeciesProfile.tagName;
+    let printSpeciesProfileInput: HTMLInputElement = document.createElement("input");
+    printSpeciesProfileDiv.appendChild(printSpeciesProfileInput);
+    printSpeciesProfileInput.type = "checkbox";
+    printSpeciesProfileInput.id = PrintSpeciesProfile.tagName;
+    if (xml_printSpeciesProfile.length == 1) {
+        printSpeciesProfileInput.checked = true;
+        control.setPrintSpeciesProfile(new PrintSpeciesProfile());
+    } else {
+        if (xml_printSpeciesProfile.length > 1) {
+            console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
+        }
+    }
+    printSpeciesProfileInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintSpeciesProfile(new PrintSpeciesProfile());
+            } else {
+                control.removePrintSpeciesProfile();
+            }
+        }
+    });
+
+    // me:printPhenomenologicalEvolution
+    let printPhenomenologicalEvolutionDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printPhenomenologicalEvolutionDiv);
+    let xml_printPhenomenologicalEvolution: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintPhenomenologicalEvolution.tagName);
+    // Create a input checkbox for the PrintPhenomenologicalEvolution.
+    let printPhenomenologicalEvolutionLabel: HTMLLabelElement = document.createElement("label");
+    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionLabel);
+    printPhenomenologicalEvolutionLabel.textContent = PrintPhenomenologicalEvolution.tagName;
+    let printPhenomenologicalEvolutionInput: HTMLInputElement = document.createElement("input");
+    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionInput);
+    printPhenomenologicalEvolutionInput.type = "checkbox";
+    printPhenomenologicalEvolutionInput.id = PrintPhenomenologicalEvolution.tagName;
+    if (xml_printPhenomenologicalEvolution.length == 1) {
+        printPhenomenologicalEvolutionInput.checked = true;
+        control.setPrintPhenomenologicalEvolution(new PrintPhenomenologicalEvolution());
+    } else {
+        if (xml_printPhenomenologicalEvolution.length > 1) {
+            console.warn("xml_printPhenomenologicalEvolution.length=" + xml_printPhenomenologicalEvolution.length);
+        }
+    }
+    printPhenomenologicalEvolutionInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintPhenomenologicalEvolution(new PrintPhenomenologicalEvolution());
+            } else {
+                control.removePrintPhenomenologicalEvolution();
+            }
+        }
+    });
+
+    // me:printTunnelingCoefficients
+    let printTunnelingCoefficientsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printTunnelingCoefficientsDiv);
+    let xml_printTunnelingCoefficients: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintTunnelingCoefficients.tagName);
+    // Create a input checkbox for the PrintTunnelingCoefficients.
+    let printTunnelingCoefficientsLabel: HTMLLabelElement = document.createElement("label");
+    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsLabel);
+    printTunnelingCoefficientsLabel.textContent = PrintTunnelingCoefficients.tagName;
+    let printTunnelingCoefficientsInput: HTMLInputElement = document.createElement("input");
+    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsInput);
+    printTunnelingCoefficientsInput.type = "checkbox";
+    printTunnelingCoefficientsInput.id = PrintTunnelingCoefficients.tagName;
+    if (xml_printTunnelingCoefficients.length == 1) {
+        printTunnelingCoefficientsInput.checked = true;
+        control.setPrintTunnelingCoefficients(new PrintTunnelingCoefficients());
+    } else {
+        if (xml_printTunnelingCoefficients.length > 1) {
+            console.warn("xml_printTunnelingCoefficients.length=" + xml_printTunnelingCoefficients.length);
+        }
+    }
+    printTunnelingCoefficientsInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintTunnelingCoefficients(new PrintTunnelingCoefficients());
+            } else {
+                control.removePrintTunnelingCoefficients();
+            }
+        }
+    });
+
+    // me:printCrossingCoefficients
+    let printCrossingCoefficientsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(printCrossingCoefficientsDiv);
+    let xml_printCrossingCoefficients: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(PrintCrossingCoefficients.tagName);
+    // Create a input checkbox for the PrintCrossingCoefficients.
+    let printCrossingCoefficientsLabel: HTMLLabelElement = document.createElement("label");
+    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsLabel);
+    printCrossingCoefficientsLabel.textContent = PrintCrossingCoefficients.tagName;
+    let printCrossingCoefficientsInput: HTMLInputElement = document.createElement("input");
+    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsInput);
+    printCrossingCoefficientsInput.type = "checkbox";
+    printCrossingCoefficientsInput.id = PrintCrossingCoefficients.tagName;
+    if (xml_printCrossingCoefficients.length == 1) {
+        printCrossingCoefficientsInput.checked = true;
+        control.setPrintCrossingCoefficients(new PrintCrossingCoefficients());
+    } else {
+        if (xml_printCrossingCoefficients.length > 1) {
+            console.warn("xml_printCrossingCoefficients.length=" + xml_printCrossingCoefficients.length);
+        }
+    }
+    printCrossingCoefficientsInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setPrintCrossingCoefficients(new PrintCrossingCoefficients());
+            } else {
+                control.removePrintCrossingCoefficients();
+            }
+        }
+    });
+
+    // me:testDOS
+    let testDOSDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(testDOSDiv);
+    let xml_testDOS: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestDOS.tagName);
+    // Create a input checkbox for the TestDOS.
+    let testDOSLabel: HTMLLabelElement = document.createElement("label");
+    testDOSDiv.appendChild(testDOSLabel);
+    testDOSLabel.textContent = TestDOS.tagName;
+    let testDOSInput: HTMLInputElement = document.createElement("input");
+    testDOSDiv.appendChild(testDOSInput);
+    testDOSInput.type = "checkbox";
+    testDOSInput.id = TestDOS.tagName;
+    if (xml_testDOS.length == 1) {
+        testDOSInput.checked = true;
+        control.setTestDOS(new TestDOS());
+    } else {
+        if (xml_testDOS.length > 1) {
+            console.warn("xml_testDOS.length=" + xml_testDOS.length);
+        }
+    }
+    testDOSInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setTestDOS(new TestDOS());
+            } else {
+                control.removeTestDOS();
+            }
+        }
+    });
+
+    // me:testRateConstants
+    let testRateConstantsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(testRateConstantsDiv);
+    let xml_testRateConstants: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestRateConstants.tagName);
+    // Create a input checkbox for the TestRateConstants.
+    let testRateConstantsLabel: HTMLLabelElement = document.createElement("label");
+    testRateConstantsDiv.appendChild(testRateConstantsLabel);
+    testRateConstantsLabel.textContent = TestRateConstants.tagName;
+    let testRateConstantsInput: HTMLInputElement = document.createElement("input");
+    testRateConstantsDiv.appendChild(testRateConstantsInput);
+    testRateConstantsInput.type = "checkbox";
+    testRateConstantsInput.id = TestRateConstants.tagName;
+    if (xml_testRateConstants.length == 1) {
+        testRateConstantsInput.checked = true;
+        control.setTestRateConstants(new TestRateConstants());
+    } else {
+        if (xml_testRateConstants.length > 1) {
+            console.warn("xml_testRateConstants.length=" + xml_testRateConstants.length);
+        }
+    }
+    testRateConstantsInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setTestRateConstants(new TestRateConstants());
+            } else {
+                control.removeTestRateConstants();
+            }
+        }
+    });
+
+    // me:useTheSameCellNumberForAllConditions
+    let useTheSameCellNumberForAllConditionsDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(useTheSameCellNumberForAllConditionsDiv);
+    let xml_useTheSameCellNumberForAllConditions: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(UseTheSameCellNumberForAllConditions.tagName);
+    // Create a input checkbox for the UseTheSameCellNumberForAllConditions.
+    let useTheSameCellNumberForAllConditionsLabel: HTMLLabelElement = document.createElement("label");
+    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsLabel);
+    useTheSameCellNumberForAllConditionsLabel.textContent = UseTheSameCellNumberForAllConditions.tagName;
+    let useTheSameCellNumberForAllConditionsInput: HTMLInputElement = document.createElement("input");
+    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsInput);
+    useTheSameCellNumberForAllConditionsInput.type = "checkbox";
+    useTheSameCellNumberForAllConditionsInput.id = UseTheSameCellNumberForAllConditions.tagName;
+    if (xml_useTheSameCellNumberForAllConditions.length == 1) {
+        useTheSameCellNumberForAllConditionsInput.checked = true;
+        control.setUseTheSameCellNumberForAllConditions(new UseTheSameCellNumberForAllConditions());
+    } else {
+        if (xml_useTheSameCellNumberForAllConditions.length > 1) {
+            console.warn("xml_useTheSameCellNumberForAllConditions.length=" + xml_useTheSameCellNumberForAllConditions.length);
+        }
+    }
+    useTheSameCellNumberForAllConditionsInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setUseTheSameCellNumberForAllConditions(new UseTheSameCellNumberForAllConditions());
+            } else {
+                control.removeUseTheSameCellNumberForAllConditions();
+            }
+        }
+    });
+
+    // me:hideInactive
+    let hideInactiveDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(hideInactiveDiv);
+    let xml_hideInactive: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(HideInactive.tagName);
+    // Create a input checkbox for the HideInactive.
+    let hideInactiveLabel: HTMLLabelElement = document.createElement("label");
+    hideInactiveDiv.appendChild(hideInactiveLabel);
+    hideInactiveLabel.textContent = HideInactive.tagName;
+    let hideInactiveInput: HTMLInputElement = document.createElement("input");
+    hideInactiveDiv.appendChild(hideInactiveInput);
+    hideInactiveInput.type = "checkbox";
+    hideInactiveInput.id = HideInactive.tagName;
+    if (xml_hideInactive.length == 1) {
+        hideInactiveInput.checked = true;
+        control.setHideInactive(new HideInactive());
+    } else {
+        if (xml_hideInactive.length > 1) {
+            console.warn("xml_hideInactive.length=" + xml_hideInactive.length);
+        }
+    }
+    hideInactiveInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setHideInactive(new HideInactive());
+            } else {
+                control.removeHideInactive();
+            }
+        }
+    });
+
+    // me:ForceMacroDetailedBalance
+    let forceMacroDetailedBalanceDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(forceMacroDetailedBalanceDiv);
+    let xml_forceMacroDetailedBalance: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ForceMacroDetailedBalance.tagName);
+    // Create a input checkbox for the ForceMacroDetailedBalance.
+    let forceMacroDetailedBalanceLabel: HTMLLabelElement = document.createElement("label");
+    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceLabel);
+    forceMacroDetailedBalanceLabel.textContent = ForceMacroDetailedBalance.tagName;
+    let forceMacroDetailedBalanceInput: HTMLInputElement = document.createElement("input");
+    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceInput);
+    forceMacroDetailedBalanceInput.type = "checkbox";
+    forceMacroDetailedBalanceInput.id = ForceMacroDetailedBalance.tagName;
+    if (xml_forceMacroDetailedBalance.length == 1) {
+        forceMacroDetailedBalanceInput.checked = true;
+        control.setForceMacroDetailedBalance(new ForceMacroDetailedBalance());
+    } else {
+        if (xml_forceMacroDetailedBalance.length > 1) {
+            console.warn("xml_forceMacroDetailedBalance.length=" + xml_forceMacroDetailedBalance.length);
+        }
+    }
+    forceMacroDetailedBalanceInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setForceMacroDetailedBalance(new ForceMacroDetailedBalance());
+            } else {
+                control.removeForceMacroDetailedBalance();
+            }
+        }
+    });
+
+    // me:testMicroRates
+    let testMicroRatesDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(testMicroRatesDiv);
+    let xml_testMicroRates: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(TestMicroRates.tagName);
+    // Create a input checkbox for the TestMicroRates.
+    let testMicroRatesLabel: HTMLLabelElement = document.createElement("label");
+    testMicroRatesDiv.appendChild(testMicroRatesLabel);
+    testMicroRatesLabel.textContent = TestMicroRates.tagName;
+    let testMicroRatesInput: HTMLInputElement = document.createElement("input");
+    testMicroRatesDiv.appendChild(testMicroRatesInput);
+    testMicroRatesInput.type = "checkbox";
+    testMicroRatesInput.id = TestMicroRates.tagName;
+    let testMicroRatesAttributes: Map<string, string>;
+    let testMicroRates: TestMicroRates;
+    if (xml_testMicroRates.length == 1) {
+        testMicroRatesInput.checked = true;
+        testMicroRatesAttributes = getAttributes(xml_testMicroRates[0]);
+        testMicroRates = new TestMicroRates(testMicroRatesAttributes);
+        control.setTestMicroRates(testMicroRates);
+    } else {
+        testMicroRatesAttributes = new Map<string, string>();
+        testMicroRatesAttributes.set("Tmax", "");
+        testMicroRatesAttributes.set("Tmin", "");
+        testMicroRatesAttributes.set("Tstep", "");
+        testMicroRates = new TestMicroRates(testMicroRatesAttributes);
+    }
+    testMicroRatesInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setTestMicroRates(testMicroRates);
+                // Tmax.
+                let idTmax = Control.tagName + "_" + TestMicroRates.tagName + "_Tmax";
+                // Remove any exising div for tMax.
+                let existingTmaxDiv: HTMLDivElement = document.getElementById(idTmax) as HTMLDivElement;
+                if (existingTmaxDiv != null) {
+                    existingTmaxDiv.remove();
+                }
+                // Create a new div for tMax.
+                let tMax: number = testMicroRates.getTmax();
+                let tMaxInputDiv: HTMLDivElement = getInput("number", idTmax + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if (isNumeric(event.target.value)) {
+                            testMicroRates.setTmax(parseFloat(event.target.value));
+                            console.log("Set Tmax to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        resizeInputElement(event.target);
+                    }
+                }, tMax.toString(), "Tmax");
+                tMaxInputDiv.id = idTmax;
+                resizeInputElement(tMaxInputDiv.querySelector('input') as HTMLInputElement);
+                testMicroRatesDiv.appendChild(tMaxInputDiv);
+                // Tmin.
+                let idTmin = Control.tagName + "_" + TestMicroRates.tagName + "_tMin";
+                // Remove any exising div for tMin.
+                let existingTminDiv = document.getElementById(idTmin) as HTMLDivElement;
+                if (existingTminDiv != null) {
+                    existingTminDiv.remove();
+                }
+                // Create a new div for the tMin.
+                let tMin: number = testMicroRates.getTmin();
+                let tMinInputDiv: HTMLDivElement = getInput("number", idTmin + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if (isNumeric(event.target.value)) {
+                            testMicroRates.setTmin(parseFloat(event.target.value));
+                            console.log("Set Tmin to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        resizeInputElement(event.target);
+                    }
+                }, tMin.toString(), "Tmin");
+                tMinInputDiv.id = idTmin;
+                resizeInputElement(tMinInputDiv.querySelector('input') as HTMLInputElement);
+                testMicroRatesDiv.appendChild(tMinInputDiv);
+                // Tstep.
+                let idTstep = Control.tagName + "_" + TestMicroRates.tagName + "_tStep";
+                // Remove any exising div for tStep.
+                let existingTstepDiv = document.getElementById(idTstep) as HTMLDivElement;
+                if (existingTstepDiv != null) {
+                    existingTstepDiv.remove();
+                }
+                // Create a new div for the tStep.
+                let tStep: number = testMicroRates.getTstep();
+                let tStepInputDiv: HTMLDivElement = getInput("number", idTstep + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if (isNumeric(event.target.value)) {
+                            testMicroRates.setTstep(parseFloat(event.target.value));
+                            console.log("Set Tstep to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        resizeInputElement(event.target);
+                    }
+                }, tStep.toString(), "Tstep");
+                tStepInputDiv.id = idTstep;
+                resizeInputElement(tStepInputDiv.querySelector('input') as HTMLInputElement);
+                testMicroRatesDiv.appendChild(tStepInputDiv);
+            } else {
+                control.removeTestMicroRates();
+                // Tmax.
+                let idTmax = Control.tagName + "_" + TestMicroRates.tagName + "_Tmax";
+                // Remove any exising div for tMax.
+                let existingTmaxDiv = document.getElementById(idTmax) as HTMLDivElement;
+                if (existingTmaxDiv != null) {
+                    existingTmaxDiv.remove();
+                }
+                // Tmin.
+                let idTmin = Control.tagName + "_" + TestMicroRates.tagName + "_tMin";
+                // Remove any exising div for tMin.
+                let existingTminDiv = document.getElementById(idTmin) as HTMLDivElement;
+                if (existingTminDiv != null) {
+                    existingTminDiv.remove();
+                }
+                // Tstep.
+                let idTstep = Control.tagName + "_" + TestMicroRates.tagName + "_tStep";
+                // Remove any exising div for tStep.
+                let existingTstepDiv = document.getElementById(idTstep) as HTMLDivElement;
+                if (existingTstepDiv != null) {
+                    existingTstepDiv.remove();
+                }
+            }
+        }
+    });
+
+    // me:calcMethod
+    let calcMethodDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(calcMethodDiv);
+    let xml_calcMethod: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(CalcMethod.tagName);
+    // Create a input checkbox for the CalcMethod.
+    let calcMethodLabel: HTMLLabelElement = document.createElement("label");
+    calcMethodDiv.appendChild(calcMethodLabel);
+    calcMethodLabel.textContent = CalcMethod.tagName;
+    let calcMethodInput: HTMLInputElement = document.createElement("input");
+    calcMethodDiv.appendChild(calcMethodInput);
+    calcMethodInput.type = "checkbox";
+    calcMethodInput.id = CalcMethod.tagName;
+    let calcMethodAttributes: Map<string, string>;
+    let calcMethod: CalcMethod;
+    if (xml_calcMethod.length == 1) {
+        calcMethodInput.checked = true;
+        calcMethodAttributes = getAttributes(xml_calcMethod[0]);
+        let value: string = getNodeValue(getFirstChildNode(xml_calcMethod[0]));
+        calcMethod = new CalcMethod(calcMethodAttributes, value);
+        control.setCalcMethod(calcMethod);
+    } else {
+        calcMethodInput.checked = false;
+        calcMethodAttributes = new Map<string, string>();
+        calcMethod = new CalcMethod(calcMethodAttributes, "");
+    }
+    calcMethodInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setCalcMethod(calcMethod);
+                let id = Control.tagName + "_" + CalcMethod.tagName + "_select";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div.
+                let value: string = calcMethod.value;
+                let selectElement: HTMLSelectElement = getSelectElement(CalcMethod.options, value, id);
+                selectElement.addEventListener('change', (event) => {
+                    if (event.target instanceof HTMLSelectElement) {
+                        calcMethod.value = event.target.value;
+                        resizeSelectElement(event.target);
+                    }
+                });
+                resizeSelectElement(selectElement);
+                calcMethodDiv.appendChild(selectElement);
+            } else {
+                control.removeCalcMethod();
+                let id = Control.tagName + "_" + CalcMethod.tagName + "_select";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+
     // me:eigenvalues
+    let eigenvaluesDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(eigenvaluesDiv);
     let xml_eigenvalues: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(Eigenvalues.tagName);
+    // Create a input checkbox for the Eigenvalues.
+    let eigenvaluesLabel: HTMLLabelElement = document.createElement("label");
+    eigenvaluesDiv.appendChild(eigenvaluesLabel);
+    eigenvaluesLabel.textContent = Eigenvalues.tagName;
+    let eigenvaluesInput: HTMLInputElement = document.createElement("input");
+    eigenvaluesDiv.appendChild(eigenvaluesInput);
+    eigenvaluesInput.type = "checkbox";
+    eigenvaluesInput.id = Eigenvalues.tagName;
+    let eigenvalues: Eigenvalues;
+    let eigenvaluesAttributes: Map<string, string>;
     if (xml_eigenvalues.length == 1) {
-        let eigenvalues: Eigenvalues = new Eigenvalues(getAttributes(xml_eigenvalues[0]), parseFloat(getNodeValue(getFirstChildNode(xml_eigenvalues[0]))));
+        eigenvaluesInput.checked = true;
+        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_eigenvalues[0])));
+        eigenvaluesAttributes = getAttributes(xml_eigenvalues[0]);
+        eigenvalues = new Eigenvalues(eigenvaluesAttributes, value);
         control.setEigenvalues(eigenvalues);
+        let id = Control.tagName + "_" + Eigenvalues.tagName + "_number";
         // Create a new div for the eigenvalues.
-        let id = Control.tagName + "_" + Eigenvalues.tagName;
-        let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+        let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(eigenvalues, event.target);
                 resizeInputElement(event.target);
             }
         }, eigenvalues.value.toString(), Eigenvalues.tagName);
         resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        eigenvaluesDiv.appendChild(inputDiv);
     } else {
-        console.warn("eigenvalues.length=" + xml_eigenvalues.length);
+        eigenvaluesInput.checked = false;
+        eigenvaluesAttributes = new Map<string, string>();
+        eigenvalues = new Eigenvalues(eigenvaluesAttributes, NaN);
     }
+    eigenvaluesInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setEigenvalues(eigenvalues);
+                let id = Control.tagName + "_" + Eigenvalues.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the eigenvalues.
+                let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(eigenvalues, event.target);
+                        resizeInputElement(event.target);
+                    }
+                }, eigenvalues.value.toString(), Eigenvalues.tagName);
+                resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+                inputDiv.id = id;
+                eigenvaluesDiv.appendChild(inputDiv);
+            } else {
+                control.removeEigenvalues();
+                let id = Control.tagName + "_" + Eigenvalues.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+
+    // me:shortestTimeOfInterest
+    let shortestTimeOfInterestDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(shortestTimeOfInterestDiv);
+    let xml_shortestTimeOfInterest: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ShortestTimeOfInterest.tagName);
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let shortestTimeOfInterestLabel: HTMLLabelElement = document.createElement("label");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestLabel);
+    shortestTimeOfInterestLabel.textContent = ShortestTimeOfInterest.tagName;
+    let shortestTimeOfInterestInput: HTMLInputElement = document.createElement("input");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestInput);
+    shortestTimeOfInterestInput.type = "checkbox";
+    shortestTimeOfInterestInput.id = ShortestTimeOfInterest.tagName;
+    let shortestTimeOfInterest: ShortestTimeOfInterest;
+    let shortestTimeOfInterestAttributes: Map<string, string>;
+    if (xml_shortestTimeOfInterest.length == 1) {
+        shortestTimeOfInterestInput.checked = true;
+        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_shortestTimeOfInterest[0])));
+        shortestTimeOfInterestAttributes = getAttributes(xml_shortestTimeOfInterest[0]);
+        shortestTimeOfInterest = new ShortestTimeOfInterest(shortestTimeOfInterestAttributes, value);
+        control.setShortestTimeOfInterest(shortestTimeOfInterest);
+        let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_number";
+        // Create a new div for the shortestTimeOfInterest.
+        let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(shortestTimeOfInterest, event.target);
+                resizeInputElement(event.target);
+            }
+        }, shortestTimeOfInterest.value.toString(), ShortestTimeOfInterest.tagName);
+        resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+        inputDiv.id = id;
+        shortestTimeOfInterestDiv.appendChild(inputDiv);
+    } else {
+        shortestTimeOfInterestInput.checked = false;
+        shortestTimeOfInterestAttributes = new Map<string, string>();
+        shortestTimeOfInterest = new ShortestTimeOfInterest(shortestTimeOfInterestAttributes, NaN);
+    }
+    shortestTimeOfInterestInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setShortestTimeOfInterest(shortestTimeOfInterest);
+                let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the shortestTimeOfInterest.
+                let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(shortestTimeOfInterest, event.target);
+                        resizeInputElement(event.target);
+                    }
+                }, shortestTimeOfInterest.value.toString(), ShortestTimeOfInterest.tagName);
+                resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+                inputDiv.id = id;
+                shortestTimeOfInterestDiv.appendChild(inputDiv);
+            } else {
+                control.removeShortestTimeOfInterest();
+                let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+
+    // me:MaximumEvolutionTime
+    let maximumEvolutionTimeDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(maximumEvolutionTimeDiv);
+    let xml_maximumEvolutionTime: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(MaximumEvolutionTime.tagName);
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let maximumEvolutionTimeLabel: HTMLLabelElement = document.createElement("label");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeLabel);
+    maximumEvolutionTimeLabel.textContent = MaximumEvolutionTime.tagName;
+    let maximumEvolutionTimeInput: HTMLInputElement = document.createElement("input");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeInput);
+    maximumEvolutionTimeInput.type = "checkbox";
+    maximumEvolutionTimeInput.id = MaximumEvolutionTime.tagName;
+    let maximumEvolutionTime: MaximumEvolutionTime;
+    let maximumEvolutionTimeAttributes: Map<string, string>;
+    if (xml_maximumEvolutionTime.length == 1) {
+        maximumEvolutionTimeInput.checked = true;
+        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_maximumEvolutionTime[0])));
+        maximumEvolutionTimeAttributes = getAttributes(xml_maximumEvolutionTime[0]);
+        maximumEvolutionTime = new MaximumEvolutionTime(maximumEvolutionTimeAttributes, value);
+        control.setMaximumEvolutionTime(maximumEvolutionTime);
+        let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_number";
+        // Create a new div for the maximumEvolutionTime.
+        let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(maximumEvolutionTime, event.target);
+                resizeInputElement(event.target);
+            }
+        }, maximumEvolutionTime.value.toString(), MaximumEvolutionTime.tagName);
+        resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+        inputDiv.id = id;
+        maximumEvolutionTimeDiv.appendChild(inputDiv);
+    } else {
+        maximumEvolutionTimeInput.checked = false;
+        maximumEvolutionTimeAttributes = new Map<string, string>();
+        maximumEvolutionTime = new MaximumEvolutionTime(maximumEvolutionTimeAttributes, NaN);
+    }
+    maximumEvolutionTimeInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setMaximumEvolutionTime(maximumEvolutionTime);
+                let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the maximumEvolutionTime.
+                let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(maximumEvolutionTime, event.target);
+                        resizeInputElement(event.target);
+                    }
+                }, maximumEvolutionTime.value.toString(), MaximumEvolutionTime.tagName);
+                resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+                inputDiv.id = id;
+                maximumEvolutionTimeDiv.appendChild(inputDiv);
+            } else {
+                control.removeMaximumEvolutionTime();
+                let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+    
+    // me:automaticallySetMaxEne
+    let automaticallySetMaxEneDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(automaticallySetMaxEneDiv);
+    let xml_automaticallySetMaxEne: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(AutomaticallySetMaxEne.tagName);
+    // Create a input checkbox for the AutomaticallySetMaxEne.
+    let automaticallySetMaxEneLabel: HTMLLabelElement = document.createElement("label");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneLabel);
+    automaticallySetMaxEneLabel.textContent = AutomaticallySetMaxEne.tagName;
+    let automaticallySetMaxEneInput: HTMLInputElement = document.createElement("input");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneInput);
+    automaticallySetMaxEneInput.type = "checkbox";
+    automaticallySetMaxEneInput.id = AutomaticallySetMaxEne.tagName;
+    let automaticallySetMaxEneAttributes: Map<string, string>;
+    let automaticallySetMaxEne: AutomaticallySetMaxEne;
+    if (xml_automaticallySetMaxEne.length == 1) {
+        automaticallySetMaxEneInput.checked = true;
+        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_automaticallySetMaxEne[0])));
+        automaticallySetMaxEneAttributes = getAttributes(xml_automaticallySetMaxEne[0]);
+        automaticallySetMaxEne = new AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, value);
+        control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+    } else {
+        automaticallySetMaxEneInput.checked = false;
+        automaticallySetMaxEneAttributes = new Map<string, string>();
+        automaticallySetMaxEne = new AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, NaN);
+    }
+    automaticallySetMaxEneInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+                let id = Control.tagName + "_" + AutomaticallySetMaxEne.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the automaticallySetMaxEne.
+                let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(automaticallySetMaxEne, event.target);
+                        resizeInputElement(event.target);
+                    }
+                }, automaticallySetMaxEne.value.toString(), AutomaticallySetMaxEne.tagName);
+                resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+                inputDiv.id = id;
+                automaticallySetMaxEneDiv.appendChild(inputDiv);
+            } else {
+                control.removeAutomaticallySetMaxEne();
+                let id = Control.tagName + "_" + AutomaticallySetMaxEne.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+
     // me:diagramEnergyOffset
+    let diagramEnergyOffsetDiv: HTMLDivElement = createFlexDiv(margin25, margin1, margin1);
+    controlsDiv.appendChild(diagramEnergyOffsetDiv);
     let xml_diagramEnergyOffset: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(DiagramEnergyOffset.tagName);
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let diagramEnergyOffsetLabel: HTMLLabelElement = document.createElement("label");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetLabel);
+    diagramEnergyOffsetLabel.textContent = DiagramEnergyOffset.tagName;
+    let diagramEnergyOffsetInput: HTMLInputElement = document.createElement("input");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetInput);
+    diagramEnergyOffsetInput.type = "checkbox";
+    diagramEnergyOffsetInput.id = DiagramEnergyOffset.tagName;
+    let diagramEnergyOffset: DiagramEnergyOffset;
+    let diagramEnergyOffsetAttributes: Map<string, string>;
     if (xml_diagramEnergyOffset.length == 1) {
+        diagramEnergyOffsetInput.checked = true;
         let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_diagramEnergyOffset[0])));
-        let diagramEnergyOffset: DiagramEnergyOffset = new DiagramEnergyOffset(getAttributes(xml_diagramEnergyOffset[0]), value);
+        diagramEnergyOffsetAttributes = getAttributes(xml_diagramEnergyOffset[0]);
+        diagramEnergyOffset = new DiagramEnergyOffset(diagramEnergyOffsetAttributes, value);
         control.setDiagramEnergyOffset(diagramEnergyOffset);
+        let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_number";
         // Create a new div for the diagramEnergyOffset.
-        let id = Control.tagName + "_" + DiagramEnergyOffset.tagName;
-        let inputDiv: HTMLDivElement = getInput("number", id, (event) => {
+        let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(diagramEnergyOffset, event.target);
                 resizeInputElement(event.target);
             }
-        }, value.toString(), DiagramEnergyOffset.tagName);
+        }, diagramEnergyOffset.value.toString(), DiagramEnergyOffset.tagName);
         resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        diagramEnergyOffsetDiv.appendChild(inputDiv);
     } else {
-        console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
+        diagramEnergyOffsetInput.checked = false;
+        diagramEnergyOffsetAttributes = new Map<string, string>();
+        diagramEnergyOffset = new DiagramEnergyOffset(diagramEnergyOffsetAttributes, NaN);
     }
+    diagramEnergyOffsetInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setDiagramEnergyOffset(diagramEnergyOffset);
+                let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the diagramEnergyOffset.
+                let inputDiv: HTMLDivElement = getInput("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(diagramEnergyOffset, event.target);
+                        resizeInputElement(event.target);
+                    }
+                }, diagramEnergyOffset.value.toString(), DiagramEnergyOffset.tagName);
+                resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
+                inputDiv.id = id;
+                diagramEnergyOffsetDiv.appendChild(inputDiv);
+            } else {
+                control.removeDiagramEnergyOffset();
+                let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
+
     return controlsDiv;
 }
 

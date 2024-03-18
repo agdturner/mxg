@@ -1171,7 +1171,6 @@ let xml_text;
                             // Reset the input to the current value.
                             alert("Expansion size input is not a number, resetting...");
                             expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
-                            console.warn("Expansion size input is not a number.");
                         }
                         (0, _htmlJs.resizeInputElement)(expansionSizeInputElement);
                     }
@@ -1237,7 +1236,6 @@ let xml_text;
                                 // Reset the input to the current value.
                                 alert("Angle input is not a number, resetting...");
                                 angleInputElement.value = potentialPoint.getAngle().toString();
-                                console.warn("Angle input is not a number.");
                             }
                             (0, _htmlJs.resizeInputElement)(angleInputElement);
                         }
@@ -1266,7 +1264,6 @@ let xml_text;
                                 // Reset the input to the current value.
                                 alert("Potential input is not a number, resetting...");
                                 potentialInputElement.value = potentialPoint.getPotential().toString();
-                                console.warn("Potential input is not a number.");
                             }
                             (0, _htmlJs.resizeInputElement)(potentialInputElement);
                         }
@@ -1593,11 +1590,9 @@ let xml_text;
     }
 }
 function setNumberArrayNode(node, input) {
-    let inputId = input.id;
     let inputString = input.value.trim();
     if (inputString == "") {
         alert("Empty input resetting...");
-        let input = document.getElementById(inputId);
         input.value = (0, _utilJs.arrayToString)(node.values, " ");
         return;
     }
@@ -1610,7 +1605,6 @@ function setNumberArrayNode(node, input) {
     });
     if (!success) {
         alert("An input is not a number, resetting...");
-        let input = document.getElementById(inputId);
         input.value = (0, _utilJs.arrayToString)(node.values, " ");
         return;
     }
@@ -1618,27 +1612,19 @@ function setNumberArrayNode(node, input) {
     if (values.length == node.values.length) console.log("Changed " + node.tagName + ' from: "' + inputString + '" to: "' + (0, _utilJs.arrayToString)(node.values, " ") + '"');
     else {
         alert("Expecting " + node.values.length + " values for, but finding " + values.length + " resetting...");
-        let input = document.getElementById(inputId);
         input.value = (0, _utilJs.arrayToString)(node.values, " ");
     }
 }
 window.setNumberArrayNode = setNumberArrayNode;
 function setNumberNode(node, input) {
-    let inputId = input.id;
-    //let moleculeID: string = inputId.split("_")[0];
-    //let molecule: Molecule | undefined = molecules.get(moleculeID);
-    //if (molecule != undefined) {
     if ((0, _utilJs.isNumeric)(input.value)) {
         let inputNumber = parseFloat(input.value);
         node.value = inputNumber;
         console.log("Value set to " + inputNumber);
     } else {
         alert("Value is not numeric, resetting...");
-        let inputElement = document.getElementById(inputId);
-        inputElement.value = node.value.toString();
+        input.value = node.value.toString();
     }
-//console.log("molecule=" + molecule);
-//}
 }
 window.set = setNumberNode;
 /**
@@ -2175,53 +2161,10 @@ window.set = setNumberNode;
                     inputDiv.style.marginBottom = margin1;
                     containerDiv.appendChild(inputDiv);
                 }
-                // Create a new input element for the P.
-                let p = pTPair.getP();
-                let pId = (0, _conditionsJs.PTpair).tagName + "_" + "P";
-                let t = pTPair.getT();
-                let tId = (0, _conditionsJs.PTpair).tagName + "_" + "T";
-                // Add the P input element to the container.
-                let pInputDiv = (0, _htmlJs.getInput)("number", pId, (event)=>{
-                    if (event.target instanceof HTMLInputElement) {
-                        if ((0, _utilJs.isNumeric)(event.target.value)) {
-                            pTPair.setP(parseFloat(event.target.value));
-                            console.log("Set P to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            let inputElement = document.getElementById(pId);
-                            inputElement.value = pTPair.getP().toString();
-                        }
-                        (0, _htmlJs.resizeInputElement)(event.target);
-                    }
-                }, p.toString(), "P");
-                let pInputElement = pInputDiv.querySelector("input");
-                pInputElement.value = p.toString();
-                (0, _htmlJs.resizeInputElement)(pInputElement);
-                pInputDiv.style.marginLeft = margin5;
-                pInputDiv.style.marginTop = margin1;
-                pInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(pInputDiv);
-                // Add the T input element to the container.
-                let tInputDiv = (0, _htmlJs.getInput)("number", tId, (event)=>{
-                    if (event.target instanceof HTMLInputElement) {
-                        if ((0, _utilJs.isNumeric)(event.target.value)) {
-                            pTPair.setT(parseFloat(event.target.value));
-                            console.log("Set T to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            let inputElement = document.getElementById(tId);
-                            inputElement.value = pTPair.getT().toString();
-                        }
-                        (0, _htmlJs.resizeInputElement)(event.target);
-                    }
-                }, t.toString(), "T");
-                let tInputElement = tInputDiv.querySelector("input");
-                tInputElement.value = t.toString();
-                (0, _htmlJs.resizeInputElement)(tInputElement);
-                tInputDiv.style.marginLeft = margin5;
-                tInputDiv.style.marginTop = margin1;
-                tInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(tInputDiv);
+                // Add P input element to the container.
+                addPInput(containerDiv, pTPair);
+                // Add T input element to the container.
+                addTInput(containerDiv, pTPair);
                 // Add any units to the container.
                 addAnyUnits(undefined, (0, _xmlJs.getAttributes)(xml_PTPairs[i]), containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
                 pTs.addPTpair(pTPair);
@@ -2243,49 +2186,15 @@ window.set = setNumberNode;
                 // add the new pTPair to the PTs.
                 pTs.addPTpair(pTPair);
                 let pTPairDiv = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin25;
+                pTPairDiv.style.marginLeft = margin50;
                 pTPairDiv.style.marginTop = margin1;
                 pTPairDiv.style.marginBottom = margin1;
                 pTsDiv.insertBefore(pTPairDiv, addButton);
                 let containerDiv = (0, _htmlJs.createFlexDiv)();
-                let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
-                    if (event.target instanceof HTMLInputElement) {
-                        if ((0, _utilJs.isNumeric)(event.target.value)) {
-                            pTPair.setP(parseFloat(event.target.value));
-                            console.log("Set P to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = pTPair.getP().toString();
-                        }
-                        (0, _htmlJs.resizeInputElement)(event.target);
-                    }
-                }, pTPair.getP().toString(), "P");
-                let pInputElement = pInputDiv.querySelector("input");
-                pInputElement.value = pTPair.getP().toString();
-                (0, _htmlJs.resizeInputElement)(pInputElement);
-                pInputDiv.style.marginLeft = margin25;
-                pInputDiv.style.marginTop = margin1;
-                pInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(pInputDiv);
-                let tInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", (event)=>{
-                    if (event.target instanceof HTMLInputElement) {
-                        if ((0, _utilJs.isNumeric)(event.target.value)) {
-                            pTPair.setT(parseFloat(event.target.value));
-                            console.log("Set T to " + event.target.value);
-                        } else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = pTPair.getT().toString();
-                        }
-                        (0, _htmlJs.resizeInputElement)(event.target);
-                    }
-                }, pTPair.getT().toString(), "T");
-                let tInputElement = tInputDiv.querySelector("input");
-                tInputElement.value = pTPair.getT().toString();
-                (0, _htmlJs.resizeInputElement)(tInputElement);
-                tInputDiv.style.marginLeft = margin5;
-                tInputDiv.style.marginTop = margin1;
-                tInputDiv.style.marginBottom = margin1;
-                containerDiv.appendChild(tInputDiv);
+                // Add P input to the container
+                addPInput(containerDiv, pTPair);
+                // Add T input element to the container.
+                addTInput(containerDiv, pTPair);
                 addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
                 pTPairDiv.appendChild(containerDiv);
             });
@@ -2327,43 +2236,10 @@ window.set = setNumberNode;
                                 console.log("pTPair=" + pTPair);
                             } else console.warn("pTPairArray.length=" + pTPairArray.length);
                             let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
-                            let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
-                                if (event.target instanceof HTMLInputElement) {
-                                    if ((0, _utilJs.isNumeric)(event.target.value)) {
-                                        pTPair.setP(parseFloat(event.target.value));
-                                        console.log("Set P to " + event.target.value);
-                                    } else {
-                                        alert("Value is not numeric, resetting...");
-                                        event.target.value = pTPair.getP().toString();
-                                    }
-                                    (0, _htmlJs.resizeInputElement)(event.target);
-                                }
-                            }, pTPair.getP().toString(), "P");
-                            let pInputElement = pInputDiv.querySelector("input");
-                            pInputElement.value = pTPair.getP().toString();
-                            (0, _htmlJs.resizeInputElement)(pInputElement);
-                            pInputDiv.style.marginTop = margin1;
-                            pInputDiv.style.marginBottom = margin1;
-                            containerDiv.appendChild(pInputDiv);
-                            let tInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", (event)=>{
-                                if (event.target instanceof HTMLInputElement) {
-                                    if ((0, _utilJs.isNumeric)(event.target.value)) {
-                                        pTPair.setT(parseFloat(event.target.value));
-                                        console.log("Set T to " + event.target.value);
-                                    } else {
-                                        alert("Value is not numeric, resetting...");
-                                        event.target.value = pTPair.getT().toString();
-                                    }
-                                    (0, _htmlJs.resizeInputElement)(event.target);
-                                }
-                            }, pTPair.getT().toString(), "T");
-                            let tInputElement = tInputDiv.querySelector("input");
-                            tInputElement.value = pTPair.getT().toString();
-                            (0, _htmlJs.resizeInputElement)(tInputElement);
-                            tInputDiv.style.marginLeft = margin5;
-                            tInputDiv.style.marginTop = margin1;
-                            tInputDiv.style.marginBottom = margin1;
-                            containerDiv.appendChild(tInputDiv);
+                            // Add P input to the container
+                            addPInput(containerDiv, pTPair);
+                            // Add T input element to the container.
+                            addTInput(containerDiv, pTPair);
                             addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
                             console.log(addButton); // Check the value of addButton
                             console.log(pTsDiv); // Check the value of pTsDiv
@@ -2379,6 +2255,53 @@ window.set = setNumberNode;
         }
     }
     return conditionsDiv;
+}
+/**
+ * @param containerDiv The container div.
+ * @param pTPair The PTpair.
+ */ function addPInput(containerDiv, pTPair) {
+    let pInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if ((0, _utilJs.isNumeric)(event.target.value)) {
+                pTPair.setP(parseFloat(event.target.value));
+                console.log("Set P to " + event.target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = pTPair.getP().toString();
+            }
+            (0, _htmlJs.resizeInputElement)(event.target);
+        }
+    }, pTPair.getP().toString(), "P");
+    let pInputElement = pInputDiv.querySelector("input");
+    pInputElement.value = pTPair.getP().toString();
+    (0, _htmlJs.resizeInputElement)(pInputElement);
+    pInputDiv.style.marginTop = margin1;
+    pInputDiv.style.marginBottom = margin1;
+    containerDiv.appendChild(pInputDiv);
+}
+/**
+ * @param containerDiv The container div.
+ * @param pTPair The PTpair.
+ */ function addTInput(containerDiv, pTPair) {
+    let tInputDiv = (0, _htmlJs.getInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if ((0, _utilJs.isNumeric)(event.target.value)) {
+                pTPair.setT(parseFloat(event.target.value));
+                console.log("Set T to " + event.target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = pTPair.getT().toString();
+            }
+            (0, _htmlJs.resizeInputElement)(event.target);
+        }
+    }, pTPair.getT().toString(), "T");
+    let tInputElement = tInputDiv.querySelector("input");
+    tInputElement.value = pTPair.getT().toString();
+    (0, _htmlJs.resizeInputElement)(tInputElement);
+    tInputDiv.style.marginLeft = margin5;
+    tInputDiv.style.marginTop = margin1;
+    tInputDiv.style.marginBottom = margin1;
+    containerDiv.appendChild(tInputDiv);
 }
 /**
  * Parses xml to initialise modelParameters.
@@ -2439,6 +2362,42 @@ window.set = setNumberNode;
  * Parses xml to initialise controls.
  * @param xml The XML document.
  * @returns The controls div.
+ * 
+ * Tag control options:
+ * me:calculateRateCoefficientsOnly
+ * me:printCellDOS
+ * me:printCellTransitionStateFlux
+ * me:printReactionOperatorColumnSums
+ * me:printGrainBoltzmann
+ * me:printGrainDOS
+ * me:printGrainkbE
+ * me:printGrainkfE
+ * me:printTSsos
+ * me:printGrainedSpeciesProfile
+ * me:printGrainTransitionStateFlux
+ * me:printReactionOperatorSize
+ * me:printSpeciesProfile
+ * me:printPhenomenologicalEvolution
+ * me:printTunnelingCoefficients
+ * me:printCrossingCoefficients
+ * me:testDOS
+ * me:testRateConstants
+ * me:useTheSameCellNumberForAllConditions
+ * me:hideInactive
+ * me:ForceMacroDetailedBalance
+ * 
+ * TagWithAttribute control options:
+ * me:testMicroRates
+ * 
+ * StringNode control options:
+ * me:calcMethod "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis"
+ * 
+ * NumberNode control options:
+ * me:eigenvalues
+ * me:shortestTimeOfInterest
+ * me:MaximumEvolutionTime
+ * me:automaticallySetMaxEne
+ * me:diagramEnergyOffset
  */ function processControl(xml) {
     console.log((0, _controlJs.Control).tagName);
     // Create div to contain the controls.
@@ -2446,116 +2405,28 @@ window.set = setNumberNode;
     // Get the XML "me:control" element.
     let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
     control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
-    // me:testDOS
-    let testDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(testDOSDiv);
-    let xml_testDOS = xml_control.getElementsByTagName((0, _controlJs.TestDOS).tagName);
-    // Create a input checkbox for the TestDOS.
-    let testDOSLabel = document.createElement("label");
-    testDOSDiv.appendChild(testDOSLabel);
-    testDOSLabel.textContent = (0, _controlJs.TestDOS).tagName;
-    let testDOSInput = document.createElement("input");
-    testDOSDiv.appendChild(testDOSInput);
-    testDOSInput.type = "checkbox";
-    testDOSInput.id = (0, _controlJs.TestDOS).tagName;
-    testDOSInput.addEventListener("change", (event)=>{
+    // me:calculateRateCoefficientsOnly
+    let calculateRateCoefficientsOnlyDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(calculateRateCoefficientsOnlyDiv);
+    let xml_calculateRateCoefficientsOnly = xml_control.getElementsByTagName((0, _controlJs.CalculateRateCoefficientsOnly).tagName);
+    // Create a input checkbox for the CalculateRateCoefficientsOnly.
+    let calculateRateCoefficientsOnlyLabel = document.createElement("label");
+    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyLabel);
+    calculateRateCoefficientsOnlyLabel.textContent = (0, _controlJs.CalculateRateCoefficientsOnly).tagName;
+    let calculateRateCoefficientsOnlyInput = document.createElement("input");
+    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyInput);
+    calculateRateCoefficientsOnlyInput.type = "checkbox";
+    calculateRateCoefficientsOnlyInput.id = (0, _controlJs.CalculateRateCoefficientsOnly).tagName;
+    if (xml_calculateRateCoefficientsOnly.length == 1) {
+        calculateRateCoefficientsOnlyInput.checked = true;
+        control.setCalculateRateCoefficientsOnly(new (0, _controlJs.CalculateRateCoefficientsOnly)());
+    } else if (xml_calculateRateCoefficientsOnly.length > 1) console.warn("xml_calculateRateCoefficientsOnly.length=" + xml_calculateRateCoefficientsOnly.length);
+    calculateRateCoefficientsOnlyInput.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setTestDOS(new (0, _controlJs.TestDOS)());
-            else control.removeTestDOS();
+            if (event.target.checked) control.setCalculateRateCoefficientsOnly(new (0, _controlJs.CalculateRateCoefficientsOnly)());
+            else control.removeCalculateRateCoefficientsOnly();
         }
     });
-    if (xml_testDOS.length == 1) {
-        testDOSInput.checked = true;
-        control.setTestDOS(new (0, _controlJs.TestDOS)());
-    } else if (xml_testDOS.length > 1) console.warn("xml_testDOS.length=" + xml_testDOS.length);
-    // me:printSpeciesProfile
-    let printSpeciesProfileDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(printSpeciesProfileDiv);
-    let xml_printSpeciesProfile = xml_control.getElementsByTagName((0, _controlJs.PrintSpeciesProfile).tagName);
-    // Create a input checkbox for the PrintSpeciesProfile.
-    let printSpeciesProfileLabel = document.createElement("label");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileLabel);
-    printSpeciesProfileLabel.textContent = (0, _controlJs.PrintSpeciesProfile).tagName;
-    let printSpeciesProfileInput = document.createElement("input");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileInput);
-    printSpeciesProfileInput.type = "checkbox";
-    printSpeciesProfileInput.id = (0, _controlJs.PrintSpeciesProfile).tagName;
-    printSpeciesProfileInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setPrintSpeciesProfile(new (0, _controlJs.PrintSpeciesProfile)());
-            else control.removePrintSpeciesProfile();
-        }
-    });
-    if (xml_printSpeciesProfile.length == 1) {
-        printSpeciesProfileInput.checked = true;
-        control.setTestDOS(new (0, _controlJs.PrintSpeciesProfile)());
-    } else if (xml_testDOS.length > 1) console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
-    // me:testMicroRates
-    let testMicroRatesDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(testMicroRatesDiv);
-    let xml_testMicroRates = xml_control.getElementsByTagName((0, _controlJs.TestMicroRates).tagName);
-    // Create a input checkbox for the TestMicroRates.
-    let testMicroRatesLabel = document.createElement("label");
-    testMicroRatesDiv.appendChild(testMicroRatesLabel);
-    testMicroRatesLabel.textContent = (0, _controlJs.TestMicroRates).tagName;
-    let testMicroRatesInput = document.createElement("input");
-    testMicroRatesDiv.appendChild(testMicroRatesInput);
-    testMicroRatesInput.type = "checkbox";
-    testMicroRatesInput.id = (0, _controlJs.TestMicroRates).tagName;
-    testMicroRatesInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setTestMicroRates(new (0, _controlJs.TestMicroRates)());
-            else control.removeTestMicroRates();
-        }
-    });
-    if (xml_testMicroRates.length == 1) {
-        testMicroRatesInput.checked = true;
-        control.setTestMicroRates(new (0, _controlJs.TestMicroRates)());
-    } else if (xml_testMicroRates.length > 1) console.warn("xml_testMicroRates.length=" + xml_testMicroRates.length);
-    // me:testRateConstant
-    let testRateConstantDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(testRateConstantDiv);
-    let xml_testRateConstant = xml_control.getElementsByTagName((0, _controlJs.TestRateConstant).tagName);
-    // Create a input checkbox for the TestRateConstant.
-    let testRateConstantLabel = document.createElement("label");
-    testRateConstantDiv.appendChild(testRateConstantLabel);
-    testRateConstantLabel.textContent = (0, _controlJs.TestRateConstant).tagName;
-    let testRateConstantInput = document.createElement("input");
-    testRateConstantDiv.appendChild(testRateConstantInput);
-    testRateConstantInput.type = "checkbox";
-    testRateConstantInput.id = (0, _controlJs.TestRateConstant).tagName;
-    testRateConstantInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setTestRateConstant(new (0, _controlJs.TestRateConstant)());
-            else control.removeTestRateConstant();
-        }
-    });
-    if (xml_testRateConstant.length == 1) {
-        testRateConstantInput.checked = true;
-        control.setTestRateConstant(new (0, _controlJs.TestRateConstant)());
-    } else if (xml_testRateConstant.length > 1) console.warn("xml_testRateConstant.length=" + xml_testRateConstant.length);
-    // me:printGrainDOS
-    let printGrainDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(printGrainDOSDiv);
-    let xml_printGrainDOS = xml_control.getElementsByTagName((0, _controlJs.PrintGrainDOS).tagName);
-    // Create a input checkbox for the PrintGrainDOS.
-    let printGrainDOSLabel = document.createElement("label");
-    printGrainDOSDiv.appendChild(printGrainDOSLabel);
-    printGrainDOSLabel.textContent = (0, _controlJs.PrintGrainDOS).tagName;
-    let printGrainDOSInput = document.createElement("input");
-    printGrainDOSDiv.appendChild(printGrainDOSInput);
-    printGrainDOSInput.type = "checkbox";
-    printGrainDOSInput.id = (0, _controlJs.PrintGrainDOS).tagName;
-    printGrainDOSInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setPrintGrainDOS(new (0, _controlJs.PrintGrainDOS)());
-            else control.removePrintGrainDOS();
-        }
-    });
-    if (xml_printGrainDOS.length == 1) {
-        printGrainDOSInput.checked = true;
-        control.setPrintGrainDOS(new (0, _controlJs.PrintGrainDOS)());
-    } else if (xml_printGrainDOS.length > 1) console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
     // me:printCellDOS
     let printCellDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printCellDOSDiv);
@@ -2568,16 +2439,38 @@ window.set = setNumberNode;
     printCellDOSDiv.appendChild(printCellDOSInput);
     printCellDOSInput.type = "checkbox";
     printCellDOSInput.id = (0, _controlJs.PrintCellDOS).tagName;
+    if (xml_printCellDOS.length == 1) {
+        printCellDOSInput.checked = true;
+        control.setPrintCellDOS(new (0, _controlJs.PrintCellDOS)());
+    } else if (xml_printCellDOS.length > 1) console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
     printCellDOSInput.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) control.setPrintCellDOS(new (0, _controlJs.PrintCellDOS)());
             else control.removePrintCellDOS();
         }
     });
-    if (xml_printCellDOS.length == 1) {
-        printCellDOSInput.checked = true;
-        control.setPrintCellDOS(new (0, _controlJs.PrintCellDOS)());
-    } else if (xml_printCellDOS.length > 1) console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
+    // me:printCellTransitionStateFlux
+    let printCellTransitionStateFluxDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printCellTransitionStateFluxDiv);
+    let xml_printCellTransitionStateFlux = xml_control.getElementsByTagName((0, _controlJs.PrintCellTransitionStateFlux).tagName);
+    // Create a input checkbox for the PrintCellTransitionStateFlux.
+    let printCellTransitionStateFluxLabel = document.createElement("label");
+    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxLabel);
+    printCellTransitionStateFluxLabel.textContent = (0, _controlJs.PrintCellTransitionStateFlux).tagName;
+    let printCellTransitionStateFluxInput = document.createElement("input");
+    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxInput);
+    printCellTransitionStateFluxInput.type = "checkbox";
+    printCellTransitionStateFluxInput.id = (0, _controlJs.PrintCellTransitionStateFlux).tagName;
+    if (xml_printCellTransitionStateFlux.length == 1) {
+        printCellTransitionStateFluxInput.checked = true;
+        control.setPrintCellTransitionStateFlux(new (0, _controlJs.PrintCellTransitionStateFlux)());
+    } else if (xml_printCellTransitionStateFlux.length > 1) console.warn("xml_printCellTransitionStateFlux.length=" + xml_printCellTransitionStateFlux.length);
+    printCellTransitionStateFluxInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintCellTransitionStateFlux(new (0, _controlJs.PrintCellTransitionStateFlux)());
+            else control.removePrintCellTransitionStateFlux();
+        }
+    });
     // me:printReactionOperatorColumnSums
     let printReactionOperatorColumnSumsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
     controlsDiv.appendChild(printReactionOperatorColumnSumsDiv);
@@ -2590,54 +2483,14 @@ window.set = setNumberNode;
     printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsInput);
     printReactionOperatorColumnSumsInput.type = "checkbox";
     printReactionOperatorColumnSumsInput.id = (0, _controlJs.PrintReactionOperatorColumnSums).tagName;
-    printReactionOperatorColumnSumsInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setPrintReactionOperatorColumnSums(new (0, _controlJs.PrintReactionOperatorColumnSums)());
-            else control.removePrintReactionOperatorColumnSums();
-        }
-    });
     if (xml_printReactionOperatorColumnSums.length == 1) {
         printReactionOperatorColumnSumsInput.checked = true;
         control.setPrintReactionOperatorColumnSums(new (0, _controlJs.PrintReactionOperatorColumnSums)());
     } else if (xml_printReactionOperatorColumnSums.length > 1) console.warn("xml_printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
-    // me:printTunnellingCoefficients
-    let printTunnellingCoefficientsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(printTunnellingCoefficientsDiv);
-    let xml_printTunnellingCoefficients = xml_control.getElementsByTagName((0, _controlJs.PrintTunnellingCoefficients).tagName);
-    // Create a input checkbox for the PrintTunnellingCoefficients.
-    let printTunnellingCoefficientsLabel = document.createElement("label");
-    printTunnellingCoefficientsDiv.appendChild(printTunnellingCoefficientsLabel);
-    printTunnellingCoefficientsLabel.textContent = (0, _controlJs.PrintTunnellingCoefficients).tagName;
-    let printTunnellingCoefficientsInput = document.createElement("input");
-    printTunnellingCoefficientsDiv.appendChild(printTunnellingCoefficientsInput);
-    printTunnellingCoefficientsInput.type = "checkbox";
-    printTunnellingCoefficientsInput.id = (0, _controlJs.PrintTunnellingCoefficients).tagName;
-    printTunnellingCoefficientsInput.addEventListener("change", (event)=>{
+    printReactionOperatorColumnSumsInput.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setPrintTunnellingCoefficients(new (0, _controlJs.PrintTunnellingCoefficients)());
-            else control.removePrintTunnellingCoefficients();
-        }
-    });
-    if (xml_printTunnellingCoefficients.length == 1) {
-        printTunnellingCoefficientsInput.checked = true;
-        control.setPrintTunnellingCoefficients(new (0, _controlJs.PrintTunnellingCoefficients)());
-    } else if (xml_printTunnellingCoefficients.length > 1) console.warn("xml_printTunnellingCoefficients.length=" + xml_printTunnellingCoefficients.length);
-    // me:printGrainkfE
-    let printGrainkfEDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
-    controlsDiv.appendChild(printGrainkfEDiv);
-    let xml_printGrainkfE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkfE).tagName);
-    // Create a input checkbox for the PrintGrainkfE.
-    let printGrainkfELabel = document.createElement("label");
-    printGrainkfEDiv.appendChild(printGrainkfELabel);
-    printGrainkfELabel.textContent = (0, _controlJs.PrintGrainkfE).tagName;
-    let printGrainkfEInput = document.createElement("input");
-    printGrainkfEDiv.appendChild(printGrainkfEInput);
-    printGrainkfEInput.type = "checkbox";
-    printGrainkfEInput.id = (0, _controlJs.PrintGrainkfE).tagName;
-    printGrainkfEInput.addEventListener("change", (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) control.setPrintGrainkfE(new (0, _controlJs.PrintGrainkfE)());
-            else control.removePrintGrainkfE();
+            if (event.target.checked) control.setPrintReactionOperatorColumnSums(new (0, _controlJs.PrintReactionOperatorColumnSums)());
+            else control.removePrintReactionOperatorColumnSums();
         }
     });
     // me:printGrainBoltzmann
@@ -2652,10 +2505,36 @@ window.set = setNumberNode;
     printGrainBoltzmannDiv.appendChild(printGrainBoltzmannInput);
     printGrainBoltzmannInput.type = "checkbox";
     printGrainBoltzmannInput.id = (0, _controlJs.PrintGrainBoltzmann).tagName;
+    if (xml_printGrainBoltzmann.length == 1) {
+        printGrainBoltzmannInput.checked = true;
+        control.setPrintGrainBoltzmann(new (0, _controlJs.PrintGrainBoltzmann)());
+    } else if (xml_printGrainBoltzmann.length > 1) console.warn("xml_printGrainBoltzmann.length=" + xml_printGrainBoltzmann.length);
     printGrainBoltzmannInput.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) control.setPrintGrainBoltzmann(new (0, _controlJs.PrintGrainBoltzmann)());
             else control.removePrintGrainBoltzmann();
+        }
+    });
+    // me:printGrainDOS
+    let printGrainDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainDOSDiv);
+    let xml_printGrainDOS = xml_control.getElementsByTagName((0, _controlJs.PrintGrainDOS).tagName);
+    // Create a input checkbox for the PrintGrainDOS.
+    let printGrainDOSLabel = document.createElement("label");
+    printGrainDOSDiv.appendChild(printGrainDOSLabel);
+    printGrainDOSLabel.textContent = (0, _controlJs.PrintGrainDOS).tagName;
+    let printGrainDOSInput = document.createElement("input");
+    printGrainDOSDiv.appendChild(printGrainDOSInput);
+    printGrainDOSInput.type = "checkbox";
+    printGrainDOSInput.id = (0, _controlJs.PrintGrainDOS).tagName;
+    if (xml_printGrainDOS.length == 1) {
+        printGrainDOSInput.checked = true;
+        control.setPrintGrainDOS(new (0, _controlJs.PrintGrainDOS)());
+    } else if (xml_printGrainDOS.length > 1) console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
+    printGrainDOSInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintGrainDOS(new (0, _controlJs.PrintGrainDOS)());
+            else control.removePrintGrainDOS();
         }
     });
     // me:printGrainkbE
@@ -2670,51 +2549,800 @@ window.set = setNumberNode;
     printGrainkbEDiv.appendChild(printGrainkbEInput);
     printGrainkbEInput.type = "checkbox";
     printGrainkbEInput.id = (0, _controlJs.PrintGrainkbE).tagName;
+    if (xml_printGrainkbE.length == 1) {
+        printGrainkbEInput.checked = true;
+        control.setPrintGrainkbE(new (0, _controlJs.PrintGrainkbE)());
+    } else if (xml_printGrainkbE.length > 1) console.warn("xml_printGrainkbE.length=" + xml_printGrainkbE.length);
     printGrainkbEInput.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) control.setPrintGrainkbE(new (0, _controlJs.PrintGrainkbE)());
             else control.removePrintGrainkbE();
         }
     });
+    // me:printGrainkfE
+    let printGrainkfEDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainkfEDiv);
+    let xml_printGrainkfE = xml_control.getElementsByTagName((0, _controlJs.PrintGrainkfE).tagName);
+    // Create a input checkbox for the PrintGrainkfE.
+    let printGrainkfELabel = document.createElement("label");
+    printGrainkfEDiv.appendChild(printGrainkfELabel);
+    printGrainkfELabel.textContent = (0, _controlJs.PrintGrainkfE).tagName;
+    let printGrainkfEInput = document.createElement("input");
+    printGrainkfEDiv.appendChild(printGrainkfEInput);
+    printGrainkfEInput.type = "checkbox";
+    printGrainkfEInput.id = (0, _controlJs.PrintGrainkfE).tagName;
+    if (xml_printGrainkfE.length == 1) {
+        printGrainkfEInput.checked = true;
+        control.setPrintGrainkfE(new (0, _controlJs.PrintGrainkfE)());
+    } else if (xml_printGrainkfE.length > 1) console.warn("xml_printGrainkfE.length=" + xml_printGrainkfE.length);
+    printGrainkfEInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintGrainkfE(new (0, _controlJs.PrintGrainkfE)());
+            else control.removePrintGrainkfE();
+        }
+    });
+    // me:printTSsos
+    let printTSsosDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printTSsosDiv);
+    let xml_printTSsos = xml_control.getElementsByTagName((0, _controlJs.PrintTSsos).tagName);
+    // Create a input checkbox for the PrintTSsos.
+    let printTSsosLabel = document.createElement("label");
+    printTSsosDiv.appendChild(printTSsosLabel);
+    printTSsosLabel.textContent = (0, _controlJs.PrintTSsos).tagName;
+    let printTSsosInput = document.createElement("input");
+    printTSsosDiv.appendChild(printTSsosInput);
+    printTSsosInput.type = "checkbox";
+    printTSsosInput.id = (0, _controlJs.PrintTSsos).tagName;
+    if (xml_printTSsos.length == 1) {
+        printTSsosInput.checked = true;
+        control.setPrintTSsos(new (0, _controlJs.PrintTSsos)());
+    } else if (xml_printTSsos.length > 1) console.warn("xml_printTSsos.length=" + xml_printTSsos.length);
+    printTSsosInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintTSsos(new (0, _controlJs.PrintTSsos)());
+            else control.removePrintTSsos();
+        }
+    });
+    // me:printGrainedSpeciesProfile
+    let printGrainedSpeciesProfileDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainedSpeciesProfileDiv);
+    let xml_printGrainedSpeciesProfile = xml_control.getElementsByTagName((0, _controlJs.PrintGrainedSpeciesProfile).tagName);
+    // Create a input checkbox for the PrintGrainedSpeciesProfile.
+    let printGrainedSpeciesProfileLabel = document.createElement("label");
+    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileLabel);
+    printGrainedSpeciesProfileLabel.textContent = (0, _controlJs.PrintGrainedSpeciesProfile).tagName;
+    let printGrainedSpeciesProfileInput = document.createElement("input");
+    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileInput);
+    printGrainedSpeciesProfileInput.type = "checkbox";
+    printGrainedSpeciesProfileInput.id = (0, _controlJs.PrintGrainedSpeciesProfile).tagName;
+    if (xml_printGrainedSpeciesProfile.length == 1) {
+        printGrainedSpeciesProfileInput.checked = true;
+        control.setPrintGrainedSpeciesProfile(new (0, _controlJs.PrintGrainedSpeciesProfile)());
+    } else if (xml_printGrainedSpeciesProfile.length > 1) console.warn("xml_printGrainedSpeciesProfile.length=" + xml_printGrainedSpeciesProfile.length);
+    printGrainedSpeciesProfileInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintGrainedSpeciesProfile(new (0, _controlJs.PrintGrainedSpeciesProfile)());
+            else control.removePrintGrainedSpeciesProfile();
+        }
+    });
+    // me:printGrainTransitionStateFlux
+    let printGrainTransitionStateFluxDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printGrainTransitionStateFluxDiv);
+    let xml_printGrainTransitionStateFlux = xml_control.getElementsByTagName((0, _controlJs.PrintGrainTransitionStateFlux).tagName);
+    // Create a input checkbox for the PrintGrainTransitionStateFlux.
+    let printGrainTransitionStateFluxLabel = document.createElement("label");
+    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxLabel);
+    printGrainTransitionStateFluxLabel.textContent = (0, _controlJs.PrintGrainTransitionStateFlux).tagName;
+    let printGrainTransitionStateFluxInput = document.createElement("input");
+    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxInput);
+    printGrainTransitionStateFluxInput.type = "checkbox";
+    printGrainTransitionStateFluxInput.id = (0, _controlJs.PrintGrainTransitionStateFlux).tagName;
+    if (xml_printGrainTransitionStateFlux.length == 1) {
+        printGrainTransitionStateFluxInput.checked = true;
+        control.setPrintGrainTransitionStateFlux(new (0, _controlJs.PrintGrainTransitionStateFlux)());
+    } else if (xml_printGrainTransitionStateFlux.length > 1) console.warn("xml_printGrainTransitionStateFlux.length=" + xml_printGrainTransitionStateFlux.length);
+    printGrainTransitionStateFluxInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintGrainTransitionStateFlux(new (0, _controlJs.PrintGrainTransitionStateFlux)());
+            else control.removePrintGrainTransitionStateFlux();
+        }
+    });
+    // me:printReactionOperatorSize
+    let printReactionOperatorSizeDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printReactionOperatorSizeDiv);
+    let xml_printReactionOperatorSize = xml_control.getElementsByTagName((0, _controlJs.PrintReactionOperatorSize).tagName);
+    // Create a input checkbox for the PrintReactionOperatorSize.
+    let printReactionOperatorSizeLabel = document.createElement("label");
+    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeLabel);
+    printReactionOperatorSizeLabel.textContent = (0, _controlJs.PrintReactionOperatorSize).tagName;
+    let printReactionOperatorSizeInput = document.createElement("input");
+    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeInput);
+    printReactionOperatorSizeInput.type = "checkbox";
+    printReactionOperatorSizeInput.id = (0, _controlJs.PrintReactionOperatorSize).tagName;
+    if (xml_printReactionOperatorSize.length == 1) {
+        printReactionOperatorSizeInput.checked = true;
+        control.setPrintReactionOperatorSize(new (0, _controlJs.PrintReactionOperatorSize)());
+    } else if (xml_printReactionOperatorSize.length > 1) console.warn("xml_printReactionOperatorSize.length=" + xml_printReactionOperatorSize.length);
+    printReactionOperatorSizeInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintReactionOperatorSize(new (0, _controlJs.PrintReactionOperatorSize)());
+            else control.removePrintReactionOperatorSize();
+        }
+    });
+    // me:printSpeciesProfile
+    let printSpeciesProfileDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printSpeciesProfileDiv);
+    let xml_printSpeciesProfile = xml_control.getElementsByTagName((0, _controlJs.PrintSpeciesProfile).tagName);
+    // Create a input checkbox for the PrintSpeciesProfile.
+    let printSpeciesProfileLabel = document.createElement("label");
+    printSpeciesProfileDiv.appendChild(printSpeciesProfileLabel);
+    printSpeciesProfileLabel.textContent = (0, _controlJs.PrintSpeciesProfile).tagName;
+    let printSpeciesProfileInput = document.createElement("input");
+    printSpeciesProfileDiv.appendChild(printSpeciesProfileInput);
+    printSpeciesProfileInput.type = "checkbox";
+    printSpeciesProfileInput.id = (0, _controlJs.PrintSpeciesProfile).tagName;
+    if (xml_printSpeciesProfile.length == 1) {
+        printSpeciesProfileInput.checked = true;
+        control.setPrintSpeciesProfile(new (0, _controlJs.PrintSpeciesProfile)());
+    } else if (xml_printSpeciesProfile.length > 1) console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
+    printSpeciesProfileInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintSpeciesProfile(new (0, _controlJs.PrintSpeciesProfile)());
+            else control.removePrintSpeciesProfile();
+        }
+    });
+    // me:printPhenomenologicalEvolution
+    let printPhenomenologicalEvolutionDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printPhenomenologicalEvolutionDiv);
+    let xml_printPhenomenologicalEvolution = xml_control.getElementsByTagName((0, _controlJs.PrintPhenomenologicalEvolution).tagName);
+    // Create a input checkbox for the PrintPhenomenologicalEvolution.
+    let printPhenomenologicalEvolutionLabel = document.createElement("label");
+    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionLabel);
+    printPhenomenologicalEvolutionLabel.textContent = (0, _controlJs.PrintPhenomenologicalEvolution).tagName;
+    let printPhenomenologicalEvolutionInput = document.createElement("input");
+    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionInput);
+    printPhenomenologicalEvolutionInput.type = "checkbox";
+    printPhenomenologicalEvolutionInput.id = (0, _controlJs.PrintPhenomenologicalEvolution).tagName;
+    if (xml_printPhenomenologicalEvolution.length == 1) {
+        printPhenomenologicalEvolutionInput.checked = true;
+        control.setPrintPhenomenologicalEvolution(new (0, _controlJs.PrintPhenomenologicalEvolution)());
+    } else if (xml_printPhenomenologicalEvolution.length > 1) console.warn("xml_printPhenomenologicalEvolution.length=" + xml_printPhenomenologicalEvolution.length);
+    printPhenomenologicalEvolutionInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintPhenomenologicalEvolution(new (0, _controlJs.PrintPhenomenologicalEvolution)());
+            else control.removePrintPhenomenologicalEvolution();
+        }
+    });
+    // me:printTunnelingCoefficients
+    let printTunnelingCoefficientsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printTunnelingCoefficientsDiv);
+    let xml_printTunnelingCoefficients = xml_control.getElementsByTagName((0, _controlJs.PrintTunnelingCoefficients).tagName);
+    // Create a input checkbox for the PrintTunnelingCoefficients.
+    let printTunnelingCoefficientsLabel = document.createElement("label");
+    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsLabel);
+    printTunnelingCoefficientsLabel.textContent = (0, _controlJs.PrintTunnelingCoefficients).tagName;
+    let printTunnelingCoefficientsInput = document.createElement("input");
+    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsInput);
+    printTunnelingCoefficientsInput.type = "checkbox";
+    printTunnelingCoefficientsInput.id = (0, _controlJs.PrintTunnelingCoefficients).tagName;
+    if (xml_printTunnelingCoefficients.length == 1) {
+        printTunnelingCoefficientsInput.checked = true;
+        control.setPrintTunnelingCoefficients(new (0, _controlJs.PrintTunnelingCoefficients)());
+    } else if (xml_printTunnelingCoefficients.length > 1) console.warn("xml_printTunnelingCoefficients.length=" + xml_printTunnelingCoefficients.length);
+    printTunnelingCoefficientsInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintTunnelingCoefficients(new (0, _controlJs.PrintTunnelingCoefficients)());
+            else control.removePrintTunnelingCoefficients();
+        }
+    });
+    // me:printCrossingCoefficients
+    let printCrossingCoefficientsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(printCrossingCoefficientsDiv);
+    let xml_printCrossingCoefficients = xml_control.getElementsByTagName((0, _controlJs.PrintCrossingCoefficients).tagName);
+    // Create a input checkbox for the PrintCrossingCoefficients.
+    let printCrossingCoefficientsLabel = document.createElement("label");
+    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsLabel);
+    printCrossingCoefficientsLabel.textContent = (0, _controlJs.PrintCrossingCoefficients).tagName;
+    let printCrossingCoefficientsInput = document.createElement("input");
+    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsInput);
+    printCrossingCoefficientsInput.type = "checkbox";
+    printCrossingCoefficientsInput.id = (0, _controlJs.PrintCrossingCoefficients).tagName;
+    if (xml_printCrossingCoefficients.length == 1) {
+        printCrossingCoefficientsInput.checked = true;
+        control.setPrintCrossingCoefficients(new (0, _controlJs.PrintCrossingCoefficients)());
+    } else if (xml_printCrossingCoefficients.length > 1) console.warn("xml_printCrossingCoefficients.length=" + xml_printCrossingCoefficients.length);
+    printCrossingCoefficientsInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setPrintCrossingCoefficients(new (0, _controlJs.PrintCrossingCoefficients)());
+            else control.removePrintCrossingCoefficients();
+        }
+    });
+    // me:testDOS
+    let testDOSDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(testDOSDiv);
+    let xml_testDOS = xml_control.getElementsByTagName((0, _controlJs.TestDOS).tagName);
+    // Create a input checkbox for the TestDOS.
+    let testDOSLabel = document.createElement("label");
+    testDOSDiv.appendChild(testDOSLabel);
+    testDOSLabel.textContent = (0, _controlJs.TestDOS).tagName;
+    let testDOSInput = document.createElement("input");
+    testDOSDiv.appendChild(testDOSInput);
+    testDOSInput.type = "checkbox";
+    testDOSInput.id = (0, _controlJs.TestDOS).tagName;
+    if (xml_testDOS.length == 1) {
+        testDOSInput.checked = true;
+        control.setTestDOS(new (0, _controlJs.TestDOS)());
+    } else if (xml_testDOS.length > 1) console.warn("xml_testDOS.length=" + xml_testDOS.length);
+    testDOSInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setTestDOS(new (0, _controlJs.TestDOS)());
+            else control.removeTestDOS();
+        }
+    });
+    // me:testRateConstants
+    let testRateConstantsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(testRateConstantsDiv);
+    let xml_testRateConstants = xml_control.getElementsByTagName((0, _controlJs.TestRateConstants).tagName);
+    // Create a input checkbox for the TestRateConstants.
+    let testRateConstantsLabel = document.createElement("label");
+    testRateConstantsDiv.appendChild(testRateConstantsLabel);
+    testRateConstantsLabel.textContent = (0, _controlJs.TestRateConstants).tagName;
+    let testRateConstantsInput = document.createElement("input");
+    testRateConstantsDiv.appendChild(testRateConstantsInput);
+    testRateConstantsInput.type = "checkbox";
+    testRateConstantsInput.id = (0, _controlJs.TestRateConstants).tagName;
+    if (xml_testRateConstants.length == 1) {
+        testRateConstantsInput.checked = true;
+        control.setTestRateConstants(new (0, _controlJs.TestRateConstants)());
+    } else if (xml_testRateConstants.length > 1) console.warn("xml_testRateConstants.length=" + xml_testRateConstants.length);
+    testRateConstantsInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setTestRateConstants(new (0, _controlJs.TestRateConstants)());
+            else control.removeTestRateConstants();
+        }
+    });
+    // me:useTheSameCellNumberForAllConditions
+    let useTheSameCellNumberForAllConditionsDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(useTheSameCellNumberForAllConditionsDiv);
+    let xml_useTheSameCellNumberForAllConditions = xml_control.getElementsByTagName((0, _controlJs.UseTheSameCellNumberForAllConditions).tagName);
+    // Create a input checkbox for the UseTheSameCellNumberForAllConditions.
+    let useTheSameCellNumberForAllConditionsLabel = document.createElement("label");
+    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsLabel);
+    useTheSameCellNumberForAllConditionsLabel.textContent = (0, _controlJs.UseTheSameCellNumberForAllConditions).tagName;
+    let useTheSameCellNumberForAllConditionsInput = document.createElement("input");
+    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsInput);
+    useTheSameCellNumberForAllConditionsInput.type = "checkbox";
+    useTheSameCellNumberForAllConditionsInput.id = (0, _controlJs.UseTheSameCellNumberForAllConditions).tagName;
+    if (xml_useTheSameCellNumberForAllConditions.length == 1) {
+        useTheSameCellNumberForAllConditionsInput.checked = true;
+        control.setUseTheSameCellNumberForAllConditions(new (0, _controlJs.UseTheSameCellNumberForAllConditions)());
+    } else if (xml_useTheSameCellNumberForAllConditions.length > 1) console.warn("xml_useTheSameCellNumberForAllConditions.length=" + xml_useTheSameCellNumberForAllConditions.length);
+    useTheSameCellNumberForAllConditionsInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setUseTheSameCellNumberForAllConditions(new (0, _controlJs.UseTheSameCellNumberForAllConditions)());
+            else control.removeUseTheSameCellNumberForAllConditions();
+        }
+    });
+    // me:hideInactive
+    let hideInactiveDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(hideInactiveDiv);
+    let xml_hideInactive = xml_control.getElementsByTagName((0, _controlJs.HideInactive).tagName);
+    // Create a input checkbox for the HideInactive.
+    let hideInactiveLabel = document.createElement("label");
+    hideInactiveDiv.appendChild(hideInactiveLabel);
+    hideInactiveLabel.textContent = (0, _controlJs.HideInactive).tagName;
+    let hideInactiveInput = document.createElement("input");
+    hideInactiveDiv.appendChild(hideInactiveInput);
+    hideInactiveInput.type = "checkbox";
+    hideInactiveInput.id = (0, _controlJs.HideInactive).tagName;
+    if (xml_hideInactive.length == 1) {
+        hideInactiveInput.checked = true;
+        control.setHideInactive(new (0, _controlJs.HideInactive)());
+    } else if (xml_hideInactive.length > 1) console.warn("xml_hideInactive.length=" + xml_hideInactive.length);
+    hideInactiveInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setHideInactive(new (0, _controlJs.HideInactive)());
+            else control.removeHideInactive();
+        }
+    });
+    // me:ForceMacroDetailedBalance
+    let forceMacroDetailedBalanceDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(forceMacroDetailedBalanceDiv);
+    let xml_forceMacroDetailedBalance = xml_control.getElementsByTagName((0, _controlJs.ForceMacroDetailedBalance).tagName);
+    // Create a input checkbox for the ForceMacroDetailedBalance.
+    let forceMacroDetailedBalanceLabel = document.createElement("label");
+    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceLabel);
+    forceMacroDetailedBalanceLabel.textContent = (0, _controlJs.ForceMacroDetailedBalance).tagName;
+    let forceMacroDetailedBalanceInput = document.createElement("input");
+    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceInput);
+    forceMacroDetailedBalanceInput.type = "checkbox";
+    forceMacroDetailedBalanceInput.id = (0, _controlJs.ForceMacroDetailedBalance).tagName;
+    if (xml_forceMacroDetailedBalance.length == 1) {
+        forceMacroDetailedBalanceInput.checked = true;
+        control.setForceMacroDetailedBalance(new (0, _controlJs.ForceMacroDetailedBalance)());
+    } else if (xml_forceMacroDetailedBalance.length > 1) console.warn("xml_forceMacroDetailedBalance.length=" + xml_forceMacroDetailedBalance.length);
+    forceMacroDetailedBalanceInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) control.setForceMacroDetailedBalance(new (0, _controlJs.ForceMacroDetailedBalance)());
+            else control.removeForceMacroDetailedBalance();
+        }
+    });
+    // me:testMicroRates
+    let testMicroRatesDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(testMicroRatesDiv);
+    let xml_testMicroRates = xml_control.getElementsByTagName((0, _controlJs.TestMicroRates).tagName);
+    // Create a input checkbox for the TestMicroRates.
+    let testMicroRatesLabel = document.createElement("label");
+    testMicroRatesDiv.appendChild(testMicroRatesLabel);
+    testMicroRatesLabel.textContent = (0, _controlJs.TestMicroRates).tagName;
+    let testMicroRatesInput = document.createElement("input");
+    testMicroRatesDiv.appendChild(testMicroRatesInput);
+    testMicroRatesInput.type = "checkbox";
+    testMicroRatesInput.id = (0, _controlJs.TestMicroRates).tagName;
+    let testMicroRatesAttributes;
+    let testMicroRates;
+    if (xml_testMicroRates.length == 1) {
+        testMicroRatesInput.checked = true;
+        testMicroRatesAttributes = (0, _xmlJs.getAttributes)(xml_testMicroRates[0]);
+        testMicroRates = new (0, _controlJs.TestMicroRates)(testMicroRatesAttributes);
+        control.setTestMicroRates(testMicroRates);
+    } else {
+        testMicroRatesAttributes = new Map();
+        testMicroRatesAttributes.set("Tmax", "");
+        testMicroRatesAttributes.set("Tmin", "");
+        testMicroRatesAttributes.set("Tstep", "");
+        testMicroRates = new (0, _controlJs.TestMicroRates)(testMicroRatesAttributes);
+    }
+    testMicroRatesInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setTestMicroRates(testMicroRates);
+                // Tmax.
+                let idTmax = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_Tmax";
+                // Remove any exising div for tMax.
+                let existingTmaxDiv = document.getElementById(idTmax);
+                if (existingTmaxDiv != null) existingTmaxDiv.remove();
+                // Create a new div for tMax.
+                let tMax = testMicroRates.getTmax();
+                let tMaxInputDiv = (0, _htmlJs.getInput)("number", idTmax + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if ((0, _utilJs.isNumeric)(event.target.value)) {
+                            testMicroRates.setTmax(parseFloat(event.target.value));
+                            console.log("Set Tmax to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, tMax.toString(), "Tmax");
+                tMaxInputDiv.id = idTmax;
+                (0, _htmlJs.resizeInputElement)(tMaxInputDiv.querySelector("input"));
+                testMicroRatesDiv.appendChild(tMaxInputDiv);
+                // Tmin.
+                let idTmin = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_tMin";
+                // Remove any exising div for tMin.
+                let existingTminDiv = document.getElementById(idTmin);
+                if (existingTminDiv != null) existingTminDiv.remove();
+                // Create a new div for the tMin.
+                let tMin = testMicroRates.getTmin();
+                let tMinInputDiv = (0, _htmlJs.getInput)("number", idTmin + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if ((0, _utilJs.isNumeric)(event.target.value)) {
+                            testMicroRates.setTmin(parseFloat(event.target.value));
+                            console.log("Set Tmin to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, tMin.toString(), "Tmin");
+                tMinInputDiv.id = idTmin;
+                (0, _htmlJs.resizeInputElement)(tMinInputDiv.querySelector("input"));
+                testMicroRatesDiv.appendChild(tMinInputDiv);
+                // Tstep.
+                let idTstep = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_tStep";
+                // Remove any exising div for tStep.
+                let existingTstepDiv = document.getElementById(idTstep);
+                if (existingTstepDiv != null) existingTstepDiv.remove();
+                // Create a new div for the tStep.
+                let tStep = testMicroRates.getTstep();
+                let tStepInputDiv = (0, _htmlJs.getInput)("number", idTstep + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        // Check the value is a number.
+                        if ((0, _utilJs.isNumeric)(event.target.value)) {
+                            testMicroRates.setTstep(parseFloat(event.target.value));
+                            console.log("Set Tstep to " + event.target.value);
+                        } else {
+                            alert("Value is not numeric, resetting...");
+                            event.target.value = tMax.toString();
+                        }
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, tStep.toString(), "Tstep");
+                tStepInputDiv.id = idTstep;
+                (0, _htmlJs.resizeInputElement)(tStepInputDiv.querySelector("input"));
+                testMicroRatesDiv.appendChild(tStepInputDiv);
+            } else {
+                control.removeTestMicroRates();
+                // Tmax.
+                let idTmax = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_Tmax";
+                // Remove any exising div for tMax.
+                let existingTmaxDiv = document.getElementById(idTmax);
+                if (existingTmaxDiv != null) existingTmaxDiv.remove();
+                // Tmin.
+                let idTmin = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_tMin";
+                // Remove any exising div for tMin.
+                let existingTminDiv = document.getElementById(idTmin);
+                if (existingTminDiv != null) existingTminDiv.remove();
+                // Tstep.
+                let idTstep = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.TestMicroRates).tagName + "_tStep";
+                // Remove any exising div for tStep.
+                let existingTstepDiv = document.getElementById(idTstep);
+                if (existingTstepDiv != null) existingTstepDiv.remove();
+            }
+        }
+    });
+    // me:calcMethod
+    let calcMethodDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(calcMethodDiv);
+    let xml_calcMethod = xml_control.getElementsByTagName((0, _controlJs.CalcMethod).tagName);
+    // Create a input checkbox for the CalcMethod.
+    let calcMethodLabel = document.createElement("label");
+    calcMethodDiv.appendChild(calcMethodLabel);
+    calcMethodLabel.textContent = (0, _controlJs.CalcMethod).tagName;
+    let calcMethodInput = document.createElement("input");
+    calcMethodDiv.appendChild(calcMethodInput);
+    calcMethodInput.type = "checkbox";
+    calcMethodInput.id = (0, _controlJs.CalcMethod).tagName;
+    let calcMethodAttributes;
+    let calcMethod;
+    if (xml_calcMethod.length == 1) {
+        calcMethodInput.checked = true;
+        calcMethodAttributes = (0, _xmlJs.getAttributes)(xml_calcMethod[0]);
+        let value = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_calcMethod[0]));
+        calcMethod = new (0, _controlJs.CalcMethod)(calcMethodAttributes, value);
+        control.setCalcMethod(calcMethod);
+    } else {
+        calcMethodInput.checked = false;
+        calcMethodAttributes = new Map();
+        calcMethod = new (0, _controlJs.CalcMethod)(calcMethodAttributes, "");
+    }
+    calcMethodInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setCalcMethod(calcMethod);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_select";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div.
+                let value = calcMethod.value;
+                let selectElement = (0, _htmlJs.getSelectElement)((0, _controlJs.CalcMethod).options, value, id);
+                selectElement.addEventListener("change", (event)=>{
+                    if (event.target instanceof HTMLSelectElement) {
+                        calcMethod.value = event.target.value;
+                        (0, _htmlJs.resizeSelectElement)(event.target);
+                    }
+                });
+                (0, _htmlJs.resizeSelectElement)(selectElement);
+                calcMethodDiv.appendChild(selectElement);
+            } else {
+                control.removeCalcMethod();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_select";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
     // me:eigenvalues
+    let eigenvaluesDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(eigenvaluesDiv);
     let xml_eigenvalues = xml_control.getElementsByTagName((0, _controlJs.Eigenvalues).tagName);
+    // Create a input checkbox for the Eigenvalues.
+    let eigenvaluesLabel = document.createElement("label");
+    eigenvaluesDiv.appendChild(eigenvaluesLabel);
+    eigenvaluesLabel.textContent = (0, _controlJs.Eigenvalues).tagName;
+    let eigenvaluesInput = document.createElement("input");
+    eigenvaluesDiv.appendChild(eigenvaluesInput);
+    eigenvaluesInput.type = "checkbox";
+    eigenvaluesInput.id = (0, _controlJs.Eigenvalues).tagName;
+    let eigenvalues;
+    let eigenvaluesAttributes;
     if (xml_eigenvalues.length == 1) {
-        let eigenvalues = new (0, _controlJs.Eigenvalues)((0, _xmlJs.getAttributes)(xml_eigenvalues[0]), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_eigenvalues[0]))));
+        eigenvaluesInput.checked = true;
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_eigenvalues[0])));
+        eigenvaluesAttributes = (0, _xmlJs.getAttributes)(xml_eigenvalues[0]);
+        eigenvalues = new (0, _controlJs.Eigenvalues)(eigenvaluesAttributes, value);
         control.setEigenvalues(eigenvalues);
+        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_number";
         // Create a new div for the eigenvalues.
-        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName;
-        let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
+        let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(eigenvalues, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, eigenvalues.value.toString(), (0, _controlJs.Eigenvalues).tagName);
         (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
-    } else console.warn("eigenvalues.length=" + xml_eigenvalues.length);
+        inputDiv.id = id;
+        eigenvaluesDiv.appendChild(inputDiv);
+    } else {
+        eigenvaluesInput.checked = false;
+        eigenvaluesAttributes = new Map();
+        eigenvalues = new (0, _controlJs.Eigenvalues)(eigenvaluesAttributes, NaN);
+    }
+    eigenvaluesInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setEigenvalues(eigenvalues);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div for the eigenvalues.
+                let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(eigenvalues, event.target);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, eigenvalues.value.toString(), (0, _controlJs.Eigenvalues).tagName);
+                (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+                inputDiv.id = id;
+                eigenvaluesDiv.appendChild(inputDiv);
+            } else {
+                control.removeEigenvalues();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
+    // me:shortestTimeOfInterest
+    let shortestTimeOfInterestDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(shortestTimeOfInterestDiv);
+    let xml_shortestTimeOfInterest = xml_control.getElementsByTagName((0, _controlJs.ShortestTimeOfInterest).tagName);
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let shortestTimeOfInterestLabel = document.createElement("label");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestLabel);
+    shortestTimeOfInterestLabel.textContent = (0, _controlJs.ShortestTimeOfInterest).tagName;
+    let shortestTimeOfInterestInput = document.createElement("input");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestInput);
+    shortestTimeOfInterestInput.type = "checkbox";
+    shortestTimeOfInterestInput.id = (0, _controlJs.ShortestTimeOfInterest).tagName;
+    let shortestTimeOfInterest;
+    let shortestTimeOfInterestAttributes;
+    if (xml_shortestTimeOfInterest.length == 1) {
+        shortestTimeOfInterestInput.checked = true;
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_shortestTimeOfInterest[0])));
+        shortestTimeOfInterestAttributes = (0, _xmlJs.getAttributes)(xml_shortestTimeOfInterest[0]);
+        shortestTimeOfInterest = new (0, _controlJs.ShortestTimeOfInterest)(shortestTimeOfInterestAttributes, value);
+        control.setShortestTimeOfInterest(shortestTimeOfInterest);
+        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_number";
+        // Create a new div for the shortestTimeOfInterest.
+        let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(shortestTimeOfInterest, event.target);
+                (0, _htmlJs.resizeInputElement)(event.target);
+            }
+        }, shortestTimeOfInterest.value.toString(), (0, _controlJs.ShortestTimeOfInterest).tagName);
+        (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+        inputDiv.id = id;
+        shortestTimeOfInterestDiv.appendChild(inputDiv);
+    } else {
+        shortestTimeOfInterestInput.checked = false;
+        shortestTimeOfInterestAttributes = new Map();
+        shortestTimeOfInterest = new (0, _controlJs.ShortestTimeOfInterest)(shortestTimeOfInterestAttributes, NaN);
+    }
+    shortestTimeOfInterestInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setShortestTimeOfInterest(shortestTimeOfInterest);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div for the shortestTimeOfInterest.
+                let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(shortestTimeOfInterest, event.target);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, shortestTimeOfInterest.value.toString(), (0, _controlJs.ShortestTimeOfInterest).tagName);
+                (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+                inputDiv.id = id;
+                shortestTimeOfInterestDiv.appendChild(inputDiv);
+            } else {
+                control.removeShortestTimeOfInterest();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
+    // me:MaximumEvolutionTime
+    let maximumEvolutionTimeDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(maximumEvolutionTimeDiv);
+    let xml_maximumEvolutionTime = xml_control.getElementsByTagName((0, _controlJs.MaximumEvolutionTime).tagName);
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let maximumEvolutionTimeLabel = document.createElement("label");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeLabel);
+    maximumEvolutionTimeLabel.textContent = (0, _controlJs.MaximumEvolutionTime).tagName;
+    let maximumEvolutionTimeInput = document.createElement("input");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeInput);
+    maximumEvolutionTimeInput.type = "checkbox";
+    maximumEvolutionTimeInput.id = (0, _controlJs.MaximumEvolutionTime).tagName;
+    let maximumEvolutionTime;
+    let maximumEvolutionTimeAttributes;
+    if (xml_maximumEvolutionTime.length == 1) {
+        maximumEvolutionTimeInput.checked = true;
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_maximumEvolutionTime[0])));
+        maximumEvolutionTimeAttributes = (0, _xmlJs.getAttributes)(xml_maximumEvolutionTime[0]);
+        maximumEvolutionTime = new (0, _controlJs.MaximumEvolutionTime)(maximumEvolutionTimeAttributes, value);
+        control.setMaximumEvolutionTime(maximumEvolutionTime);
+        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_number";
+        // Create a new div for the maximumEvolutionTime.
+        let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(maximumEvolutionTime, event.target);
+                (0, _htmlJs.resizeInputElement)(event.target);
+            }
+        }, maximumEvolutionTime.value.toString(), (0, _controlJs.MaximumEvolutionTime).tagName);
+        (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+        inputDiv.id = id;
+        maximumEvolutionTimeDiv.appendChild(inputDiv);
+    } else {
+        maximumEvolutionTimeInput.checked = false;
+        maximumEvolutionTimeAttributes = new Map();
+        maximumEvolutionTime = new (0, _controlJs.MaximumEvolutionTime)(maximumEvolutionTimeAttributes, NaN);
+    }
+    maximumEvolutionTimeInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setMaximumEvolutionTime(maximumEvolutionTime);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div for the maximumEvolutionTime.
+                let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(maximumEvolutionTime, event.target);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, maximumEvolutionTime.value.toString(), (0, _controlJs.MaximumEvolutionTime).tagName);
+                (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+                inputDiv.id = id;
+                maximumEvolutionTimeDiv.appendChild(inputDiv);
+            } else {
+                control.removeMaximumEvolutionTime();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
+    // me:automaticallySetMaxEne
+    let automaticallySetMaxEneDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(automaticallySetMaxEneDiv);
+    let xml_automaticallySetMaxEne = xml_control.getElementsByTagName((0, _controlJs.AutomaticallySetMaxEne).tagName);
+    // Create a input checkbox for the AutomaticallySetMaxEne.
+    let automaticallySetMaxEneLabel = document.createElement("label");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneLabel);
+    automaticallySetMaxEneLabel.textContent = (0, _controlJs.AutomaticallySetMaxEne).tagName;
+    let automaticallySetMaxEneInput = document.createElement("input");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneInput);
+    automaticallySetMaxEneInput.type = "checkbox";
+    automaticallySetMaxEneInput.id = (0, _controlJs.AutomaticallySetMaxEne).tagName;
+    let automaticallySetMaxEneAttributes;
+    let automaticallySetMaxEne;
+    if (xml_automaticallySetMaxEne.length == 1) {
+        automaticallySetMaxEneInput.checked = true;
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_automaticallySetMaxEne[0])));
+        automaticallySetMaxEneAttributes = (0, _xmlJs.getAttributes)(xml_automaticallySetMaxEne[0]);
+        automaticallySetMaxEne = new (0, _controlJs.AutomaticallySetMaxEne)(automaticallySetMaxEneAttributes, value);
+        control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+    } else {
+        automaticallySetMaxEneInput.checked = false;
+        automaticallySetMaxEneAttributes = new Map();
+        automaticallySetMaxEne = new (0, _controlJs.AutomaticallySetMaxEne)(automaticallySetMaxEneAttributes, NaN);
+    }
+    automaticallySetMaxEneInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div for the automaticallySetMaxEne.
+                let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(automaticallySetMaxEne, event.target);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, automaticallySetMaxEne.value.toString(), (0, _controlJs.AutomaticallySetMaxEne).tagName);
+                (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+                inputDiv.id = id;
+                automaticallySetMaxEneDiv.appendChild(inputDiv);
+            } else {
+                control.removeAutomaticallySetMaxEne();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
     // me:diagramEnergyOffset
+    let diagramEnergyOffsetDiv = (0, _htmlJs.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(diagramEnergyOffsetDiv);
     let xml_diagramEnergyOffset = xml_control.getElementsByTagName((0, _controlJs.DiagramEnergyOffset).tagName);
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let diagramEnergyOffsetLabel = document.createElement("label");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetLabel);
+    diagramEnergyOffsetLabel.textContent = (0, _controlJs.DiagramEnergyOffset).tagName;
+    let diagramEnergyOffsetInput = document.createElement("input");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetInput);
+    diagramEnergyOffsetInput.type = "checkbox";
+    diagramEnergyOffsetInput.id = (0, _controlJs.DiagramEnergyOffset).tagName;
+    let diagramEnergyOffset;
+    let diagramEnergyOffsetAttributes;
     if (xml_diagramEnergyOffset.length == 1) {
+        diagramEnergyOffsetInput.checked = true;
         let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_diagramEnergyOffset[0])));
-        let diagramEnergyOffset = new (0, _controlJs.DiagramEnergyOffset)((0, _xmlJs.getAttributes)(xml_diagramEnergyOffset[0]), value);
+        diagramEnergyOffsetAttributes = (0, _xmlJs.getAttributes)(xml_diagramEnergyOffset[0]);
+        diagramEnergyOffset = new (0, _controlJs.DiagramEnergyOffset)(diagramEnergyOffsetAttributes, value);
         control.setDiagramEnergyOffset(diagramEnergyOffset);
+        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_number";
         // Create a new div for the diagramEnergyOffset.
-        let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName;
-        let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
+        let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(diagramEnergyOffset, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
-        }, value.toString(), (0, _controlJs.DiagramEnergyOffset).tagName);
+        }, diagramEnergyOffset.value.toString(), (0, _controlJs.DiagramEnergyOffset).tagName);
         (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
-    } else console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
+        inputDiv.id = id;
+        diagramEnergyOffsetDiv.appendChild(inputDiv);
+    } else {
+        diagramEnergyOffsetInput.checked = false;
+        diagramEnergyOffsetAttributes = new Map();
+        diagramEnergyOffset = new (0, _controlJs.DiagramEnergyOffset)(diagramEnergyOffsetAttributes, NaN);
+    }
+    diagramEnergyOffsetInput.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setDiagramEnergyOffset(diagramEnergyOffset);
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+                // Create a new div for the diagramEnergyOffset.
+                let inputDiv = (0, _htmlJs.getInput)("number", id + "_input", (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(diagramEnergyOffset, event.target);
+                        (0, _htmlJs.resizeInputElement)(event.target);
+                    }
+                }, diagramEnergyOffset.value.toString(), (0, _controlJs.DiagramEnergyOffset).tagName);
+                (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
+                inputDiv.id = id;
+                diagramEnergyOffsetDiv.appendChild(inputDiv);
+            } else {
+                control.removeDiagramEnergyOffset();
+                let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) existingDiv.remove();
+            }
+        }
+    });
     return controlsDiv;
 }
 /**
@@ -3440,57 +4068,6 @@ function toHTML(text) {
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
 /**
- * Create a collapsible div.
- * @param content The content that will be collapsible.
- * @param buttonLabel The label of the button.
- * @param buttonId The id of the button.
- * @param buttonFontSize The font size of the button.
- * @param marginLeft The margin left of the button.
- * @param marginTop The margin top of the button.
- * @param marginBottom The margin bottom of the button.
- * @param contentDivId The id of the content div.
- * @param contentDivClassName The class of the content div.
- * @returns A collapsible div.
- */ /*export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, buttonId?: string,
-    buttonFontSize?: string, marginLeft?: string, marginTop?: string, marginBottom?: string,
-    contentDivId?: string, contentDivClassName?: string): HTMLDivElement {
-    let contentDiv: HTMLDivElement = document.createElement('div');
-    if (contentDivId != undefined) {
-        contentDiv.id = contentDivId;
-    }
-    if (contentDivClassName != undefined) {
-        contentDiv.className = contentDivClassName;
-    }
-    let button: HTMLButtonElement = document.createElement('button');
-    if (buttonId != undefined) {
-        button.id = buttonId;
-    }
-    button.className = 'collapsible';
-    button.innerText = buttonLabel + ' ▼';
-    button.addEventListener('click', function() {
-        if (button.innerText.includes('▼')) {
-            button.innerText = buttonLabel + ' ▲'; // Change to up arrow when content is expanded
-        } else {
-            button.innerText = buttonLabel + ' ▼'; // Change to down arrow when content is collapsed
-        }
-    });
-    if (buttonFontSize != undefined) {
-        button.style.fontSize = buttonFontSize;
-    }
-    if (marginLeft != undefined) {
-        button.style.marginLeft = marginLeft;
-    }
-    if (marginTop != undefined) {
-        button.style.marginTop = marginTop;
-    }
-    if (marginBottom != undefined) {
-        button.style.marginBottom = marginBottom;
-    }
-    contentDiv.appendChild(button);
-    contentDiv.appendChild(content);
-    return contentDiv;
-}
-*/ /**
  * For making elements with the class "collapsible" collapsible.
  */ parcelHelpers.export(exports, "makeCollapsible", ()=>makeCollapsible);
 /**
@@ -5875,99 +6452,102 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * A class for me:testDOS.
- */ parcelHelpers.export(exports, "TestDOS", ()=>TestDOS);
+ * A class for "me:calculateRateCoefficientsOnly".
+ */ parcelHelpers.export(exports, "CalculateRateCoefficientsOnly", ()=>CalculateRateCoefficientsOnly);
 /**
- * A class for me:printSpeciesProfile.
- */ parcelHelpers.export(exports, "PrintSpeciesProfile", ()=>PrintSpeciesProfile);
-/**
- * A class for me:testMicroRates.
- */ parcelHelpers.export(exports, "TestMicroRates", ()=>TestMicroRates);
-/**
- * A class for me:testRateConstant.
- */ parcelHelpers.export(exports, "TestRateConstant", ()=>TestRateConstant);
-/**
- * A class for me:printGrainDOS.
- */ parcelHelpers.export(exports, "PrintGrainDOS", ()=>PrintGrainDOS);
-/**
- * A class for me:printCellDOS.
+ * A class for "me:printCellDOS".
  */ parcelHelpers.export(exports, "PrintCellDOS", ()=>PrintCellDOS);
 /**
- * A class for me:printReactionOperatorColumnSums.
+ * A class for "me:printCellTransitionStateFlux".
+ */ parcelHelpers.export(exports, "PrintCellTransitionStateFlux", ()=>PrintCellTransitionStateFlux);
+/**
+ * A class for "me:printReactionOperatorColumnSums".
  */ parcelHelpers.export(exports, "PrintReactionOperatorColumnSums", ()=>PrintReactionOperatorColumnSums);
 /**
- * A class for me:printTunnellingCoefficients.
- */ parcelHelpers.export(exports, "PrintTunnellingCoefficients", ()=>PrintTunnellingCoefficients);
-/**
- * A class for me:printGrainkfE.
- */ parcelHelpers.export(exports, "PrintGrainkfE", ()=>PrintGrainkfE);
-/**
- * A class for me:printGrainBoltzmann.
+ * A class for "me:printGrainBoltzmann".
  */ parcelHelpers.export(exports, "PrintGrainBoltzmann", ()=>PrintGrainBoltzmann);
 /**
- * A class for me:printGrainkbE.
+ * A class for "me:printGrainDOS".
+ */ parcelHelpers.export(exports, "PrintGrainDOS", ()=>PrintGrainDOS);
+/**
+ * A class for "me:printGrainkbE".
  */ parcelHelpers.export(exports, "PrintGrainkbE", ()=>PrintGrainkbE);
 /**
- * A class for me:eigenvalues.
- */ parcelHelpers.export(exports, "Eigenvalues", ()=>Eigenvalues);
+ * A class for "me:printGrainkfE".
+ */ parcelHelpers.export(exports, "PrintGrainkfE", ()=>PrintGrainkfE);
 /**
- * A class for me:hideInactive.
+ * A class for "me:printTSsos".
+ */ parcelHelpers.export(exports, "PrintTSsos", ()=>PrintTSsos);
+/**
+ * A class for "me:printGrainedSpeciesProfile".
+ */ parcelHelpers.export(exports, "PrintGrainedSpeciesProfile", ()=>PrintGrainedSpeciesProfile);
+/**
+ * A class for "me:printGrainTransitionStateFlux".
+ */ parcelHelpers.export(exports, "PrintGrainTransitionStateFlux", ()=>PrintGrainTransitionStateFlux);
+/**
+ * A class for "me:printReactionOperatorSize".
+ */ parcelHelpers.export(exports, "PrintReactionOperatorSize", ()=>PrintReactionOperatorSize);
+/**
+ * A class for "me:printSpeciesProfile".
+ */ parcelHelpers.export(exports, "PrintSpeciesProfile", ()=>PrintSpeciesProfile);
+/**
+ * A class for "me:printPhenomenologicalEvolution".
+ */ parcelHelpers.export(exports, "PrintPhenomenologicalEvolution", ()=>PrintPhenomenologicalEvolution);
+/**
+ * A class for "me:printTunnelingCoefficients".
+ */ parcelHelpers.export(exports, "PrintTunnelingCoefficients", ()=>PrintTunnelingCoefficients);
+/**
+ * A class for "me:printCrossingCoefficients".
+ */ parcelHelpers.export(exports, "PrintCrossingCoefficients", ()=>PrintCrossingCoefficients);
+/**
+ * A class for "me:testDOS".
+ */ parcelHelpers.export(exports, "TestDOS", ()=>TestDOS);
+/**
+ * A class for "me:testRateConstant".
+ */ parcelHelpers.export(exports, "TestRateConstants", ()=>TestRateConstants);
+/**
+ * A class for "me:useTheSameCellNumberForAllConditions.
+ */ parcelHelpers.export(exports, "UseTheSameCellNumberForAllConditions", ()=>UseTheSameCellNumberForAllConditions);
+/**
+ * A class for "me:ForceMacroDetailedBalance".
+ */ parcelHelpers.export(exports, "ForceMacroDetailedBalance", ()=>ForceMacroDetailedBalance);
+/**
+ * A class for "me:hideInactive".
  */ parcelHelpers.export(exports, "HideInactive", ()=>HideInactive);
 /**
- * A class for me:diagramEnergyOffset.
+ * A class for "me:calcMethod".
+ */ parcelHelpers.export(exports, "CalcMethod", ()=>CalcMethod);
+/**
+ * A class for "me:eigenvalues".
+ */ parcelHelpers.export(exports, "Eigenvalues", ()=>Eigenvalues);
+/**
+ * A class for "me:shortestTimeOfInterest".
+ */ parcelHelpers.export(exports, "ShortestTimeOfInterest", ()=>ShortestTimeOfInterest);
+/**
+ * A class for "me:MaximumEvolutionTime".
+ */ parcelHelpers.export(exports, "MaximumEvolutionTime", ()=>MaximumEvolutionTime);
+/**
+ * A class for "me:automaticallySetMaxEne".
+ */ parcelHelpers.export(exports, "AutomaticallySetMaxEne", ()=>AutomaticallySetMaxEne);
+/**
+ * A class for "me:diagramEnergyOffset".
  */ parcelHelpers.export(exports, "DiagramEnergyOffset", ()=>DiagramEnergyOffset);
+/**
+ * A class for "me:testMicroRates".
+ * Expected numerical attributes: Tmin, Tmax, Tstep.
+ */ parcelHelpers.export(exports, "TestMicroRates", ()=>TestMicroRates);
 /**
  * A class for the control.
  */ parcelHelpers.export(exports, "Control", ()=>Control);
 var _xml = require("./xml");
-class TestDOS extends (0, _xml.Tag) {
+class CalculateRateCoefficientsOnly extends (0, _xml.Tag) {
     static{
         /**
      * The tag name.
-     */ this.tagName = "me:testDOS";
+     */ this.tagName = "me:calculateRateCoefficientsOnly";
     }
     constructor(){
-        super(TestDOS.tagName);
-    }
-}
-class PrintSpeciesProfile extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:printSpeciesProfile";
-    }
-    constructor(){
-        super(PrintSpeciesProfile.tagName);
-    }
-}
-class TestMicroRates extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:testMicroRates";
-    }
-    constructor(){
-        super(TestMicroRates.tagName);
-    }
-}
-class TestRateConstant extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:testRateConstant";
-    }
-    constructor(){
-        super(TestRateConstant.tagName);
-    }
-}
-class PrintGrainDOS extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:printGrainDOS";
-    }
-    constructor(){
-        super(PrintGrainDOS.tagName);
+        super(CalculateRateCoefficientsOnly.tagName);
     }
 }
 class PrintCellDOS extends (0, _xml.Tag) {
@@ -5980,6 +6560,16 @@ class PrintCellDOS extends (0, _xml.Tag) {
         super(PrintCellDOS.tagName);
     }
 }
+class PrintCellTransitionStateFlux extends (0, _xml.Tag) {
+    static{
+        /**
+    * The tag name.
+    */ this.tagName = "me:printCellTransitionStateFlux";
+    }
+    constructor(){
+        super(PrintCellTransitionStateFlux.tagName);
+    }
+}
 class PrintReactionOperatorColumnSums extends (0, _xml.Tag) {
     static{
         /**
@@ -5988,26 +6578,6 @@ class PrintReactionOperatorColumnSums extends (0, _xml.Tag) {
     }
     constructor(){
         super(PrintReactionOperatorColumnSums.tagName);
-    }
-}
-class PrintTunnellingCoefficients extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:printTunnellingCoefficients";
-    }
-    constructor(){
-        super(PrintTunnellingCoefficients.tagName);
-    }
-}
-class PrintGrainkfE extends (0, _xml.Tag) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:printGrainkfE";
-    }
-    constructor(){
-        super(PrintGrainkfE.tagName);
     }
 }
 class PrintGrainBoltzmann extends (0, _xml.Tag) {
@@ -6020,6 +6590,16 @@ class PrintGrainBoltzmann extends (0, _xml.Tag) {
         super(PrintGrainBoltzmann.tagName);
     }
 }
+class PrintGrainDOS extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainDOS";
+    }
+    constructor(){
+        super(PrintGrainDOS.tagName);
+    }
+}
 class PrintGrainkbE extends (0, _xml.Tag) {
     static{
         /**
@@ -6030,14 +6610,134 @@ class PrintGrainkbE extends (0, _xml.Tag) {
         super(PrintGrainkbE.tagName);
     }
 }
-class Eigenvalues extends (0, _xml.NumberNode) {
+class PrintGrainkfE extends (0, _xml.Tag) {
     static{
         /**
      * The tag name.
-     */ this.tagName = "me:eigenvalues";
+     */ this.tagName = "me:printGrainkfE";
     }
-    constructor(attributes, value){
-        super(attributes, Eigenvalues.tagName, value);
+    constructor(){
+        super(PrintGrainkfE.tagName);
+    }
+}
+class PrintTSsos extends (0, _xml.Tag) {
+    static{
+        /**
+    * The tag name.
+    */ this.tagName = "me:printTSsos";
+    }
+    constructor(){
+        super(PrintTSsos.tagName);
+    }
+}
+class PrintGrainedSpeciesProfile extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainedSpeciesProfile";
+    }
+    constructor(){
+        super(PrintGrainedSpeciesProfile.tagName);
+    }
+}
+class PrintGrainTransitionStateFlux extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printGrainTransitionStateFlux";
+    }
+    constructor(){
+        super(PrintGrainTransitionStateFlux.tagName);
+    }
+}
+class PrintReactionOperatorSize extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printReactionOperatorSize";
+    }
+    constructor(){
+        super(PrintReactionOperatorSize.tagName);
+    }
+}
+class PrintSpeciesProfile extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printSpeciesProfile";
+    }
+    constructor(){
+        super(PrintSpeciesProfile.tagName);
+    }
+}
+class PrintPhenomenologicalEvolution extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printPhenomenologicalEvolution";
+    }
+    constructor(){
+        super(PrintPhenomenologicalEvolution.tagName);
+    }
+}
+class PrintTunnelingCoefficients extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printTunnelingCoefficients";
+    }
+    constructor(){
+        super(PrintTunnelingCoefficients.tagName);
+    }
+}
+class PrintCrossingCoefficients extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:printCrossingCoefficients";
+    }
+    constructor(){
+        super(PrintCrossingCoefficients.tagName);
+    }
+}
+class TestDOS extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testDOS";
+    }
+    constructor(){
+        super(TestDOS.tagName);
+    }
+}
+class TestRateConstants extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testRateConstants";
+    }
+    constructor(){
+        super(TestRateConstants.tagName);
+    }
+}
+class UseTheSameCellNumberForAllConditions extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:useTheSameCellNumberForAllConditions";
+    }
+    constructor(){
+        super(UseTheSameCellNumberForAllConditions.tagName);
+    }
+}
+class ForceMacroDetailedBalance extends (0, _xml.Tag) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:ForceMacroDetailedBalance";
+    }
+    constructor(){
+        super(ForceMacroDetailedBalance.tagName);
     }
 }
 class HideInactive extends (0, _xml.Tag) {
@@ -6050,14 +6750,139 @@ class HideInactive extends (0, _xml.Tag) {
         super(HideInactive.tagName);
     }
 }
+class CalcMethod extends (0, _xml.StringNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:calcMethod";
+    }
+    static{
+        /**
+     * The possible values.
+     */ this.options = [
+            "simpleCalc",
+            "gridSearch",
+            "fitting",
+            "marquardt",
+            "analyticalRepresentation",
+            "ThermodynamicTable",
+            "sensitivityAnalysis"
+        ];
+    }
+    /**
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, CalcMethod.tagName, value);
+    }
+}
+class Eigenvalues extends (0, _xml.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:eigenvalues";
+    }
+    constructor(attributes, value){
+        super(attributes, Eigenvalues.tagName, value);
+    }
+}
+class ShortestTimeOfInterest extends (0, _xml.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:shortestTimeOfInterest";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ShortestTimeOfInterest.tagName, value);
+    }
+}
+class MaximumEvolutionTime extends (0, _xml.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:MaximumEvolutionTime";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, MaximumEvolutionTime.tagName, value);
+    }
+}
+class AutomaticallySetMaxEne extends (0, _xml.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:automaticallySetMaxEne";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, AutomaticallySetMaxEne.tagName, value);
+    }
+}
 class DiagramEnergyOffset extends (0, _xml.NumberNode) {
     static{
         /**
      * The tag name.
      */ this.tagName = "me:diagramEnergyOffset";
     }
-    constructor(attributes, value){
+    /**
+      * @param attributes The attributes.
+      * @param value The value.
+      */ constructor(attributes, value){
         super(attributes, DiagramEnergyOffset.tagName, value);
+    }
+}
+class TestMicroRates extends (0, _xml.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:testMicroRates";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, TestMicroRates.tagName);
+        this.tMin = parseFloat(attributes.get("Tmin"));
+        this.tMax = parseFloat(attributes.get("Tmax"));
+        this.tStep = parseFloat(attributes.get("Tstep"));
+    }
+    /**
+     * @returns The maximum temperature.
+     */ getTmin() {
+        return this.tMin;
+    }
+    /**
+     * @param tMin The minimum temperature.
+     */ setTmin(tMin) {
+        this.tMin = tMin;
+        this.attributes?.set("Tmin", tMin.toString());
+    }
+    /**
+     * @returns The maximum temperature.
+     */ getTmax() {
+        return this.tMax;
+    }
+    /**
+     * @param tMax The maximum temperature.
+     */ setTmax(tMax) {
+        this.tMax = tMax;
+        this.attributes?.set("Tmax", tMax.toString());
+    }
+    /**
+     * @returns The temperature step.
+     */ getTstep() {
+        return this.tStep;
+    }
+    /**
+     * @param tStep The temperature step.
+     */ setTstep(tStep) {
+        this.tStep = tStep;
+        this.attributes?.set("Tstep", tStep.toString());
     }
 }
 class Control extends (0, _xml.NodeWithNodes) {
@@ -6068,211 +6893,38 @@ class Control extends (0, _xml.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     * @param testDOS The testDOS.
-     * @param printSpeciesProfile The printSpeciesProfile.
-     * @param testMicroRates The testMicroRates.
-     * @param testRateConstant T
-     * @param printGrainDOS The printGrainDOS.
-     * @param printCellDOS The printCellDOS.
-     * @param printReactionOperatorColumnSums The printReactionOperatorColumnSums.
-     * @param printTunnellingCoefficients The printTunnellingCoefficients.
-     * @param printGrainkfE The printGrainkfE.
-     * @param printGrainBoltzmann The printGrainBoltzmann.
-     * @param printGrainkbE The printGrainkbE.
-     * @param eigenvalues The eigenvalues.
-     * @param hideInactive The hideInactive.
-     * @param diagramEnergyOffset The diagramEnergyOffset.
-     */ constructor(attributes, testDOS, printSpeciesProfile, testMicroRates, testRateConstant, printGrainDOS, printCellDOS, printReactionOperatorColumnSums, printTunnellingCoefficients, printGrainkfE, printGrainBoltzmann, printGrainkbE, eigenvalues, hideInactive, diagramEnergyOffset){
+     */ constructor(attributes){
         super(attributes, Control.tagName);
         this.index = new Map();
-        if (testDOS != undefined) {
-            this.addNode(testDOS);
-            this.index.set(TestDOS.tagName, this.index.size);
-        }
-        if (printSpeciesProfile != undefined) {
-            this.addNode(printSpeciesProfile);
-            this.index.set(PrintSpeciesProfile.tagName, this.index.size);
-        }
-        if (testMicroRates != undefined) {
-            this.addNode(testMicroRates);
-            this.index.set(TestMicroRates.tagName, this.index.size);
-        }
-        if (testRateConstant != undefined) {
-            this.addNode(testRateConstant);
-            this.index.set(TestRateConstant.tagName, this.index.size);
-        }
-        if (printGrainDOS != undefined) {
-            this.addNode(printGrainDOS);
-            this.index.set(PrintGrainDOS.tagName, this.index.size);
-        }
-        if (printCellDOS != undefined) {
-            this.addNode(printCellDOS);
-            this.index.set(PrintCellDOS.tagName, this.index.size);
-        }
-        if (printReactionOperatorColumnSums != undefined) {
-            this.addNode(printReactionOperatorColumnSums);
-            this.index.set(PrintReactionOperatorColumnSums.tagName, this.index.size);
-        }
-        if (printTunnellingCoefficients != undefined) {
-            this.addNode(printTunnellingCoefficients);
-            this.index.set(PrintTunnellingCoefficients.tagName, this.index.size);
-        }
-        if (printGrainkfE != undefined) {
-            this.addNode(printGrainkfE);
-            this.index.set(PrintGrainkfE.tagName, this.index.size);
-        }
-        if (printGrainBoltzmann != undefined) {
-            this.addNode(printGrainBoltzmann);
-            this.index.set(PrintGrainBoltzmann.tagName, this.index.size);
-        }
-        if (printGrainkbE != undefined) {
-            this.addNode(printGrainkbE);
-            this.index.set(PrintGrainkbE.tagName, this.index.size);
-        }
-        if (eigenvalues != undefined) {
-            this.addNode(eigenvalues);
-            this.index.set(Eigenvalues.tagName, this.index.size);
-        }
-        if (hideInactive != undefined) {
-            this.addNode(hideInactive);
-            this.index.set(HideInactive.tagName, this.index.size);
-        }
-        if (diagramEnergyOffset != undefined) {
-            this.addNode(diagramEnergyOffset);
-            this.index.set(DiagramEnergyOffset.tagName, this.index.size);
-        }
     }
     /**
-     * @returns The testDOS or undefined.
-     */ getTestDOS() {
-        let i = this.index.get(TestDOS.tagName);
-        if (i != undefined) return this.nodes.get(i);
-    }
-    /**
-     * @param testDOS The testDOS.
-     */ setTestDOS(testDOS) {
-        let i = this.index.get(TestDOS.tagName);
-        if (i != undefined) this.nodes.set(i, testDOS);
-        else {
-            this.index.set(TestDOS.tagName, this.nodes.size);
-            this.addNode(testDOS);
-        }
-    }
-    /**
-     * Remove the testDOS.
-     */ removeTestDOS() {
-        let i = this.index.get(TestDOS.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestDOS.tagName);
-        }
-    }
-    /**
-     * @returns The PrintSpeciesProfile or undefined.
-     */ getPrintSpeciesProfile() {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
+     * @returns The calculateRateCoefficientsOnly or undefined.
+     */ getCalculateRateCoefficientsOnly() {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
         if (i != undefined) return this.nodes.get(i);
         return undefined;
     }
     /**
-     * @param printSpeciesProfile The printSpeciesProfile.
-     */ setPrintSpeciesProfile(printSpeciesProfile) {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
-        if (i != undefined) this.nodes.set(i, printSpeciesProfile);
+     * @param calculateRateCoefficientsOnly The calculateRateCoefficientsOnly.
+     */ setCalculateRateCoefficientsOnly(calculateRateCoefficientsOnly) {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
+        if (i != undefined) this.nodes.set(i, calculateRateCoefficientsOnly);
         else {
-            this.index.set(PrintSpeciesProfile.tagName, this.nodes.size);
-            this.addNode(printSpeciesProfile);
+            this.index.set(CalculateRateCoefficientsOnly.tagName, this.nodes.size);
+            this.addNode(calculateRateCoefficientsOnly);
         }
     }
     /**
-     * Remove the printSpeciesProfile.
-     */ removePrintSpeciesProfile() {
-        let i = this.index.get(PrintSpeciesProfile.tagName);
+     * Remove the calculateRateCoefficientsOnly.
+     */ removeCalculateRateCoefficientsOnly() {
+        let i = this.index.get(CalculateRateCoefficientsOnly.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(PrintSpeciesProfile.tagName);
+            this.index.delete(CalculateRateCoefficientsOnly.tagName);
         }
     }
     /**
-     * @returns The TestMicroRates or undefined.
-     */ getTestMicroRates() {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        return undefined;
-    }
-    /**
-     * @param testMicroRates The testMicroRates.
-     */ setTestMicroRates(testMicroRates) {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) this.nodes.set(i, testMicroRates);
-        else {
-            this.index.set(TestMicroRates.tagName, this.nodes.size);
-            this.addNode(testMicroRates);
-        }
-    }
-    /**
-     * Remove the testMicroRates.
-     */ removeTestMicroRates() {
-        let i = this.index.get(TestMicroRates.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestMicroRates.tagName);
-        }
-    }
-    /**
-     * @returns The TestRateConstant or undefined.
-     */ getTestRateConstant() {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        return undefined;
-    }
-    /**
-     * @param testRateConstant The testRateConstant.
-     */ setTestRateConstant(testRateConstant) {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) this.nodes.set(i, testRateConstant);
-        else {
-            this.index.set(TestRateConstant.tagName, this.nodes.size);
-            this.addNode(testRateConstant);
-        }
-    }
-    /**
-     * Remove the testRateConstant.
-     */ removeTestRateConstant() {
-        let i = this.index.get(TestRateConstant.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(TestRateConstant.tagName);
-        }
-    }
-    /**
-     * @returns The PrintGrainDOS or undefined.
-     */ getPrintGrainDOS() {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        return undefined;
-    }
-    /**
-     * @param printGrainDOS The printGrainDOS.
-     */ setPrintGrainDOS(printGrainDOS) {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) this.nodes.set(i, printGrainDOS);
-        else {
-            this.index.set(PrintGrainDOS.tagName, this.nodes.size);
-            this.addNode(printGrainDOS);
-        }
-    }
-    /**
-     * Remove the printGrainDOS.
-     */ removePrintGrainDOS() {
-        let i = this.index.get(PrintGrainDOS.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintGrainDOS.tagName);
-        }
-    }
-    /**
-     * @returns The PrintCellDOS or undefined.
+     * @returns The printCellDOS or undefined.
      */ getPrintCellDOS() {
         let i = this.index.get(PrintCellDOS.tagName);
         if (i != undefined) return this.nodes.get(i);
@@ -6298,7 +6950,33 @@ class Control extends (0, _xml.NodeWithNodes) {
         }
     }
     /**
-     * @returns The PrintReactionOperatorColumnSums or undefined.
+     * @returns The printCellTransitionStateFlux or undefined.
+     */ getPrintCellTransitionStateFlux() {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printCellTransitionStateFlux The printCellTransitionStateFlux.
+     */ setPrintCellTransitionStateFlux(printCellTransitionStateFlux) {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) this.nodes.set(i, printCellTransitionStateFlux);
+        else {
+            this.index.set(PrintCellTransitionStateFlux.tagName, this.nodes.size);
+            this.addNode(printCellTransitionStateFlux);
+        }
+    }
+    /**
+     * Remove the printCellTransitionStateFlux.
+     */ removePrintCellTransitionStateFlux() {
+        let i = this.index.get(PrintCellTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintCellTransitionStateFlux.tagName);
+        }
+    }
+    /**
+     * @returns The printReactionOperatorColumnSums or undefined.
      */ getPrintReactionOperatorColumnSums() {
         let i = this.index.get(PrintReactionOperatorColumnSums.tagName);
         if (i != undefined) return this.nodes.get(i);
@@ -6324,59 +7002,7 @@ class Control extends (0, _xml.NodeWithNodes) {
         }
     }
     /**
-     * @returns The PrintTunnellingCoefficients or undefined.
-     */ getPrintTunnellingCoefficients() {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        return undefined;
-    }
-    /**
-     * @param printTunnellingCoefficients The printTunnellingCoefficients.
-     */ setPrintTunnellingCoefficients(printTunnellingCoefficients) {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) this.nodes.set(i, printTunnellingCoefficients);
-        else {
-            this.index.set(PrintTunnellingCoefficients.tagName, this.nodes.size);
-            this.addNode(printTunnellingCoefficients);
-        }
-    }
-    /**
-     * Remove the printTunnellingCoefficients.
-     */ removePrintTunnellingCoefficients() {
-        let i = this.index.get(PrintTunnellingCoefficients.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintTunnellingCoefficients.tagName);
-        }
-    }
-    /**
-     * @returns The PrintGrainkfE or undefined.
-     */ getPrintGrainkfE() {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        return undefined;
-    }
-    /**
-     * @param printGrainkfE The printGrainkfE.
-     */ setPrintGrainkfE(printGrainkfE) {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) this.nodes.set(i, printGrainkfE);
-        else {
-            this.index.set(PrintGrainkfE.tagName, this.nodes.size);
-            this.addNode(printGrainkfE);
-        }
-    }
-    /**
-     * Remove the printGrainkfE.
-     */ removePrintGrainkfE() {
-        let i = this.index.get(PrintGrainkfE.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(PrintGrainkfE.tagName);
-        }
-    }
-    /**
-     * @returns The PrintGrainBoltzmann or undefined.
+     * @returns The printGrainBoltzmann or undefined.
      */ getPrintGrainBoltzmann() {
         let i = this.index.get(PrintGrainBoltzmann.tagName);
         if (i != undefined) return this.nodes.get(i);
@@ -6402,7 +7028,33 @@ class Control extends (0, _xml.NodeWithNodes) {
         }
     }
     /**
-     * @returns The PrintGrainkbE or undefined.
+     * @returns The printGrainDOS or undefined.
+     */ getPrintGrainDOS() {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printGrainDOS The printGrainDOS.
+     */ setPrintGrainDOS(printGrainDOS) {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) this.nodes.set(i, printGrainDOS);
+        else {
+            this.index.set(PrintGrainDOS.tagName, this.nodes.size);
+            this.addNode(printGrainDOS);
+        }
+    }
+    /**
+     * Remove the printGrainDOS.
+     */ removePrintGrainDOS() {
+        let i = this.index.get(PrintGrainDOS.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainDOS.tagName);
+        }
+    }
+    /**
+     * @returns The printGrainkbE or undefined.
      */ getPrintGrainkbE() {
         let i = this.index.get(PrintGrainkbE.tagName);
         if (i != undefined) return this.nodes.get(i);
@@ -6428,29 +7080,315 @@ class Control extends (0, _xml.NodeWithNodes) {
         }
     }
     /**
-     * @returns The eigenvalues or undefined.
-     */ getEigenvalues() {
-        let i = this.index.get(Eigenvalues.tagName);
+     * @returns The printGrainkfE or undefined.
+     */ getPrintGrainkfE() {
+        let i = this.index.get(PrintGrainkfE.tagName);
         if (i != undefined) return this.nodes.get(i);
         return undefined;
     }
     /**
-     * @param eigenvalues The eigenvalues.
-     */ setEigenvalues(eigenvalues) {
-        let i = this.index.get(Eigenvalues.tagName);
-        if (i != undefined) this.nodes.set(i, eigenvalues);
+     * @param printGrainkfE The printGrainkfE.
+     */ setPrintGrainkfE(printGrainkfE) {
+        let i = this.index.get(PrintGrainkfE.tagName);
+        if (i != undefined) this.nodes.set(i, printGrainkfE);
         else {
-            this.index.set(Eigenvalues.tagName, this.nodes.size);
-            this.addNode(eigenvalues);
+            this.index.set(PrintGrainkfE.tagName, this.nodes.size);
+            this.addNode(printGrainkfE);
         }
     }
     /**
-     * Remove the eigenvalues.
-     */ removeEigenvalues() {
-        let i = this.index.get(Eigenvalues.tagName);
+     * Remove the printGrainkfE.
+     */ removePrintGrainkfE() {
+        let i = this.index.get(PrintGrainkfE.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(Eigenvalues.tagName);
+            this.index.delete(PrintGrainkfE.tagName);
+        }
+    }
+    /**
+     * @returns The printTSsos or undefined.
+     */ getPrintTSsos() {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printTSsos The printTSsos.
+     */ setPrintTSsos(printTSsos) {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) this.nodes.set(i, printTSsos);
+        else {
+            this.index.set(PrintTSsos.tagName, this.nodes.size);
+            this.addNode(printTSsos);
+        }
+    }
+    /**
+     * Remove the printTSsos.
+     */ removePrintTSsos() {
+        let i = this.index.get(PrintTSsos.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintTSsos.tagName);
+        }
+    }
+    /**
+     * @returns The printGrainedSpeciesProfile or undefined.
+     */ getPrintGrainedSpeciesProfile() {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printGrainedSpeciesProfile The printGrainedSpeciesProfile.
+     */ setPrintGrainedSpeciesProfile(printGrainedSpeciesProfile) {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) this.nodes.set(i, printGrainedSpeciesProfile);
+        else {
+            this.index.set(PrintGrainedSpeciesProfile.tagName, this.nodes.size);
+            this.addNode(printGrainedSpeciesProfile);
+        }
+    }
+    /**
+     * Remove the printGrainedSpeciesProfile.
+     */ removePrintGrainedSpeciesProfile() {
+        let i = this.index.get(PrintGrainedSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainedSpeciesProfile.tagName);
+        }
+    }
+    /**
+     * @returns The printGrainTransitionStateFlux or undefined.
+     */ getPrintGrainTransitionStateFlux() {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printGrainTransitionStateFlux The printGrainTransitionStateFlux.
+     */ setPrintGrainTransitionStateFlux(printGrainTransitionStateFlux) {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) this.nodes.set(i, printGrainTransitionStateFlux);
+        else {
+            this.index.set(PrintGrainTransitionStateFlux.tagName, this.nodes.size);
+            this.addNode(printGrainTransitionStateFlux);
+        }
+    }
+    /**
+     * Remove the printGrainTransitionStateFlux.
+     */ removePrintGrainTransitionStateFlux() {
+        let i = this.index.get(PrintGrainTransitionStateFlux.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintGrainTransitionStateFlux.tagName);
+        }
+    }
+    /**
+     * @returns The printReactionOperatorSize or undefined.
+     */ getPrintReactionOperatorSize() {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printReactionOperatorSize The printReactionOperatorSize.
+     */ setPrintReactionOperatorSize(printReactionOperatorSize) {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) this.nodes.set(i, printReactionOperatorSize);
+        else {
+            this.index.set(PrintReactionOperatorSize.tagName, this.nodes.size);
+            this.addNode(printReactionOperatorSize);
+        }
+    }
+    /**
+     * Remove the printReactionOperatorSize.
+     */ removePrintReactionOperatorSize() {
+        let i = this.index.get(PrintReactionOperatorSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintReactionOperatorSize.tagName);
+        }
+    }
+    /**
+     * @returns The printSpeciesProfile or undefined.
+     */ getPrintSpeciesProfile() {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printSpeciesProfile The printSpeciesProfile.
+     */ setPrintSpeciesProfile(printSpeciesProfile) {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) this.nodes.set(i, printSpeciesProfile);
+        else {
+            this.index.set(PrintSpeciesProfile.tagName, this.nodes.size);
+            this.addNode(printSpeciesProfile);
+        }
+    }
+    /**
+     * Remove the printSpeciesProfile.
+     */ removePrintSpeciesProfile() {
+        let i = this.index.get(PrintSpeciesProfile.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintSpeciesProfile.tagName);
+        }
+    }
+    /**
+     * @returns The printPhenomenologicalEvolution or undefined.
+     */ getPrintPhenomenologicalEvolution() {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printPhenomenologicalEvolution The printPhenomenologicalEvolution.
+     */ setPrintPhenomenologicalEvolution(printPhenomenologicalEvolution) {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) this.nodes.set(i, printPhenomenologicalEvolution);
+        else {
+            this.index.set(PrintPhenomenologicalEvolution.tagName, this.nodes.size);
+            this.addNode(printPhenomenologicalEvolution);
+        }
+    }
+    /**
+     * Remove the printPhenomenologicalEvolution.
+     */ removePrintPhenomenologicalEvolution() {
+        let i = this.index.get(PrintPhenomenologicalEvolution.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintPhenomenologicalEvolution.tagName);
+        }
+    }
+    /**
+     * @returns The printTunnelingCoefficients or undefined.
+     */ getPrintTunnelingCoefficients() {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printTunnelingCoefficients The printTunnelingCoefficients.
+     */ setPrintTunnelingCoefficients(printTunnelingCoefficients) {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) this.nodes.set(i, printTunnelingCoefficients);
+        else {
+            this.index.set(PrintTunnelingCoefficients.tagName, this.nodes.size);
+            this.addNode(printTunnelingCoefficients);
+        }
+    }
+    /**
+     * Remove the printTunnelingCoefficients.
+     */ removePrintTunnelingCoefficients() {
+        let i = this.index.get(PrintTunnelingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintTunnelingCoefficients.tagName);
+        }
+    }
+    /**
+     * @returns The printCrossingCoefficients or undefined.
+     */ getPrintCrossingCoefficients() {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param printCrossingCoefficients The printCrossingCoefficients.
+     */ setPrintCrossingCoefficients(printCrossingCoefficients) {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) this.nodes.set(i, printCrossingCoefficients);
+        else {
+            this.index.set(PrintCrossingCoefficients.tagName, this.nodes.size);
+            this.addNode(printCrossingCoefficients);
+        }
+    }
+    /**
+     * Remove the printCrossingCoefficients.
+     */ removePrintCrossingCoefficients() {
+        let i = this.index.get(PrintCrossingCoefficients.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(PrintCrossingCoefficients.tagName);
+        }
+    }
+    /**
+     * @returns The testDOS or undefined.
+     */ getTestDOS() {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param testDOS The testDOS.
+     */ setTestDOS(testDOS) {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) this.nodes.set(i, testDOS);
+        else {
+            this.index.set(TestDOS.tagName, this.nodes.size);
+            this.addNode(testDOS);
+        }
+    }
+    /**
+     * Remove the testDOS.
+     */ removeTestDOS() {
+        let i = this.index.get(TestDOS.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestDOS.tagName);
+        }
+    }
+    /**
+     * @returns The testRateConstant or undefined.
+     */ getTestRateConstants() {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param testRateConstant The testRateConstant.
+     */ setTestRateConstants(testRateConstant) {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) this.nodes.set(i, testRateConstant);
+        else {
+            this.index.set(TestRateConstants.tagName, this.nodes.size);
+            this.addNode(testRateConstant);
+        }
+    }
+    /**
+     * Remove the testRateConstant.
+     */ removeTestRateConstants() {
+        let i = this.index.get(TestRateConstants.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestRateConstants.tagName);
+        }
+    }
+    /**
+     * @returns The useTheSameCellNumberForAllConditions or undefined.
+     */ getUseTheSameCellNumberForAllConditions() {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param useTheSameCellNumberForAllConditions The useTheSameCellNumberForAllConditions.
+     */ setUseTheSameCellNumberForAllConditions(useTheSameCellNumberForAllConditions) {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) this.nodes.set(i, useTheSameCellNumberForAllConditions);
+        else {
+            this.index.set(UseTheSameCellNumberForAllConditions.tagName, this.nodes.size);
+            this.addNode(useTheSameCellNumberForAllConditions);
+        }
+    }
+    /**
+     * Remove the useTheSameCellNumberForAllConditions.
+     */ removeUseTheSameCellNumberForAllConditions() {
+        let i = this.index.get(UseTheSameCellNumberForAllConditions.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(UseTheSameCellNumberForAllConditions.tagName);
         }
     }
     /**
@@ -6480,7 +7418,163 @@ class Control extends (0, _xml.NodeWithNodes) {
         }
     }
     /**
-     * @returns The diagramEnergyOffset or undefined.
+     * @returns The ForceMacroDetailedBalance or undefined.
+     */ getForceMacroDetailedBalance() {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param forceMacroDetailedBalance The forceMacroDetailedBalance.
+     */ setForceMacroDetailedBalance(forceMacroDetailedBalance) {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) this.nodes.set(i, forceMacroDetailedBalance);
+        else {
+            this.index.set(ForceMacroDetailedBalance.tagName, this.nodes.size);
+            this.addNode(forceMacroDetailedBalance);
+        }
+    }
+    /**
+     * Remove the forceMacroDetailedBalance.
+     */ removeForceMacroDetailedBalance() {
+        let i = this.index.get(ForceMacroDetailedBalance.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ForceMacroDetailedBalance.tagName);
+        }
+    }
+    /**
+     * @returns The calcMethod or undefined.
+     */ getCalcMethod() {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param calcMethod The calcMethod.
+     */ setCalcMethod(calcMethod) {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) this.nodes.set(i, calcMethod);
+        else {
+            this.index.set(CalcMethod.tagName, this.nodes.size);
+            this.addNode(calcMethod);
+        }
+    }
+    /**
+     * Remove the calcMethod.
+     */ removeCalcMethod() {
+        let i = this.index.get(CalcMethod.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(CalcMethod.tagName);
+        }
+    }
+    /**
+     * @returns The eigenvalues or undefined.
+     */ getEigenvalues() {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param eigenvalues The eigenvalues.
+     */ setEigenvalues(eigenvalues) {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) this.nodes.set(i, eigenvalues);
+        else {
+            this.index.set(Eigenvalues.tagName, this.nodes.size);
+            this.addNode(eigenvalues);
+        }
+    }
+    /**
+     * Remove the eigenvalues.
+     */ removeEigenvalues() {
+        let i = this.index.get(Eigenvalues.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Eigenvalues.tagName);
+        }
+    }
+    /**
+     * @returns The shortestTimeOfInterest.
+     */ getShortestTimeOfInterest() {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param shortestTimeOfInterest The shortestTimeOfInterest.
+     */ setShortestTimeOfInterest(shortestTimeOfInterest) {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) this.nodes.set(i, shortestTimeOfInterest);
+        else {
+            this.index.set(ShortestTimeOfInterest.tagName, this.nodes.size);
+            this.addNode(shortestTimeOfInterest);
+        }
+    }
+    /**
+     * Remove the shortestTimeOfInterest.
+     */ removeShortestTimeOfInterest() {
+        let i = this.index.get(ShortestTimeOfInterest.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ShortestTimeOfInterest.tagName);
+        }
+    }
+    /**
+     * @returns The MaximumEvolutionTime.
+     */ getMaximumEvolutionTime() {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param MaximumEvolutionTime The MaximumEvolutionTime.
+     */ setMaximumEvolutionTime(MaximumEvolutionTime) {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) this.nodes.set(i, MaximumEvolutionTime);
+        else {
+            this.index.set(MaximumEvolutionTime.tagName, this.nodes.size);
+            this.addNode(MaximumEvolutionTime);
+        }
+    }
+    /**
+     * Remove the MaximumEvolutionTime.
+     */ removeMaximumEvolutionTime() {
+        let i = this.index.get(MaximumEvolutionTime.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaximumEvolutionTime.tagName);
+        }
+    }
+    /**
+     * @returns The automaticallySetMaxEne.
+     */ getAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param automaticallySetMaxEne The automaticallySetMaxEne.
+     */ setAutomaticallySetMaxEne(automaticallySetMaxEne) {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) this.nodes.set(i, automaticallySetMaxEne);
+        else {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
+    }
+    /**
+     * Remove the automaticallySetMaxEne.
+     */ removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
+        }
+    }
+    /**
+     * @returns The diagramEnergyOffset.
      */ getDiagramEnergyOffset() {
         let i = this.index.get(DiagramEnergyOffset.tagName);
         if (i != undefined) return this.nodes.get(i);
@@ -6503,6 +7597,32 @@ class Control extends (0, _xml.NodeWithNodes) {
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(DiagramEnergyOffset.tagName);
+        }
+    }
+    /**
+     * @returns The testMicroRates or undefined.
+     */ getTestMicroRates() {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        return undefined;
+    }
+    /**
+     * @param testMicroRates The testMicroRates.
+     */ setTestMicroRates(testMicroRates) {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) this.nodes.set(i, testMicroRates);
+        else {
+            this.index.set(TestMicroRates.tagName, this.nodes.size);
+            this.addNode(testMicroRates);
+        }
+    }
+    /**
+     * Remove the testMicroRates.
+     */ removeTestMicroRates() {
+        let i = this.index.get(TestMicroRates.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(TestMicroRates.tagName);
         }
     }
 }

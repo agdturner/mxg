@@ -29,59 +29,6 @@ function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', marginLe
 }
 exports.getCollapsibleDiv = getCollapsibleDiv;
 /**
- * Create a collapsible div.
- * @param content The content that will be collapsible.
- * @param buttonLabel The label of the button.
- * @param buttonId The id of the button.
- * @param buttonFontSize The font size of the button.
- * @param marginLeft The margin left of the button.
- * @param marginTop The margin top of the button.
- * @param marginBottom The margin bottom of the button.
- * @param contentDivId The id of the content div.
- * @param contentDivClassName The class of the content div.
- * @returns A collapsible div.
- */
-/*export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, buttonId?: string,
-    buttonFontSize?: string, marginLeft?: string, marginTop?: string, marginBottom?: string,
-    contentDivId?: string, contentDivClassName?: string): HTMLDivElement {
-    let contentDiv: HTMLDivElement = document.createElement('div');
-    if (contentDivId != undefined) {
-        contentDiv.id = contentDivId;
-    }
-    if (contentDivClassName != undefined) {
-        contentDiv.className = contentDivClassName;
-    }
-    let button: HTMLButtonElement = document.createElement('button');
-    if (buttonId != undefined) {
-        button.id = buttonId;
-    }
-    button.className = 'collapsible';
-    button.innerText = buttonLabel + ' ▼';
-    button.addEventListener('click', function() {
-        if (button.innerText.includes('▼')) {
-            button.innerText = buttonLabel + ' ▲'; // Change to up arrow when content is expanded
-        } else {
-            button.innerText = buttonLabel + ' ▼'; // Change to down arrow when content is collapsed
-        }
-    });
-    if (buttonFontSize != undefined) {
-        button.style.fontSize = buttonFontSize;
-    }
-    if (marginLeft != undefined) {
-        button.style.marginLeft = marginLeft;
-    }
-    if (marginTop != undefined) {
-        button.style.marginTop = marginTop;
-    }
-    if (marginBottom != undefined) {
-        button.style.marginBottom = marginBottom;
-    }
-    contentDiv.appendChild(button);
-    contentDiv.appendChild(content);
-    return contentDiv;
-}
-*/
-/**
  * For making elements with the class "collapsible" collapsible.
  */
 function makeCollapsible() {
