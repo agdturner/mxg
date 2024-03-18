@@ -253,7 +253,15 @@ function parse(xml) {
     else {
         let moleculeDiv = processMoleculeList(xml);
         moleculeDiv.id = moleculesDivId;
-        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)(moleculeDiv, "Molecules", "molecules_button", fontSize1, margin0, margin1, margin1, moleculesDivId));
+        moleculesElement.appendChild((0, html_js_1.getCollapsibleDiv)({
+            content: moleculeDiv,
+            buttonLabel: "Molecules",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: moleculesDivId
+        }));
         mesmer.setMoleculeList(new mesmer_js_1.MoleculeList((0, xml_js_1.getAttributes)(moleculeDiv), Array.from(molecules.values())));
     }
     // Reactions.
@@ -265,9 +273,18 @@ function parse(xml) {
         // Create a reactions section from scratch?
     }
     else {
-        let reactionDiv = processReactionList(xml);
-        reactionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(reactionDiv, "Reactions", "reactions_button", fontSize1, margin0, margin1, margin1, reactionsDivId));
-        mesmer.setReactionList(new mesmer_js_1.ReactionList((0, xml_js_1.getAttributes)(reactionDiv), Array.from(reactions.values())));
+        let reactionsDiv = processReactionList(xml);
+        reactionsDiv.id = reactionsDivId;
+        reactionsDiv.appendChild((0, html_js_1.getCollapsibleDiv)({
+            content: reactionsDiv,
+            buttonLabel: "Reactions",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: reactionsDivId
+        }));
+        mesmer.setReactionList(new mesmer_js_1.ReactionList((0, xml_js_1.getAttributes)(reactionsDiv), Array.from(reactions.values())));
     }
     // Display reaction diagram. 
     displayReactionsDiagram();
@@ -280,8 +297,17 @@ function parse(xml) {
         // Create a conditions section from scratch?
     }
     else {
-        let conditionsListElement = processConditions(xml);
-        conditionsElement.appendChild((0, html_js_1.getCollapsibleDiv)(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin0, margin1, margin1, conditionsDivId));
+        let conditionsDiv = processConditions(xml);
+        conditionsDiv.id = conditionsDivId;
+        conditionsElement.appendChild((0, html_js_1.getCollapsibleDiv)({
+            content: conditionsDiv,
+            buttonLabel: "Conditions",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: conditionsDivId
+        }));
         mesmer.setConditions(conditions);
     }
     // Model Parameters.
@@ -293,8 +319,17 @@ function parse(xml) {
         // Create a model parameters section from scratch?
     }
     else {
-        let modelParametersListElement = processModelParameters(xml);
-        modelParametersElement.appendChild((0, html_js_1.getCollapsibleDiv)(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin0, margin1, margin1, modelParametersDivId));
+        let modelParametersDiv = processModelParameters(xml);
+        modelParametersDiv.id = modelParametersDivId;
+        modelParametersElement.appendChild((0, html_js_1.getCollapsibleDiv)({
+            content: modelParametersDiv,
+            buttonLabel: "Model Parameters",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: modelParametersDivId
+        }));
         mesmer.setModelParameters(modelParameters);
     }
     // Control.
@@ -306,8 +341,17 @@ function parse(xml) {
         // Create a control section from scratch?
     }
     else {
-        let controlListElement = processControl(xml);
-        controlElement.appendChild((0, html_js_1.getCollapsibleDiv)(controlListElement, "Control", "control_button", fontSize1, margin0, margin1, margin1, controlDivId));
+        let controlDiv = processControl(xml);
+        controlDiv.id = controlDivId;
+        controlElement.appendChild((0, html_js_1.getCollapsibleDiv)({
+            content: controlDiv,
+            buttonLabel: "Control",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: controlDivId
+        }));
         mesmer.setControl(control);
     }
     // Initiate action listeners for collapsible content.
@@ -443,7 +487,15 @@ function processMoleculeList(xml) {
             let plDiv = document.createElement("div");
             let buttonId = molecule.id + "_" + molecule_js_1.PropertyList.tagName;
             let contentDivId = molecule.id + "_" + molecule_js_1.PropertyList.tagName + "_";
-            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(plDiv, molecule_js_1.PropertyList.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                content: plDiv,
+                buttonLabel: molecule_js_1.PropertyList.tagName,
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
             let pl = new molecule_js_1.PropertyList((0, xml_js_1.getAttributes)(xml_PLs[0]));
@@ -515,9 +567,16 @@ function processMoleculeList(xml) {
             let extraDOSCMethod = new molecule_js_1.ExtraDOSCMethod((0, xml_js_1.getAttributes)(xml_DOSCMethod[0]));
             // Create a new collapsible div for the ExtraDOSCMethod.
             let extraDOSCMethodDiv = document.createElement("div");
-            let buttonId = molecule.id + "_" + molecule_js_1.ExtraDOSCMethod.tagName;
             let contentDivId = molecule.id + "_" + molecule_js_1.ExtraDOSCMethod.tagName + "_";
-            let extraDOSCMethodCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)(extraDOSCMethodDiv, molecule_js_1.ExtraDOSCMethod.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let extraDOSCMethodCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                content: extraDOSCMethodDiv,
+                buttonLabel: molecule_js_1.ExtraDOSCMethod.tagName,
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             moleculeDiv.appendChild(extraDOSCMethodCollapsibleDiv);
             // Read bondRef.
             let xml_bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName(molecule_js_1.BondRef.tagName);
@@ -559,7 +618,15 @@ function processMoleculeList(xml) {
                 let hinderedRotorPotentialDiv = document.createElement("div");
                 let buttonId = molecule.id + "_" + molecule_js_1.HinderedRotorPotential.tagName;
                 let contentDivId = molecule.id + "_" + molecule_js_1.DOSCMethod.tagName + "_" + molecule_js_1.HinderedRotorPotential.tagName;
-                let hinderedRotorPotentialCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)(hinderedRotorPotentialDiv, molecule_js_1.HinderedRotorPotential.tagName, buttonId, fontSize3, margin75, margin1, margin1, contentDivId);
+                let hinderedRotorPotentialCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                    content: hinderedRotorPotentialDiv,
+                    buttonLabel: molecule_js_1.HinderedRotorPotential.tagName,
+                    buttonFontSize: fontSize3,
+                    marginLeft: margin75,
+                    marginTop: margin1,
+                    marginBottom: margin1,
+                    contentDivId: contentDivId
+                });
                 //hinderedRotorPotentialCollapsibleDiv.style.marginLeft = margin100;
                 hinderedRotorPotentialCollapsibleDiv.style.marginTop = margin1;
                 hinderedRotorPotentialCollapsibleDiv.style.marginBottom = margin1;
@@ -644,7 +711,15 @@ function processMoleculeList(xml) {
                 let potentialPointsDiv = document.createElement("div");
                 let potentialPointButtonId = molecule.id + "_" + molecule_js_1.HinderedRotorPotential.tagName + "_" + molecule_js_1.PotentialPoint.tagName;
                 let potentialPointContentDivId = molecule.id + "_" + molecule_js_1.DOSCMethod.tagName + "_" + molecule_js_1.HinderedRotorPotential.tagName + "_" + molecule_js_1.PotentialPoint.tagName;
-                let potentialPointCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)(potentialPointsDiv, molecule_js_1.PotentialPoint.tagName, potentialPointButtonId, fontSize3, margin100, margin1, margin1, potentialPointContentDivId);
+                let potentialPointCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                    content: potentialPointsDiv,
+                    buttonLabel: molecule_js_1.PotentialPoint.tagName,
+                    buttonFontSize: fontSize3,
+                    marginLeft: margin100,
+                    marginTop: margin1,
+                    marginBottom: margin1,
+                    contentDivId: potentialPointContentDivId
+                });
                 hinderedRotorPotentialDiv.appendChild(potentialPointCollapsibleDiv);
                 let potentialPoints = [];
                 let xml_potentialPoints = xml_hinderedRotorPotentials[0].getElementsByTagName(molecule_js_1.PotentialPoint.tagName);
@@ -790,7 +865,15 @@ function processMoleculeList(xml) {
         molstarDiv.id = molecule.id + "_molstar";
         moleculeDiv.appendChild(molstarDiv);
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(moleculeDiv, molecule.getLabel(), molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin25, margin1, margin1, molecule.tagName + "_" + molecule.id);
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: moleculeDiv,
+            buttonLabel: molecule.getLabel(),
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: molecule.tagName + "_" + molecule.id
+        });
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
@@ -1026,9 +1109,16 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv, margin)
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
         let etmDiv = document.createElement("div");
-        let buttonId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName;
-        let contentDivId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName + "_";
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(etmDiv, molecule_js_1.EnergyTransferModel.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+        let contentDivId = molecule.id + "_" + molecule_js_1.EnergyTransferModel.tagName;
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: etmDiv,
+            buttonLabel: molecule_js_1.EnergyTransferModel.tagName,
+            buttonFontSize: fontSize3,
+            marginLeft: margin50,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: contentDivId
+        });
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns = [];
         for (let k = 0; k < xml_deltaEDowns.length; k++) {
@@ -1232,7 +1322,15 @@ function processReactionList(xml) {
             // Create a new collapsible div for the reactants.
             let buttonId = reaction.id + "_" + reaction_js_1.Reactant.tagName;
             let contentDivId = reaction.id + "_" + reaction_js_1.Reactant.tagName + "_";
-            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reactantsDiv, "Reactants", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                content: reactantsDiv,
+                buttonLabel: "Reactants",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             reactionDiv.appendChild(collapsibleDiv);
         }
         // Load products.
@@ -1272,9 +1370,16 @@ function processReactionList(xml) {
             }
             reaction.setProducts(products);
             // Create a new collapsible div for the products.
-            let buttonId = reaction.id + "_" + reaction_js_1.Product.tagName;
-            let contentDivId = reaction.id + "_" + reaction_js_1.Product.tagName + "_";
-            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(productsDiv, "Products", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let contentDivId = reaction.id + "_" + reaction_js_1.Product.tagName;
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                content: productsDiv,
+                buttonLabel: "Products",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             reactionDiv.appendChild(collapsibleDiv);
         }
         // Load tunneling.
@@ -1329,9 +1434,16 @@ function processReactionList(xml) {
             }
             reaction.setTransitionStates(transitionStates);
             // Create a new collapsible div for the transition states.
-            let buttonId = reaction.id + "_" + reaction_js_1.TransitionState.tagName;
-            let contentDivId = reaction.id + "_" + reaction_js_1.TransitionState.tagName + "_";
-            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(transitionStatesDiv, "Transition States", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let contentDivId = reaction.id + "_" + reaction_js_1.TransitionState.tagName;
+            let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                content: transitionStatesDiv,
+                buttonLabel: "Transition States",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             reactionDiv.appendChild(collapsibleDiv);
         }
         // Load MCRCMethod.
@@ -1493,9 +1605,16 @@ function processReactionList(xml) {
                         }
                         //console.log("nInfinity " + nInfinity);
                         // Create a new collapsible div for the MCRCMethod.
-                        let buttonId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName;
-                        let contentDivId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName + "_";
-                        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(mCRCMethodDiv, reaction_js_1.MCRCMethod.tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+                        let contentDivId = reaction.id + "_" + reaction_js_1.MCRCMethod.tagName;
+                        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+                            content: mCRCMethodDiv,
+                            buttonLabel: reaction_js_1.MCRCMethod.tagName,
+                            buttonFontSize: fontSize3,
+                            marginLeft: margin50,
+                            marginTop: margin1,
+                            marginBottom: margin1,
+                            contentDivId: contentDivId
+                        });
                         reactionDiv.appendChild(collapsibleDiv);
                     }
                     else {
@@ -1527,7 +1646,15 @@ function processReactionList(xml) {
             reaction.setExcessReactantConc(excessReactantConc);
         }
         // Create a new collapsible div for the reaction.
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(reactionDiv, reaction.id + "(" + reaction.getLabel() + ")", reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin25, margin1, margin1, reaction.tagName + "_" + reaction.id);
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: reactionDiv,
+            buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: reaction.tagName + "_" + reaction.id
+        });
         // Append the collapsibleDiv to the reactionListDiv.
         reactionListDiv.appendChild(collapsibleDiv);
     }
@@ -1591,9 +1718,16 @@ function processConditions(xml) {
         conditionsDiv.appendChild(pTsDiv);
         let attributes = (0, xml_js_1.getAttributes)(xml_PTss[0]);
         // Create a new collapsible div for the PTs.
-        let buttonId = conditions_js_1.PTs.tagName + "_button";
-        let contentDivId = conditions_js_1.PTs.tagName + "_";
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)(pTsDiv, conditions_js_1.PTs.tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
+        let contentDivId = conditions_js_1.PTs.tagName;
+        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: pTsDiv,
+            buttonLabel: conditions_js_1.PTs.tagName,
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: contentDivId
+        });
         conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs = xml_PTss[0].getElementsByTagName(conditions_js_1.PTpair.tagName);
         if (xml_PTPairs.length == 0) {

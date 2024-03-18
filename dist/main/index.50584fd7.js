@@ -811,10 +811,18 @@ let xml_text;
     remove(moleculesDivId);
     if (moleculesElement == null) ;
     else {
-        let moleculeDiv = processMoleculeList(xml);
-        moleculeDiv.id = moleculesDivId;
-        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)(moleculeDiv, "Molecules", "molecules_button", fontSize1, margin0, margin1, margin1, moleculesDivId));
-        mesmer.setMoleculeList(new (0, _mesmerJs.MoleculeList)((0, _xmlJs.getAttributes)(moleculeDiv), Array.from(molecules.values())));
+        let moleculesDiv = processMoleculeList(xml);
+        moleculesDiv.id = moleculesDivId;
+        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: moleculesDiv,
+            buttonLabel: "Molecules",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: moleculesDivId
+        }));
+        mesmer.setMoleculeList(new (0, _mesmerJs.MoleculeList)((0, _xmlJs.getAttributes)(moleculesDiv), Array.from(molecules.values())));
     }
     // Reactions.
     let reactionsElement = document.getElementById("reactions");
@@ -823,9 +831,18 @@ let xml_text;
     remove(reactionsDivId);
     if (reactionsElement == null) ;
     else {
-        let reactionDiv = processReactionList(xml);
-        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)(reactionDiv, "Reactions", "reactions_button", fontSize1, margin0, margin1, margin1, reactionsDivId));
-        mesmer.setReactionList(new (0, _mesmerJs.ReactionList)((0, _xmlJs.getAttributes)(reactionDiv), Array.from(reactions.values())));
+        let reactionsDiv = processReactionList(xml);
+        reactionsDiv.id = reactionsDivId;
+        reactionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: reactionsDiv,
+            buttonLabel: "Reactions",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: reactionsDivId
+        }));
+        mesmer.setReactionList(new (0, _mesmerJs.ReactionList)((0, _xmlJs.getAttributes)(reactionsDiv), Array.from(reactions.values())));
     }
     // Display reaction diagram. 
     displayReactionsDiagram();
@@ -836,8 +853,17 @@ let xml_text;
     remove(conditionsDivId);
     if (conditionsElement == null) ;
     else {
-        let conditionsListElement = processConditions(xml);
-        conditionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)(conditionsListElement, "Conditions", "conditions_button", fontSize1, margin0, margin1, margin1, conditionsDivId));
+        let conditionsDiv = processConditions(xml);
+        conditionsDiv.id = conditionsDivId;
+        conditionsElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: conditionsDiv,
+            buttonLabel: "Conditions",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: conditionsDivId
+        }));
         mesmer.setConditions(conditions);
     }
     // Model Parameters.
@@ -847,8 +873,17 @@ let xml_text;
     remove(modelParametersDivId);
     if (modelParametersElement == null) ;
     else {
-        let modelParametersListElement = processModelParameters(xml);
-        modelParametersElement.appendChild((0, _htmlJs.getCollapsibleDiv)(modelParametersListElement, "Model Parameters", "modelParameters_button", fontSize1, margin0, margin1, margin1, modelParametersDivId));
+        let modelParametersDiv = processModelParameters(xml);
+        modelParametersDiv.id = modelParametersDivId;
+        modelParametersElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: modelParametersDiv,
+            buttonLabel: "Model Parameters",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: modelParametersDivId
+        }));
         mesmer.setModelParameters(modelParameters);
     }
     // Control.
@@ -858,8 +893,17 @@ let xml_text;
     remove(controlDivId);
     if (controlElement == null) ;
     else {
-        let controlListElement = processControl(xml);
-        controlElement.appendChild((0, _htmlJs.getCollapsibleDiv)(controlListElement, "Control", "control_button", fontSize1, margin0, margin1, margin1, controlDivId));
+        let controlDiv = processControl(xml);
+        controlDiv.id = controlDivId;
+        controlElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: controlDiv,
+            buttonLabel: "Control",
+            buttonFontSize: fontSize1,
+            marginLeft: margin0,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: controlDivId
+        }));
         mesmer.setControl(control);
     }
     // Initiate action listeners for collapsible content.
@@ -963,7 +1007,15 @@ let xml_text;
             let plDiv = document.createElement("div");
             let buttonId = molecule.id + "_" + (0, _moleculeJs.PropertyList).tagName;
             let contentDivId = molecule.id + "_" + (0, _moleculeJs.PropertyList).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(plDiv, (0, _moleculeJs.PropertyList).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                content: plDiv,
+                buttonLabel: (0, _moleculeJs.PropertyList).tagName,
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             moleculeDiv.appendChild(collapsibleDiv);
             // Create a new PropertyList.
             let pl = new (0, _moleculeJs.PropertyList)((0, _xmlJs.getAttributes)(xml_PLs[0]));
@@ -1014,9 +1066,16 @@ let xml_text;
             let extraDOSCMethod = new (0, _moleculeJs.ExtraDOSCMethod)((0, _xmlJs.getAttributes)(xml_DOSCMethod[0]));
             // Create a new collapsible div for the ExtraDOSCMethod.
             let extraDOSCMethodDiv = document.createElement("div");
-            let buttonId = molecule.id + "_" + (0, _moleculeJs.ExtraDOSCMethod).tagName;
             let contentDivId = molecule.id + "_" + (0, _moleculeJs.ExtraDOSCMethod).tagName + "_";
-            let extraDOSCMethodCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(extraDOSCMethodDiv, (0, _moleculeJs.ExtraDOSCMethod).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+            let extraDOSCMethodCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                content: extraDOSCMethodDiv,
+                buttonLabel: (0, _moleculeJs.ExtraDOSCMethod).tagName,
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
             moleculeDiv.appendChild(extraDOSCMethodCollapsibleDiv);
             // Read bondRef.
             let xml_bondRefs = xml_ExtraDOSCMethod[0].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
@@ -1054,7 +1113,15 @@ let xml_text;
                 let hinderedRotorPotentialDiv = document.createElement("div");
                 let buttonId = molecule.id + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName;
                 let contentDivId = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName;
-                let hinderedRotorPotentialCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(hinderedRotorPotentialDiv, (0, _moleculeJs.HinderedRotorPotential).tagName, buttonId, fontSize3, margin75, margin1, margin1, contentDivId);
+                let hinderedRotorPotentialCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                    content: hinderedRotorPotentialDiv,
+                    buttonLabel: (0, _moleculeJs.HinderedRotorPotential).tagName,
+                    buttonFontSize: fontSize3,
+                    marginLeft: margin75,
+                    marginTop: margin1,
+                    marginBottom: margin1,
+                    contentDivId: contentDivId
+                });
                 //hinderedRotorPotentialCollapsibleDiv.style.marginLeft = margin100;
                 hinderedRotorPotentialCollapsibleDiv.style.marginTop = margin1;
                 hinderedRotorPotentialCollapsibleDiv.style.marginBottom = margin1;
@@ -1135,7 +1202,15 @@ let xml_text;
                 let potentialPointsDiv = document.createElement("div");
                 let potentialPointButtonId = molecule.id + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_" + (0, _moleculeJs.PotentialPoint).tagName;
                 let potentialPointContentDivId = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_" + (0, _moleculeJs.PotentialPoint).tagName;
-                let potentialPointCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(potentialPointsDiv, (0, _moleculeJs.PotentialPoint).tagName, potentialPointButtonId, fontSize3, margin100, margin1, margin1, potentialPointContentDivId);
+                let potentialPointCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                    content: potentialPointsDiv,
+                    buttonLabel: (0, _moleculeJs.PotentialPoint).tagName,
+                    buttonFontSize: fontSize3,
+                    marginLeft: margin100,
+                    marginTop: margin1,
+                    marginBottom: margin1,
+                    contentDivId: potentialPointContentDivId
+                });
                 hinderedRotorPotentialDiv.appendChild(potentialPointCollapsibleDiv);
                 let potentialPoints = [];
                 let xml_potentialPoints = xml_hinderedRotorPotentials[0].getElementsByTagName((0, _moleculeJs.PotentialPoint).tagName);
@@ -1271,25 +1346,19 @@ let xml_text;
         molstarDiv.id = molecule.id + "_molstar";
         moleculeDiv.appendChild(molstarDiv);
         // Create a new collapsible div for the molecule.
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(moleculeDiv, molecule.getLabel(), molecule.tagName + "_" + molecule.id + "_button", fontSize2, margin25, margin1, margin1, molecule.tagName + "_" + molecule.id);
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: moleculeDiv,
+            buttonLabel: molecule.getLabel(),
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: molecule.tagName + "_" + molecule.id
+        });
         // Append the collapsibleDiv to the moleculeListDiv.
         moleculeListDiv.appendChild(collapsibleDiv);
     }
     return moleculeListDiv;
-}
-/**
- * 
- * @param xml_P 
- * @param units 
- * @param molecule 
- * @param div 
- * @param margin 
- */ function createAndProcessProperty(xml_P, units, molecule, div, margin) {
-    let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_P));
-    molecule.setProperties(p);
-    if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_P, div, margin);
-    else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_P, div, margin);
-    else processProperty(p, undefined, molecule, xml_P, div, margin);
 }
 /**
  * Display the XML.
@@ -1477,9 +1546,16 @@ let xml_text;
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
         let etmDiv = document.createElement("div");
-        let buttonId = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName;
-        let contentDivId = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName + "_";
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(etmDiv, (0, _moleculeJs.EnergyTransferModel).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
+        let contentDivId = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName;
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: etmDiv,
+            buttonLabel: (0, _moleculeJs.EnergyTransferModel).tagName,
+            buttonFontSize: fontSize3,
+            marginLeft: margin50,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: contentDivId
+        });
         moleculeDiv.appendChild(collapsibleDiv);
         let deltaEDowns = [];
         for(let k = 0; k < xml_deltaEDowns.length; k++){
@@ -1596,7 +1672,7 @@ window.set = setNumberNode;
     for(let i = 0; i < xml_reactions.length; i++){
         let reactionDiv = document.createElement("div");
         // Set attributes.
-        let attributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
+        let reactionAttributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
         let reactionTagNames = new Set();
         let cns = xml_reactions[i].childNodes;
         //console.log("cns.length=" + cns.length);
@@ -1610,8 +1686,20 @@ window.set = setNumberNode;
         //console.log(cn.nodeName);
         }
         // Create reaction.
-        let reaction = new (0, _reactionJs.Reaction)(attributes);
+        let reaction = new (0, _reactionJs.Reaction)(reactionAttributes);
         reactions.set(reaction.id, reaction);
+        // Create a new collapsible div for the reaction.
+        let reactionCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: reactionDiv,
+            buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: reaction.tagName + "_" + reaction.id
+        });
+        // Append the collapsibleDiv to the reactionListDiv.
+        reactionListDiv.appendChild(reactionCollapsibleDiv);
         // Reactions typically have one or more reactant and product. They may also have one or more "me:transitionState" and other things...
         // Load reactants.
         let xml_reactants = xml_reactions[i].getElementsByTagName((0, _reactionJs.Reactant).tagName);
@@ -1655,10 +1743,17 @@ window.set = setNumberNode;
             }
             reaction.setReactants(reactants);
             // Create a new collapsible div for the reactants.
-            let buttonId = reaction.id + "_" + (0, _reactionJs.Reactant).tagName;
-            let contentDivId = reaction.id + "_" + (0, _reactionJs.Reactant).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(reactantsDiv, "Reactants", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-            reactionDiv.appendChild(collapsibleDiv);
+            let contentDivId = reaction.id + "_" + (0, _reactionJs.Reactant).tagName;
+            let reactantCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                content: reactantsDiv,
+                buttonLabel: "Reactants",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
+            reactionDiv.appendChild(reactantCollapsibleDiv);
         }
         // Load products.
         let xml_products = xml_reactions[i].getElementsByTagName((0, _reactionJs.Product).tagName);
@@ -1700,10 +1795,17 @@ window.set = setNumberNode;
             }
             reaction.setProducts(products);
             // Create a new collapsible div for the products.
-            let buttonId = reaction.id + "_" + (0, _reactionJs.Product).tagName;
-            let contentDivId = reaction.id + "_" + (0, _reactionJs.Product).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(productsDiv, "Products", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-            reactionDiv.appendChild(collapsibleDiv);
+            let contentDivId = reaction.id + "_" + (0, _reactionJs.Product).tagName;
+            let productCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                content: productsDiv,
+                buttonLabel: "Products",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
+            reactionDiv.appendChild(productCollapsibleDiv);
         }
         // Load tunneling.
         let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _reactionJs.Tunneling).tagName);
@@ -1758,10 +1860,17 @@ window.set = setNumberNode;
             }
             reaction.setTransitionStates(transitionStates);
             // Create a new collapsible div for the transition states.
-            let buttonId = reaction.id + "_" + (0, _reactionJs.TransitionState).tagName;
-            let contentDivId = reaction.id + "_" + (0, _reactionJs.TransitionState).tagName + "_";
-            let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(transitionStatesDiv, "Transition States", buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-            reactionDiv.appendChild(collapsibleDiv);
+            let contentDivId = reaction.id + "_" + (0, _reactionJs.TransitionState).tagName;
+            let transitionStatesCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                content: transitionStatesDiv,
+                buttonLabel: "Transition States",
+                buttonFontSize: fontSize3,
+                marginLeft: margin50,
+                marginTop: margin1,
+                marginBottom: margin1,
+                contentDivId: contentDivId
+            });
+            reactionDiv.appendChild(transitionStatesCollapsibleDiv);
         }
         // Load MCRCMethod.
         //console.log("Load MCRCMethod...");
@@ -1912,10 +2021,17 @@ window.set = setNumberNode;
                         }
                         //console.log("nInfinity " + nInfinity);
                         // Create a new collapsible div for the MCRCMethod.
-                        let buttonId = reaction.id + "_" + (0, _reactionJs.MCRCMethod).tagName;
-                        let contentDivId = reaction.id + "_" + (0, _reactionJs.MCRCMethod).tagName + "_";
-                        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(mCRCMethodDiv, (0, _reactionJs.MCRCMethod).tagName, buttonId, fontSize3, margin50, margin1, margin1, contentDivId);
-                        reactionDiv.appendChild(collapsibleDiv);
+                        let contentDivId = reaction.id + "_" + (0, _reactionJs.MCRCMethod).tagName;
+                        let mCRCMethodCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+                            content: mCRCMethodDiv,
+                            buttonLabel: (0, _reactionJs.MCRCMethod).tagName,
+                            buttonFontSize: fontSize3,
+                            marginLeft: margin50,
+                            marginTop: margin1,
+                            marginBottom: margin1,
+                            contentDivId: contentDivId
+                        });
+                        reactionDiv.appendChild(mCRCMethodCollapsibleDiv);
                     } else throw new Error("Unexpected xsi:type=" + type);
                 } else {
                     mCRCMethod = new (0, _reactionJs.MCRCMethod)(mCRCMethodAttributes);
@@ -1939,10 +2055,6 @@ window.set = setNumberNode;
             excessReactantConc = new (0, _reactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_excessReactantConc[0]), value);
             reaction.setExcessReactantConc(excessReactantConc);
         }
-        // Create a new collapsible div for the reaction.
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(reactionDiv, reaction.id + "(" + reaction.getLabel() + ")", reaction.tagName + "_" + reaction.id + "_button", fontSize2, margin25, margin1, margin1, reaction.tagName + "_" + reaction.id);
-        // Append the collapsibleDiv to the reactionListDiv.
-        reactionListDiv.appendChild(collapsibleDiv);
     }
     return reactionListDiv;
 }
@@ -1999,9 +2111,16 @@ window.set = setNumberNode;
         conditionsDiv.appendChild(pTsDiv);
         let attributes = (0, _xmlJs.getAttributes)(xml_PTss[0]);
         // Create a new collapsible div for the PTs.
-        let buttonId = (0, _conditionsJs.PTs).tagName + "_button";
-        let contentDivId = (0, _conditionsJs.PTs).tagName + "_";
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)(pTsDiv, (0, _conditionsJs.PTs).tagName, buttonId, fontSize2, margin25, margin1, margin1, contentDivId);
+        let contentDivId = (0, _conditionsJs.PTs).tagName;
+        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: pTsDiv,
+            buttonLabel: (0, _conditionsJs.PTs).tagName,
+            buttonFontSize: fontSize2,
+            marginLeft: margin25,
+            marginTop: margin1,
+            marginBottom: margin1,
+            contentDivId: contentDivId
+        });
         conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs = xml_PTss[0].getElementsByTagName((0, _conditionsJs.PTpair).tagName);
         if (xml_PTPairs.length == 0) throw new Error("Expecting 1 or more " + (0, _conditionsJs.PTpair).tagName + " but finding 0!");
@@ -3315,6 +3434,13 @@ function toHTML(text) {
 },{"./html":"aLPSL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aLPSL":[function(require,module,exports) {
 /**
  * Create a collapsible div.
+ * @param options The options for creating the collapsible div.
+ * @returns A collapsible div.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
+/**
+ * Create a collapsible div.
  * @param content The content that will be collapsible.
  * @param buttonLabel The label of the button.
  * @param buttonId The id of the button.
@@ -3325,10 +3451,46 @@ function toHTML(text) {
  * @param contentDivId The id of the content div.
  * @param contentDivClassName The class of the content div.
  * @returns A collapsible div.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
-/**
+ */ /*export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, buttonId?: string,
+    buttonFontSize?: string, marginLeft?: string, marginTop?: string, marginBottom?: string,
+    contentDivId?: string, contentDivClassName?: string): HTMLDivElement {
+    let contentDiv: HTMLDivElement = document.createElement('div');
+    if (contentDivId != undefined) {
+        contentDiv.id = contentDivId;
+    }
+    if (contentDivClassName != undefined) {
+        contentDiv.className = contentDivClassName;
+    }
+    let button: HTMLButtonElement = document.createElement('button');
+    if (buttonId != undefined) {
+        button.id = buttonId;
+    }
+    button.className = 'collapsible';
+    button.innerText = buttonLabel + ' ▼';
+    button.addEventListener('click', function() {
+        if (button.innerText.includes('▼')) {
+            button.innerText = buttonLabel + ' ▲'; // Change to up arrow when content is expanded
+        } else {
+            button.innerText = buttonLabel + ' ▼'; // Change to down arrow when content is collapsed
+        }
+    });
+    if (buttonFontSize != undefined) {
+        button.style.fontSize = buttonFontSize;
+    }
+    if (marginLeft != undefined) {
+        button.style.marginLeft = marginLeft;
+    }
+    if (marginTop != undefined) {
+        button.style.marginTop = marginTop;
+    }
+    if (marginBottom != undefined) {
+        button.style.marginBottom = marginBottom;
+    }
+    contentDiv.appendChild(button);
+    contentDiv.appendChild(content);
+    return contentDiv;
+}
+*/ /**
  * For making elements with the class "collapsible" collapsible.
  */ parcelHelpers.export(exports, "makeCollapsible", ()=>makeCollapsible);
 /**
@@ -3379,22 +3541,21 @@ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
  * @param marginRight The margin right.
  * @returns An HTMLDivElement with a 'flex' display style.
  */ parcelHelpers.export(exports, "createFlexDiv", ()=>createFlexDiv);
-function getCollapsibleDiv(content, buttonLabel, buttonId, buttonFontSize, marginLeft, marginTop, marginBottom, contentDivId, contentDivClassName) {
+function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = "", marginLeft = "", marginTop = "", marginBottom = "", contentDivId = "", contentDivClassName = "" }) {
     let contentDiv = document.createElement("div");
-    if (contentDivId != undefined) contentDiv.id = contentDivId;
-    if (contentDivClassName != undefined) contentDiv.className = contentDivClassName;
+    contentDiv.id = contentDivId;
+    contentDiv.className = contentDivClassName;
     let button = document.createElement("button");
-    if (buttonId != undefined) button.id = buttonId;
+    button.id = contentDivId + "Button";
     button.className = "collapsible";
-    button.innerText = buttonLabel + " \u25BC";
+    button.innerText = `${buttonLabel} \u{25BC}`;
     button.addEventListener("click", function() {
-        if (button.innerText.includes("\u25BC")) button.innerText = buttonLabel + " \u25B2"; // Change to up content is expanded
-        else button.innerText = buttonLabel + " \u25BC"; // Change to down arrow when content is collapsed
+        button.innerText = button.innerText.includes("\u25BC") ? `${buttonLabel} \u{25B2}` : `${buttonLabel} \u{25BC}`;
     });
-    if (buttonFontSize != undefined) button.style.fontSize = buttonFontSize;
-    if (marginLeft != undefined) button.style.marginLeft = marginLeft;
-    if (marginTop != undefined) button.style.marginTop = marginTop;
-    if (marginBottom != undefined) button.style.marginBottom = marginBottom;
+    button.style.fontSize = buttonFontSize;
+    button.style.marginLeft = marginLeft;
+    button.style.marginTop = marginTop;
+    button.style.marginBottom = marginBottom;
     contentDiv.appendChild(button);
     contentDiv.appendChild(content);
     return contentDiv;

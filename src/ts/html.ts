@@ -1,5 +1,52 @@
 /**
  * Create a collapsible div.
+ * @param options The options for creating the collapsible div.
+ * @returns A collapsible div.
+ */
+export function getCollapsibleDiv({
+    content,
+    buttonLabel,
+    buttonFontSize = '',
+    marginLeft = '',
+    marginTop = '',
+    marginBottom = '',
+    contentDivId = '',
+    contentDivClassName = ''
+}: {
+    content: HTMLElement,
+    buttonLabel: string,
+    buttonFontSize?: string,
+    marginLeft?: string,
+    marginTop?: string,
+    marginBottom?: string,
+    contentDivId?: string,
+    contentDivClassName?: string
+}): HTMLDivElement {
+    let contentDiv: HTMLDivElement = document.createElement('div');
+    contentDiv.id = contentDivId;
+    contentDiv.className = contentDivClassName;
+
+    let button: HTMLButtonElement = document.createElement('button');
+    button.id = contentDivId + 'Button';
+    button.className = 'collapsible';
+    button.innerText = `${buttonLabel} ▼`;
+    button.addEventListener('click', function() {
+        button.innerText = button.innerText.includes('▼') 
+            ? `${buttonLabel} ▲` 
+            : `${buttonLabel} ▼`;
+    });
+    button.style.fontSize = buttonFontSize;
+    button.style.marginLeft = marginLeft;
+    button.style.marginTop = marginTop;
+    button.style.marginBottom = marginBottom;
+
+    contentDiv.appendChild(button);
+    contentDiv.appendChild(content);
+    return contentDiv;
+}
+
+/**
+ * Create a collapsible div.
  * @param content The content that will be collapsible.
  * @param buttonLabel The label of the button.
  * @param buttonId The id of the button.
@@ -11,7 +58,7 @@
  * @param contentDivClassName The class of the content div.
  * @returns A collapsible div.
  */
-export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, buttonId?: string,
+/*export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, buttonId?: string,
     buttonFontSize?: string, marginLeft?: string, marginTop?: string, marginBottom?: string,
     contentDivId?: string, contentDivClassName?: string): HTMLDivElement {
     let contentDiv: HTMLDivElement = document.createElement('div');
@@ -29,7 +76,7 @@ export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, but
     button.innerText = buttonLabel + ' ▼';
     button.addEventListener('click', function() {
         if (button.innerText.includes('▼')) {
-            button.innerText = buttonLabel + ' ▲'; // Change to up content is expanded
+            button.innerText = buttonLabel + ' ▲'; // Change to up arrow when content is expanded
         } else {
             button.innerText = buttonLabel + ' ▼'; // Change to down arrow when content is collapsed
         }
@@ -50,6 +97,7 @@ export function getCollapsibleDiv(content: HTMLElement, buttonLabel: string, but
     contentDiv.appendChild(content);
     return contentDiv;
 }
+*/
 
 /**
  * For making elements with the class "collapsible" collapsible.
