@@ -2308,54 +2308,109 @@ window.set = setNumberNode;
  * @param xml The XML document.
  */ function processModelParameters(xml) {
     console.log((0, _modelParametersJs.ModelParameters).tagName);
-    // Create div to contain the modelParameters.
+    // Create div to contain the modelParameter.
     let modelParametersDiv = document.createElement("div");
     // Get the XML "moleculeList" element.
     let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, (0, _modelParametersJs.ModelParameters).tagName);
     modelParameters = new (0, _modelParametersJs.ModelParameters)((0, _xmlJs.getAttributes)(xml_modelParameters));
-    // Process any "me:grainSize" elements.
-    let xml_grainSizess = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.GrainSize).tagName);
-    if (xml_grainSizess.length > 0) {
-        if (xml_grainSizess.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.BathGas).tagName + " but finding " + xml_grainSizess.length + "!");
-        let attributes = (0, _xmlJs.getAttributes)(xml_grainSizess[0]);
-        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_grainSizess[0])));
-        let grainSize = new (0, _modelParametersJs.GrainSize)(attributes, value);
+    // Process any "me:grainSize" element.
+    let xml_grainSizes = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.GrainSize).tagName);
+    if (xml_grainSizes.length > 0) {
+        if (xml_grainSizes.length > 1) throw new Error("Expecting 1 " + (0, _modelParametersJs.GrainSize).tagName + " but finding " + xml_grainSizes.length + "!");
+        let grainSizeAttributes = (0, _xmlJs.getAttributes)(xml_grainSizes[0]);
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_grainSizes[0])));
+        let grainSize = new (0, _modelParametersJs.GrainSize)(grainSizeAttributes, value);
         modelParameters.setGrainSize(grainSize);
         let grainSizeDiv = (0, _htmlJs.createFlexDiv)();
         // Create a new div for the grainSize.
-        let id = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName;
-        let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
+        let grainSizeId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName;
+        let grainSizeInputDiv = (0, _htmlJs.getInput)("number", grainSizeId, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(grainSize, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, value.toString(), (0, _modelParametersJs.GrainSize).tagName);
-        (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        grainSizeDiv.appendChild(inputDiv);
+        (0, _htmlJs.resizeInputElement)(grainSizeInputDiv.querySelector("input"));
+        grainSizeInputDiv.style.marginLeft = margin25;
+        grainSizeInputDiv.style.marginTop = margin1;
+        grainSizeInputDiv.style.marginBottom = margin1;
+        grainSizeDiv.appendChild(grainSizeInputDiv);
         // Add any units
-        addAnyUnits(undefined, attributes, grainSizeDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName, (0, _modelParametersJs.GrainSize).tagName, margin2, margin1, margin1);
+        addAnyUnits(undefined, grainSizeAttributes, grainSizeDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName, (0, _modelParametersJs.GrainSize).tagName, margin2, margin1, margin1);
         modelParametersDiv.appendChild(grainSizeDiv);
     }
-    // Process any "me:energyAboveTheTopHill" elements.
-    let xml_energyAboveTheTopHill = (0, _xmlJs.getSingularElement)(xml_modelParameters, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
-    let energyAboveTheTopHill = new (0, _modelParametersJs.EnergyAboveTheTopHill)((0, _xmlJs.getAttributes)(xml_energyAboveTheTopHill), parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_energyAboveTheTopHill))));
-    modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
-    // Create a new div for the energyAboveTheTopHill.
-    let id = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName;
-    let inputDiv = (0, _htmlJs.getInput)("number", id, (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            setNumberNode(energyAboveTheTopHill, event.target);
-            (0, _htmlJs.resizeInputElement)(event.target);
-        }
-    }, energyAboveTheTopHill.value.toString(), (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
-    (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
-    inputDiv.style.marginLeft = margin25;
-    inputDiv.style.marginTop = margin1;
-    inputDiv.style.marginBottom = margin1;
-    modelParametersDiv.appendChild(inputDiv);
+    // Process any "me:automaticallySetMaxEne" element.
+    let xml_automaticallySetMaxEnes = xml_modelParameters.getElementsByTagName((0, _controlJs.AutomaticallySetMaxEne).tagName);
+    if (xml_automaticallySetMaxEnes.length > 0) {
+        if (xml_automaticallySetMaxEnes.length > 1) throw new Error("Expecting 1 " + (0, _controlJs.AutomaticallySetMaxEne).tagName + " but finding " + xml_automaticallySetMaxEnes.length + "!");
+        let automaticallySetMaxEneAttributes = (0, _xmlJs.getAttributes)(xml_automaticallySetMaxEnes[0]);
+        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_automaticallySetMaxEnes[0])));
+        let automaticallySetMaxEne = new (0, _controlJs.AutomaticallySetMaxEne)(automaticallySetMaxEneAttributes, value);
+        modelParameters.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+        // Create a new div for the automaticallySetMaxEne.
+        let automaticallySetMaxEneId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName;
+        let automaticallySetMaxEneInputDiv = (0, _htmlJs.getInput)("number", automaticallySetMaxEneId, (event)=>{
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(automaticallySetMaxEne, event.target);
+                (0, _htmlJs.resizeInputElement)(event.target);
+            }
+        }, value.toString(), (0, _controlJs.AutomaticallySetMaxEne).tagName);
+        (0, _htmlJs.resizeInputElement)(automaticallySetMaxEneInputDiv.querySelector("input"));
+        automaticallySetMaxEneInputDiv.style.marginLeft = margin25;
+        automaticallySetMaxEneInputDiv.style.marginTop = margin1;
+        automaticallySetMaxEneInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(automaticallySetMaxEneInputDiv);
+        // Add any units
+        addAnyUnits(undefined, automaticallySetMaxEneAttributes, modelParametersDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName, (0, _controlJs.AutomaticallySetMaxEne).tagName, margin2, margin1, margin1);
+    }
+    // Process any "me:energyAboveTheTopHill" element.
+    let xml_energyAboveTheTopHills = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
+    if (xml_energyAboveTheTopHills.length > 0) {
+        if (xml_energyAboveTheTopHills.length > 1) throw new Error("Expecting 1 " + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName + " but finding " + xml_energyAboveTheTopHills.length + "!");
+        let energyAboveTheTopHillAttributes = (0, _xmlJs.getAttributes)(xml_energyAboveTheTopHills[0]);
+        let energyAboveTheTopHillValue = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_energyAboveTheTopHills[0])));
+        let energyAboveTheTopHill = new (0, _modelParametersJs.EnergyAboveTheTopHill)(energyAboveTheTopHillAttributes, energyAboveTheTopHillValue);
+        modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
+        // Create a new div for the energyAboveTheTopHill.
+        let energyAboveTheTopHillId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName;
+        let energyAboveTheTopHillInputDiv = (0, _htmlJs.getInput)("number", energyAboveTheTopHillId, (event)=>{
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(energyAboveTheTopHill, event.target);
+                (0, _htmlJs.resizeInputElement)(event.target);
+            }
+        }, energyAboveTheTopHill.value.toString(), (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
+        (0, _htmlJs.resizeInputElement)(energyAboveTheTopHillInputDiv.querySelector("input"));
+        energyAboveTheTopHillInputDiv.style.marginLeft = margin25;
+        energyAboveTheTopHillInputDiv.style.marginTop = margin1;
+        energyAboveTheTopHillInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(energyAboveTheTopHillInputDiv);
+        // Add any units
+        addAnyUnits(undefined, energyAboveTheTopHillAttributes, modelParametersDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, margin2, margin1, margin1);
+    }
+    // Process any "me:maxTemperature" element.
+    let xml_maxTemperatures = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.MaxTemperature).tagName);
+    if (xml_maxTemperatures.length > 0) {
+        if (xml_maxTemperatures.length > 1) throw new Error("Expecting 1 " + (0, _modelParametersJs.MaxTemperature).tagName + " but finding " + xml_maxTemperatures.length + "!");
+        let maxTemperatureAttributes = (0, _xmlJs.getAttributes)(xml_maxTemperatures[0]);
+        let maxTemperatureValue = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_maxTemperatures[0])));
+        let maxTemperature = new (0, _modelParametersJs.MaxTemperature)(maxTemperatureAttributes, maxTemperatureValue);
+        modelParameters.setMaxTemperature(maxTemperature);
+        // Create a new div for the maxTemperature.
+        let maxTemperatureId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.MaxTemperature).tagName;
+        let maxTemperatureInputDiv = (0, _htmlJs.getInput)("number", maxTemperatureId, (event)=>{
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(maxTemperature, event.target);
+                (0, _htmlJs.resizeInputElement)(event.target);
+            }
+        }, maxTemperature.value.toString(), (0, _modelParametersJs.MaxTemperature).tagName);
+        (0, _htmlJs.resizeInputElement)(maxTemperatureInputDiv.querySelector("input"));
+        maxTemperatureInputDiv.style.marginLeft = margin25;
+        maxTemperatureInputDiv.style.marginTop = margin1;
+        maxTemperatureInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(maxTemperatureInputDiv);
+        // Add any units
+        addAnyUnits(undefined, maxTemperatureAttributes, modelParametersDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.MaxTemperature).tagName, (0, _modelParametersJs.MaxTemperature).tagName, margin2, margin1, margin1);
+    }
     return modelParametersDiv;
 }
 /**
@@ -6360,11 +6415,17 @@ class Conditions extends (0, _xmlJs.NodeWithNodes) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * A class for measures of grain size.
+ * A class for "me:grainSize".
  */ parcelHelpers.export(exports, "GrainSize", ()=>GrainSize);
 /**
- * A class for measures of grain size.
+ * A class for "me:automaticallySetMaxEne".
+ */ parcelHelpers.export(exports, "AutomaticallySetMaxEne", ()=>AutomaticallySetMaxEne);
+/**
+ * A class for "me:energyAboveTheTopHill".
  */ parcelHelpers.export(exports, "EnergyAboveTheTopHill", ()=>EnergyAboveTheTopHill);
+/**
+ * A class for "me:maxTemperature".
+ */ parcelHelpers.export(exports, "MaxTemperature", ()=>MaxTemperature);
 /**
  * A class for model parameters.
  */ parcelHelpers.export(exports, "ModelParameters", ()=>ModelParameters);
@@ -6376,12 +6437,22 @@ class GrainSize extends (0, _xmlJs.NumberNode) {
      */ this.tagName = "me:grainSize";
     }
     /**
-     * @param {string} value The value.
+     * @param value The value.
      */ constructor(attributes, value){
         super(attributes, GrainSize.tagName, value);
     }
-    toString() {
-        return `GrainSize(${super.toString()})`;
+}
+class AutomaticallySetMaxEne extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:automaticallySetMaxEne";
+    }
+    /**
+     * @para attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, AutomaticallySetMaxEne.tagName, value);
     }
 }
 class EnergyAboveTheTopHill extends (0, _xmlJs.NumberNode) {
@@ -6391,9 +6462,23 @@ class EnergyAboveTheTopHill extends (0, _xmlJs.NumberNode) {
      */ this.tagName = "me:energyAboveTheTopHill";
     }
     /**
-     * @param {string} value The value.
+     * @para attributes The attributes.
+     * @param value The value.
      */ constructor(attributes, value){
         super(attributes, EnergyAboveTheTopHill.tagName, value);
+    }
+}
+class MaxTemperature extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:maxTemperature";
+    }
+    /**
+     * @para attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, MaxTemperature.tagName, value);
     }
 }
 class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
@@ -6402,16 +6487,24 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "me:modelParameters";
     }
-    constructor(attributes, grainSize, energyAboveTheTopHill){
+    constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature){
         super(attributes, ModelParameters.tagName);
         this.index = new Map();
         if (grainSize != undefined) {
             this.index.set(GrainSize.tagName, this.nodes.size);
             this.addNode(grainSize);
         }
+        if (automaticallySetMaxEne != undefined) {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
         if (energyAboveTheTopHill != undefined) {
             this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
             this.addNode(energyAboveTheTopHill);
+        }
+        if (maxTemperature != undefined) {
+            this.index.set(MaxTemperature.tagName, this.nodes.size);
+            this.addNode(maxTemperature);
         }
     }
     /**
@@ -6431,6 +6524,22 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
+     * @returns The automatically set max energy or undefined.
+     */ getAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param automaticallySetMaxEne The automatically set max energy.
+     */ setAutomaticallySetMaxEne(automaticallySetMaxEne) {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i) this.nodes.set(i, automaticallySetMaxEne);
+        else {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
+    }
+    /**
      * @returns The energy above the top hill or undefined.
      */ getEnergyAboveTheTopHill() {
         let i = this.index.get(EnergyAboveTheTopHill.tagName);
@@ -6444,6 +6553,22 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         else {
             this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
             this.addNode(energyAboveTheTopHill);
+        }
+    }
+    /**
+     * @returns The max temperature or undefined.
+     */ getMaxTemperature() {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param maxTemperature The max temperature.
+     */ setMaxTemperature(maxTemperature) {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i) this.nodes.set(i, maxTemperature);
+        else {
+            this.index.set(MaxTemperature.tagName, this.nodes.size);
+            this.addNode(maxTemperature);
         }
     }
 }
