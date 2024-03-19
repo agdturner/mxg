@@ -1316,6 +1316,16 @@ class Control extends xml_1.NodeWithNodes {
         }
     }
     /**
+     * Remove the automaticallySetMaxEne.
+     */
+    removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
+        }
+    }
+    /**
      * @returns The diagramEnergyOffset.
      */
     getDiagramEnergyOffset() {
@@ -1336,6 +1346,16 @@ class Control extends xml_1.NodeWithNodes {
         else {
             this.index.set(DiagramEnergyOffset.tagName, this.nodes.size);
             this.addNode(diagramEnergyOffset);
+        }
+    }
+    /**
+     * Remove the diagramEnergyOffset.
+     */
+    removeDiagramEnergyOffset() {
+        let i = this.index.get(DiagramEnergyOffset.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(DiagramEnergyOffset.tagName);
         }
     }
     /**

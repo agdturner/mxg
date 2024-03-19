@@ -620,6 +620,14 @@ let margin75 = "75px";
 let margin100 = "100px";
 let margin125 = "125px";
 /**
+ * Symbology for the GUI.
+ */ let addString = "add";
+//let addString: string = "+ add";
+let removeString = "remove";
+//let removeString: string = "x remove";
+//let removeString: string = "\u2715 remove";
+let addFromSpreadsheetString = "Add from spreadsheet";
+/**
  * Units for different things.
  */ let unitsEnergy = [
     "kJ/mol",
@@ -630,6 +638,14 @@ let margin125 = "125px";
 let unitsRotConsts = [
     "cm-1",
     "GHz"
+];
+let unitsPressure = [
+    "Torr",
+    "PPCC",
+    "atm",
+    "mbar",
+    "psi",
+    "mols/cc"
 ];
 /**
  * For mesmer.
@@ -2055,15 +2071,71 @@ window.set = setNumberNode;
     // Get the XML "moleculeList" element.
     let xml_conditions = (0, _xmlJs.getSingularElement)(xml, (0, _conditionsJs.Conditions).tagName);
     conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions));
+    // Bath Gases
+    let bathGasesDiv = document.createElement("div");
+    conditionsDiv.appendChild(bathGasesDiv);
+    // Add collapsible div.
+    conditionsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+        content: bathGasesDiv,
+        buttonLabel: (0, _conditionsJs.BathGas).name,
+        buttonFontSize: fontSize2,
+        marginLeft: margin25,
+        marginTop: margin1,
+        marginBottom: margin1,
+        contentDivId: (0, _conditionsJs.BathGas).tagName
+    }));
+    // Add add button.
+    let addBathGasButton = document.createElement("button");
+    addBathGasButton.textContent = addString;
+    addBathGasButton.style.marginLeft = margin50;
+    addBathGasButton.style.marginTop = margin1;
+    addBathGasButton.style.marginBottom = margin1;
+    bathGasesDiv.appendChild(addBathGasButton);
+    addBathGasButton.addEventListener("click", ()=>{
+        let bathGas = new (0, _conditionsJs.BathGas)(new Map(), "");
+        conditions.addBathGas(bathGas);
+        let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
+        let bathGasLabel = document.createElement("label");
+        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+        containerDiv.appendChild(bathGasLabel);
+        // Create a HTMLSelectInput for the BathGas.
+        // Get the ids of all the molecules.
+        let moleculeIDs = new Set(molecules.keys());
+        let selectElement = (0, _htmlJs.getSelectElement)(Array.from(moleculeIDs), (0, _conditionsJs.BathGas).tagName, (0, _conditionsJs.Conditions).tagName + "_" + (0, _conditionsJs.BathGas).tagName);
+        // Set the initial value.
+        selectElement.value = bathGas.value;
+        // Add event listener to selectElement.
+        selectElement.addEventListener("change", (event)=>{
+            if (event.target instanceof HTMLSelectElement) {
+                bathGas.value = event.target.value;
+                console.log("Added " + event.target.value + " as a " + (0, _conditionsJs.BathGas).tagName);
+                (0, _htmlJs.resizeSelectElement)(event.target);
+            }
+        });
+        selectElement.style.marginLeft = margin2;
+        (0, _htmlJs.resizeSelectElement)(selectElement);
+        containerDiv.appendChild(selectElement);
+        // Add a remove button.
+        let removeButton = document.createElement("button");
+        removeButton.textContent = removeString;
+        removeButton.style.marginLeft = margin2;
+        removeButton.style.marginTop = margin1;
+        removeButton.style.marginBottom = margin1;
+        removeButton.addEventListener("click", ()=>{
+            bathGasesDiv.removeChild(containerDiv);
+            conditions.removeBathGas(bathGas);
+        });
+        containerDiv.appendChild(removeButton);
+        bathGasesDiv.appendChild(containerDiv);
+    });
     // Process any "bathGas" elements that are immediate children of xml_conditions.
     let xml_bathGases = Array.from(xml_conditions.children).filter((child)=>child.tagName === (0, _conditionsJs.BathGas).tagName);
-    if (xml_bathGases.length > 0) {
-        if (xml_bathGases.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.BathGas).tagName + " but finding " + xml_bathGases.length + "!");
-        let attributes = (0, _xmlJs.getAttributes)(xml_bathGases[0]);
-        let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGases[0]));
+    if (xml_bathGases.length > 0) for(let i = 0; i < xml_bathGases.length; i++){
+        let attributes = (0, _xmlJs.getAttributes)(xml_bathGases[i]);
+        let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGases[i]));
         let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID);
         console.log("bathGas" + bathGas.toString());
-        conditions.setBathGas(bathGas);
+        conditions.addBathGas(bathGas);
         let containerDiv = document.createElement("div");
         let bathGasLabel = document.createElement("label");
         bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
@@ -2083,31 +2155,197 @@ window.set = setNumberNode;
             }
         });
         (0, _htmlJs.resizeSelectElement)(selectElement);
-        containerDiv.style.marginLeft = margin25;
+        containerDiv.style.marginLeft = margin50;
         containerDiv.style.marginTop = margin1;
         containerDiv.style.marginBottom = margin1;
         containerDiv.appendChild(selectElement);
-        conditionsDiv.appendChild(containerDiv);
+        // Add a remove button.
+        let removeButton = document.createElement("button");
+        removeButton.textContent = removeString;
+        removeButton.style.marginLeft = margin2;
+        removeButton.style.marginTop = margin1;
+        removeButton.style.marginBottom = margin1;
+        removeButton.addEventListener("click", ()=>{
+            bathGasesDiv.removeChild(containerDiv);
+            conditions.removeBathGas(bathGas);
+        });
+        containerDiv.appendChild(removeButton);
+        bathGasesDiv.appendChild(containerDiv);
     }
     // PTs
+    let pTsDiv = document.createElement("div");
+    conditionsDiv.appendChild(pTsDiv);
+    let pTs = new (0, _conditionsJs.PTs)(new Map());
+    // Add collapsible div.
+    conditionsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+        content: pTsDiv,
+        buttonLabel: (0, _conditionsJs.PTs).name,
+        buttonFontSize: fontSize2,
+        marginLeft: margin25,
+        marginTop: margin1,
+        marginBottom: margin1,
+        contentDivId: (0, _conditionsJs.BathGas).tagName
+    }));
+    // Add add button.
+    let addButton = document.createElement("button");
+    addButton.textContent = addString;
+    addButton.style.marginLeft = margin50;
+    addButton.style.marginTop = margin1;
+    addButton.style.marginBottom = margin1;
+    pTsDiv.appendChild(addButton);
+    // Add event listener to the addButton.
+    addButton.addEventListener("click", ()=>{
+        // Create a new PTpair.
+        let pTPairAttributes = new Map();
+        pTPairAttributes.set("units", "Torr");
+        let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
+        let pTPairIndex = pTs.addPTpair(pTPair);
+        let pTPairDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
+        // Add a add bathGas button.
+        let addBathGasButton = document.createElement("button");
+        addBathGasButton.textContent = addString + " " + (0, _conditionsJs.BathGas).tagName;
+        addBathGasButton.style.marginTop = margin1;
+        addBathGasButton.style.marginBottom = margin1;
+        pTPairDiv.appendChild(addBathGasButton);
+        // Add event listener to the addBathGasButton.
+        addBathGasButton.addEventListener("click", ()=>{
+            let bathGasDiv = document.createElement("div");
+            let bathGas = new (0, _conditionsJs.BathGas)(new Map(), "");
+            pTPair.setBathGas(bathGas);
+            let bathGasLabel = document.createElement("label");
+            bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+            bathGasDiv.appendChild(bathGasLabel);
+            pTPairDiv.insertBefore(bathGasDiv, addBathGasButton);
+            // Create a HTMLSelectInput for the BathGas.
+            // Get the ids of all the molecules.
+            let moleculeIDs = new Set(molecules.keys());
+            let selectElement = (0, _htmlJs.getSelectElement)(Array.from(moleculeIDs), (0, _conditionsJs.BathGas).tagName, (0, _conditionsJs.PTs).tagName + "_" + (0, _conditionsJs.BathGas).tagName);
+            // Set the initial value.
+            selectElement.value = bathGas.value;
+            // Add event listener to selectElement.
+            selectElement.addEventListener("change", (event)=>{
+                if (event.target instanceof HTMLSelectElement) {
+                    bathGas.value = event.target.value;
+                    console.log("Added " + event.target.value + " as a " + (0, _conditionsJs.BathGas).tagName);
+                    (0, _htmlJs.resizeSelectElement)(event.target);
+                }
+            });
+            (0, _htmlJs.resizeSelectElement)(selectElement);
+            bathGasDiv.appendChild(selectElement);
+            pTPairDiv.insertBefore(bathGasDiv, addBathGasButton);
+            pTPairDiv.removeChild(addBathGasButton);
+        });
+        // Add the pTPairDiv to the pTsDiv.
+        pTsDiv.insertBefore(pTPairDiv, addButton);
+        // Add P input to the container
+        addPInput(pTPairDiv, pTPair);
+        // Add T input element to the container.
+        addTInput(pTPairDiv, pTPair);
+        addAnyUnits(undefined, pTPairAttributes, pTPairDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
+        // Add a add experiment rate button.
+        let addExperimentRateButton = document.createElement("button");
+        addExperimentRateButton.textContent = addString + " " + (0, _conditionsJs.ExperimentRate).tagName;
+        addExperimentRateButton.style.marginTop = margin1;
+        addExperimentRateButton.style.marginBottom = margin1;
+        //let addExperimentRateDiv: HTMLDivElement = document.createElement("div");
+        //addExperimentRateDiv.appendChild(addExperimentRateButton);
+        // Add event listener to the addExperimentRateButton.
+        addExperimentRateButton.addEventListener("click", ()=>{
+            let experimentRateDiv = document.createElement("div");
+            let experimentRate = new (0, _conditionsJs.ExperimentRate)(new Map(), NaN);
+            pTPair.setExperimentRate(experimentRate);
+            let experimentRateLabel = document.createElement("label");
+            experimentRateLabel.textContent = (0, _conditionsJs.ExperimentRate).tagName + ": ";
+            experimentRateDiv.appendChild(experimentRateLabel);
+            pTPairDiv.insertBefore(experimentRateDiv, addExperimentRateButton);
+            pTPairDiv.removeChild(addExperimentRateButton);
+        });
+        pTPairDiv.appendChild(addExperimentRateButton);
+        /*
+        addExperimentRateButton.addEventListener('click', () => {
+            let experimentRateDiv: HTMLDivElement = document.createElement("div");
+            let experimentRate: ExperimentRate = new ExperimentRate(new Map(), NaN);
+            pTPair.setExperimentRate(experimentRate);
+            let experimentRateLabel: HTMLLabelElement = document.createElement('label');
+            experimentRateLabel.textContent = ExperimentRate.tagName + ": ";
+            experimentRateDiv.appendChild(experimentRateLabel);
+            pTPairDiv.insertBefore(experimentRateDiv, addExperimentRateButton);
+            pTPairDiv.removeChild(addExperimentRateButton);
+        });
+        pTPairDiv.appendChild(addExperimentRateDiv);
+        */ // Add a remove button.
+        let removeButton = document.createElement("button");
+        removeButton.textContent = removeString;
+        removeButton.style.marginLeft = margin2;
+        removeButton.style.marginTop = margin1;
+        removeButton.style.marginBottom = margin1;
+        removeButton.addEventListener("click", ()=>{
+            pTsDiv.removeChild(pTPairDiv);
+            pTs.removePTpair(pTPairIndex);
+            pTPair.removeBathGas();
+        });
+        pTPairDiv.appendChild(removeButton);
+        pTsDiv.appendChild(pTPairDiv);
+    });
+    // Create an add multiple button to add multiple PTPairs.
+    let addMultipleButton = document.createElement("button");
+    addMultipleButton.textContent = addFromSpreadsheetString;
+    addMultipleButton.style.marginLeft = margin5;
+    addMultipleButton.style.marginTop = margin1;
+    addMultipleButton.style.marginBottom = margin1;
+    pTsDiv.appendChild(addMultipleButton);
+    // Add event listener to the addMultipleButton.
+    addMultipleButton.addEventListener("click", ()=>{
+        // Add a new text input for the user to paste the PTPairs.
+        let inputDiv = (0, _htmlJs.createFlexDiv)();
+        let inputElement = document.createElement("input");
+        inputElement.type = "text";
+        inputElement.style.marginLeft = margin50;
+        inputElement.style.marginTop = margin1;
+        inputElement.style.marginBottom = margin1;
+        inputDiv.appendChild(inputElement);
+        pTsDiv.insertBefore(inputDiv, addButton);
+        // Add an event listener to the inputElement.
+        inputElement.addEventListener("change", ()=>{
+            console.log("inputElement.value=" + inputElement.value);
+            console.log("inputElement.value.length=" + inputElement.value.length);
+            if (inputElement.value.length > 0) {
+                let pTPairsArray = inputElement.value.split(" ");
+                console.log("pTPairsArray.length=" + pTPairsArray.length);
+                for(let i = 0; i < pTPairsArray.length; i++){
+                    let pTPairAttributes = new Map();
+                    pTPairAttributes.set("units", "Torr");
+                    let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
+                    let pTPairArray = pTPairsArray[i].split("	");
+                    if (pTPairArray.length == 2) {
+                        let p = parseFloat(pTPairArray[0]);
+                        let t = parseFloat(pTPairArray[1]);
+                        pTPair.setP(p);
+                        pTPair.setT(t);
+                        console.log("pTPair=" + pTPair);
+                    } else console.warn("pTPairArray.length=" + pTPairArray.length);
+                    let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
+                    // Add P input to the container
+                    addPInput(containerDiv, pTPair);
+                    // Add T input element to the container.
+                    addTInput(containerDiv, pTPair);
+                    addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
+                    console.log(addButton); // Check the value of addButton
+                    console.log(pTsDiv); // Check the value of pTsDiv
+                    pTsDiv.insertBefore(containerDiv, addButton);
+                    pTs.addPTpair(pTPair);
+                }
+                //pTs.addPTpairs(pTPairs);
+                pTsDiv.removeChild(inputDiv);
+            }
+        });
+    });
     let xml_PTss = xml_conditions.getElementsByTagName((0, _conditionsJs.PTs).tagName);
     if (xml_PTss.length > 0) {
         if (xml_PTss.length > 1) throw new Error("Expecting 1 " + (0, _conditionsJs.PTs).tagName + " but finding " + xml_PTss.length + "!");
         let pTsDiv = document.createElement("div");
         conditionsDiv.appendChild(pTsDiv);
         let attributes = (0, _xmlJs.getAttributes)(xml_PTss[0]);
-        // Create a new collapsible div for the PTs.
-        let contentDivId = (0, _conditionsJs.PTs).tagName;
-        let collapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
-            content: pTsDiv,
-            buttonLabel: (0, _conditionsJs.PTs).tagName,
-            buttonFontSize: fontSize2,
-            marginLeft: margin25,
-            marginTop: margin1,
-            marginBottom: margin1,
-            contentDivId: contentDivId
-        });
-        conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs = xml_PTss[0].getElementsByTagName((0, _conditionsJs.PTpair).tagName);
         if (xml_PTPairs.length == 0) throw new Error("Expecting 1 or more " + (0, _conditionsJs.PTpair).tagName + " but finding 0!");
         else {
@@ -2171,86 +2409,6 @@ window.set = setNumberNode;
                 // Add the pTPairDiv to the pTsDiv.
                 pTsDiv.appendChild(containerDiv);
             }
-            // Create an add button to add a new PTPair.
-            let addButton = document.createElement("button");
-            addButton.textContent = "Add";
-            addButton.style.marginLeft = margin50;
-            addButton.style.marginTop = margin1;
-            addButton.style.marginBottom = margin1;
-            pTsDiv.appendChild(addButton);
-            // Add event listener to the addButton.
-            addButton.addEventListener("click", ()=>{
-                let pTPairAttributes = new Map();
-                pTPairAttributes.set("units", "Torr");
-                let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
-                // add the new pTPair to the PTs.
-                pTs.addPTpair(pTPair);
-                let pTPairDiv = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin50;
-                pTPairDiv.style.marginTop = margin1;
-                pTPairDiv.style.marginBottom = margin1;
-                pTsDiv.insertBefore(pTPairDiv, addButton);
-                let containerDiv = (0, _htmlJs.createFlexDiv)();
-                // Add P input to the container
-                addPInput(containerDiv, pTPair);
-                // Add T input element to the container.
-                addTInput(containerDiv, pTPair);
-                addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
-                pTPairDiv.appendChild(containerDiv);
-            });
-            // Create an add multiple button to add multiple PTPairs.
-            let addMultipleButton = document.createElement("button");
-            addMultipleButton.textContent = "Add from spreadsheet";
-            addMultipleButton.style.marginLeft = margin50;
-            addMultipleButton.style.marginTop = margin1;
-            addMultipleButton.style.marginBottom = margin1;
-            pTsDiv.appendChild(addMultipleButton);
-            // Add event listener to the addMultipleButton.
-            addMultipleButton.addEventListener("click", ()=>{
-                // Add a new text input for the user to paste the PTPairs.
-                let inputDiv = (0, _htmlJs.createFlexDiv)();
-                let inputElement = document.createElement("input");
-                inputElement.type = "text";
-                inputElement.style.marginLeft = margin50;
-                inputElement.style.marginTop = margin1;
-                inputElement.style.marginBottom = margin1;
-                inputDiv.appendChild(inputElement);
-                pTsDiv.insertBefore(inputDiv, addButton);
-                // Add an event listener to the inputElement.
-                inputElement.addEventListener("change", ()=>{
-                    console.log("inputElement.value=" + inputElement.value);
-                    console.log("inputElement.value.length=" + inputElement.value.length);
-                    if (inputElement.value.length > 0) {
-                        let pTPairsArray = inputElement.value.split(" ");
-                        console.log("pTPairsArray.length=" + pTPairsArray.length);
-                        for(let i = 0; i < pTPairsArray.length; i++){
-                            let pTPairAttributes = new Map();
-                            pTPairAttributes.set("units", "Torr");
-                            let pTPair = new (0, _conditionsJs.PTpair)(pTPairAttributes);
-                            let pTPairArray = pTPairsArray[i].split("	");
-                            if (pTPairArray.length == 2) {
-                                let p = parseFloat(pTPairArray[0]);
-                                let t = parseFloat(pTPairArray[1]);
-                                pTPair.setP(p);
-                                pTPair.setT(t);
-                                console.log("pTPair=" + pTPair);
-                            } else console.warn("pTPairArray.length=" + pTPairArray.length);
-                            let containerDiv = (0, _htmlJs.createFlexDiv)(margin50, margin1, margin1);
-                            // Add P input to the container
-                            addPInput(containerDiv, pTPair);
-                            // Add T input element to the container.
-                            addTInput(containerDiv, pTPair);
-                            addAnyUnits(undefined, pTPairAttributes, containerDiv, (0, _conditionsJs.PTpair).tagName, (0, _conditionsJs.PTpair).tagName, margin2, margin1, margin1);
-                            console.log(addButton); // Check the value of addButton
-                            console.log(pTsDiv); // Check the value of pTsDiv
-                            pTsDiv.insertBefore(containerDiv, addButton);
-                            pTs.addPTpair(pTPair);
-                        }
-                        //pTs.addPTpairs(pTPairs);
-                        pTsDiv.removeChild(inputDiv);
-                    }
-                });
-            });
             conditions.setPTs(pTs);
         }
     }
@@ -6165,14 +6323,44 @@ function getTextWidth(ctx, text, font) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
- * A class for representing a bath gas reaction molecule.
+ * A class for "me:bathGas".
  */ parcelHelpers.export(exports, "BathGas", ()=>BathGas);
 /**
- * A class for representing an experiment rate.
+ * A class for "me:experimentRate".
+ * The attributes may include ref1, ref2, refReaction, and error.
  */ parcelHelpers.export(exports, "ExperimentRate", ()=>ExperimentRate);
 /**
- * A class for representing a Pressure and Temperature pair with optional BathGas and ExperimentRate.
+ * A class for "me:experimentalYield".
+ * The attributes may include:
+ * ref:string
+ * error: number
+ * yieldTime: number.
+ */ parcelHelpers.export(exports, "ExperimentalYield", ()=>ExperimentalYield);
+/**
+ * A class for "me:experimentalEigenvalue".
+ * The attributes may include:
+ * EigenvalueID:string
+ * error: number
+ */ parcelHelpers.export(exports, "ExperimentalEigenvalue", ()=>ExperimentalEigenvalue);
+/**
+ * A class for "me:excessReactantConc".
+ * The attributes may include:
+ * percent: string ("true" or "false")
+ */ parcelHelpers.export(exports, "ExcessReactantConc", ()=>ExcessReactantConc);
+/**
+ * A class for representing a Pressure and Temperature pair with optional additional things: BathGas and ExperimentRate.
  * Can there be multiple BathGases and ExperimentRates?
+ * The attributes include:
+ * units: string
+ * P: number
+ * T: number
+ * And optionally:
+ * percentExcessReactantConc: number
+ * excessReactantConc: string
+ * precision: number
+ * bathGas: string
+ * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
+ * 
  */ parcelHelpers.export(exports, "PTpair", ()=>PTpair);
 /**
  * A class for representing a set of Pressure and Temperature pairs.
@@ -6207,6 +6395,39 @@ class ExperimentRate extends (0, _xmlJs.NumberNode) {
         super(attributes, ExperimentRate.tagName, value);
     }
     /**
+     * @returns The ref1 attribute or undefined if there is no ref1 attribute.
+     */ getRef1() {
+        if (this.attributes != undefined) return this.attributes.get("ref1");
+    }
+    /**
+     * Set the ref1 attribute.
+     * @param ref1 The ref1.
+     */ setRef1(ref1) {
+        if (this.attributes != undefined) this.attributes.set("ref1", ref1);
+    }
+    /**
+     * @returns The ref2 attribute or undefined if there is no ref2 attribute.
+     */ getRef2() {
+        if (this.attributes != undefined) return this.attributes.get("ref2");
+    }
+    /**
+     * Set the ref2 attribute.
+     * @param ref2 The ref2.
+     */ setRef2(ref2) {
+        if (this.attributes != undefined) this.attributes.set("ref2", ref2);
+    }
+    /**
+     * @returns The refReaction attribute or undefined if there is no refReaction attribute.
+     */ getRefReaction() {
+        if (this.attributes != undefined) return this.attributes.get("refReaction");
+    }
+    /**
+     * Set the refReaction attribute.
+     * @param refReaction The refReaction.
+     */ setRefReaction(refReaction) {
+        if (this.attributes != undefined) this.attributes.set("refReaction", refReaction);
+    }
+    /**
      * @returns The error attribute or undefined if there is no error attribute.
      */ getError() {
         if (this.attributes != undefined) {
@@ -6221,26 +6442,160 @@ class ExperimentRate extends (0, _xmlJs.NumberNode) {
         if (this.attributes != undefined) this.attributes.set("error", error.toString());
     }
 }
+class ExperimentalYield extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:experimentalYield";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExperimentalYield.tagName, value);
+    }
+    /**
+     * @returns The ref attribute or undefined if there is no ref attribute.
+     */ getRef() {
+        if (this.attributes != undefined) return this.attributes.get("ref");
+    }
+    /**
+     * Set the ref attribute.
+     * @param ref The ref.
+     */ setRef(ref) {
+        if (this.attributes != undefined) this.attributes.set("ref", ref);
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) return parseFloat(error);
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+    }
+    /**
+     * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
+     */ getYieldTime() {
+        if (this.attributes != undefined) {
+            let yieldTime = this.attributes.get("yieldTime");
+            if (yieldTime) return parseFloat(yieldTime);
+        }
+    }
+    /**
+     * Set the yieldTime attribute.
+     * @param yieldTime The yieldTime.
+     */ setYieldTime(yieldTime) {
+        if (this.attributes != undefined) this.attributes.set("yieldTime", yieldTime.toString());
+    }
+}
+class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+    * The tag name.
+    */ this.tagName = "me:experimentalEigenvalue";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExperimentalEigenvalue.tagName, value);
+    }
+    /**
+     * @returns The EigenvalueID attribute or undefined if there is no EigenvalueID attribute.
+     */ getEigenvalueID() {
+        if (this.attributes != undefined) return this.attributes.get("EigenvalueID");
+    }
+    /**
+     * Set the EigenvalueID attribute.
+     * @param EigenvalueID The EigenvalueID.
+     */ setEigenvalueID(EigenvalueID) {
+        if (this.attributes != undefined) this.attributes.set("EigenvalueID", EigenvalueID);
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) return parseFloat(error);
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+    }
+}
+class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:excessReactantConc";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExcessReactantConc.tagName, value);
+    }
+    /**
+     * @returns The percent attribute or undefined if there is no percent attribute.
+     */ getPercent() {
+        if (this.attributes != undefined) return this.attributes.get("percent");
+    }
+    /**
+     * Set the percent attribute.
+     * @param percent The percent.
+     */ setPercent(percent) {
+        if (this.attributes != undefined) this.attributes.set("percent", percent);
+    }
+}
 class PTpair extends (0, _xmlJs.NodeWithNodes) {
     static{
         /**
      * The tag name.
      */ this.tagName = "me:PTpair";
     }
+    static{
+        /**
+     * The precision attribute potential values.
+     */ this.precisions = [
+            "d",
+            "dd",
+            "qd",
+            "double",
+            "double-double",
+            "quad-double"
+        ];
+    }
     /**
      * @param attributes The attributes.
      * @param bathGas The bath gas.
      * @param experimentRate The experiment rate.
-     */ constructor(attributes, bathGas, experimentRate){
+     */ constructor(attributes, bathGas, experimentRate, excessReactantConc, experimentalEigenvalue){
         super(attributes, PTpair.tagName);
         this.index = new Map();
-        if (bathGas) {
+        if (bathGas != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
             this.addNode(bathGas);
         }
-        if (experimentRate) {
+        if (experimentRate != undefined) {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
             this.addNode(experimentRate);
+        }
+        if (excessReactantConc != undefined) {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        }
+        if (experimentalEigenvalue != undefined) {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
         }
     }
     /**
@@ -6272,6 +6627,17 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
         if (this.attributes != undefined) this.attributes.set("T", t.toString());
     }
     /**
+     * @returns The precision attribute or undefined if there is no precision attribute.
+     */ getPrecision() {
+        if (this.attributes != undefined) return this.attributes.get("precision");
+    }
+    /**
+     * Set the precision attribute.
+     * @param precision The precision.
+     */ setPrecision(precision) {
+        if (this.attributes != undefined) this.attributes.set("precision", precision);
+    }
+    /**
      * @returns The bath gas.
      */ getBathGas() {
         let i = this.index.get(BathGas.tagName);
@@ -6286,6 +6652,15 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
         else {
             this.index.set(BathGas.tagName, this.nodes.size);
             this.addNode(bathGas);
+        }
+    }
+    /**
+     * Remove the bath gas.
+     */ removeBathGas() {
+        let i = this.index.get(BathGas.tagName);
+        if (i) {
+            this.nodes.delete(i);
+            this.index.delete(BathGas.tagName);
         }
     }
     /**
@@ -6305,6 +6680,15 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
             this.addNode(experimentRate);
         }
     }
+    /**
+     * Remove the experiment rate.
+     */ removeExperimentRate() {
+        let i = this.index.get(ExperimentRate.tagName);
+        if (i) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentRate.tagName);
+        }
+    }
 }
 class PTs extends (0, _xmlJs.NodeWithNodes) {
     static{
@@ -6315,37 +6699,46 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param attributes The attributes.
      * @param pTs The PTs.
-     */ constructor(attributes, pTs){
+     */ constructor(attributes, pTpairs){
         super(attributes, PTs.tagName);
-        if (pTs) pTs.forEach((pTpair)=>{
-            this.addNode(pTpair);
-        });
+        if (pTpairs != undefined) {
+            pTpairs.forEach((pTpair)=>{
+                this.addNode(pTpair);
+            });
+            this.pTpairs = pTpairs;
+        } else this.pTpairs = [];
     }
     /**
      * @param i The index of the PTpair to return. 
      * @returns The PTpair at the given index or undefined if the index is out of range.
      */ getPTpair(i) {
-        return this.nodes.get(i);
+        return this.pTpairs[i];
     }
     /**
      * Set the PT at the given index.
      * @param i The index.
      * @returns The PT pairs.
-     */ setPTpair(i, pT) {
-        this.nodes.set(i, pT);
+     */ setPTpair(i, pTpair) {
+        this.nodes.set(i, pTpair);
+        this.pTpairs[i] = pTpair;
+    }
+    /**
+     * Add a PTpair.
+     * @param pTPair The PTpair to add.
+     * @returns The index of this.pTPairs where pTPair is added.
+     */ addPTpair(pTpair) {
+        this.addNode(pTpair);
+        this.pTpairs.push(pTpair);
+        return this.nodes.size - 1;
     }
     /**
      * Add a PT.
      * @param pTPair The PT to add.
-     */ addPTpair(pT) {
-        this.addNode(pT);
-    }
-    /**
-     * Add a PT.
-     * @param pTPair The PT to add.
-     */ addPTpairs(pTs) {
-        pTs.forEach((pT)=>{
-            this.addNode(pT);
+     */ setPTpairs(pTpairs) {
+        this.nodes.clear();
+        pTpairs.forEach((pTpair)=>{
+            this.addNode(pTpair);
+            this.pTpairs.push(pTpair);
         });
     }
     /**
@@ -6353,6 +6746,7 @@ class PTs extends (0, _xmlJs.NodeWithNodes) {
      * @param i The index.
      */ removePTpair(i) {
         this.nodes.delete(i);
+        this.pTpairs.splice(i, 1);
     }
 }
 class Conditions extends (0, _xmlJs.NodeWithNodes) {
@@ -6363,35 +6757,47 @@ class Conditions extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     * @param bathGas The bath gas.
+     * @param bathGases The bath gases.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
-     */ constructor(attributes, bathGas, pTs){
+     */ constructor(attributes, bathGases, pTs){
         super(attributes, Conditions.tagName);
         this.index = new Map();
-        if (bathGas) {
+        this.bathGasesIndex = new Map();
+        this.bathGases = new Set();
+        if (bathGases != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
-            this.addNode(bathGas);
+            bathGases.forEach((bathGas)=>{
+                this.bathGasesIndex.set(bathGas.value, this.nodes.size);
+                this.addNode(bathGas);
+                this.bathGases.add(bathGas);
+            });
         }
-        if (pTs) {
+        if (pTs != undefined) {
             this.index.set(PTs.tagName, this.nodes.size);
             this.addNode(pTs);
         }
     }
     /**
-     * @returns The bath gas.
-     */ getBathGas() {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) return this.nodes.get(i);
+     * @returns The bath gases.
+     */ getBathGases() {
+        return this.bathGases;
     }
     /**
-     * @param bathGas The bath gas.
-     */ setBathGas(bathGas) {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) this.nodes.set(i, bathGas);
-        else {
-            this.index.set(BathGas.tagName, this.nodes.size);
+     * @param bathGas The bath gas to add.
+     */ addBathGas(bathGas) {
+        if (!this.bathGases.has(bathGas)) {
+            this.bathGases.add(bathGas);
+            this.bathGasesIndex.set(bathGas.value, this.nodes.size);
             this.addNode(bathGas);
         }
+    }
+    /**
+     * @param bathGas The bath gas to remove.
+     */ removeBathGas(bathGas) {
+        if (this.bathGases.has(bathGas)) {
+            this.bathGases.delete(bathGas);
+            this.nodes.delete(this.bathGasesIndex.get(bathGas.value));
+        } else console.warn("Conditions.removeBathGas: bathGas not found to remove.");
     }
     /**
      * @returns The Pressure and Temperature pairs.

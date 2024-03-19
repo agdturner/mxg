@@ -152,6 +152,16 @@ class PTpair extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Remove the bath gas.
+     */
+    removeBathGas() {
+        let i = this.index.get(BathGas.tagName);
+        if (i) {
+            this.nodes.delete(i);
+            this.index.delete(BathGas.tagName);
+        }
+    }
+    /**
      * @returns The experiment rate.
      */
     getExperimentRate() {
@@ -176,6 +186,16 @@ class PTpair extends xml_js_1.NodeWithNodes {
             this.addNode(experimentRate);
         }
     }
+    /**
+     * Remove the experiment rate.
+     */
+    removeExperimentRate() {
+        let i = this.index.get(ExperimentRate.tagName);
+        if (i) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentRate.tagName);
+        }
+    }
 }
 exports.PTpair = PTpair;
 /**
@@ -187,15 +207,23 @@ class PTs extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:PTs";
     /**
+     * The Pressure and Temperature pairs.
+     */
+    pTpairs;
+    /**
      * @param attributes The attributes.
      * @param pTs The PTs.
      */
-    constructor(attributes, pTs) {
+    constructor(attributes, pTpairs) {
         super(attributes, PTs.tagName);
-        if (pTs) {
-            pTs.forEach((pTpair) => {
+        if (pTpairs != undefined) {
+            pTpairs.forEach((pTpair) => {
                 this.addNode(pTpair);
             });
+            this.pTpairs = pTpairs;
+        }
+        else {
+            this.pTpairs = [];
         }
     }
     /**
@@ -203,30 +231,36 @@ class PTs extends xml_js_1.NodeWithNodes {
      * @returns The PTpair at the given index or undefined if the index is out of range.
      */
     getPTpair(i) {
-        return this.nodes.get(i);
+        return this.pTpairs[i];
     }
     /**
      * Set the PT at the given index.
      * @param i The index.
      * @returns The PT pairs.
      */
-    setPTpair(i, pT) {
-        this.nodes.set(i, pT);
+    setPTpair(i, pTpair) {
+        this.nodes.set(i, pTpair);
+        this.pTpairs[i] = pTpair;
+    }
+    /**
+     * Add a PTpair.
+     * @param pTPair The PTpair to add.
+     * @returns The index of this.pTPairs where pTPair is added.
+     */
+    addPTpair(pTpair) {
+        this.addNode(pTpair);
+        this.pTpairs.push(pTpair);
+        return this.nodes.size - 1;
     }
     /**
      * Add a PT.
      * @param pTPair The PT to add.
      */
-    addPTpair(pT) {
-        this.addNode(pT);
-    }
-    /**
-     * Add a PT.
-     * @param pTPair The PT to add.
-     */
-    addPTpairs(pTs) {
-        pTs.forEach((pT) => {
-            this.addNode(pT);
+    setPTpairs(pTpairs) {
+        this.nodes.clear();
+        pTpairs.forEach((pTpair) => {
+            this.addNode(pTpair);
+            this.pTpairs.push(pTpair);
         });
     }
     /**
@@ -235,6 +269,7 @@ class PTs extends xml_js_1.NodeWithNodes {
      */
     removePTpair(i) {
         this.nodes.delete(i);
+        this.pTpairs.splice(i, 1);
     }
 }
 exports.PTs = PTs;
@@ -251,42 +286,62 @@ class Conditions extends xml_js_1.NodeWithNodes {
      */
     index;
     /**
+     * The bath gases index. The keys are the molecule IDs and the values are the node indexes.
+     */
+    bathGasesIndex;
+    /**
+     * The bath gases.
+     */
+    bathGases;
+    /**
      * @param attributes The attributes.
-     * @param bathGas The bath gas.
+     * @param bathGases The bath gases.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
-    constructor(attributes, bathGas, pTs) {
+    constructor(attributes, bathGases, pTs) {
         super(attributes, Conditions.tagName);
         this.index = new Map();
-        if (bathGas) {
+        this.bathGasesIndex = new Map();
+        this.bathGases = new Set();
+        if (bathGases != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
-            this.addNode(bathGas);
+            bathGases.forEach((bathGas) => {
+                this.bathGasesIndex.set(bathGas.value, this.nodes.size);
+                this.addNode(bathGas);
+                this.bathGases.add(bathGas);
+            });
         }
-        if (pTs) {
+        if (pTs != undefined) {
             this.index.set(PTs.tagName, this.nodes.size);
             this.addNode(pTs);
         }
     }
     /**
-     * @returns The bath gas.
+     * @returns The bath gases.
      */
-    getBathGas() {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i);
+    getBathGases() {
+        return this.bathGases;
+    }
+    /**
+     * @param bathGas The bath gas to add.
+     */
+    addBathGas(bathGas) {
+        if (!this.bathGases.has(bathGas)) {
+            this.bathGases.add(bathGas);
+            this.bathGasesIndex.set(bathGas.value, this.nodes.size);
+            this.addNode(bathGas);
         }
     }
     /**
-     * @param bathGas The bath gas.
+     * @param bathGas The bath gas to remove.
      */
-    setBathGas(bathGas) {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, bathGas);
+    removeBathGas(bathGas) {
+        if (this.bathGases.has(bathGas)) {
+            this.bathGases.delete(bathGas);
+            this.nodes.delete(this.bathGasesIndex.get(bathGas.value));
         }
         else {
-            this.index.set(BathGas.tagName, this.nodes.size);
-            this.addNode(bathGas);
+            console.warn("Conditions.removeBathGas: bathGas not found to remove.");
         }
     }
     /**

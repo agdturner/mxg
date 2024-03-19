@@ -33,10 +33,20 @@ let margin75 = "75px";
 let margin100 = "100px";
 let margin125 = "125px";
 /**
+ * Symbology for the GUI.
+ */
+let addString = "add";
+//let addString: string = "+ add";
+let removeString = "remove";
+//let removeString: string = "x remove";
+//let removeString: string = "\u2715 remove";
+let addFromSpreadsheetString = "Add from spreadsheet";
+/**
  * Units for different things.
  */
 let unitsEnergy = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
 let unitsRotConsts = ["cm-1", "GHz"];
+let unitsPressure = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
 /**
  * For mesmer.
  */
@@ -1636,18 +1646,30 @@ function processConditions(xml) {
     // Get the XML "moleculeList" element.
     let xml_conditions = (0, xml_js_1.getSingularElement)(xml, conditions_js_1.Conditions.tagName);
     conditions = new conditions_js_1.Conditions((0, xml_js_1.getAttributes)(xml_conditions));
-    // Process any "bathGas" elements that are immediate children of xml_conditions.
-    let xml_bathGases = Array.from(xml_conditions.children).filter(child => child.tagName === conditions_js_1.BathGas.tagName);
-    if (xml_bathGases.length > 0) {
-        if (xml_bathGases.length > 1) {
-            throw new Error("Expecting 1 " + conditions_js_1.BathGas.tagName + " but finding " + xml_bathGases.length + "!");
-        }
-        let attributes = (0, xml_js_1.getAttributes)(xml_bathGases[0]);
-        let moleculeID = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_bathGases[0]));
-        let bathGas = new conditions_js_1.BathGas(attributes, moleculeID);
-        console.log("bathGas" + bathGas.toString());
-        conditions.setBathGas(bathGas);
-        let containerDiv = document.createElement("div");
+    // Bath Gases
+    let bathGasesDiv = document.createElement("div");
+    conditionsDiv.appendChild(bathGasesDiv);
+    // Add collapsible div.
+    conditionsDiv.appendChild((0, html_js_1.getCollapsibleDiv)({
+        content: bathGasesDiv,
+        buttonLabel: conditions_js_1.BathGas.name,
+        buttonFontSize: fontSize2,
+        marginLeft: margin25,
+        marginTop: margin1,
+        marginBottom: margin1,
+        contentDivId: conditions_js_1.BathGas.tagName
+    }));
+    // Add add button.
+    let addBathGasButton = document.createElement('button');
+    addBathGasButton.textContent = addString;
+    addBathGasButton.style.marginLeft = margin50;
+    addBathGasButton.style.marginTop = margin1;
+    addBathGasButton.style.marginBottom = margin1;
+    bathGasesDiv.appendChild(addBathGasButton);
+    addBathGasButton.addEventListener('click', () => {
+        let bathGas = new conditions_js_1.BathGas(new Map(), "");
+        conditions.addBathGas(bathGas);
+        let containerDiv = (0, html_js_1.createFlexDiv)(margin50, margin1, margin1);
         let bathGasLabel = document.createElement('label');
         bathGasLabel.textContent = conditions_js_1.BathGas.tagName + ": ";
         containerDiv.appendChild(bathGasLabel);
@@ -1661,18 +1683,244 @@ function processConditions(xml) {
         selectElement.addEventListener('change', (event) => {
             if (event.target instanceof HTMLSelectElement) {
                 bathGas.value = event.target.value;
-                console.log("Set " + conditions_js_1.PTpair.tagName + "_" + conditions_js_1.BathGas.tagName + " to " + event.target.value);
+                console.log("Added " + event.target.value + " as a " + conditions_js_1.BathGas.tagName);
                 (0, html_js_1.resizeSelectElement)(event.target);
             }
         });
+        selectElement.style.marginLeft = margin2;
         (0, html_js_1.resizeSelectElement)(selectElement);
-        containerDiv.style.marginLeft = margin25;
-        containerDiv.style.marginTop = margin1;
-        containerDiv.style.marginBottom = margin1;
         containerDiv.appendChild(selectElement);
-        conditionsDiv.appendChild(containerDiv);
+        // Add a remove button.
+        let removeButton = document.createElement('button');
+        removeButton.textContent = removeString;
+        removeButton.style.marginLeft = margin2;
+        removeButton.style.marginTop = margin1;
+        removeButton.style.marginBottom = margin1;
+        removeButton.addEventListener('click', () => {
+            bathGasesDiv.removeChild(containerDiv);
+            conditions.removeBathGas(bathGas);
+        });
+        containerDiv.appendChild(removeButton);
+        bathGasesDiv.appendChild(containerDiv);
+    });
+    // Process any "bathGas" elements that are immediate children of xml_conditions.
+    let xml_bathGases = Array.from(xml_conditions.children).filter(child => child.tagName === conditions_js_1.BathGas.tagName);
+    if (xml_bathGases.length > 0) {
+        for (let i = 0; i < xml_bathGases.length; i++) {
+            let attributes = (0, xml_js_1.getAttributes)(xml_bathGases[i]);
+            let moleculeID = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_bathGases[i]));
+            let bathGas = new conditions_js_1.BathGas(attributes, moleculeID);
+            console.log("bathGas" + bathGas.toString());
+            conditions.addBathGas(bathGas);
+            let containerDiv = document.createElement("div");
+            let bathGasLabel = document.createElement('label');
+            bathGasLabel.textContent = conditions_js_1.BathGas.tagName + ": ";
+            containerDiv.appendChild(bathGasLabel);
+            // Create a HTMLSelectInput for the BathGas.
+            // Get the ids of all the molecules.
+            let moleculeIDs = new Set(molecules.keys());
+            let selectElement = (0, html_js_1.getSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.Conditions.tagName + "_" + conditions_js_1.BathGas.tagName);
+            // Set the initial value.
+            selectElement.value = bathGas.value;
+            // Add event listener to selectElement.
+            selectElement.addEventListener('change', (event) => {
+                if (event.target instanceof HTMLSelectElement) {
+                    bathGas.value = event.target.value;
+                    console.log("Set " + conditions_js_1.PTpair.tagName + "_" + conditions_js_1.BathGas.tagName + " to " + event.target.value);
+                    (0, html_js_1.resizeSelectElement)(event.target);
+                }
+            });
+            (0, html_js_1.resizeSelectElement)(selectElement);
+            containerDiv.style.marginLeft = margin50;
+            containerDiv.style.marginTop = margin1;
+            containerDiv.style.marginBottom = margin1;
+            containerDiv.appendChild(selectElement);
+            // Add a remove button.
+            let removeButton = document.createElement('button');
+            removeButton.textContent = removeString;
+            removeButton.style.marginLeft = margin2;
+            removeButton.style.marginTop = margin1;
+            removeButton.style.marginBottom = margin1;
+            removeButton.addEventListener('click', () => {
+                bathGasesDiv.removeChild(containerDiv);
+                conditions.removeBathGas(bathGas);
+            });
+            containerDiv.appendChild(removeButton);
+            bathGasesDiv.appendChild(containerDiv);
+        }
     }
     // PTs
+    let pTsDiv = document.createElement("div");
+    conditionsDiv.appendChild(pTsDiv);
+    let pTs = new conditions_js_1.PTs(new Map());
+    // Add collapsible div.
+    conditionsDiv.appendChild((0, html_js_1.getCollapsibleDiv)({
+        content: pTsDiv,
+        buttonLabel: conditions_js_1.PTs.name,
+        buttonFontSize: fontSize2,
+        marginLeft: margin25,
+        marginTop: margin1,
+        marginBottom: margin1,
+        contentDivId: conditions_js_1.BathGas.tagName
+    }));
+    // Add add button.
+    let addButton = document.createElement("button");
+    addButton.textContent = addString;
+    addButton.style.marginLeft = margin50;
+    addButton.style.marginTop = margin1;
+    addButton.style.marginBottom = margin1;
+    pTsDiv.appendChild(addButton);
+    // Add event listener to the addButton.
+    addButton.addEventListener('click', () => {
+        // Create a new PTpair.
+        let pTPairAttributes = new Map();
+        pTPairAttributes.set("units", "Torr");
+        let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
+        let pTPairIndex = pTs.addPTpair(pTPair);
+        let pTPairDiv = (0, html_js_1.createFlexDiv)(margin50, margin1, margin1);
+        // Add a add bathGas button.
+        let addBathGasButton = document.createElement('button');
+        addBathGasButton.textContent = addString + " " + conditions_js_1.BathGas.tagName;
+        addBathGasButton.style.marginTop = margin1;
+        addBathGasButton.style.marginBottom = margin1;
+        pTPairDiv.appendChild(addBathGasButton);
+        // Add event listener to the addBathGasButton.
+        addBathGasButton.addEventListener('click', () => {
+            let bathGasDiv = document.createElement("div");
+            let bathGas = new conditions_js_1.BathGas(new Map(), "");
+            pTPair.setBathGas(bathGas);
+            let bathGasLabel = document.createElement('label');
+            bathGasLabel.textContent = conditions_js_1.BathGas.tagName + ": ";
+            bathGasDiv.appendChild(bathGasLabel);
+            pTPairDiv.insertBefore(bathGasDiv, addBathGasButton);
+            // Create a HTMLSelectInput for the BathGas.
+            // Get the ids of all the molecules.
+            let moleculeIDs = new Set(molecules.keys());
+            let selectElement = (0, html_js_1.getSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.PTs.tagName + "_" + conditions_js_1.BathGas.tagName);
+            // Set the initial value.
+            selectElement.value = bathGas.value;
+            // Add event listener to selectElement.
+            selectElement.addEventListener('change', (event) => {
+                if (event.target instanceof HTMLSelectElement) {
+                    bathGas.value = event.target.value;
+                    console.log("Added " + event.target.value + " as a " + conditions_js_1.BathGas.tagName);
+                    (0, html_js_1.resizeSelectElement)(event.target);
+                }
+            });
+            (0, html_js_1.resizeSelectElement)(selectElement);
+            bathGasDiv.appendChild(selectElement);
+            pTPairDiv.insertBefore(bathGasDiv, addBathGasButton);
+            pTPairDiv.removeChild(addBathGasButton);
+        });
+        // Add the pTPairDiv to the pTsDiv.
+        pTsDiv.insertBefore(pTPairDiv, addButton);
+        // Add P input to the container
+        addPInput(pTPairDiv, pTPair);
+        // Add T input element to the container.
+        addTInput(pTPairDiv, pTPair);
+        addAnyUnits(undefined, pTPairAttributes, pTPairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, margin2, margin1, margin1);
+        // Add a add experiment rate button.
+        let addExperimentRateButton = document.createElement('button');
+        addExperimentRateButton.textContent = addString + " " + conditions_js_1.ExperimentRate.tagName;
+        addExperimentRateButton.style.marginTop = margin1;
+        addExperimentRateButton.style.marginBottom = margin1;
+        //let addExperimentRateDiv: HTMLDivElement = document.createElement("div");
+        //addExperimentRateDiv.appendChild(addExperimentRateButton);
+        // Add event listener to the addExperimentRateButton.
+        addExperimentRateButton.addEventListener('click', () => {
+            let experimentRateDiv = document.createElement("div");
+            let experimentRate = new conditions_js_1.ExperimentRate(new Map(), NaN);
+            pTPair.setExperimentRate(experimentRate);
+            let experimentRateLabel = document.createElement('label');
+            experimentRateLabel.textContent = conditions_js_1.ExperimentRate.tagName + ": ";
+            experimentRateDiv.appendChild(experimentRateLabel);
+            pTPairDiv.insertBefore(experimentRateDiv, addExperimentRateButton);
+            pTPairDiv.removeChild(addExperimentRateButton);
+        });
+        pTPairDiv.appendChild(addExperimentRateButton);
+        /*
+        addExperimentRateButton.addEventListener('click', () => {
+            let experimentRateDiv: HTMLDivElement = document.createElement("div");
+            let experimentRate: ExperimentRate = new ExperimentRate(new Map(), NaN);
+            pTPair.setExperimentRate(experimentRate);
+            let experimentRateLabel: HTMLLabelElement = document.createElement('label');
+            experimentRateLabel.textContent = ExperimentRate.tagName + ": ";
+            experimentRateDiv.appendChild(experimentRateLabel);
+            pTPairDiv.insertBefore(experimentRateDiv, addExperimentRateButton);
+            pTPairDiv.removeChild(addExperimentRateButton);
+        });
+        pTPairDiv.appendChild(addExperimentRateDiv);
+        */
+        // Add a remove button.
+        let removeButton = document.createElement('button');
+        removeButton.textContent = removeString;
+        removeButton.style.marginLeft = margin2;
+        removeButton.style.marginTop = margin1;
+        removeButton.style.marginBottom = margin1;
+        removeButton.addEventListener('click', () => {
+            pTsDiv.removeChild(pTPairDiv);
+            pTs.removePTpair(pTPairIndex);
+            pTPair.removeBathGas();
+        });
+        pTPairDiv.appendChild(removeButton);
+        pTsDiv.appendChild(pTPairDiv);
+    });
+    // Create an add multiple button to add multiple PTPairs.
+    let addMultipleButton = document.createElement("button");
+    addMultipleButton.textContent = addFromSpreadsheetString;
+    addMultipleButton.style.marginLeft = margin5;
+    addMultipleButton.style.marginTop = margin1;
+    addMultipleButton.style.marginBottom = margin1;
+    pTsDiv.appendChild(addMultipleButton);
+    // Add event listener to the addMultipleButton.
+    addMultipleButton.addEventListener('click', () => {
+        // Add a new text input for the user to paste the PTPairs.
+        let inputDiv = (0, html_js_1.createFlexDiv)();
+        let inputElement = document.createElement("input");
+        inputElement.type = "text";
+        inputElement.style.marginLeft = margin50;
+        inputElement.style.marginTop = margin1;
+        inputElement.style.marginBottom = margin1;
+        inputDiv.appendChild(inputElement);
+        pTsDiv.insertBefore(inputDiv, addButton);
+        // Add an event listener to the inputElement.
+        inputElement.addEventListener('change', () => {
+            console.log("inputElement.value=" + inputElement.value);
+            console.log("inputElement.value.length=" + inputElement.value.length);
+            if (inputElement.value.length > 0) {
+                let pTPairsArray = inputElement.value.split(" ");
+                console.log("pTPairsArray.length=" + pTPairsArray.length);
+                for (let i = 0; i < pTPairsArray.length; i++) {
+                    let pTPairAttributes = new Map();
+                    pTPairAttributes.set("units", "Torr");
+                    let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
+                    let pTPairArray = pTPairsArray[i].split("\t");
+                    if (pTPairArray.length == 2) {
+                        let p = parseFloat(pTPairArray[0]);
+                        let t = parseFloat(pTPairArray[1]);
+                        pTPair.setP(p);
+                        pTPair.setT(t);
+                        console.log("pTPair=" + pTPair);
+                    }
+                    else {
+                        console.warn("pTPairArray.length=" + pTPairArray.length);
+                    }
+                    let containerDiv = (0, html_js_1.createFlexDiv)(margin50, margin1, margin1);
+                    // Add P input to the container
+                    addPInput(containerDiv, pTPair);
+                    // Add T input element to the container.
+                    addTInput(containerDiv, pTPair);
+                    addAnyUnits(undefined, pTPairAttributes, containerDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, margin2, margin1, margin1);
+                    console.log(addButton); // Check the value of addButton
+                    console.log(pTsDiv); // Check the value of pTsDiv
+                    pTsDiv.insertBefore(containerDiv, addButton);
+                    pTs.addPTpair(pTPair);
+                }
+                //pTs.addPTpairs(pTPairs);
+                pTsDiv.removeChild(inputDiv);
+            }
+        });
+    });
     let xml_PTss = xml_conditions.getElementsByTagName(conditions_js_1.PTs.tagName);
     if (xml_PTss.length > 0) {
         if (xml_PTss.length > 1) {
@@ -1681,18 +1929,6 @@ function processConditions(xml) {
         let pTsDiv = document.createElement("div");
         conditionsDiv.appendChild(pTsDiv);
         let attributes = (0, xml_js_1.getAttributes)(xml_PTss[0]);
-        // Create a new collapsible div for the PTs.
-        let contentDivId = conditions_js_1.PTs.tagName;
-        let collapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
-            content: pTsDiv,
-            buttonLabel: conditions_js_1.PTs.tagName,
-            buttonFontSize: fontSize2,
-            marginLeft: margin25,
-            marginTop: margin1,
-            marginBottom: margin1,
-            contentDivId: contentDivId
-        });
-        conditionsDiv.appendChild(collapsibleDiv);
         let xml_PTPairs = xml_PTss[0].getElementsByTagName(conditions_js_1.PTpair.tagName);
         if (xml_PTPairs.length == 0) {
             throw new Error("Expecting 1 or more " + conditions_js_1.PTpair.tagName + " but finding 0!");
@@ -1764,89 +2000,6 @@ function processConditions(xml) {
                 // Add the pTPairDiv to the pTsDiv.
                 pTsDiv.appendChild(containerDiv);
             }
-            // Create an add button to add a new PTPair.
-            let addButton = document.createElement("button");
-            addButton.textContent = "Add";
-            addButton.style.marginLeft = margin50;
-            addButton.style.marginTop = margin1;
-            addButton.style.marginBottom = margin1;
-            pTsDiv.appendChild(addButton);
-            // Add event listener to the addButton.
-            addButton.addEventListener('click', () => {
-                let pTPairAttributes = new Map();
-                pTPairAttributes.set("units", "Torr");
-                let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
-                // add the new pTPair to the PTs.
-                pTs.addPTpair(pTPair);
-                let pTPairDiv = document.createElement("div");
-                pTPairDiv.style.marginLeft = margin50;
-                pTPairDiv.style.marginTop = margin1;
-                pTPairDiv.style.marginBottom = margin1;
-                pTsDiv.insertBefore(pTPairDiv, addButton);
-                let containerDiv = (0, html_js_1.createFlexDiv)();
-                // Add P input to the container
-                addPInput(containerDiv, pTPair);
-                // Add T input element to the container.
-                addTInput(containerDiv, pTPair);
-                addAnyUnits(undefined, pTPairAttributes, containerDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, margin2, margin1, margin1);
-                pTPairDiv.appendChild(containerDiv);
-            });
-            // Create an add multiple button to add multiple PTPairs.
-            let addMultipleButton = document.createElement("button");
-            addMultipleButton.textContent = "Add from spreadsheet";
-            addMultipleButton.style.marginLeft = margin50;
-            addMultipleButton.style.marginTop = margin1;
-            addMultipleButton.style.marginBottom = margin1;
-            pTsDiv.appendChild(addMultipleButton);
-            // Add event listener to the addMultipleButton.
-            addMultipleButton.addEventListener('click', () => {
-                // Add a new text input for the user to paste the PTPairs.
-                let inputDiv = (0, html_js_1.createFlexDiv)();
-                let inputElement = document.createElement("input");
-                inputElement.type = "text";
-                inputElement.style.marginLeft = margin50;
-                inputElement.style.marginTop = margin1;
-                inputElement.style.marginBottom = margin1;
-                inputDiv.appendChild(inputElement);
-                pTsDiv.insertBefore(inputDiv, addButton);
-                // Add an event listener to the inputElement.
-                inputElement.addEventListener('change', () => {
-                    console.log("inputElement.value=" + inputElement.value);
-                    console.log("inputElement.value.length=" + inputElement.value.length);
-                    if (inputElement.value.length > 0) {
-                        let pTPairsArray = inputElement.value.split(" ");
-                        console.log("pTPairsArray.length=" + pTPairsArray.length);
-                        for (let i = 0; i < pTPairsArray.length; i++) {
-                            let pTPairAttributes = new Map();
-                            pTPairAttributes.set("units", "Torr");
-                            let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
-                            let pTPairArray = pTPairsArray[i].split("\t");
-                            if (pTPairArray.length == 2) {
-                                let p = parseFloat(pTPairArray[0]);
-                                let t = parseFloat(pTPairArray[1]);
-                                pTPair.setP(p);
-                                pTPair.setT(t);
-                                console.log("pTPair=" + pTPair);
-                            }
-                            else {
-                                console.warn("pTPairArray.length=" + pTPairArray.length);
-                            }
-                            let containerDiv = (0, html_js_1.createFlexDiv)(margin50, margin1, margin1);
-                            // Add P input to the container
-                            addPInput(containerDiv, pTPair);
-                            // Add T input element to the container.
-                            addTInput(containerDiv, pTPair);
-                            addAnyUnits(undefined, pTPairAttributes, containerDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, margin2, margin1, margin1);
-                            console.log(addButton); // Check the value of addButton
-                            console.log(pTsDiv); // Check the value of pTsDiv
-                            pTsDiv.insertBefore(containerDiv, addButton);
-                            pTs.addPTpair(pTPair);
-                        }
-                        //pTs.addPTpairs(pTPairs);
-                        pTsDiv.removeChild(inputDiv);
-                    }
-                });
-            });
             conditions.setPTs(pTs);
         }
     }
@@ -1909,56 +2062,117 @@ function addTInput(containerDiv, pTPair) {
  */
 function processModelParameters(xml) {
     console.log(modelParameters_js_1.ModelParameters.tagName);
-    // Create div to contain the modelParameters.
+    // Create div to contain the modelParameter.
     let modelParametersDiv = document.createElement("div");
     // Get the XML "moleculeList" element.
     let xml_modelParameters = (0, xml_js_1.getSingularElement)(xml, modelParameters_js_1.ModelParameters.tagName);
     modelParameters = new modelParameters_js_1.ModelParameters((0, xml_js_1.getAttributes)(xml_modelParameters));
-    // Process any "me:grainSize" elements.
-    let xml_grainSizess = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
-    if (xml_grainSizess.length > 0) {
-        if (xml_grainSizess.length > 1) {
-            throw new Error("Expecting 1 " + conditions_js_1.BathGas.tagName + " but finding " + xml_grainSizess.length + "!");
+    // Process any "me:grainSize" element.
+    let xml_grainSizes = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
+    if (xml_grainSizes.length > 0) {
+        if (xml_grainSizes.length > 1) {
+            throw new Error("Expecting 1 " + modelParameters_js_1.GrainSize.tagName + " but finding " + xml_grainSizes.length + "!");
         }
-        let attributes = (0, xml_js_1.getAttributes)(xml_grainSizess[0]);
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_grainSizess[0])));
-        let grainSize = new modelParameters_js_1.GrainSize(attributes, value);
+        let grainSizeAttributes = (0, xml_js_1.getAttributes)(xml_grainSizes[0]);
+        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_grainSizes[0])));
+        let grainSize = new modelParameters_js_1.GrainSize(grainSizeAttributes, value);
         modelParameters.setGrainSize(grainSize);
         let grainSizeDiv = (0, html_js_1.createFlexDiv)();
         // Create a new div for the grainSize.
-        let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName;
-        let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+        let grainSizeId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName;
+        let grainSizeInputDiv = (0, html_js_1.getInput)("number", grainSizeId, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(grainSize, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, value.toString(), modelParameters_js_1.GrainSize.tagName);
-        (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        grainSizeDiv.appendChild(inputDiv);
+        (0, html_js_1.resizeInputElement)(grainSizeInputDiv.querySelector('input'));
+        grainSizeInputDiv.style.marginLeft = margin25;
+        grainSizeInputDiv.style.marginTop = margin1;
+        grainSizeInputDiv.style.marginBottom = margin1;
+        grainSizeDiv.appendChild(grainSizeInputDiv);
         // Add any units
-        addAnyUnits(undefined, attributes, grainSizeDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName, modelParameters_js_1.GrainSize.tagName, margin2, margin1, margin1);
+        addAnyUnits(undefined, grainSizeAttributes, grainSizeDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName, modelParameters_js_1.GrainSize.tagName, margin2, margin1, margin1);
         modelParametersDiv.appendChild(grainSizeDiv);
     }
-    // Process any "me:energyAboveTheTopHill" elements.
-    let xml_energyAboveTheTopHill = (0, xml_js_1.getSingularElement)(xml_modelParameters, modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-    let energyAboveTheTopHill = new modelParameters_js_1.EnergyAboveTheTopHill((0, xml_js_1.getAttributes)(xml_energyAboveTheTopHill), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_energyAboveTheTopHill))));
-    modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
-    // Create a new div for the energyAboveTheTopHill.
-    let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName;
-    let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            setNumberNode(energyAboveTheTopHill, event.target);
-            (0, html_js_1.resizeInputElement)(event.target);
+    // Process any "me:automaticallySetMaxEne" element.
+    let xml_automaticallySetMaxEnes = xml_modelParameters.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
+    if (xml_automaticallySetMaxEnes.length > 0) {
+        if (xml_automaticallySetMaxEnes.length > 1) {
+            throw new Error("Expecting 1 " + control_js_1.AutomaticallySetMaxEne.tagName + " but finding " + xml_automaticallySetMaxEnes.length + "!");
         }
-    }, energyAboveTheTopHill.value.toString(), modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-    (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-    inputDiv.style.marginLeft = margin25;
-    inputDiv.style.marginTop = margin1;
-    inputDiv.style.marginBottom = margin1;
-    modelParametersDiv.appendChild(inputDiv);
+        let automaticallySetMaxEneAttributes = (0, xml_js_1.getAttributes)(xml_automaticallySetMaxEnes[0]);
+        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_automaticallySetMaxEnes[0])));
+        let automaticallySetMaxEne = new control_js_1.AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, value);
+        modelParameters.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+        // Create a new div for the automaticallySetMaxEne.
+        let automaticallySetMaxEneId = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName;
+        let automaticallySetMaxEneInputDiv = (0, html_js_1.getInput)("number", automaticallySetMaxEneId, (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(automaticallySetMaxEne, event.target);
+                (0, html_js_1.resizeInputElement)(event.target);
+            }
+        }, value.toString(), control_js_1.AutomaticallySetMaxEne.tagName);
+        (0, html_js_1.resizeInputElement)(automaticallySetMaxEneInputDiv.querySelector('input'));
+        automaticallySetMaxEneInputDiv.style.marginLeft = margin25;
+        automaticallySetMaxEneInputDiv.style.marginTop = margin1;
+        automaticallySetMaxEneInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(automaticallySetMaxEneInputDiv);
+        // Add any units
+        addAnyUnits(undefined, automaticallySetMaxEneAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName, control_js_1.AutomaticallySetMaxEne.tagName, margin2, margin1, margin1);
+    }
+    // Process any "me:energyAboveTheTopHill" element.
+    let xml_energyAboveTheTopHills = xml_modelParameters.getElementsByTagName(modelParameters_js_1.EnergyAboveTheTopHill.tagName);
+    if (xml_energyAboveTheTopHills.length > 0) {
+        if (xml_energyAboveTheTopHills.length > 1) {
+            throw new Error("Expecting 1 " + modelParameters_js_1.EnergyAboveTheTopHill.tagName + " but finding " + xml_energyAboveTheTopHills.length + "!");
+        }
+        let energyAboveTheTopHillAttributes = (0, xml_js_1.getAttributes)(xml_energyAboveTheTopHills[0]);
+        let energyAboveTheTopHillValue = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_energyAboveTheTopHills[0])));
+        let energyAboveTheTopHill = new modelParameters_js_1.EnergyAboveTheTopHill(energyAboveTheTopHillAttributes, energyAboveTheTopHillValue);
+        modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
+        // Create a new div for the energyAboveTheTopHill.
+        let energyAboveTheTopHillId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName;
+        let energyAboveTheTopHillInputDiv = (0, html_js_1.getInput)("number", energyAboveTheTopHillId, (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(energyAboveTheTopHill, event.target);
+                (0, html_js_1.resizeInputElement)(event.target);
+            }
+        }, energyAboveTheTopHill.value.toString(), modelParameters_js_1.EnergyAboveTheTopHill.tagName);
+        (0, html_js_1.resizeInputElement)(energyAboveTheTopHillInputDiv.querySelector('input'));
+        energyAboveTheTopHillInputDiv.style.marginLeft = margin25;
+        energyAboveTheTopHillInputDiv.style.marginTop = margin1;
+        energyAboveTheTopHillInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(energyAboveTheTopHillInputDiv);
+        // Add any units
+        addAnyUnits(undefined, energyAboveTheTopHillAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName, modelParameters_js_1.EnergyAboveTheTopHill.tagName, margin2, margin1, margin1);
+    }
+    // Process any "me:maxTemperature" element.
+    let xml_maxTemperatures = xml_modelParameters.getElementsByTagName(modelParameters_js_1.MaxTemperature.tagName);
+    if (xml_maxTemperatures.length > 0) {
+        if (xml_maxTemperatures.length > 1) {
+            throw new Error("Expecting 1 " + modelParameters_js_1.MaxTemperature.tagName + " but finding " + xml_maxTemperatures.length + "!");
+        }
+        let maxTemperatureAttributes = (0, xml_js_1.getAttributes)(xml_maxTemperatures[0]);
+        let maxTemperatureValue = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_maxTemperatures[0])));
+        let maxTemperature = new modelParameters_js_1.MaxTemperature(maxTemperatureAttributes, maxTemperatureValue);
+        modelParameters.setMaxTemperature(maxTemperature);
+        // Create a new div for the maxTemperature.
+        let maxTemperatureId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName;
+        let maxTemperatureInputDiv = (0, html_js_1.getInput)("number", maxTemperatureId, (event) => {
+            if (event.target instanceof HTMLInputElement) {
+                setNumberNode(maxTemperature, event.target);
+                (0, html_js_1.resizeInputElement)(event.target);
+            }
+        }, maxTemperature.value.toString(), modelParameters_js_1.MaxTemperature.tagName);
+        (0, html_js_1.resizeInputElement)(maxTemperatureInputDiv.querySelector('input'));
+        maxTemperatureInputDiv.style.marginLeft = margin25;
+        maxTemperatureInputDiv.style.marginTop = margin1;
+        maxTemperatureInputDiv.style.marginBottom = margin1;
+        modelParametersDiv.appendChild(maxTemperatureInputDiv);
+        // Add any units
+        addAnyUnits(undefined, maxTemperatureAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName, modelParameters_js_1.MaxTemperature.tagName, margin2, margin1, margin1);
+    }
     return modelParametersDiv;
 }
 /**
@@ -2867,51 +3081,55 @@ function processControl(xml) {
     eigenvaluesDiv.appendChild(eigenvaluesInput);
     eigenvaluesInput.type = "checkbox";
     eigenvaluesInput.id = control_js_1.Eigenvalues.tagName;
+    let eigenvalues;
+    let eigenvaluesAttributes;
     if (xml_eigenvalues.length == 1) {
         eigenvaluesInput.checked = true;
         let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_eigenvalues[0])));
-        let eigenvalues = new control_js_1.Eigenvalues((0, xml_js_1.getAttributes)(xml_eigenvalues[0]), value);
+        eigenvaluesAttributes = (0, xml_js_1.getAttributes)(xml_eigenvalues[0]);
+        eigenvalues = new control_js_1.Eigenvalues(eigenvaluesAttributes, value);
         control.setEigenvalues(eigenvalues);
+        let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
         // Create a new div for the eigenvalues.
-        let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName;
-        let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+        let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(eigenvalues, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, eigenvalues.value.toString(), control_js_1.Eigenvalues.tagName);
         (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        eigenvaluesDiv.appendChild(inputDiv);
     }
     else {
         eigenvaluesInput.checked = false;
+        eigenvaluesAttributes = new Map();
+        eigenvalues = new control_js_1.Eigenvalues(eigenvaluesAttributes, NaN);
     }
     eigenvaluesInput.addEventListener('change', (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                let value = 0.0;
-                let eigenvalues = new control_js_1.Eigenvalues(new Map(), value);
                 control.setEigenvalues(eigenvalues);
+                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
                 // Create a new div for the eigenvalues.
-                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName;
-                let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+                let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(eigenvalues, event.target);
                         (0, html_js_1.resizeInputElement)(event.target);
                     }
                 }, eigenvalues.value.toString(), control_js_1.Eigenvalues.tagName);
                 (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.style.marginLeft = margin25;
-                inputDiv.style.marginTop = margin1;
-                inputDiv.style.marginBottom = margin1;
-                controlsDiv.appendChild(inputDiv);
+                inputDiv.id = id;
+                eigenvaluesDiv.appendChild(inputDiv);
             }
             else {
                 control.removeEigenvalues();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName;
+                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
                 // Remove any existing div.
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) {
@@ -2921,73 +3139,270 @@ function processControl(xml) {
         }
     });
     // me:shortestTimeOfInterest
+    let shortestTimeOfInterestDiv = (0, html_js_1.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(shortestTimeOfInterestDiv);
     let xml_shortestTimeOfInterest = xml_control.getElementsByTagName(control_js_1.ShortestTimeOfInterest.tagName);
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let shortestTimeOfInterestLabel = document.createElement("label");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestLabel);
+    shortestTimeOfInterestLabel.textContent = control_js_1.ShortestTimeOfInterest.tagName;
+    let shortestTimeOfInterestInput = document.createElement("input");
+    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestInput);
+    shortestTimeOfInterestInput.type = "checkbox";
+    shortestTimeOfInterestInput.id = control_js_1.ShortestTimeOfInterest.tagName;
+    let shortestTimeOfInterest;
+    let shortestTimeOfInterestAttributes;
     if (xml_shortestTimeOfInterest.length == 1) {
-        let shortestTimeOfInterest = new control_js_1.ShortestTimeOfInterest((0, xml_js_1.getAttributes)(xml_shortestTimeOfInterest[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_shortestTimeOfInterest[0]))));
+        shortestTimeOfInterestInput.checked = true;
+        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_shortestTimeOfInterest[0])));
+        shortestTimeOfInterestAttributes = (0, xml_js_1.getAttributes)(xml_shortestTimeOfInterest[0]);
+        shortestTimeOfInterest = new control_js_1.ShortestTimeOfInterest(shortestTimeOfInterestAttributes, value);
         control.setShortestTimeOfInterest(shortestTimeOfInterest);
+        let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
         // Create a new div for the shortestTimeOfInterest.
-        let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName;
-        let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+        let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(shortestTimeOfInterest, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, shortestTimeOfInterest.value.toString(), control_js_1.ShortestTimeOfInterest.tagName);
         (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        shortestTimeOfInterestDiv.appendChild(inputDiv);
     }
     else {
-        console.warn("shortestTimeOfInterest.length=" + xml_shortestTimeOfInterest.length);
+        shortestTimeOfInterestInput.checked = false;
+        shortestTimeOfInterestAttributes = new Map();
+        shortestTimeOfInterest = new control_js_1.ShortestTimeOfInterest(shortestTimeOfInterestAttributes, NaN);
     }
+    shortestTimeOfInterestInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setShortestTimeOfInterest(shortestTimeOfInterest);
+                let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the shortestTimeOfInterest.
+                let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(shortestTimeOfInterest, event.target);
+                        (0, html_js_1.resizeInputElement)(event.target);
+                    }
+                }, shortestTimeOfInterest.value.toString(), control_js_1.ShortestTimeOfInterest.tagName);
+                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
+                inputDiv.id = id;
+                shortestTimeOfInterestDiv.appendChild(inputDiv);
+            }
+            else {
+                control.removeShortestTimeOfInterest();
+                let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
     // me:MaximumEvolutionTime
+    let maximumEvolutionTimeDiv = (0, html_js_1.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(maximumEvolutionTimeDiv);
     let xml_maximumEvolutionTime = xml_control.getElementsByTagName(control_js_1.MaximumEvolutionTime.tagName);
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let maximumEvolutionTimeLabel = document.createElement("label");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeLabel);
+    maximumEvolutionTimeLabel.textContent = control_js_1.MaximumEvolutionTime.tagName;
+    let maximumEvolutionTimeInput = document.createElement("input");
+    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeInput);
+    maximumEvolutionTimeInput.type = "checkbox";
+    maximumEvolutionTimeInput.id = control_js_1.MaximumEvolutionTime.tagName;
+    let maximumEvolutionTime;
+    let maximumEvolutionTimeAttributes;
     if (xml_maximumEvolutionTime.length == 1) {
-        let maximumEvolutionTime = new control_js_1.MaximumEvolutionTime((0, xml_js_1.getAttributes)(xml_maximumEvolutionTime[0]), parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_maximumEvolutionTime[0]))));
+        maximumEvolutionTimeInput.checked = true;
+        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_maximumEvolutionTime[0])));
+        maximumEvolutionTimeAttributes = (0, xml_js_1.getAttributes)(xml_maximumEvolutionTime[0]);
+        maximumEvolutionTime = new control_js_1.MaximumEvolutionTime(maximumEvolutionTimeAttributes, value);
         control.setMaximumEvolutionTime(maximumEvolutionTime);
+        let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
         // Create a new div for the maximumEvolutionTime.
-        let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName;
-        let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+        let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maximumEvolutionTime, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, maximumEvolutionTime.value.toString(), control_js_1.MaximumEvolutionTime.tagName);
         (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        maximumEvolutionTimeDiv.appendChild(inputDiv);
     }
     else {
-        console.warn("maximumEvolutionTime.length=" + xml_maximumEvolutionTime.length);
+        maximumEvolutionTimeInput.checked = false;
+        maximumEvolutionTimeAttributes = new Map();
+        maximumEvolutionTime = new control_js_1.MaximumEvolutionTime(maximumEvolutionTimeAttributes, NaN);
     }
+    maximumEvolutionTimeInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setMaximumEvolutionTime(maximumEvolutionTime);
+                let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the maximumEvolutionTime.
+                let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(maximumEvolutionTime, event.target);
+                        (0, html_js_1.resizeInputElement)(event.target);
+                    }
+                }, maximumEvolutionTime.value.toString(), control_js_1.MaximumEvolutionTime.tagName);
+                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
+                inputDiv.id = id;
+                maximumEvolutionTimeDiv.appendChild(inputDiv);
+            }
+            else {
+                control.removeMaximumEvolutionTime();
+                let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
     // me:automaticallySetMaxEne
+    let automaticallySetMaxEneDiv = (0, html_js_1.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(automaticallySetMaxEneDiv);
+    let xml_automaticallySetMaxEne = xml_control.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
+    // Create a input checkbox for the AutomaticallySetMaxEne.
+    let automaticallySetMaxEneLabel = document.createElement("label");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneLabel);
+    automaticallySetMaxEneLabel.textContent = control_js_1.AutomaticallySetMaxEne.tagName;
+    let automaticallySetMaxEneInput = document.createElement("input");
+    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneInput);
+    automaticallySetMaxEneInput.type = "checkbox";
+    automaticallySetMaxEneInput.id = control_js_1.AutomaticallySetMaxEne.tagName;
+    let automaticallySetMaxEneAttributes;
+    let automaticallySetMaxEne;
+    if (xml_automaticallySetMaxEne.length == 1) {
+        automaticallySetMaxEneInput.checked = true;
+        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_automaticallySetMaxEne[0])));
+        automaticallySetMaxEneAttributes = (0, xml_js_1.getAttributes)(xml_automaticallySetMaxEne[0]);
+        automaticallySetMaxEne = new control_js_1.AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, value);
+        control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+    }
+    else {
+        automaticallySetMaxEneInput.checked = false;
+        automaticallySetMaxEneAttributes = new Map();
+        automaticallySetMaxEne = new control_js_1.AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, NaN);
+    }
+    automaticallySetMaxEneInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+                let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the automaticallySetMaxEne.
+                let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(automaticallySetMaxEne, event.target);
+                        (0, html_js_1.resizeInputElement)(event.target);
+                    }
+                }, automaticallySetMaxEne.value.toString(), control_js_1.AutomaticallySetMaxEne.tagName);
+                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
+                inputDiv.id = id;
+                automaticallySetMaxEneDiv.appendChild(inputDiv);
+            }
+            else {
+                control.removeAutomaticallySetMaxEne();
+                let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
     // me:diagramEnergyOffset
+    let diagramEnergyOffsetDiv = (0, html_js_1.createFlexDiv)(margin25, margin1, margin1);
+    controlsDiv.appendChild(diagramEnergyOffsetDiv);
     let xml_diagramEnergyOffset = xml_control.getElementsByTagName(control_js_1.DiagramEnergyOffset.tagName);
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let diagramEnergyOffsetLabel = document.createElement("label");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetLabel);
+    diagramEnergyOffsetLabel.textContent = control_js_1.DiagramEnergyOffset.tagName;
+    let diagramEnergyOffsetInput = document.createElement("input");
+    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetInput);
+    diagramEnergyOffsetInput.type = "checkbox";
+    diagramEnergyOffsetInput.id = control_js_1.DiagramEnergyOffset.tagName;
+    let diagramEnergyOffset;
+    let diagramEnergyOffsetAttributes;
     if (xml_diagramEnergyOffset.length == 1) {
+        diagramEnergyOffsetInput.checked = true;
         let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_diagramEnergyOffset[0])));
-        let diagramEnergyOffset = new control_js_1.DiagramEnergyOffset((0, xml_js_1.getAttributes)(xml_diagramEnergyOffset[0]), value);
+        diagramEnergyOffsetAttributes = (0, xml_js_1.getAttributes)(xml_diagramEnergyOffset[0]);
+        diagramEnergyOffset = new control_js_1.DiagramEnergyOffset(diagramEnergyOffsetAttributes, value);
         control.setDiagramEnergyOffset(diagramEnergyOffset);
+        let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
         // Create a new div for the diagramEnergyOffset.
-        let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName;
-        let inputDiv = (0, html_js_1.getInput)("number", id, (event) => {
+        let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(diagramEnergyOffset, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
-        }, value.toString(), control_js_1.DiagramEnergyOffset.tagName);
+        }, diagramEnergyOffset.value.toString(), control_js_1.DiagramEnergyOffset.tagName);
         (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.style.marginLeft = margin25;
-        inputDiv.style.marginTop = margin1;
-        inputDiv.style.marginBottom = margin1;
-        controlsDiv.appendChild(inputDiv);
+        inputDiv.id = id;
+        diagramEnergyOffsetDiv.appendChild(inputDiv);
     }
     else {
-        console.warn("diagramEnergyOffset.length=" + xml_diagramEnergyOffset.length);
+        diagramEnergyOffsetInput.checked = false;
+        diagramEnergyOffsetAttributes = new Map();
+        diagramEnergyOffset = new control_js_1.DiagramEnergyOffset(diagramEnergyOffsetAttributes, NaN);
     }
+    diagramEnergyOffsetInput.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                control.setDiagramEnergyOffset(diagramEnergyOffset);
+                let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+                // Create a new div for the diagramEnergyOffset.
+                let inputDiv = (0, html_js_1.getInput)("number", id + "_input", (event) => {
+                    if (event.target instanceof HTMLInputElement) {
+                        setNumberNode(diagramEnergyOffset, event.target);
+                        (0, html_js_1.resizeInputElement)(event.target);
+                    }
+                }, diagramEnergyOffset.value.toString(), control_js_1.DiagramEnergyOffset.tagName);
+                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
+                inputDiv.id = id;
+                diagramEnergyOffsetDiv.appendChild(inputDiv);
+            }
+            else {
+                control.removeDiagramEnergyOffset();
+                let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
+                // Remove any existing div.
+                let existingDiv = document.getElementById(id);
+                if (existingDiv != null) {
+                    existingDiv.remove();
+                }
+            }
+        }
+    });
     return controlsDiv;
 }
 /**
