@@ -1,12 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFlexDiv = exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInputDiv = exports.getInput = exports.makeCollapsible = exports.getCollapsibleDiv = void 0;
+exports.createFlexDiv = exports.createButton = exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInputDiv = exports.createInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
+/**
+ * Remove a top level element.
+ * @param id The id of the element to remove.
+ */
+function remove(id) {
+    let e = document.getElementById(id);
+    if (e != null) {
+        e.parentNode?.removeChild(e);
+    }
+    else {
+        console.warn("remove: id=" + id + " not found.");
+    }
+}
+exports.remove = remove;
 /**
  * Create a collapsible div.
  * @param options The options for creating the collapsible div.
  * @returns A collapsible div.
  */
-function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', marginLeft = '', marginTop = '', marginBottom = '', contentDivId = '', contentDivClassName = '' }) {
+function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', level = { marginLeft: '', marginTop: '', marginBottom: '' }, contentDivId = '', contentDivClassName = '' }) {
     let contentDiv = document.createElement('div');
     contentDiv.id = contentDivId;
     contentDiv.className = contentDivClassName;
@@ -20,9 +34,7 @@ function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', marginLe
             : `${buttonLabel} ▼`;
     });
     button.style.fontSize = buttonFontSize;
-    button.style.marginLeft = marginLeft;
-    button.style.marginTop = marginTop;
-    button.style.marginBottom = marginBottom;
+    Object.assign(button.style, level);
     contentDiv.appendChild(button);
     contentDiv.appendChild(content);
     return contentDiv;
@@ -63,7 +75,7 @@ function toggleCollapsible() {
  * @param labelText The label text.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-function getInput(type, id, func, value, labelText) {
+function createInput(type, id, boundary, func, value, labelText) {
     let input = document.createElement('input');
     input.type = type;
     input.id = id;
@@ -77,12 +89,15 @@ function getInput(type, id, func, value, labelText) {
     else {
         label.textContent = "";
     }
+    Object.assign(label.style, boundary);
+    Object.assign(input.style, boundary);
     let container = document.createElement('div');
     container.appendChild(label);
     container.appendChild(input);
+    Object.assign(container, boundary);
     return container;
 }
-exports.getInput = getInput;
+exports.createInput = createInput;
 /**
  * @param type The input type e.g. "text", "number".
  * @param id The id of the input.
@@ -92,13 +107,11 @@ exports.getInput = getInput;
  * @param marginLeft The margin left.
  * @param marginTop The margin top.
  * @param marginBottom The margin bottom.
+ * @param marginRight The margin right.
  * @returns An HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-function createInputDiv(type, id, onchange, inputString, label, marginLeft, marginTop, marginBottom) {
-    let inputDiv = getInput(type, id, onchange, inputString, label);
-    inputDiv.style.marginLeft = marginLeft;
-    inputDiv.style.marginTop = marginTop;
-    inputDiv.style.marginBottom = marginBottom;
+function createInputDiv(type, id, boundary, onchange, inputString, label) {
+    let inputDiv = createInput(type, id, boundary, onchange, inputString, label);
     let inputElement = inputDiv.querySelector('input');
     inputElement.value = inputString;
     resizeInputElement(inputElement);
@@ -150,7 +163,7 @@ exports.resizeSelectElement = resizeSelectElement;
  * @param id The id.
  * @returns An HTMLSelectElement.
  */
-function getSelectElement(options, name, id) {
+function getSelectElement(options, name, id, boundary) {
     let selectElement = document.createElement('select');
     options.forEach(option => {
         selectElement.name = name;
@@ -160,31 +173,40 @@ function getSelectElement(options, name, id) {
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
+    Object.assign(selectElement.style, boundary);
     return selectElement;
 }
 exports.getSelectElement = getSelectElement;
 /**
- * @param marginLeft The margin left.
- * @param marginTop The margin top.
- * @param marginBottom The margin bottom.
- * @param marginRight The margin right.
- * @returns An HTMLDivElement with a 'flex' display style.
+ * Creates and returns an HTMLButtonElement.
+ *
+ * @param textContent The text content of the button.
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin
+ * @returns An HTMLButtonElement with the textContent and the specified margins.
  */
-function createFlexDiv(marginLeft, marginTop, marginBottom, marginRight) {
+function createButton(textContent, boundary) {
+    let button = document.createElement('button');
+    button.textContent = textContent;
+    Object.assign(button.style, boundary);
+    return button;
+}
+exports.createButton = createButton;
+/**
+ * Creates and returns an HTMLDivElement with a 'flex' display style.
+ *
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin.
+ * @returns An HTMLDivElement with a 'flex' display style and the specified margins.
+ */
+function createFlexDiv(boundary) {
     let div = document.createElement("div");
     div.style.display = 'flex';
-    if (marginLeft) {
-        div.style.marginLeft = marginLeft;
-    }
-    if (marginTop) {
-        div.style.marginTop = marginTop;
-    }
-    if (marginBottom) {
-        div.style.marginBottom = marginBottom;
-    }
-    if (marginRight) {
-        div.style.marginRight = marginRight;
-    }
+    Object.assign(div.style, boundary);
     return div;
 }
 exports.createFlexDiv = createFlexDiv;

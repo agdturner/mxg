@@ -503,6 +503,45 @@ export class PTpair extends NodeWithNodes {
             this.index.delete(ExperimentRate.tagName);
         }
     }
+
+    /**
+     * @returns this.attributes.get("excessReactantConc").
+     */
+    getExcessReactantConc(): string | undefined {
+        if (this.attributes != undefined) {
+            return this.attributes.get("excessReactantConc");
+        }
+    }
+
+    /**
+     * this.attributes.set("excessReactantConc", excessReactantConc).
+     */
+    setExcessReactantConc(excessReactantConc: string) {
+        if (this.attributes != undefined) {
+            this.attributes.set("excessReactantConc", excessReactantConc);
+        }
+    }
+
+    /**
+     * @returns this.attributes.get("percentExcessReactantConc").
+     */
+    getPercentExcessReactantConc(): string | undefined {
+        if (this.attributes != undefined) {
+            return this.attributes.get("percentExcessReactantConc");
+        }
+    }
+
+    /**
+     * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
+     */
+    setPercentExcessReactantConc(percentExcessReactantConc: string) {
+        if (this.attributes != undefined) {
+            this.attributes.set("percentExcessReactantConc", percentExcessReactantConc);
+        }
+    }
+
+
+
 }
 
 /**

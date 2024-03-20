@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Conditions = exports.PTs = exports.PTpair = exports.ExperimentRate = exports.BathGas = void 0;
+exports.Conditions = exports.PTs = exports.PTpair = exports.ExcessReactantConc = exports.ExperimentalEigenvalue = exports.ExperimentalYield = exports.ExperimentRate = exports.BathGas = void 0;
 const xml_js_1 = require("./xml.js");
 /**
- * A class for representing a bath gas reaction molecule.
+ * A class for "me:bathGas".
  */
 class BathGas extends xml_js_1.StringNode {
     /**
@@ -20,7 +20,8 @@ class BathGas extends xml_js_1.StringNode {
 }
 exports.BathGas = BathGas;
 /**
- * A class for representing an experiment rate.
+ * A class for "me:experimentRate".
+ * The attributes may include ref1, ref2, refReaction, and error.
  */
 class ExperimentRate extends xml_js_1.NumberNode {
     /**
@@ -33,6 +34,57 @@ class ExperimentRate extends xml_js_1.NumberNode {
      */
     constructor(attributes, value) {
         super(attributes, ExperimentRate.tagName, value);
+    }
+    /**
+     * @returns The ref1 attribute or undefined if there is no ref1 attribute.
+     */
+    getRef1() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("ref1");
+        }
+    }
+    /**
+     * Set the ref1 attribute.
+     * @param ref1 The ref1.
+     */
+    setRef1(ref1) {
+        if (this.attributes != undefined) {
+            this.attributes.set("ref1", ref1);
+        }
+    }
+    /**
+     * @returns The ref2 attribute or undefined if there is no ref2 attribute.
+     */
+    getRef2() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("ref2");
+        }
+    }
+    /**
+     * Set the ref2 attribute.
+     * @param ref2 The ref2.
+     */
+    setRef2(ref2) {
+        if (this.attributes != undefined) {
+            this.attributes.set("ref2", ref2);
+        }
+    }
+    /**
+     * @returns The refReaction attribute or undefined if there is no refReaction attribute.
+     */
+    getRefReaction() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("refReaction");
+        }
+    }
+    /**
+     * Set the refReaction attribute.
+     * @param refReaction The refReaction.
+     */
+    setRefReaction(refReaction) {
+        if (this.attributes != undefined) {
+            this.attributes.set("refReaction", refReaction);
+        }
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
@@ -57,14 +109,200 @@ class ExperimentRate extends xml_js_1.NumberNode {
 }
 exports.ExperimentRate = ExperimentRate;
 /**
- * A class for representing a Pressure and Temperature pair with optional BathGas and ExperimentRate.
+ * A class for "me:experimentalYield".
+ * The attributes may include:
+ * ref:string
+ * error: number
+ * yieldTime: number.
+ */
+class ExperimentalYield extends xml_js_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:experimentalYield";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, ExperimentalYield.tagName, value);
+    }
+    /**
+     * @returns The ref attribute or undefined if there is no ref attribute.
+     */
+    getRef() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("ref");
+        }
+    }
+    /**
+     * Set the ref attribute.
+     * @param ref The ref.
+     */
+    setRef(ref) {
+        if (this.attributes != undefined) {
+            this.attributes.set("ref", ref);
+        }
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */
+    getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) {
+                return parseFloat(error);
+            }
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */
+    setError(error) {
+        if (this.attributes != undefined) {
+            this.attributes.set("error", error.toString());
+        }
+    }
+    /**
+     * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
+     */
+    getYieldTime() {
+        if (this.attributes != undefined) {
+            let yieldTime = this.attributes.get("yieldTime");
+            if (yieldTime) {
+                return parseFloat(yieldTime);
+            }
+        }
+    }
+    /**
+     * Set the yieldTime attribute.
+     * @param yieldTime The yieldTime.
+     */
+    setYieldTime(yieldTime) {
+        if (this.attributes != undefined) {
+            this.attributes.set("yieldTime", yieldTime.toString());
+        }
+    }
+}
+exports.ExperimentalYield = ExperimentalYield;
+/**
+ * A class for "me:experimentalEigenvalue".
+ * The attributes may include:
+ * EigenvalueID:string
+ * error: number
+ */
+class ExperimentalEigenvalue extends xml_js_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:experimentalEigenvalue";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, ExperimentalEigenvalue.tagName, value);
+    }
+    /**
+     * @returns The EigenvalueID attribute or undefined if there is no EigenvalueID attribute.
+     */
+    getEigenvalueID() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("EigenvalueID");
+        }
+    }
+    /**
+     * Set the EigenvalueID attribute.
+     * @param EigenvalueID The EigenvalueID.
+     */
+    setEigenvalueID(EigenvalueID) {
+        if (this.attributes != undefined) {
+            this.attributes.set("EigenvalueID", EigenvalueID);
+        }
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */
+    getError() {
+        if (this.attributes != undefined) {
+            let error = this.attributes.get("error");
+            if (error) {
+                return parseFloat(error);
+            }
+        }
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */
+    setError(error) {
+        if (this.attributes != undefined) {
+            this.attributes.set("error", error.toString());
+        }
+    }
+}
+exports.ExperimentalEigenvalue = ExperimentalEigenvalue;
+/**
+ * A class for "me:excessReactantConc".
+ * The attributes may include:
+ * percent: string ("true" or "false")
+ */
+class ExcessReactantConc extends xml_js_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:excessReactantConc";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, ExcessReactantConc.tagName, value);
+    }
+    /**
+     * @returns The percent attribute or undefined if there is no percent attribute.
+     */
+    getPercent() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("percent");
+        }
+    }
+    /**
+     * Set the percent attribute.
+     * @param percent The percent.
+     */
+    setPercent(percent) {
+        if (this.attributes != undefined) {
+            this.attributes.set("percent", percent);
+        }
+    }
+}
+exports.ExcessReactantConc = ExcessReactantConc;
+/**
+ * A class for representing a Pressure and Temperature pair with optional additional things: BathGas and ExperimentRate.
  * Can there be multiple BathGases and ExperimentRates?
+ * The attributes include:
+ * units: string
+ * P: number
+ * T: number
+ * And optionally:
+ * percentExcessReactantConc: number
+ * excessReactantConc: string
+ * precision: number
+ * bathGas: string
+ * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
+ *
  */
 class PTpair extends xml_js_1.NodeWithNodes {
     /**
      * The tag name.
      */
     static tagName = "me:PTpair";
+    /**
+     * The precision attribute potential values.
+     */
+    static precisions = ["d", "dd", "qd", "double", "double-double", "quad-double"];
     /**
      * The index. Keys are types and values are the node indexes.
      */
@@ -74,16 +312,24 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @param bathGas The bath gas.
      * @param experimentRate The experiment rate.
      */
-    constructor(attributes, bathGas, experimentRate) {
+    constructor(attributes, bathGas, experimentRate, excessReactantConc, experimentalEigenvalue) {
         super(attributes, PTpair.tagName);
         this.index = new Map();
-        if (bathGas) {
+        if (bathGas != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
             this.addNode(bathGas);
         }
-        if (experimentRate) {
+        if (experimentRate != undefined) {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
             this.addNode(experimentRate);
+        }
+        if (excessReactantConc != undefined) {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        }
+        if (experimentalEigenvalue != undefined) {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
         }
     }
     /**
@@ -124,6 +370,23 @@ class PTpair extends xml_js_1.NodeWithNodes {
     setT(t) {
         if (this.attributes != undefined) {
             this.attributes.set("T", t.toString());
+        }
+    }
+    /**
+     * @returns The precision attribute or undefined if there is no precision attribute.
+     */
+    getPrecision() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("precision");
+        }
+    }
+    /**
+     * Set the precision attribute.
+     * @param precision The precision.
+     */
+    setPrecision(precision) {
+        if (this.attributes != undefined) {
+            this.attributes.set("precision", precision);
         }
     }
     /**
@@ -194,6 +457,38 @@ class PTpair extends xml_js_1.NodeWithNodes {
         if (i) {
             this.nodes.delete(i);
             this.index.delete(ExperimentRate.tagName);
+        }
+    }
+    /**
+     * @returns this.attributes.get("excessReactantConc").
+     */
+    getExcessReactantConc() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("excessReactantConc");
+        }
+    }
+    /**
+     * this.attributes.set("excessReactantConc", excessReactantConc).
+     */
+    setExcessReactantConc(excessReactantConc) {
+        if (this.attributes != undefined) {
+            this.attributes.set("excessReactantConc", excessReactantConc);
+        }
+    }
+    /**
+     * @returns this.attributes.get("percentExcessReactantConc").
+     */
+    getPercentExcessReactantConc() {
+        if (this.attributes != undefined) {
+            return this.attributes.get("percentExcessReactantConc");
+        }
+    }
+    /**
+     * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
+     */
+    setPercentExcessReactantConc(percentExcessReactantConc) {
+        if (this.attributes != undefined) {
+            this.attributes.set("percentExcessReactantConc", percentExcessReactantConc);
         }
     }
 }

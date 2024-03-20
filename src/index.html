@@ -21,10 +21,8 @@
   <input type="file" id="filePicker" style="display: none;" />
 -->
 
-  <div id="controls">
-    <button id="loadButton" type="button" onclick="loadXML()">Load</button>
-    <button id="saveButton" type="button" style="display:none" onclick="saveXML()">Save</button>
-  </div>
+  <!-- For the main GUI menu buttons -->
+  <div id="menu"></div>
 
   <!-- Title -->
   <h1 id="title"></h1>
@@ -35,7 +33,6 @@
 
   <!-- Reactions -->
   <div id="reactions"></div>
-  <canvas id="reactions_diagram" width="800" height="400" style="border:1px solid black; display:none"></canvas>
 
   <!-- Conditions -->
   <div id="conditions"></div>
@@ -47,10 +44,7 @@
   <div id="control"></div>
 
   <!-- XML -->
-  <div id="xml">
-    <h2 id="xml_title"></h2>
-    <p id="xml_text"></p>
-  </div>
+  <div id="xml"></div>
 
   <script type="module" src="./ts/app.ts" defer></script>
   <!-- Register the app's service worker. -->
