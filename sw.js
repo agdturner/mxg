@@ -15,15 +15,6 @@ const APP_STATIC_RESOURCES = [
     "src/index.html",
     "src/style.css",
     "src/ts/app.js",
-    "src/ts/canvas.ts",
-    "src/ts/conditions.ts",
-    "src/ts/control.ts",
-    "src/ts/html.ts",
-    "src/ts/modelParameters.ts",
-    "src/ts/molecule.ts",
-    "src/ts/reaction.ts",
-    "src/ts/util.ts",
-    "src/ts/xml.ts",
 ];
 
 // On install, cache the static resources

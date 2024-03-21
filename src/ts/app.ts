@@ -299,6 +299,7 @@ function parse(xml: XMLDocument) {
         );
         mesmer.setReactionList(new ReactionList(getAttributes(reactionsDiv), Array.from(reactions.values())));
     }
+    
     // Display reaction diagram. 
     displayReactionsDiagram();
 

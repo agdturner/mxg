@@ -2,7 +2,7 @@
   "name": "mxg-pwa",
   "description": "MESMER XML GUI PWA.",
   "source": "src/index.html",
-  "version": "0.4",
+  "version": "0.5",
   "license": "MIT",
   "scripts": {
     "compile": "tsc -p tsconfig.json",
@@ -25,7 +25,7 @@
       "distDir": "dist/main",
       "publicUrl": "/mxg-pwa/dist/main"
     },
-    "0.3": {
+    "0.5": {
       "context": "browser",
       "includeNodeModules": true,
       "sourceMap": true,
@@ -37,8 +37,8 @@
           "last 2 Edge versions"
         ]
       },
-      "distDir": "dist/0.4",
-      "publicUrl": "/mxg-pwa/dist/0.4"
+      "distDir": "dist/0.5",
+      "publicUrl": "/mxg-pwa/dist/0.5"
     }
   },
   "devDependencies": {
