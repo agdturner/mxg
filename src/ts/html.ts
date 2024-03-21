@@ -20,18 +20,20 @@ export function getCollapsibleDiv({
     content,
     buttonLabel,
     buttonFontSize = '',
-    level = { marginLeft: '', marginTop: '', marginBottom: '' },
+    boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
+    level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
     contentDivId = '',
     contentDivClassName = ''
 }: {
     content: HTMLElement,
     buttonLabel: string,
     buttonFontSize?: string,
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string },
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
     contentDivId?: string,
     contentDivClassName?: string
 }): HTMLDivElement {
-    let contentDiv: HTMLDivElement = document.createElement('div');
+    let contentDiv: HTMLDivElement = createDiv(boundary);
     contentDiv.id = contentDivId;
     contentDiv.className = contentDivClassName;
     let button: HTMLButtonElement = document.createElement('button');
@@ -80,23 +82,26 @@ function toggleCollapsible(this: HTMLElement): void {
  * Create and return HTMLDivElement that contains an HTMLLabelElement and a HTMLInputElement.
  * @param type The input type (e.g. "text", "number").
  * @param id The id of the input.
+ * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
  * @param labelText The label text.
+ * @param inputFontsize The font size of the input.
+ * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-export function createLabelWithInput(type: string, id: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-},
-    func: (event: Event) => any, value: string, labelContent: string): HTMLDivElement {
-    let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value);
-    let label: HTMLLabelElement = createLabel(labelContent, boundary);
+export function createLabelWithInput(type: string, id: string, 
+    boundary: {marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+    level: {marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+    func: (event: Event) => any, value: string, labelContent: string, inputFontsize?: string, labelFontsize?: string): HTMLDivElement {
+    let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
+    Object.assign(input.style, boundary);
+    let label: HTMLLabelElement = createLabel(labelContent, boundary, labelFontsize);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
-    let container: HTMLDivElement = document.createElement('div');
+    let container: HTMLDivElement = createFlexDiv(level);
     container.appendChild(label);
     container.appendChild(input);
-    Object.assign(container, boundary);
     return container;
 }
 
@@ -110,9 +115,14 @@ export function createLabelWithInput(type: string, id: string, boundary: {
 export function createInputWithFunction(type: string, id: string, boundary: {
     marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
 },
-    func: (event: Event) => any, value: string): HTMLInputElement {
+    func: (event: Event) => any, value: string, inputFontsize?: string): HTMLInputElement {
     let input: HTMLInputElement = createInput(type, id, boundary);
     input.onchange = func;
+    input.value = value;
+    if (inputFontsize != undefined) {
+        input.style.fontSize = inputFontsize;
+    }
+    resizeInputElement(input);
     return input;
 }
 
@@ -254,12 +264,28 @@ export function createButton(textContent: string, boundary: {
  * @param marginRight The right margin.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-export function createFlexDiv(boundary: {
+export function createDiv(boundary: {
     marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
 }): HTMLDivElement {
     let div: HTMLDivElement = document.createElement("div");
-    div.style.display = 'flex';
     Object.assign(div.style, boundary);
+    return div;
+}
+
+/**
+ * Create and return HTMLDivElement with a 'flex' display style.
+ *
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin.
+ * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
+ */
+export function createFlexDiv(boundary: {
+    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
+}): HTMLDivElement {
+    let div: HTMLDivElement = createDiv(boundary);
+    div.style.display = 'flex';
     return div;
 }
 
@@ -271,13 +297,18 @@ export function createFlexDiv(boundary: {
  * @param marginTop The top margin.
  * @param marginBottom The bottom margin.
  * @param marginRight The right margin.
+ * @param fontsize The font size.
  * @returns An HTMLLabelElement with specified boundary.
  */
 export function createLabel(textContent: string, boundary: {
     marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLLabelElement {
+}, fontsize?: string): HTMLLabelElement {
     let label: HTMLLabelElement = document.createElement("label");
     Object.assign(label.style, boundary);
     label.textContent = textContent;
+    if (fontsize != undefined) {
+        //console.log("fontsize=" + fontsize);
+        label.style.fontSize = fontsize;
+    }
     return label;
 }

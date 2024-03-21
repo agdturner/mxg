@@ -355,6 +355,10 @@ class Tunneling extends xml_js_1.TagWithAttributes {
      */
     static tagName = "me:tunneling";
     /**
+     * The key to the name attribute value.
+     */
+    static s_name = "name";
+    /**
      * @param {Map<string, string>} attributes The attributes.
      */
     constructor(attributes) {
@@ -364,18 +368,13 @@ class Tunneling extends xml_js_1.TagWithAttributes {
      * @returns The name of the tunneling method.
      */
     getName() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("name");
-        }
-        return "";
+        return this.attributes.get(Tunneling.s_name);
     }
     /**
      * @param The name of the tunneling method.
      */
     setName(name) {
-        if (this.attributes != undefined) {
-            this.attributes.set("name", name);
-        }
+        this.attributes.set(Tunneling.s_name, name);
     }
 }
 exports.Tunneling = Tunneling;
@@ -404,6 +403,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * The tag name.
      */
     static tagName = "reaction";
+    /**
+     * The key to the id attribute value.
+     */
+    static s_id = "id";
     /**
      * The index for the nodes.
      * The key is the type of node.
@@ -449,9 +452,9 @@ class Reaction extends xml_js_1.NodeWithNodes {
         this.reactantsIndex = new Map();
         this.productsIndex = new Map();
         this.transitionStatesIndex = new Map();
-        let id = attributes.get("id");
+        let id = attributes.get(Reaction.s_id);
         if (id == undefined) {
-            throw new Error("Reaction id is undefined");
+            throw new Error(Reaction.s_id + ' is undefined!');
         }
         this.id = id;
         if (reactants != undefined) {

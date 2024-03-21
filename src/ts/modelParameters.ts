@@ -92,7 +92,7 @@ export class ModelParameters extends NodeWithNodes {
      */
     index: Map<string, number>;
 
-    constructor(attributes: Map<string, string> | undefined, grainSize?: GrainSize, 
+    constructor(attributes: Map<string, string>, grainSize?: GrainSize, 
         automaticallySetMaxEne?: AutomaticallySetMaxEne, energyAboveTheTopHill?: EnergyAboveTheTopHill,
         maxTemperature?: MaxTemperature) {
         super(attributes, ModelParameters.tagName);

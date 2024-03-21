@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFlexDiv = exports.createButton = exports.getSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInputDiv = exports.createInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
+exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createButton = exports.createLabelWithSelectElement = exports.createSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
 /**
  * Remove a top level element.
  * @param id The id of the element to remove.
@@ -9,9 +9,8 @@ function remove(id) {
     let e = document.getElementById(id);
     if (e != null) {
         e.parentNode?.removeChild(e);
-    }
-    else {
-        console.warn("remove: id=" + id + " not found.");
+        //} else {
+        //    console.warn("remove: id=" + id + " not found.");
     }
 }
 exports.remove = remove;
@@ -20,8 +19,8 @@ exports.remove = remove;
  * @param options The options for creating the collapsible div.
  * @returns A collapsible div.
  */
-function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', level = { marginLeft: '', marginTop: '', marginBottom: '' }, contentDivId = '', contentDivClassName = '' }) {
-    let contentDiv = document.createElement('div');
+function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = '', boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' }, level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' }, contentDivId = '', contentDivClassName = '' }) {
+    let contentDiv = createDiv(boundary);
     contentDiv.id = contentDivId;
     contentDiv.className = contentDivClassName;
     let button = document.createElement('button');
@@ -67,57 +66,61 @@ function toggleCollapsible() {
     }
 }
 /**
- * Create a input. This is an HTMLDivElement that contains an HTMLLabelElement and a HTMLInputElement.
+ * Create and return HTMLDivElement that contains an HTMLLabelElement and a HTMLInputElement.
  * @param type The input type (e.g. "text", "number").
  * @param id The id of the input.
+ * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
  * @param labelText The label text.
+ * @param inputFontsize The font size of the input.
+ * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-function createInput(type, id, boundary, func, value, labelText) {
+function createLabelWithInput(type, id, boundary, level, func, value, labelContent, inputFontsize, labelFontsize) {
+    let input = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
+    Object.assign(input.style, boundary);
+    let label = createLabel(labelContent, boundary, labelFontsize);
+    label.htmlFor = id;
+    Object.assign(label.style, boundary);
+    let container = createFlexDiv(level);
+    container.appendChild(label);
+    container.appendChild(input);
+    return container;
+}
+exports.createLabelWithInput = createLabelWithInput;
+/**
+ * Create and return a HTMLInputElement.
+ * @param type The input type (e.g. "text", "number").
+ * @param id The id of the input.
+ * @param func The function called on a change to the input.
+ * @returns A HTMLInputElement.
+ */
+function createInputWithFunction(type, id, boundary, func, value, inputFontsize) {
+    let input = createInput(type, id, boundary);
+    input.onchange = func;
+    input.value = value;
+    if (inputFontsize != undefined) {
+        input.style.fontSize = inputFontsize;
+    }
+    resizeInputElement(input);
+    return input;
+}
+exports.createInputWithFunction = createInputWithFunction;
+/**
+ * Create and return a HTMLInputElement.
+ * @param type The input type (e.g. "text", "number", "checkbox").
+ * @param id The id of the input.
+ * @returns A HTMLInputElement.
+ */
+function createInput(type, id, boundary) {
     let input = document.createElement('input');
     input.type = type;
     input.id = id;
-    input.onchange = func;
-    input.value = value;
-    let label = document.createElement('label');
-    label.htmlFor = id;
-    if (labelText) {
-        label.textContent = labelText + ": ";
-    }
-    else {
-        label.textContent = "";
-    }
-    Object.assign(label.style, boundary);
     Object.assign(input.style, boundary);
-    let container = document.createElement('div');
-    container.appendChild(label);
-    container.appendChild(input);
-    Object.assign(container, boundary);
-    return container;
+    return input;
 }
 exports.createInput = createInput;
-/**
- * @param type The input type e.g. "text", "number".
- * @param id The id of the input.
- * @param onchange The function called on a change to the input.
- * @param inputString The value of the input.
- * @param label The label text.
- * @param marginLeft The margin left.
- * @param marginTop The margin top.
- * @param marginBottom The margin bottom.
- * @param marginRight The margin right.
- * @returns An HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
- */
-function createInputDiv(type, id, boundary, onchange, inputString, label) {
-    let inputDiv = createInput(type, id, boundary, onchange, inputString, label);
-    let inputElement = inputDiv.querySelector('input');
-    inputElement.value = inputString;
-    resizeInputElement(inputElement);
-    return inputDiv;
-}
-exports.createInputDiv = createInputDiv;
 /**
  * Create a self closing tag.
  * @param attributes The attributes.
@@ -147,6 +150,7 @@ function resizeInputElement(input, minSize) {
 exports.resizeInputElement = resizeInputElement;
 /**
  * For resizing an HTMLSelectElement to the width of what it contains.
+ *
  * @param input The input to resize.
  * @param minSize The minimum size of the input.
  */
@@ -158,12 +162,14 @@ function resizeSelectElement(input, minSize) {
 }
 exports.resizeSelectElement = resizeSelectElement;
 /**
+ * Create and return an HTMLSelectElement.
+ *
  * @param options The options.
  * @param name The name.
  * @param id The id.
  * @returns An HTMLSelectElement.
  */
-function getSelectElement(options, name, id, boundary) {
+function createSelectElement(options, name, id, boundary) {
     let selectElement = document.createElement('select');
     options.forEach(option => {
         selectElement.name = name;
@@ -176,16 +182,44 @@ function getSelectElement(options, name, id, boundary) {
     Object.assign(selectElement.style, boundary);
     return selectElement;
 }
-exports.getSelectElement = getSelectElement;
+exports.createSelectElement = createSelectElement;
 /**
- * Creates and returns an HTMLButtonElement.
+ * Create and return an HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
+ *
+ * @param textContent The text content of the label.
+ * @param options The options for the HTMLSelectElement.
+ * @param name The name for the HTMLSelectElement.
+ * @param id The id.
+ * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
+ * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
+ */
+function createLabelWithSelectElement(textContent, options, name, id, boundary) {
+    let div = document.createElement('div');
+    let label = createLabel(textContent, boundary);
+    div.appendChild(label);
+    let selectElement = document.createElement('select');
+    div.appendChild(selectElement);
+    options.forEach(option => {
+        selectElement.name = name;
+        selectElement.id = id;
+        let optionElement = document.createElement('option');
+        optionElement.value = option;
+        optionElement.text = option;
+        selectElement.appendChild(optionElement);
+    });
+    Object.assign(selectElement.style, boundary);
+    return div;
+}
+exports.createLabelWithSelectElement = createLabelWithSelectElement;
+/**
+ * Create and return an HTMLButtonElement.
  *
  * @param textContent The text content of the button.
  * @param marginLeft The left margin.
  * @param marginTop The top margin.
  * @param marginBottom The bottom margin.
  * @param marginRight The right margin
- * @returns An HTMLButtonElement with the textContent and the specified margins.
+ * @returns An HTMLButtonElement with the textContent and specified boundary.
  */
 function createButton(textContent, boundary) {
     let button = document.createElement('button');
@@ -195,19 +229,55 @@ function createButton(textContent, boundary) {
 }
 exports.createButton = createButton;
 /**
- * Creates and returns an HTMLDivElement with a 'flex' display style.
+ * Create and return HTMLDivElement with a 'flex' display style.
  *
  * @param marginLeft The left margin.
  * @param marginTop The top margin.
  * @param marginBottom The bottom margin.
  * @param marginRight The right margin.
- * @returns An HTMLDivElement with a 'flex' display style and the specified margins.
+ * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-function createFlexDiv(boundary) {
+function createDiv(boundary) {
     let div = document.createElement("div");
-    div.style.display = 'flex';
     Object.assign(div.style, boundary);
     return div;
 }
+exports.createDiv = createDiv;
+/**
+ * Create and return HTMLDivElement with a 'flex' display style.
+ *
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin.
+ * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
+ */
+function createFlexDiv(boundary) {
+    let div = createDiv(boundary);
+    div.style.display = 'flex';
+    return div;
+}
 exports.createFlexDiv = createFlexDiv;
+/**
+ * Create and return HTMLLabelElement.
+ *
+ * @param textContent The text content of the label.
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin.
+ * @param fontsize The font size.
+ * @returns An HTMLLabelElement with specified boundary.
+ */
+function createLabel(textContent, boundary, fontsize) {
+    let label = document.createElement("label");
+    Object.assign(label.style, boundary);
+    label.textContent = textContent;
+    if (fontsize != undefined) {
+        //console.log("fontsize=" + fontsize);
+        label.style.fontSize = fontsize;
+    }
+    return label;
+}
+exports.createLabel = createLabel;
 //# sourceMappingURL=html.js.map

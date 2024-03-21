@@ -23,7 +23,7 @@ import { arrayToString, toNumberArray } from './util.js';
 
 import {
     createLabelWithInput, makeCollapsible, getCollapsibleDiv, resizeInputElement, createSelectElement,
-    resizeSelectElement, createFlexDiv, createButton, remove, createLabel, createInputWithFunction, createInput, createLabelWithSelectElement
+    resizeSelectElement, createFlexDiv, createButton, remove, createLabel, createInputWithFunction, createInput, createLabelWithSelectElement, createDiv
 } from './html.js';
 
 import { drawLevel, drawLine, getTextHeight, getTextWidth } from './canvas.js';
@@ -238,17 +238,18 @@ function parse(xml: XMLDocument) {
         // Remove any existing titleDiv.
         remove(titleId);
         // Create input element.
-        let titleDiv: HTMLDivElement = createLabelWithInput("text", titleId + "Input", boundary1, (event) => {
+        let titleDiv: HTMLDivElement = createLabelWithInput("text", titleId + "Input", boundary1, level0, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 titleNode.value = event.target.value;
                 console.log(titleNode.tagName + " changed to " + titleNode.value);
                 resizeInputElement(event.target);
             }
-        }, titleString, "Title");
+        }, titleString, "Title", fontSize1);
         titleDiv.id = titleId;
-        let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
-        input.style.fontSize = fontSize1;
-        resizeInputElement(input, 0);
+        //let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
+        //input.style.fontSize = fontSize1;
+        //input.value = titleString;
+        //resizeInputElement(input, 0);
         // Insert.
         titleElement.parentNode?.insertBefore(titleDiv, titleElement);
     }
@@ -268,6 +269,7 @@ function parse(xml: XMLDocument) {
                 content: moleculesDiv,
                 buttonLabel: "Molecules",
                 buttonFontSize: fontSize1,
+                boundary: boundary1,
                 level: level0,
                 contentDivId: moleculesDivId
             })
@@ -290,6 +292,7 @@ function parse(xml: XMLDocument) {
                 content: reactionsDiv,
                 buttonLabel: "Reactions",
                 buttonFontSize: fontSize1,
+                boundary: boundary1,
                 level: level0,
                 contentDivId: reactionsDivId
             })
@@ -314,6 +317,7 @@ function parse(xml: XMLDocument) {
                 content: conditionsDiv,
                 buttonLabel: "Conditions",
                 buttonFontSize: fontSize1,
+                boundary: boundary1,
                 level: level0,
                 contentDivId: conditionsDivId
             })
@@ -335,6 +339,7 @@ function parse(xml: XMLDocument) {
                 content: modelParametersDiv,
                 buttonLabel: "Model Parameters",
                 buttonFontSize: fontSize1,
+                boundary: boundary1,
                 level: level0,
                 contentDivId: modelParametersDivId
             })
@@ -356,6 +361,7 @@ function parse(xml: XMLDocument) {
                 content: controlDiv,
                 buttonLabel: "Control",
                 buttonFontSize: fontSize1,
+                boundary: boundary1,
                 level: level0,
                 contentDivId: controlDivId
             })
@@ -496,6 +502,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 content: plDiv,
                 buttonLabel: PropertyList.tagName,
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -509,11 +516,11 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 pl.setProperty(p);
                 molecule.setProperties(pl);
                 if (p.dictRef == ZPE.dictRef) {
-                    processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv);
+                    processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 } else if (p.dictRef == RotConsts.dictRef) {
-                    processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv);
+                    processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 } else {
-                    processProperty(p, undefined, molecule, xml_Ps[j], plDiv);
+                    processProperty(p, undefined, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 }
             }
             moleculeTagNames.delete(PropertyList.tagName);
@@ -527,11 +534,11 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let p: Property = new Property(getAttributes(xml_Ps[0]));
             molecule.setProperties(p);
             if (p.dictRef == ZPE.dictRef) {
-                processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv);
+                processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             } else if (p.dictRef == RotConsts.dictRef) {
-                processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv);
+                processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             } else {
-                processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv);
+                processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             }
             moleculeTagNames.delete(Property.tagName);
         }
@@ -572,6 +579,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 content: extraDOSCMethodDiv,
                 buttonLabel: ExtraDOSCMethod.tagName,
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -616,6 +624,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     content: hinderedRotorPotentialDiv,
                     buttonLabel: HinderedRotorPotential.tagName,
                     buttonFontSize: fontSize3,
+                    boundary: boundary1,
                     level: level3,
                     contentDivId: contentDivId
                 });
@@ -681,6 +690,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     content: potentialPointsDiv,
                     buttonLabel: PotentialPoint.tagName,
                     buttonFontSize: fontSize3,
+                    boundary: boundary1,
                     level: level4,
                     contentDivId: potentialPointContentDivId
                 });
@@ -701,6 +711,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                         if (event.target instanceof HTMLInputElement) {
                             // Check the input is a number.
                             if (isNumeric(event.target.value)) {
+                                let value: number = parseFloat(event.target.value);
                                 potentialPoint.setAngle(parseFloat(event.target.value));
                             } else {
                                 // Reset the input to the current value.
@@ -717,12 +728,14 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     let potentialLabel: HTMLLabelElement = createLabel("Potential:", boundary1);
                     potentialPointDiv.appendChild(potentialLabel);
                     let potentialInputElementId = molecule.id + "_" + PotentialPoint.tagName + "_potential";
-                                        let potentialInputElement: HTMLInputElement = createInput("number", potentialInputElementId, boundary1);
+                    let potentialInputElement: HTMLInputElement = createInput("number", potentialInputElementId, boundary1);
                     potentialInputElement.addEventListener('change', (event) => {
                         if (event.target instanceof HTMLInputElement) {
                             // Check the input is a number.
                             if (isNumeric(event.target.value)) {
-                                potentialPoint.setPotential(parseFloat(event.target.value));
+                                let value: number = parseFloat(event.target.value);
+                                potentialPoint.setPotential(value);
+                                console.log("Set " + PotentialPoint.tagName + " to " + value.toString());
                             } else {
                                 // Reset the input to the current value.
                                 alert("Potential input is not a number, resetting...");
@@ -740,6 +753,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 hinderedRotorPotential.setPotentialPoints(potentialPoints);
                 extraDOSCMethod.setHinderedRotorPotential(hinderedRotorPotential);
             }
+
             // Read periodicities.
             let xml_periodicities: HTMLCollectionOf<Element> = xml_DOSCMethod[0].getElementsByTagName(Periodicity.tagName);
             if (xml_periodicities.length > 0) {
@@ -749,9 +763,19 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 let valueString: string = getNodeValue(getFirstChildNode(xml_periodicities[0]));
                 let periodicity: Periodicity = new Periodicity(getAttributes(xml_periodicities[0]), parseFloat(valueString));
                 extraDOSCMethod.setPeriodicity(periodicity);
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + Periodicity.tagName, boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + Periodicity.tagName, boundary1, level3, (event) => {
                     if (event.target instanceof HTMLInputElement) {
-                        periodicity.value = parseFloat(event.target.value);
+                        valueString = event.target.value;
+                        if (isNumeric(valueString)) {
+                            let value: number = parseFloat(valueString);
+                            periodicity.value = value;
+                            (extraDOSCMethod.getPeriodicity() as Periodicity).value = value;
+                            console.log("Set " + Periodicity.tagName + " to " + value);
+                        } else {
+                            // Reset the input to the current value.
+                            alert("Periodicity input is not a number, resetting...");
+                            event.target.value = periodicity.value.toString();
+                        }
                     }
                 }, valueString, Periodicity.tagName);
                 extraDOSCMethodDiv.appendChild(inputDiv);
@@ -772,13 +796,12 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let reservoirSizeAttributes: Map<string, string> = getAttributes(xml_ReservoirSize[0]);
             let reservoirSize: ReservoirSize = new ReservoirSize(reservoirSizeAttributes, value);
             molecule.setReservoirSize(reservoirSize);
-            let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + ReservoirSize.tagName, boundary1, (event) => {
+            let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + ReservoirSize.tagName, boundary1, level2, (event) => {
                 if (event.target instanceof HTMLInputElement) {
                     reservoirSize.value = parseFloat(event.target.value);
                     resizeInputElement(event.target);
                 }
             }, valueString, ReservoirSize.tagName);
-            resizeInputElement(inputDiv.querySelector('input') as HTMLInputElement);
             moleculeDiv.appendChild(inputDiv);
         }
         // Check for unexpected tags.
@@ -798,6 +821,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             content: moleculeDiv,
             buttonLabel: molecule.getLabel(),
             buttonFontSize: fontSize2,
+            boundary: boundary1,
             level: level1,
             contentDivId: molecule.tagName + "_" + molecule.id
         });
@@ -834,8 +858,13 @@ function displayXML(xmlFilename: string, xml: string) {
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
+ * @param boundary The boundary to go around components.
+ * @param level The level of the component.
  */
-function processProperty(p: Property, units: string[] | undefined, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement) {
+function processProperty(p: Property, units: string[] | undefined, molecule: Molecule, element: Element, moleculeDiv: HTMLDivElement,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+) {
     // Handle scalar or array property
     let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalar.tagName);
     if (scalarNodes.length > 0) {
@@ -849,13 +878,13 @@ function processProperty(p: Property, units: string[] | undefined, molecule: Mol
         p.setProperty(ps);
         let label: string = p.dictRef;
         // Create a new div element for the input.
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + p.dictRef, boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", molecule.id + "_" + p.dictRef, boundary1, level, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(ps, event.target);
             }
         }, inputString, label);
         let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
-        inputElement.value = inputString;
+        //inputElement.value = inputString;
         resizeInputElement(inputElement);
         inputElement.addEventListener('change', (event) => {
             let eventTarget = event.target as HTMLInputElement;
@@ -876,7 +905,7 @@ function processProperty(p: Property, units: string[] | undefined, molecule: Mol
                 displayReactionsDiagram();
             }
         });
-        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary1);
+        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
         moleculeDiv.appendChild(inputDiv);
     } else {
         let arrayNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyArray.tagName);
@@ -891,7 +920,7 @@ function processProperty(p: Property, units: string[] | undefined, molecule: Mol
             p.setProperty(pa);
             let label: string = p.dictRef;
             // Create a new div element for the input.
-            let inputDiv: HTMLDivElement = createLabelWithInput("text", molecule.id + "_" + p.dictRef, boundary1, (event) => {
+            let inputDiv: HTMLDivElement = createLabelWithInput("text", molecule.id + "_" + p.dictRef, boundary, level, (event) => {
                 if (event.target instanceof HTMLInputElement) {
                     setNumberArrayNode(pa, event.target);
                 }
@@ -908,7 +937,7 @@ function processProperty(p: Property, units: string[] | undefined, molecule: Mol
                 console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
                 resizeInputElement(inputElement);
             });
-            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary1);
+            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
             moleculeDiv.appendChild(inputDiv);
         } else {
             throw new Error("Expecting " + PropertyScalar.tagName + " or " + PropertyArray.tagName);
@@ -925,7 +954,7 @@ function processProperty(p: Property, units: string[] | undefined, molecule: Mol
  * @param tagOrDictRef The tag or dictionary reference.
  */
 function addAnyUnits(units: string[] | undefined, attributes: Map<string, string>, inputDiv: HTMLDivElement,
-    id: string, tagOrDictRef: string, boundary: {marginLeft: string, marginTop: string, marginBottom: string, marginRight: string}) {
+    id: string, tagOrDictRef: string, boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
     if (units != undefined) {
         let unitsSelectElement: HTMLSelectElement | undefined = getUnitsSelectElement(units, attributes, id, tagOrDictRef);
         if (unitsSelectElement != undefined) {
@@ -1015,6 +1044,7 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
             content: etmDiv,
             buttonLabel: EnergyTransferModel.tagName,
             buttonFontSize: fontSize3,
+            boundary: boundary1,
             level: level2,
             contentDivId: contentDivId
         });
@@ -1029,22 +1059,16 @@ function processEnergyTransferModel(etm: EnergyTransferModel, molecule: Molecule
             let label: string = DeltaEDown.tagName;
             // Create a new div element for the input.
             let id = molecule.id + "_" + EnergyTransferModel.tagName + "_" + DeltaEDown.tagName + "_" + k;
-            let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+            let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
                 if (event.target instanceof HTMLInputElement) {
                     setNumberNode(deltaEDown, event.target);
+                    inputString = event.target.value;
+                    deltaEDowns[k].setValue(parseFloat(inputString));
+                    console.log("Set " + id + " to " + inputString);
+                    resizeInputElement(event.target);
                 }
             }, inputString, label);
             etmDiv.appendChild(inputDiv);
-            let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
-            inputElement.value = inputString;
-            resizeInputElement(inputElement);
-            inputElement.addEventListener('change', (event) => {
-                let eventTarget = event.target as HTMLInputElement;
-                inputString = eventTarget.value;
-                deltaEDowns[k].setValue(parseFloat(inputString));
-                console.log("Set " + id + " to " + inputString);
-                resizeInputElement(inputElement);
-            });
             let unitsLabel: HTMLLabelElement = document.createElement('label');
             unitsLabel.textContent = "cm-1";
             inputDiv.appendChild(unitsLabel);
@@ -1140,7 +1164,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
     console.log("Number of reactions=" + xml_reactions_length);
     //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
     for (let i = 0; i < xml_reactions.length; i++) {
-        let reactionDiv: HTMLDivElement = document.createElement("div");
+        let reactionDiv: HTMLDivElement = createDiv(boundary1);
         // Set attributes.
         let reactionAttributes: Map<string, string> = getAttributes(xml_reactions[i]);
         let reactionTagNames: Set<string> = new Set();
@@ -1208,6 +1232,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 content: reactantsDiv,
                 buttonLabel: "Reactants",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1226,7 +1251,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let product: Product = new Product(getAttributes(xml_products[j]), molecule);
                 products.push(product);
                 let options: string[] = ["modelled", "sink"];
-                let container: HTMLDivElement = createLabelWithSelectElement(molecule.ref + " role:", options, 
+                let container: HTMLDivElement = createLabelWithSelectElement(molecule.ref + " role:", options,
                     molecule.ref + "_" + 'Select_Role', "Role", boundary1);
                 let selectElement: HTMLSelectElement = container.querySelector('select') as HTMLSelectElement;
                 selectElement.value = molecule.role;
@@ -1246,6 +1271,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 content: productsDiv,
                 buttonLabel: "Products",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1302,6 +1328,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 content: transitionStatesDiv,
                 buttonLabel: "Transition States",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1337,12 +1364,11 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                                 let label: string = PreExponential.tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + MesmerILT.tagName + "_" + PreExponential.tagName;
-                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
                                     if (event.target instanceof HTMLInputElement) {
                                         setNumberNode(preExponential, event.target);
                                     }
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 mCRCMethodDiv.appendChild(inputDiv);
                                 let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
                                 inputElement.value = inputString;
@@ -1371,12 +1397,11 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                                 let label: string = ActivationEnergy.tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + MesmerILT.tagName + "_" + ActivationEnergy.tagName;
-                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
                                     if (event.target instanceof HTMLInputElement) {
                                         setNumberNode(activationEnergy, event.target);
                                     }
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
                                 inputElement.value = inputString;
                                 resizeInputElement(inputElement);
@@ -1404,12 +1429,11 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                                 let label: string = TInfinity.tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + MesmerILT.tagName + "_" + TInfinity.tagName;
-                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
                                     if (event.target instanceof HTMLInputElement) {
                                         setNumberNode(tInfinity, event.target);
                                     }
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
                                 inputElement.value = inputString;
                                 resizeInputElement(inputElement);
@@ -1437,12 +1461,11 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                                 let label: string = NInfinity.tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + MesmerILT.tagName + "_" + NInfinity.tagName;
-                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+                                let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
                                     if (event.target instanceof HTMLInputElement) {
                                         setNumberNode(nInfinity, event.target);
                                     }
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 mCRCMethodDiv.appendChild(inputDiv);
                                 let inputElement: HTMLInputElement = inputDiv.querySelector('input') as HTMLInputElement;
                                 inputElement.value = inputString;
@@ -1466,6 +1489,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                             content: mCRCMethodDiv,
                             buttonLabel: MCRCMethod.tagName,
                             buttonFontSize: fontSize3,
+                            boundary: boundary1,
                             level: level2,
                             contentDivId: contentDivId
                         });
@@ -1491,10 +1515,16 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             if (xml_excessReactantConc.length > 1) {
                 throw new Error("Expecting 1 " + ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
             }
-            let excessReactantConc: ExcessReactantConc | undefined;
             let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_excessReactantConc[0])));
-            excessReactantConc = new ExcessReactantConc(getAttributes(xml_excessReactantConc[0]), value);
+            let excessReactantConc: ExcessReactantConc = new ExcessReactantConc(getAttributes(xml_excessReactantConc[0]), value);
             reaction.setExcessReactantConc(excessReactantConc);
+            let id = reaction.id + "_" + ExcessReactantConc.tagName;
+            let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level2, (event) => {
+                if (event.target instanceof HTMLInputElement) {
+                    setNumberNode(excessReactantConc, event.target);
+                }
+            }, value.toString(), ExcessReactantConc.tagName);
+            reactionDiv.appendChild(inputDiv);
         }
 
         // Create a new collapsible div for the reaction.
@@ -1502,6 +1532,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             content: reactionDiv,
             buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
             buttonFontSize: fontSize2,
+            boundary: boundary1,
             level: level1,
             contentDivId: reaction.tagName + "_" + reaction.id
         });
@@ -1535,6 +1566,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         content: bathGasesDiv,
         buttonLabel: BathGas.name,
         buttonFontSize: fontSize2,
+        boundary: boundary1,
         level: level1,
         contentDivId: BathGas.tagName
     }));
@@ -1546,8 +1578,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         let bathGas: BathGas = new BathGas(new Map(), "");
         conditions.addBathGas(bathGas);
         let containerDiv: HTMLDivElement = createFlexDiv(level2);
-        let bathGasLabel: HTMLLabelElement = document.createElement('label');
-        bathGasLabel.textContent = BathGas.tagName + ": ";
+        let bathGasLabel: HTMLLabelElement = createLabel(BathGas.tagName, boundary1);
         containerDiv.appendChild(bathGasLabel);
         // Create a HTMLSelectInput for the BathGas.
         // Get the ids of all the molecules.
@@ -1586,9 +1617,8 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
             let bathGas: BathGas = new BathGas(attributes, moleculeID);
             console.log("bathGas" + bathGas.toString());
             conditions.addBathGas(bathGas);
-            let containerDiv: HTMLDivElement = document.createElement("div");
-            let bathGasLabel: HTMLLabelElement = document.createElement('label');
-            bathGasLabel.textContent = BathGas.tagName + ": ";
+            let containerDiv: HTMLDivElement = createFlexDiv(level2);
+            let bathGasLabel: HTMLLabelElement = createLabel(BathGas.tagName, boundary1);
             containerDiv.appendChild(bathGasLabel);
             // Create a HTMLSelectInput for the BathGas.
             // Get the ids of all the molecules.
@@ -1605,7 +1635,6 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 }
             });
             resizeSelectElement(selectElement);
-            Object.assign(selectElement.style, level2);
             containerDiv.appendChild(selectElement);
             // Add a remove button.
             let removeButton: HTMLButtonElement = createButton(removeString, boundary1);
@@ -1627,6 +1656,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         content: pTsDiv,
         buttonLabel: PTs.name,
         buttonFontSize: fontSize2,
+        boundary: boundary1,
         level: level1,
         contentDivId: BathGas.tagName
     }));
@@ -1659,11 +1689,6 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
             pTPairDiv.insertBefore(detailsDiv, addDetailsButton);
             pTPairDiv.removeChild(addDetailsButton);
         });
-
-
-
-
-
 
 
         /*
@@ -1801,12 +1826,11 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                     pTPair.setExperimentRate(experimentRate);
                     // Create a new div for the ExperimentRate.
                     let id = PTpair.tagName + "_" + ExperimentRate.tagName;
-                    let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+                    let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level0, (event) => {
                         if (event.target instanceof HTMLInputElement) {
                             setNumberNode(experimentRate, event.target);
                         }
                     }, experimentRate.value.toString(), ExperimentRate.tagName);
-                    Object.assign(inputDiv.style, boundary1);
                     pTPairDiv.appendChild(inputDiv);
                 }
                 addP(pTPairDiv, pTPair);
@@ -1832,7 +1856,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
  * @param pTPair The PTpair.
  */
 function addP(containerDiv: HTMLDivElement, pTPair: PTpair): void {
-    let pInputDiv: HTMLDivElement = createLabelWithInput("number", PTpair.tagName + "_" + "P", boundary1, (event) => {
+    let pInputDiv: HTMLDivElement = createLabelWithInput("number", PTpair.tagName + "_" + "P", boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (isNumeric(event.target.value)) {
                 pTPair.setP(parseFloat(event.target.value));
@@ -1855,7 +1879,7 @@ function addP(containerDiv: HTMLDivElement, pTPair: PTpair): void {
  * @param pTPair The PTpair.
  */
 function addT(containerDiv: HTMLDivElement, pTPair: PTpair): void {
-    let tInputDiv: HTMLDivElement = createLabelWithInput("number", PTpair.tagName + "_" + "T", boundary1, (event) => {
+    let tInputDiv: HTMLDivElement = createLabelWithInput("number", PTpair.tagName + "_" + "T", boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (isNumeric(event.target.value)) {
                 pTPair.setT(parseFloat(event.target.value));
@@ -2016,12 +2040,11 @@ function addExperimentRateButton(pTPairDiv: HTMLDivElement, pTPair: PTpair): voi
         pTPair.setExperimentRate(experimentRate);
         // Create a new div element for the input.
         let id = PTpair.tagName + "_" + ExperimentRate.tagName;
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", id, boundary1, level3, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(experimentRate, event.target);
             }
         }, "", ExperimentRate.tagName);
-        Object.assign(inputDiv.style, level3);
         pTPairDiv.insertBefore(experimentRateDiv, button);
         pTPairDiv.removeChild(button);
     });
@@ -2056,7 +2079,7 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         let grainSizeDiv: HTMLDivElement = createFlexDiv(level1);
         // Create a new div for the grainSize.
         let grainSizeId = ModelParameters.tagName + "_" + GrainSize.tagName;
-        let grainSizeInputDiv: HTMLDivElement = createLabelWithInput("number", grainSizeId, boundary1, (event) => {
+        let grainSizeInputDiv: HTMLDivElement = createLabelWithInput("number", grainSizeId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(grainSize, event.target);
                 resizeInputElement(event.target);
@@ -2080,7 +2103,7 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         modelParameters.setAutomaticallySetMaxEne(automaticallySetMaxEne);
         // Create a new div for the automaticallySetMaxEne.
         let automaticallySetMaxEneId = ModelParameters.tagName + "_" + AutomaticallySetMaxEne.tagName;
-        let automaticallySetMaxEneInputDiv: HTMLDivElement = createLabelWithInput("number", automaticallySetMaxEneId, boundary1, (event) => {
+        let automaticallySetMaxEneInputDiv: HTMLDivElement = createLabelWithInput("number", automaticallySetMaxEneId, boundary1, level0, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(automaticallySetMaxEne, event.target);
                 resizeInputElement(event.target);
@@ -2106,14 +2129,13 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
         // Create a new div for the energyAboveTheTopHill.
         let energyAboveTheTopHillId = ModelParameters.tagName + "_" + EnergyAboveTheTopHill.tagName;
-        let energyAboveTheTopHillInputDiv: HTMLDivElement = createLabelWithInput("number", energyAboveTheTopHillId, boundary1, (event) => {
+        let energyAboveTheTopHillInputDiv: HTMLDivElement = createLabelWithInput("number", energyAboveTheTopHillId, boundary1, level2, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(energyAboveTheTopHill, event.target);
                 resizeInputElement(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), EnergyAboveTheTopHill.tagName);
         resizeInputElement(energyAboveTheTopHillInputDiv.querySelector('input') as HTMLInputElement);
-        Object.assign(energyAboveTheTopHillInputDiv.style, level1);
         modelParametersDiv.appendChild(energyAboveTheTopHillInputDiv);
         // Add any units
         addAnyUnits(undefined, energyAboveTheTopHillAttributes, modelParametersDiv, ModelParameters.tagName + "_" + EnergyAboveTheTopHill.tagName, EnergyAboveTheTopHill.tagName, boundary1);
@@ -2131,14 +2153,13 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         modelParameters.setMaxTemperature(maxTemperature);
         // Create a new div for the maxTemperature.
         let maxTemperatureId = ModelParameters.tagName + "_" + MaxTemperature.tagName;
-        let maxTemperatureInputDiv: HTMLDivElement = createLabelWithInput("number", maxTemperatureId, boundary1, (event) => {
+        let maxTemperatureInputDiv: HTMLDivElement = createLabelWithInput("number", maxTemperatureId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maxTemperature, event.target);
                 resizeInputElement(event.target);
             }
         }, maxTemperature.value.toString(), MaxTemperature.tagName);
         resizeInputElement(maxTemperatureInputDiv.querySelector('input') as HTMLInputElement);
-        Object.assign(modelParametersDiv.style, level1);
         modelParametersDiv.appendChild(maxTemperatureInputDiv);
         // Add any units
         addAnyUnits(undefined, maxTemperatureAttributes, modelParametersDiv, ModelParameters.tagName + "_" + MaxTemperature.tagName, MaxTemperature.tagName, boundary1);
@@ -2866,7 +2887,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                 }
                 // Create a new div for tMax.
                 let tMax: number = testMicroRates.getTmax();
-                let tMaxInputDiv: HTMLDivElement = createLabelWithInput("number", idTmax + "_input", boundary1, (event) => {
+                let tMaxInputDiv: HTMLDivElement = createLabelWithInput("number", idTmax + "_input", boundary1, level0, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if (isNumeric(event.target.value)) {
@@ -2891,7 +2912,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                 }
                 // Create a new div for the tMin.
                 let tMin: number = testMicroRates.getTmin();
-                let tMinInputDiv: HTMLDivElement = createLabelWithInput("number", idTmin + "_input", boundary1, (event) => {
+                let tMinInputDiv: HTMLDivElement = createLabelWithInput("number", idTmin + "_input", boundary1, level0, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if (isNumeric(event.target.value)) {
@@ -2916,7 +2937,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                 }
                 // Create a new div for the tStep.
                 let tStep: number = testMicroRates.getTstep();
-                let tStepInputDiv: HTMLDivElement = createLabelWithInput("number", idTstep + "_input", boundary1, (event) => {
+                let tStepInputDiv: HTMLDivElement = createLabelWithInput("number", idTstep + "_input", boundary1, level0, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if (isNumeric(event.target.value)) {
@@ -3039,7 +3060,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         control.setEigenvalues(eigenvalues);
         let id = Control.tagName + "_" + Eigenvalues.tagName + "_number";
         // Create a new div for the eigenvalues.
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level0, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(eigenvalues, event.target);
                 resizeInputElement(event.target);
@@ -3064,7 +3085,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                     existingDiv.remove();
                 }
                 // Create a new div for the eigenvalues.
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level0, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(eigenvalues, event.target);
                         resizeInputElement(event.target);
@@ -3107,7 +3128,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         control.setShortestTimeOfInterest(shortestTimeOfInterest);
         let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_number";
         // Create a new div for the shortestTimeOfInterest.
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(shortestTimeOfInterest, event.target);
                 resizeInputElement(event.target);
@@ -3132,7 +3153,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                     existingDiv.remove();
                 }
                 // Create a new div for the shortestTimeOfInterest.
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(shortestTimeOfInterest, event.target);
                         resizeInputElement(event.target);
@@ -3175,7 +3196,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         control.setMaximumEvolutionTime(maximumEvolutionTime);
         let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_number";
         // Create a new div for the maximumEvolutionTime.
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maximumEvolutionTime, event.target);
                 resizeInputElement(event.target);
@@ -3200,7 +3221,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                     existingDiv.remove();
                 }
                 // Create a new div for the maximumEvolutionTime.
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(maximumEvolutionTime, event.target);
                         resizeInputElement(event.target);
@@ -3257,7 +3278,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                     existingDiv.remove();
                 }
                 // Create a new div for the automaticallySetMaxEne.
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(automaticallySetMaxEne, event.target);
                         resizeInputElement(event.target);
@@ -3300,7 +3321,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         control.setDiagramEnergyOffset(diagramEnergyOffset);
         let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_number";
         // Create a new div for the diagramEnergyOffset.
-        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+        let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(diagramEnergyOffset, event.target);
                 resizeInputElement(event.target);
@@ -3325,7 +3346,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
                     existingDiv.remove();
                 }
                 // Create a new div for the diagramEnergyOffset.
-                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, (event) => {
+                let inputDiv: HTMLDivElement = createLabelWithInput("number", id + "_input", boundary1, level1, (event) => {
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(diagramEnergyOffset, event.target);
                         resizeInputElement(event.target);

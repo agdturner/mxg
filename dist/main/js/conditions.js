@@ -29,6 +29,22 @@ class ExperimentRate extends xml_js_1.NumberNode {
      */
     static tagName = "me:experimentRate";
     /**
+     * The key to the ref1 attribute value.
+     */
+    static s_ref1 = "ref1";
+    /**
+     * The key to the ref2 attribute value.
+     */
+    static s_ref2 = "ref2";
+    /**
+     * The key to the refReaction attribute value.
+     */
+    static s_refReaction = "refReaction";
+    /**
+     * The key to the error attribute value.
+     */
+    static s_error = "error";
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -39,62 +55,48 @@ class ExperimentRate extends xml_js_1.NumberNode {
      * @returns The ref1 attribute or undefined if there is no ref1 attribute.
      */
     getRef1() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref1");
-        }
+        return this.attributes.get(ExperimentRate.s_ref1);
     }
     /**
      * Set the ref1 attribute.
      * @param ref1 The ref1.
      */
     setRef1(ref1) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref1", ref1);
-        }
+        this.attributes.set(ExperimentRate.s_ref1, ref1);
     }
     /**
      * @returns The ref2 attribute or undefined if there is no ref2 attribute.
      */
     getRef2() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref2");
-        }
+        return this.attributes.get(ExperimentRate.s_ref2);
     }
     /**
      * Set the ref2 attribute.
      * @param ref2 The ref2.
      */
     setRef2(ref2) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref2", ref2);
-        }
+        this.attributes.set(ExperimentRate.s_ref2, ref2);
     }
     /**
      * @returns The refReaction attribute or undefined if there is no refReaction attribute.
      */
     getRefReaction() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("refReaction");
-        }
+        return this.attributes.get(ExperimentRate.s_refReaction);
     }
     /**
      * Set the refReaction attribute.
      * @param refReaction The refReaction.
      */
     setRefReaction(refReaction) {
-        if (this.attributes != undefined) {
-            this.attributes.set("refReaction", refReaction);
-        }
+        this.attributes.set(ExperimentRate.s_refReaction, refReaction);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error = this.attributes.get(ExperimentRate.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
     /**
@@ -102,9 +104,7 @@ class ExperimentRate extends xml_js_1.NumberNode {
      * @param error The error.
      */
     setError(error) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentRate.s_error, error.toString());
     }
 }
 exports.ExperimentRate = ExperimentRate;
@@ -121,6 +121,18 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      */
     static tagName = "me:experimentalYield";
     /**
+     * The key to the ref attribute value.
+     */
+    static s_ref = "ref";
+    /**
+     * The key to the error attribute value.
+     */
+    static s_error = "error";
+    /**
+     * The key to the yieldTime attribute value.
+     */
+    static s_yieldTime = "yieldTime";
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -131,28 +143,22 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      * @returns The ref attribute or undefined if there is no ref attribute.
      */
     getRef() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref");
-        }
+        return this.attributes.get(ExperimentalYield.s_ref);
     }
     /**
      * Set the ref attribute.
      * @param ref The ref.
      */
     setRef(ref) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref", ref);
-        }
+        this.attributes.set(ExperimentalYield.s_ref, ref);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error = this.attributes.get(ExperimentalYield.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
     /**
@@ -160,19 +166,15 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      * @param error The error.
      */
     setError(error) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentalYield.s_error, error.toString());
     }
     /**
      * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
      */
     getYieldTime() {
-        if (this.attributes != undefined) {
-            let yieldTime = this.attributes.get("yieldTime");
-            if (yieldTime) {
-                return parseFloat(yieldTime);
-            }
+        let yieldTime = this.attributes.get(ExperimentalYield.s_yieldTime);
+        if (yieldTime) {
+            return parseFloat(yieldTime);
         }
     }
     /**
@@ -180,9 +182,7 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      * @param yieldTime The yieldTime.
      */
     setYieldTime(yieldTime) {
-        if (this.attributes != undefined) {
-            this.attributes.set("yieldTime", yieldTime.toString());
-        }
+        this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
     }
 }
 exports.ExperimentalYield = ExperimentalYield;
@@ -198,6 +198,14 @@ class ExperimentalEigenvalue extends xml_js_1.NumberNode {
     */
     static tagName = "me:experimentalEigenvalue";
     /**
+     * The key to the EigenvalueID attribute value.
+     */
+    static s_EigenvalueID = "EigenvalueID";
+    /**
+     * The key to the error attribute value.
+     */
+    static s_error = "error";
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -208,28 +216,22 @@ class ExperimentalEigenvalue extends xml_js_1.NumberNode {
      * @returns The EigenvalueID attribute or undefined if there is no EigenvalueID attribute.
      */
     getEigenvalueID() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("EigenvalueID");
-        }
+        return this.attributes.get(ExperimentalEigenvalue.s_EigenvalueID);
     }
     /**
      * Set the EigenvalueID attribute.
      * @param EigenvalueID The EigenvalueID.
      */
     setEigenvalueID(EigenvalueID) {
-        if (this.attributes != undefined) {
-            this.attributes.set("EigenvalueID", EigenvalueID);
-        }
+        this.attributes.set(ExperimentalEigenvalue.s_EigenvalueID, EigenvalueID);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error = this.attributes.get(ExperimentalEigenvalue.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
     /**
@@ -237,9 +239,7 @@ class ExperimentalEigenvalue extends xml_js_1.NumberNode {
      * @param error The error.
      */
     setError(error) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
     }
 }
 exports.ExperimentalEigenvalue = ExperimentalEigenvalue;
@@ -254,6 +254,10 @@ class ExcessReactantConc extends xml_js_1.NumberNode {
      */
     static tagName = "me:excessReactantConc";
     /**
+     * The key to the percent attribute value.
+     */
+    static s_percent = "percent";
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -264,18 +268,14 @@ class ExcessReactantConc extends xml_js_1.NumberNode {
      * @returns The percent attribute or undefined if there is no percent attribute.
      */
     getPercent() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("percent");
-        }
+        return this.attributes.get(ExcessReactantConc.s_percent);
     }
     /**
      * Set the percent attribute.
      * @param percent The percent.
      */
     setPercent(percent) {
-        if (this.attributes != undefined) {
-            this.attributes.set("percent", percent);
-        }
+        this.attributes.set(ExcessReactantConc.s_percent, percent);
     }
 }
 exports.ExcessReactantConc = ExcessReactantConc;
@@ -303,6 +303,26 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * The precision attribute potential values.
      */
     static precisions = ["d", "dd", "qd", "double", "double-double", "quad-double"];
+    /**
+     * The key to the P attribute value.
+     */
+    static s_P = "P";
+    /**
+     * The key to the T attribute value.
+     */
+    static s_T = "T";
+    /**
+     * The key to the precision attribute value.
+     */
+    static s_precision = "precision";
+    /**
+     * The key to the excessReactantConc attribute value.
+     */
+    static s_excessReactantConc = "excessReactantConc";
+    /**
+     * The key to the percentExcessReactantConc attribute value.
+     */
+    static s_percentExcessReactantConc = "percentExcessReactantConc";
     /**
      * The index. Keys are types and values are the node indexes.
      */
@@ -336,11 +356,9 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns The Pressure.
      */
     getP() {
-        if (this.attributes != undefined) {
-            let p = this.attributes.get("P");
-            if (p != undefined) {
-                return parseFloat(p);
-            }
+        let p = this.attributes.get(PTpair.s_P);
+        if (p != undefined) {
+            return parseFloat(p);
         }
         return NaN;
     }
@@ -348,19 +366,15 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * Set The Pressure
      */
     setP(p) {
-        if (this.attributes != undefined) {
-            this.attributes.set("P", p.toString());
-        }
+        this.attributes.set(PTpair.s_P, p.toString());
     }
     /**
      * @returns The Temperature.
      */
     getT() {
-        if (this.attributes != undefined) {
-            let t = this.attributes.get("T");
-            if (t != undefined) {
-                return parseFloat(t);
-            }
+        let t = this.attributes.get(PTpair.s_T);
+        if (t != undefined) {
+            return parseFloat(t);
         }
         return NaN;
     }
@@ -368,33 +382,27 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * Set The Temperature.
      */
     setT(t) {
-        if (this.attributes != undefined) {
-            this.attributes.set("T", t.toString());
-        }
+        this.attributes.set(PTpair.s_T, t.toString());
     }
     /**
      * @returns The precision attribute or undefined if there is no precision attribute.
      */
     getPrecision() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("precision");
-        }
+        return this.attributes.get(PTpair.s_precision);
     }
     /**
      * Set the precision attribute.
      * @param precision The precision.
      */
     setPrecision(precision) {
-        if (this.attributes != undefined) {
-            this.attributes.set("precision", precision);
-        }
+        this.attributes.set(PTpair.s_precision, precision);
     }
     /**
      * @returns The bath gas.
      */
     getBathGas() {
         let i = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i);
         }
         else {
@@ -406,7 +414,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     setBathGas(bathGas) {
         let i = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, bathGas);
         }
         else {
@@ -419,7 +427,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     removeBathGas() {
         let i = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(BathGas.tagName);
         }
@@ -429,7 +437,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     getExperimentRate() {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i);
         }
         else {
@@ -441,7 +449,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     setExperimentRate(experimentRate) {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, experimentRate);
         }
         else {
@@ -454,7 +462,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     removeExperimentRate() {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(ExperimentRate.tagName);
         }
@@ -463,33 +471,25 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns this.attributes.get("excessReactantConc").
      */
     getExcessReactantConc() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("excessReactantConc");
-        }
+        return this.attributes.get(PTpair.s_excessReactantConc);
     }
     /**
      * this.attributes.set("excessReactantConc", excessReactantConc).
      */
     setExcessReactantConc(excessReactantConc) {
-        if (this.attributes != undefined) {
-            this.attributes.set("excessReactantConc", excessReactantConc);
-        }
+        this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
     }
     /**
      * @returns this.attributes.get("percentExcessReactantConc").
      */
     getPercentExcessReactantConc() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("percentExcessReactantConc");
-        }
+        return this.attributes.get(PTpair.s_percentExcessReactantConc);
     }
     /**
      * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
      */
     setPercentExcessReactantConc(percentExcessReactantConc) {
-        if (this.attributes != undefined) {
-            this.attributes.set("percentExcessReactantConc", percentExcessReactantConc);
-        }
+        this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
     }
 }
 exports.PTpair = PTpair;

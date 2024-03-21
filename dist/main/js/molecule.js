@@ -87,6 +87,18 @@ class Bond extends xml_js_1.TagWithAttributes {
      */
     static tagName = "bond";
     /**
+     * The key for the atomRefs2 attribute.
+     */
+    static s_atomRefs2 = "atomRefs2";
+    /**
+     * The key for the id attribute.
+     */
+    static s_id = "id";
+    /**
+     * The key for the order attribute.
+     */
+    static s_order = "order";
+    /**
      * The atomRefs2 stored for convenience, this is also stored as an attribute.
      */
     atomRefs2;
@@ -95,9 +107,9 @@ class Bond extends xml_js_1.TagWithAttributes {
      */
     constructor(attributes) {
         super(attributes, Bond.tagName);
-        let atomRefs2 = attributes.get("atomRefs2");
+        let atomRefs2 = attributes.get(Bond.s_atomRefs2);
         if (atomRefs2 == undefined) {
-            throw new Error('atomRefs2 is undefined');
+            throw new Error(Bond.s_atomRefs2 + ' is undefined!');
         }
         this.atomRefs2 = atomRefs2;
     }
@@ -106,44 +118,34 @@ class Bond extends xml_js_1.TagWithAttributes {
      */
     setAtomRefs2(atomRefs2) {
         this.atomRefs2 = atomRefs2;
-        if (this.attributes != undefined) {
-            this.attributes.set("atomRefs2", atomRefs2);
-        }
+        this.attributes.set(Bond.s_atomRefs2, atomRefs2);
     }
     /**
      * @returns The attribute value referred to by "id" or undefined.
      */
     getId() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("id");
-        }
+        return this.attributes.get(Bond.s_id);
     }
     /**
      * @param id The id to set the attribute value referred to by "id".
      */
     setId(id) {
-        if (this.attributes != undefined) {
-            this.attributes.set("id", id);
-        }
+        this.attributes.set(Bond.s_id, id);
     }
     /**
      * @returns The attribute value referred to by "order" as a number or undefined.
      */
     getOrder() {
-        if (this.attributes != undefined) {
-            let order = this.attributes.get("order");
-            if (order != undefined) {
-                return parseFloat(order);
-            }
+        let order = this.attributes.get(Bond.s_order);
+        if (order != undefined) {
+            return parseFloat(order);
         }
     }
     /**
      * @param order The order to set the attribute value referred to by "order".
      */
     setOrder(order) {
-        if (this.attributes != undefined) {
-            this.attributes.set("order", order.toString());
-        }
+        this.attributes.set(Bond.s_order, order.toString());
     }
 }
 exports.Bond = Bond;
@@ -232,6 +234,10 @@ class PropertyScalar extends xml_js_1.NumberNode {
      */
     static tagName = "scalar";
     /**
+     * The key for the units attribute.
+     */
+    static s_units = "units";
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -246,13 +252,11 @@ class PropertyScalar extends xml_js_1.NumberNode {
     updateUnits(units) {
         // Check the units are the same and if not replace the units...
         if (units) {
-            if (this.attributes != undefined) {
-                let existingUnits = this.attributes.get("units");
-                if (existingUnits != undefined) {
-                    if (existingUnits != units) {
-                        //console.log('Units are not the same, changing units...');
-                        this.attributes.set("units", units);
-                    }
+            let existingUnits = this.attributes.get(PropertyScalar.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) {
+                    //console.log('Units are not the same, changing units...');
+                    this.attributes.set(PropertyScalar.s_units, units);
                 }
             }
         }
@@ -269,6 +273,10 @@ class PropertyArray extends xml_js_1.NumberArrayNode {
      */
     static tagName = "array";
     /**
+     * The key for the units attribute.
+     */
+    static s_units = "units";
+    /**
      * @param attributes The attributes.
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
@@ -284,13 +292,11 @@ class PropertyArray extends xml_js_1.NumberArrayNode {
     updateUnits(units) {
         // Check the units are the same and if not replace the units...
         if (units) {
-            if (this.attributes != undefined) {
-                let existingUnits = this.attributes.get("units");
-                if (existingUnits != undefined) {
-                    if (existingUnits != units) {
-                        //console.log('Units are not the same, changing units...');
-                        this.attributes.set("units", units);
-                    }
+            let existingUnits = this.attributes.get(PropertyArray.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) {
+                    this.attributes.set(PropertyArray.s_units, units);
+                    console.log('Units changed from ' + existingUnits + ' to ' + units);
                 }
             }
         }
@@ -307,6 +313,10 @@ class Property extends xml_js_1.NodeWithNodes {
      */
     static tagName = "property";
     /**
+     * The key for the dictRef attribute.
+     */
+    static s_dictRef = "dictRef";
+    /**
      * The dictRef.
      */
     dictRef;
@@ -316,9 +326,9 @@ class Property extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, property) {
         super(attributes, Property.tagName);
-        let dictRef = attributes.get("dictRef");
+        let dictRef = attributes.get(Property.s_dictRef);
         if (dictRef == undefined) {
-            throw new Error('dictRef is undefined');
+            throw new Error(Property.s_dictRef + ' is undefined!');
         }
         this.dictRef = dictRef;
         if (property) {
@@ -455,7 +465,7 @@ class PropertyList extends xml_js_1.NodeWithNodes {
     constructor(attributes, properties) {
         super(attributes, PropertyList.tagName);
         this.index = new Map();
-        if (properties) {
+        if (properties != undefined) {
             properties.forEach(property => {
                 this.nodes.set(this.nodes.size, property);
                 this.index.set(property.dictRef, this.nodes.size - 1);
@@ -503,6 +513,26 @@ class DeltaEDown extends xml_js_1.NumberNode {
      */
     static tagName = "me:deltaEDown";
     /**
+     * The key for the bathGas attribute.
+     */
+    static s_bathGas = "bathGas";
+    /**
+     * The key for the units attribute.
+     */
+    static s_units = "units";
+    /**
+     * The key for the lower attribute.
+     */
+    static s_lower = "lower";
+    /**
+     * The key for the upper attribute.
+     */
+    static s_upper = "upper";
+    /**
+     * The key for the stepsize attribute.
+     */
+    static s_stepsize = "stepsize";
+    /**
      * @param attributes The attributes.
      * @param units The units.
      */
@@ -513,73 +543,61 @@ class DeltaEDown extends xml_js_1.NumberNode {
      * @returns The bath gas of the DeltaEDown.
      */
     getBathGas() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("bathGas");
-        }
+        return this.attributes.get(DeltaEDown.s_bathGas);
     }
     /**
      * @param bathGas The bath gas of the DeltaEDown.
      */
     setBathGas(bathGas) {
-        if (this.attributes != undefined) {
-            this.attributes.set("bathGas", bathGas);
-        }
+        this.attributes.set(DeltaEDown.s_bathGas, bathGas);
     }
     /**
      * @returns The units of the DeltaEDown.
      */
     getUnits() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("units");
-        }
+        return this.attributes.get(DeltaEDown.s_units);
+    }
+    /**
+     * @param units The units of the DeltaEDown.
+     */
+    setUnits(units) {
+        this.attributes.set(DeltaEDown.s_units, units);
     }
     /**
      * @returns The lower of the DeltaEDown.
      */
     getLower() {
-        if (this.attributes != undefined) {
-            return parseFloat((0, util_js_1.get)(this.attributes, "lower"));
-        }
+        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_lower));
     }
     /**
      * @param lower The lower of the DeltaEDown.
      */
     setLower(lower) {
-        if (this.attributes != undefined) {
-            this.attributes.set("lower", lower.toString());
-        }
+        this.attributes.set(DeltaEDown.s_lower, lower.toString());
     }
     /**
      * @returns The upper of the DeltaEDown.
      */
     getUpper() {
-        if (this.attributes != undefined) {
-            return parseFloat((0, util_js_1.get)(this.attributes, "upper"));
-        }
+        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_upper));
     }
     /**
      * @param upper The upper of the DeltaEDown.
      */
     setUpper(upper) {
-        if (this.attributes != undefined) {
-            this.attributes.set("upper", upper.toString());
-        }
+        this.attributes.set(DeltaEDown.s_upper, upper.toString());
     }
     /**
      * @returns The stepsize of the DeltaEDown.
      */
     getStepsize() {
-        if (this.attributes != undefined) {
-            return parseFloat((0, util_js_1.get)(this.attributes, "stepsize"));
-        }
+        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_stepsize));
     }
     /**
      * @param stepsize The stepsize of the DeltaEDown.
      */
     setStepsize(stepsize) {
-        if (this.attributes != undefined) {
-            this.attributes.set("stepsize", stepsize.toString());
-        }
+        this.attributes.set(DeltaEDown.s_stepsize, stepsize.toString());
     }
     /**
      * @param value The value of the DeltaEDown.
@@ -672,18 +690,21 @@ class DOSCMethod extends xml_js_1.TagWithAttributes {
      */
     static tagName = "me:DOSCMethod";
     /**
+     * The key for the "xsi:type" attribute value.
+     */
+    static s_xsi_type = "xsi:type";
+    /**
      * @param attributes The attributes.
      */
     constructor(attributes) {
         super(attributes, DOSCMethod.tagName);
-        if (attributes.get("xsi:type") == undefined) {
+        if (attributes.get(DOSCMethod.s_xsi_type) == undefined) {
             let name = attributes.get("name");
             if (name == undefined) {
                 throw new Error('Neither xsi:type or name are defined.');
             }
             else {
-                attributes.set("xsi:type", name);
-                attributes.delete("name");
+                attributes.set(DOSCMethod.s_xsi_type, name);
             }
         }
     }
@@ -691,23 +712,13 @@ class DOSCMethod extends xml_js_1.TagWithAttributes {
      * @returns The xsi:type.
      */
     getXsiType() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("xsi:type");
-        }
-        else {
-            throw new Error('xsi:type is undefined');
-        }
+        return this.attributes.get(DOSCMethod.s_xsi_type);
     }
     /**
      * @param xsiType The xsi:type.
      */
     setXsiType(xsiType) {
-        if (this.attributes != undefined) {
-            this.attributes.set("xsi:type", xsiType);
-        }
-        else {
-            throw new Error('xsi:type is undefined');
-        }
+        this.attributes.set(DOSCMethod.s_xsi_type, xsiType);
     }
 }
 exports.DOSCMethod = DOSCMethod;
@@ -738,6 +749,14 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
      */
     static tagName = "me:PotentialPoint";
     /**
+     * The key angle attribute.
+     */
+    static s_angle = "angle";
+    /**
+     * The key potential attribute.
+     */
+    static s_potential = "potential";
+    /**
      * The angle stored for convenience, this is also an attribute.
      */
     angle;
@@ -750,14 +769,14 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
      */
     constructor(attributes) {
         super(attributes, PotentialPoint.tagName);
-        let angle = attributes.get("angle");
+        let angle = attributes.get(PotentialPoint.s_angle);
         if (angle == undefined) {
-            throw new Error('angle is undefined');
+            throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
         this.angle = parseFloat(angle);
-        let potential = attributes.get("potential");
+        let potential = attributes.get(PotentialPoint.s_potential);
         if (potential == undefined) {
-            throw new Error('potential is undefined');
+            throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
         this.potential = parseFloat(potential);
     }
@@ -772,9 +791,7 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
      */
     setAngle(angle) {
         this.angle = angle;
-        if (this.attributes != undefined) {
-            this.attributes.set("angle", angle.toString());
-        }
+        this.attributes.set(PotentialPoint.s_angle, angle.toString());
     }
     /**
      * @returns The potential.
@@ -787,9 +804,7 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
      */
     setPotential(potential) {
         this.potential = potential;
-        if (this.attributes != undefined) {
-            this.attributes.set("potential", potential.toString());
-        }
+        this.attributes.set(PotentialPoint.s_potential, potential.toString());
     }
 }
 exports.PotentialPoint = PotentialPoint;
@@ -812,6 +827,22 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     static units = ["kJ/mol", "cm-1", "Hartree"];
     /**
+     * The key for the format attribute value.
+     */
+    static s_format = "format";
+    /**
+     * The key for the units attribute value.
+     */
+    static s_units = "units";
+    /**
+     * The key for the expansionSize attribute value.
+     */
+    static s_expansionSize = "expansionSize";
+    /**
+     * The key for the useSineTerms attribute value.
+     */
+    static s_useSineTerms = "useSineTerms";
+    /**
      * The format stored for convenience, this is also an attribute.
      */
     format;
@@ -828,19 +859,19 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     useSineTerms;
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
+     * @param attributes The attributes.
+     * @param potentialPoints The PotentialPoints.
      */
     constructor(attributes, potentialPoints) {
         super(attributes, HinderedRotorPotential.tagName);
-        let format = attributes.get("format");
+        let format = attributes.get(HinderedRotorPotential.s_format);
         if (format == undefined) {
-            throw new Error('format is undefined');
+            throw new Error(HinderedRotorPotential.s_format + ' is undefined!');
         }
         this.format = format;
-        let units = attributes.get("units");
+        let units = attributes.get(HinderedRotorPotential.s_units);
         if (units == undefined) {
-            throw new Error('units is undefined');
+            throw new Error(HinderedRotorPotential.s_units + ' is undefined!');
         }
         this.units = units;
         if (potentialPoints != undefined) {
@@ -848,14 +879,14 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
                 this.nodes.set(this.nodes.size, p);
             });
         }
-        let expansionSize = attributes.get("expansionSize");
+        let expansionSize = attributes.get(HinderedRotorPotential.s_expansionSize);
         if (expansionSize == undefined) {
-            throw new Error('expansionSize is undefined');
+            throw new Error(HinderedRotorPotential.s_expansionSize + ' is undefined!');
         }
         this.expansionSize = parseFloat(expansionSize);
-        let useSineTerms = attributes.get("useSineTerms");
+        let useSineTerms = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
-            throw new Error('useSineTerms is undefined');
+            throw new Error(HinderedRotorPotential.s_useSineTerms + ' is undefined!');
         }
         this.useSineTerms = (useSineTerms == "yes");
     }
@@ -872,9 +903,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     setFormat(format) {
         this.format = format;
-        if (this.attributes != undefined) {
-            this.attributes.set("format", format);
-        }
+        this.attributes.set(HinderedRotorPotential.s_format, format);
     }
     /**
      * @returns The units of the HinderedRotorPotential.
@@ -889,9 +918,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     setUnits(units) {
         this.units = units;
-        if (this.attributes != undefined) {
-            this.attributes.set("units", units);
-        }
+        this.attributes.set(HinderedRotorPotential.s_units, units);
     }
     /**
      * @returns The expansionSize of the HinderedRotorPotential.
@@ -904,9 +931,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     setExpansionSize(expansionSize) {
         this.expansionSize = expansionSize;
-        if (this.attributes != undefined) {
-            this.attributes.set("expansionSize", expansionSize.toString());
-        }
+        this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
     /**
      * @returns The useSineTerms of the HinderedRotorPotential.
@@ -919,9 +944,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     setUseSineTerms(useSineTerms) {
         this.useSineTerms = useSineTerms;
-        if (this.attributes != undefined) {
-            this.attributes.set("useSineTerms", useSineTerms ? "yes" : "no");
-        }
+        this.attributes.set(HinderedRotorPotential.s_useSineTerms, useSineTerms ? "yes" : "no");
     }
     /**
      * @returns The potential point with the given index.
@@ -1111,6 +1134,18 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     static tagName = "molecule";
     /**
+     * The key for the id attribute value.
+     */
+    static s_id = "id";
+    /**
+     * The key for the description attribute value.
+     */
+    static s_description = "description";
+    /**
+     * The key for the active attribute value.
+     */
+    static s_active = "active";
+    /**
      * The index. The keys are the tag names and the values are the node indexes.
      */
     index;
@@ -1131,9 +1166,9 @@ class Molecule extends xml_js_1.NodeWithNodes {
     constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        let id = attributes.get("id");
+        let id = attributes.get(Molecule.s_id);
         if (id == undefined) {
-            throw new Error('id is undefined');
+            throw new Error(Molecule.s_id + ' is undefined');
         }
         this.id = id;
         let i = 0;
@@ -1187,33 +1222,27 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @returns The description of the molecule, or undefined if it is not set.
      */
     getDescription() {
-        if (this.attributes != undefined) {
-            return this.attributes.get("description");
-        }
+        return this.attributes.get(Molecule.s_description);
     }
     /**
      * Set the description of the molecule.
      * @param description The description of the molecule.
      */
     setDescription(description) {
-        if (this.attributes != undefined) {
-            this.attributes.set("description", description);
-        }
+        this.attributes.set(Molecule.s_description, description);
     }
     /**
      * Get the active status of the molecule.
      * @returns The active status of the molecule, or undefined if it is not set.
      */
     getActive() {
-        if (this.attributes != undefined) {
-            let active = this.attributes.get("active");
-            if (active != undefined) {
-                if (active == "true") {
-                    return true;
-                }
-                else {
-                    return false;
-                }
+        let active = this.attributes.get(Molecule.s_active);
+        if (active != undefined) {
+            if (active == "true") {
+                return true;
+            }
+            else {
+                return false;
             }
         }
     }
@@ -1222,9 +1251,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param active The active status of the molecule.
      */
     setActive(active) {
-        if (this.attributes != undefined) {
-            this.attributes.set("active", active.toString());
-        }
+        this.attributes.set(Molecule.s_active, active.toString());
     }
     /**
      * Get a label for the molecule which includes the is and any description and whether active.
@@ -1239,7 +1266,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
         let active = this.getActive();
         if (active) {
-            label += " (active)";
+            label += " (" + Molecule.s_active + ")";
         }
         return label;
     }
@@ -1247,9 +1274,6 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @returns A comma and space separated string of the attributes of the molecule.
      */
     getAttributesAsString() {
-        if (this.attributes == undefined) {
-            return "";
-        }
         return Array.from(this.attributes, ([key, value]) => `${key}=\"${value}\"`).join(', ');
     }
     /**
@@ -1457,7 +1481,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
         let p = this.getProperty(ZPE.dictRef);
         if (p == undefined) {
             console.log(this.toString());
-            throw new Error('ZPE property not found');
+            throw new Error(ZPE.dictRef + ' property not found!');
             //return 0;
         }
         return p.getProperty().value;

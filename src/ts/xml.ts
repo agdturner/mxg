@@ -115,18 +115,13 @@ export class TagWithAttributes extends Tag {
 
     /**
      * The attributes.
-     * This class is identified with the name "TagWithAttributes", but often there are no attributes
-     * for an XML Tag, so this is allowed to be undefined. This is thought to be beneficial for memory 
-     * reasons and the performance implications of having to test if this is undefined is thought to 
-     * be balanced by not having to set up to iterate over an empty Map. There are assumptions in this
-     * approach that might be worth testing if performance is an issue...
      */
-    attributes: Map<string, string> | undefined;
+    attributes: Map<string, string>;
 
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string> | undefined, tagName: string) {
+    constructor(attributes: Map<string, string>, tagName: string) {
         super(tagName);
         this.attributes = attributes;
     }
@@ -156,11 +151,9 @@ export class TagWithAttributes extends Tag {
             s += "\n" + padding;
         }
         s += '<' + this.tagName;
-        if (this.attributes) {
             for (let [k, v] of this.attributes) {
                 s += ' ' + k + '="' + v.toString() + '"';
             }
-        }
         return s + ' />';
     }
 }
@@ -179,7 +172,7 @@ export class StringNode extends TagWithAttributes {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string> | undefined, tagName: string, value: string) {
+    constructor(attributes: Map<string, string>, tagName: string, value: string) {
         super(attributes, tagName);
         this.value = value;
     }
@@ -215,7 +208,7 @@ export class NumberNode extends TagWithAttributes {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string> | undefined, tagName: string, value: number) {
+    constructor(attributes: Map<string, string>, tagName: string, value: number) {
         super(attributes, tagName);
         this.value = value;
     }
@@ -258,7 +251,7 @@ export class NumberArrayNode extends TagWithAttributes {
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
      */
-    constructor(attributes: Map<string, string> | undefined, tagName: string, values: number[], delimiter?: string) {
+    constructor(attributes: Map<string, string>, tagName: string, values: number[], delimiter?: string) {
         super(attributes, tagName);
         this.values = values;
         if (delimiter != undefined) {
@@ -305,7 +298,7 @@ export class NodeWithNodes extends TagWithAttributes {
      * @param attributes The attributes.
      * @param tagName The tag name.
      */
-    constructor(attributes: Map<string, string> | undefined, tagName: string) {
+    constructor(attributes: Map<string, string>, tagName: string) {
         super(attributes, tagName);
         this.nodes = new Map();
     }
@@ -451,16 +444,4 @@ export function getSingularElement(xml: XMLDocument | Element, tagName: string):
         throw new Error("Expecting 1 " + tagName + " but finding " + e.length);
     }
     return e[0];
-}
-
-/**
- * Convert XML to HTML.
- * @param {string} text The XML text.
- */
-export function toHTML(text: string): string {
-    return text.replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
-        .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
-        .replace(/  /g, "&nbsp;&nbsp;");
 }

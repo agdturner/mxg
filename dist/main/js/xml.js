@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toHTML = exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.StringNode = exports.TagWithAttributes = exports.Tag = exports.getInputString = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
+exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.StringNode = exports.TagWithAttributes = exports.Tag = exports.getInputString = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
 const html_1 = require("./html");
 /**
  * Get the attribute of an xml element.
@@ -112,11 +112,6 @@ exports.Tag = Tag;
 class TagWithAttributes extends Tag {
     /**
      * The attributes.
-     * This class is identified with the name "TagWithAttributes", but often there are no attributes
-     * for an XML Tag, so this is allowed to be undefined. This is thought to be beneficial for memory
-     * reasons and the performance implications of having to test if this is undefined is thought to
-     * be balanced by not having to set up to iterate over an empty Map. There are assumptions in this
-     * approach that might be worth testing if performance is an issue...
      */
     attributes;
     /**
@@ -150,10 +145,8 @@ class TagWithAttributes extends Tag {
             s += "\n" + padding;
         }
         s += '<' + this.tagName;
-        if (this.attributes) {
-            for (let [k, v] of this.attributes) {
-                s += ' ' + k + '="' + v.toString() + '"';
-            }
+        for (let [k, v] of this.attributes) {
+            s += ' ' + k + '="' + v.toString() + '"';
         }
         return s + ' />';
     }
@@ -430,16 +423,4 @@ function getSingularElement(xml, tagName) {
     return e[0];
 }
 exports.getSingularElement = getSingularElement;
-/**
- * Convert XML to HTML.
- * @param {string} text The XML text.
- */
-function toHTML(text) {
-    return text.replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
-        .replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
-        .replace(/  /g, "&nbsp;&nbsp;");
-}
-exports.toHTML = toHTML;
 //# sourceMappingURL=xml.js.map

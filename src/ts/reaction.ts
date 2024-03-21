@@ -396,6 +396,11 @@ export class Tunneling extends TagWithAttributes {
     static readonly tagName: string = "me:tunneling";
 
     /**
+     * The key to the name attribute value.
+     */
+    static readonly s_name: string = "name";
+
+    /**
      * @param {Map<string, string>} attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
@@ -406,19 +411,14 @@ export class Tunneling extends TagWithAttributes {
      * @returns The name of the tunneling method.
      */
     getName(): string {
-        if (this.attributes != undefined) {
-            return this.attributes.get("name") as string;
-        }
-        return "";
+        return this.attributes.get(Tunneling.s_name) as string;
     }
 
     /**
      * @param The name of the tunneling method.
      */
     setName(name: string): void {
-        if (this.attributes != undefined) {
-            this.attributes.set("name", name);
-        }
+        this.attributes.set(Tunneling.s_name, name);
     }
 }
 
@@ -436,7 +436,7 @@ export class ExcessReactantConc extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes: Map<string, string>, value: number) {
         super(attributes, ExcessReactantConc.tagName, value);
     }
 }
@@ -450,6 +450,11 @@ export class Reaction extends NodeWithNodes {
      * The tag name.
      */
     static readonly tagName: string = "reaction";
+
+    /**
+     * The key to the id attribute value.
+     */
+    static readonly s_id: string = "id";
 
     /**
      * The index for the nodes.
@@ -504,9 +509,9 @@ export class Reaction extends NodeWithNodes {
         this.reactantsIndex = new Map();
         this.productsIndex = new Map();
         this.transitionStatesIndex = new Map();
-        let id: string | undefined = attributes.get("id");
+        let id: string | undefined = attributes.get(Reaction.s_id);
         if (id == undefined) {
-            throw new Error("Reaction id is undefined");
+            throw new Error(Reaction.s_id + ' is undefined!');
         }
         this.id = id;
         if (reactants != undefined) {

@@ -809,17 +809,18 @@ let unitsPressure = [
         // Remove any existing titleDiv.
         (0, _htmlJs.remove)(titleId);
         // Create input element.
-        let titleDiv = (0, _htmlJs.createLabelWithInput)("text", titleId + "Input", boundary1, (event)=>{
+        let titleDiv = (0, _htmlJs.createLabelWithInput)("text", titleId + "Input", boundary1, level0, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 titleNode.value = event.target.value;
                 console.log(titleNode.tagName + " changed to " + titleNode.value);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
-        }, titleString, "Title");
+        }, titleString, "Title", fontSize1);
         titleDiv.id = titleId;
-        let input = titleDiv.querySelector("input");
-        input.style.fontSize = fontSize1;
-        (0, _htmlJs.resizeInputElement)(input, 0);
+        //let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
+        //input.style.fontSize = fontSize1;
+        //input.value = titleString;
+        //resizeInputElement(input, 0);
         // Insert.
         titleElement.parentNode?.insertBefore(titleDiv, titleElement);
     }
@@ -836,6 +837,7 @@ let unitsPressure = [
             content: moleculesDiv,
             buttonLabel: "Molecules",
             buttonFontSize: fontSize1,
+            boundary: boundary1,
             level: level0,
             contentDivId: moleculesDivId
         }));
@@ -854,6 +856,7 @@ let unitsPressure = [
             content: reactionsDiv,
             buttonLabel: "Reactions",
             buttonFontSize: fontSize1,
+            boundary: boundary1,
             level: level0,
             contentDivId: reactionsDivId
         }));
@@ -874,6 +877,7 @@ let unitsPressure = [
             content: conditionsDiv,
             buttonLabel: "Conditions",
             buttonFontSize: fontSize1,
+            boundary: boundary1,
             level: level0,
             contentDivId: conditionsDivId
         }));
@@ -891,6 +895,7 @@ let unitsPressure = [
             content: modelParametersDiv,
             buttonLabel: "Model Parameters",
             buttonFontSize: fontSize1,
+            boundary: boundary1,
             level: level0,
             contentDivId: modelParametersDivId
         }));
@@ -908,6 +913,7 @@ let unitsPressure = [
             content: controlDiv,
             buttonLabel: "Control",
             buttonFontSize: fontSize1,
+            boundary: boundary1,
             level: level0,
             contentDivId: controlDivId
         }));
@@ -1016,6 +1022,7 @@ let unitsPressure = [
                 content: plDiv,
                 buttonLabel: (0, _moleculeJs.PropertyList).tagName,
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1028,9 +1035,9 @@ let unitsPressure = [
                 let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_Ps[j]));
                 pl.setProperty(p);
                 molecule.setProperties(pl);
-                if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv);
-                else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv);
-                else processProperty(p, undefined, molecule, xml_Ps[j], plDiv);
+                if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                else processProperty(p, undefined, molecule, xml_Ps[j], plDiv, boundary1, level3);
             }
             moleculeTagNames.delete((0, _moleculeJs.PropertyList).tagName);
         } else {
@@ -1040,9 +1047,9 @@ let unitsPressure = [
             // Create a new Property.
             let p = new (0, _moleculeJs.Property)((0, _xmlJs.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
-            if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv);
-            else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv);
-            else processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv);
+            if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+            else if (p.dictRef == (0, _moleculeJs.RotConsts).dictRef) processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+            else processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             moleculeTagNames.delete((0, _moleculeJs.Property).tagName);
         }
         // Organise EnergyTransferModel.
@@ -1074,6 +1081,7 @@ let unitsPressure = [
                 content: extraDOSCMethodDiv,
                 buttonLabel: (0, _moleculeJs.ExtraDOSCMethod).tagName,
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1114,6 +1122,7 @@ let unitsPressure = [
                     content: hinderedRotorPotentialDiv,
                     buttonLabel: (0, _moleculeJs.HinderedRotorPotential).tagName,
                     buttonFontSize: fontSize3,
+                    boundary: boundary1,
                     level: level3,
                     contentDivId: contentDivId
                 });
@@ -1173,6 +1182,7 @@ let unitsPressure = [
                     content: potentialPointsDiv,
                     buttonLabel: (0, _moleculeJs.PotentialPoint).tagName,
                     buttonFontSize: fontSize3,
+                    boundary: boundary1,
                     level: level4,
                     contentDivId: potentialPointContentDivId
                 });
@@ -1192,8 +1202,10 @@ let unitsPressure = [
                     angleInputElement.addEventListener("change", (event)=>{
                         if (event.target instanceof HTMLInputElement) {
                             // Check the input is a number.
-                            if ((0, _utilJs.isNumeric)(event.target.value)) potentialPoint.setAngle(parseFloat(event.target.value));
-                            else {
+                            if ((0, _utilJs.isNumeric)(event.target.value)) {
+                                let value = parseFloat(event.target.value);
+                                potentialPoint.setAngle(parseFloat(event.target.value));
+                            } else {
                                 // Reset the input to the current value.
                                 alert("Angle input is not a number, resetting...");
                                 angleInputElement.value = potentialPoint.getAngle().toString();
@@ -1212,8 +1224,11 @@ let unitsPressure = [
                     potentialInputElement.addEventListener("change", (event)=>{
                         if (event.target instanceof HTMLInputElement) {
                             // Check the input is a number.
-                            if ((0, _utilJs.isNumeric)(event.target.value)) potentialPoint.setPotential(parseFloat(event.target.value));
-                            else {
+                            if ((0, _utilJs.isNumeric)(event.target.value)) {
+                                let value = parseFloat(event.target.value);
+                                potentialPoint.setPotential(value);
+                                console.log("Set " + (0, _moleculeJs.PotentialPoint).tagName + " to " + value.toString());
+                            } else {
                                 // Reset the input to the current value.
                                 alert("Potential input is not a number, resetting...");
                                 potentialInputElement.value = potentialPoint.getPotential().toString();
@@ -1237,8 +1252,20 @@ let unitsPressure = [
                 let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_periodicities[0]));
                 let periodicity = new (0, _moleculeJs.Periodicity)((0, _xmlJs.getAttributes)(xml_periodicities[0]), parseFloat(valueString));
                 extraDOSCMethod.setPeriodicity(periodicity);
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + (0, _moleculeJs.Periodicity).tagName, boundary1, (event)=>{
-                    if (event.target instanceof HTMLInputElement) periodicity.value = parseFloat(event.target.value);
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + (0, _moleculeJs.Periodicity).tagName, boundary1, level3, (event)=>{
+                    if (event.target instanceof HTMLInputElement) {
+                        valueString = event.target.value;
+                        if ((0, _utilJs.isNumeric)(valueString)) {
+                            let value = parseFloat(valueString);
+                            periodicity.value = value;
+                            extraDOSCMethod.getPeriodicity().value = value;
+                            console.log("Set " + (0, _moleculeJs.Periodicity).tagName + " to " + value);
+                        } else {
+                            // Reset the input to the current value.
+                            alert("Periodicity input is not a number, resetting...");
+                            event.target.value = periodicity.value.toString();
+                        }
+                    }
                 }, valueString, (0, _moleculeJs.Periodicity).tagName);
                 extraDOSCMethodDiv.appendChild(inputDiv);
             }
@@ -1255,13 +1282,12 @@ let unitsPressure = [
             let reservoirSizeAttributes = (0, _xmlJs.getAttributes)(xml_ReservoirSize[0]);
             let reservoirSize = new (0, _moleculeJs.ReservoirSize)(reservoirSizeAttributes, value);
             molecule.setReservoirSize(reservoirSize);
-            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + (0, _moleculeJs.ReservoirSize).tagName, boundary1, (event)=>{
+            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + (0, _moleculeJs.ReservoirSize).tagName, boundary1, level2, (event)=>{
                 if (event.target instanceof HTMLInputElement) {
                     reservoirSize.value = parseFloat(event.target.value);
                     (0, _htmlJs.resizeInputElement)(event.target);
                 }
             }, valueString, (0, _moleculeJs.ReservoirSize).tagName);
-            (0, _htmlJs.resizeInputElement)(inputDiv.querySelector("input"));
             moleculeDiv.appendChild(inputDiv);
         }
         // Check for unexpected tags.
@@ -1280,6 +1306,7 @@ let unitsPressure = [
             content: moleculeDiv,
             buttonLabel: molecule.getLabel(),
             buttonFontSize: fontSize2,
+            boundary: boundary1,
             level: level1,
             contentDivId: molecule.tagName + "_" + molecule.id
         });
@@ -1313,7 +1340,9 @@ let unitsPressure = [
  * @param molecule The molecule.
  * @param element The element.
  * @param moleculeDiv The molecule div.
- */ function processProperty(p, units, molecule, element, moleculeDiv) {
+ * @param boundary The boundary to go around components.
+ * @param level The level of the component.
+ */ function processProperty(p, units, molecule, element, moleculeDiv, boundary, level) {
     // Handle scalar or array property
     let scalarNodes = element.getElementsByTagName((0, _moleculeJs.PropertyScalar).tagName);
     if (scalarNodes.length > 0) {
@@ -1325,11 +1354,11 @@ let unitsPressure = [
         p.setProperty(ps);
         let label = p.dictRef;
         // Create a new div element for the input.
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + p.dictRef, boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", molecule.id + "_" + p.dictRef, boundary1, level, (event)=>{
             if (event.target instanceof HTMLInputElement) setNumberNode(ps, event.target);
         }, inputString, label);
         let inputElement = inputDiv.querySelector("input");
-        inputElement.value = inputString;
+        //inputElement.value = inputString;
         (0, _htmlJs.resizeInputElement)(inputElement);
         inputElement.addEventListener("change", (event)=>{
             let eventTarget = event.target;
@@ -1346,7 +1375,7 @@ let unitsPressure = [
                 displayReactionsDiagram();
             }
         });
-        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary1);
+        addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
         moleculeDiv.appendChild(inputDiv);
     } else {
         let arrayNodes = element.getElementsByTagName((0, _moleculeJs.PropertyArray).tagName);
@@ -1359,7 +1388,7 @@ let unitsPressure = [
             p.setProperty(pa);
             let label = p.dictRef;
             // Create a new div element for the input.
-            let inputDiv = (0, _htmlJs.createLabelWithInput)("text", molecule.id + "_" + p.dictRef, boundary1, (event)=>{
+            let inputDiv = (0, _htmlJs.createLabelWithInput)("text", molecule.id + "_" + p.dictRef, boundary, level, (event)=>{
                 if (event.target instanceof HTMLInputElement) setNumberArrayNode(pa, event.target);
             }, inputString, label);
             let inputElement = inputDiv.querySelector("input");
@@ -1374,7 +1403,7 @@ let unitsPressure = [
                 console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
                 (0, _htmlJs.resizeInputElement)(inputElement);
             });
-            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary1);
+            addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
             moleculeDiv.appendChild(inputDiv);
         } else throw new Error("Expecting " + (0, _moleculeJs.PropertyScalar).tagName + " or " + (0, _moleculeJs.PropertyArray).tagName);
     }
@@ -1474,6 +1503,7 @@ let unitsPressure = [
             content: etmDiv,
             buttonLabel: (0, _moleculeJs.EnergyTransferModel).tagName,
             buttonFontSize: fontSize3,
+            boundary: boundary1,
             level: level2,
             contentDivId: contentDivId
         });
@@ -1488,20 +1518,16 @@ let unitsPressure = [
             let label = (0, _moleculeJs.DeltaEDown).tagName;
             // Create a new div element for the input.
             let id = molecule.id + "_" + (0, _moleculeJs.EnergyTransferModel).tagName + "_" + (0, _moleculeJs.DeltaEDown).tagName + "_" + k;
-            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
-                if (event.target instanceof HTMLInputElement) setNumberNode(deltaEDown, event.target);
+            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
+                if (event.target instanceof HTMLInputElement) {
+                    setNumberNode(deltaEDown, event.target);
+                    inputString = event.target.value;
+                    deltaEDowns[k].setValue(parseFloat(inputString));
+                    console.log("Set " + id + " to " + inputString);
+                    (0, _htmlJs.resizeInputElement)(event.target);
+                }
             }, inputString, label);
             etmDiv.appendChild(inputDiv);
-            let inputElement = inputDiv.querySelector("input");
-            inputElement.value = inputString;
-            (0, _htmlJs.resizeInputElement)(inputElement);
-            inputElement.addEventListener("change", (event)=>{
-                let eventTarget = event.target;
-                inputString = eventTarget.value;
-                deltaEDowns[k].setValue(parseFloat(inputString));
-                console.log("Set " + id + " to " + inputString);
-                (0, _htmlJs.resizeInputElement)(inputElement);
-            });
             let unitsLabel = document.createElement("label");
             unitsLabel.textContent = "cm-1";
             inputDiv.appendChild(unitsLabel);
@@ -1575,7 +1601,7 @@ window.set = setNumberNode;
     console.log("Number of reactions=" + xml_reactions_length);
     //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
     for(let i = 0; i < xml_reactions.length; i++){
-        let reactionDiv = document.createElement("div");
+        let reactionDiv = (0, _htmlJs.createDiv)(boundary1);
         // Set attributes.
         let reactionAttributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
         let reactionTagNames = new Set();
@@ -1639,6 +1665,7 @@ window.set = setNumberNode;
                 content: reactantsDiv,
                 buttonLabel: "Reactants",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1679,6 +1706,7 @@ window.set = setNumberNode;
                 content: productsDiv,
                 buttonLabel: "Products",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1736,6 +1764,7 @@ window.set = setNumberNode;
                 content: transitionStatesDiv,
                 buttonLabel: "Transition States",
                 buttonFontSize: fontSize3,
+                boundary: boundary1,
                 level: level2,
                 contentDivId: contentDivId
             });
@@ -1770,10 +1799,9 @@ window.set = setNumberNode;
                                 let label = (0, _reactionJs.PreExponential).tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + (0, _reactionJs.MesmerILT).tagName + "_" + (0, _reactionJs.PreExponential).tagName;
-                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
                                     if (event.target instanceof HTMLInputElement) setNumberNode(preExponential, event.target);
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 mCRCMethodDiv.appendChild(inputDiv);
                                 let inputElement = inputDiv.querySelector("input");
                                 inputElement.value = inputString;
@@ -1801,10 +1829,9 @@ window.set = setNumberNode;
                                 let label = (0, _reactionJs.ActivationEnergy).tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + (0, _reactionJs.MesmerILT).tagName + "_" + (0, _reactionJs.ActivationEnergy).tagName;
-                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
                                     if (event.target instanceof HTMLInputElement) setNumberNode(activationEnergy, event.target);
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 let inputElement = inputDiv.querySelector("input");
                                 inputElement.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(inputElement);
@@ -1831,10 +1858,9 @@ window.set = setNumberNode;
                                 let label = (0, _reactionJs.TInfinity).tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + (0, _reactionJs.MesmerILT).tagName + "_" + (0, _reactionJs.TInfinity).tagName;
-                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
                                     if (event.target instanceof HTMLInputElement) setNumberNode(tInfinity, event.target);
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 let inputElement = inputDiv.querySelector("input");
                                 inputElement.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(inputElement);
@@ -1861,10 +1887,9 @@ window.set = setNumberNode;
                                 let label = (0, _reactionJs.NInfinity).tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + (0, _reactionJs.MesmerILT).tagName + "_" + (0, _reactionJs.NInfinity).tagName;
-                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+                                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
                                     if (event.target instanceof HTMLInputElement) setNumberNode(nInfinity, event.target);
                                 }, inputString, label);
-                                Object.assign(inputDiv.style, level3);
                                 mCRCMethodDiv.appendChild(inputDiv);
                                 let inputElement = inputDiv.querySelector("input");
                                 inputElement.value = inputString;
@@ -1887,6 +1912,7 @@ window.set = setNumberNode;
                             content: mCRCMethodDiv,
                             buttonLabel: (0, _reactionJs.MCRCMethod).tagName,
                             buttonFontSize: fontSize3,
+                            boundary: boundary1,
                             level: level2,
                             contentDivId: contentDivId
                         });
@@ -1907,16 +1933,21 @@ window.set = setNumberNode;
         let xml_excessReactantConc = xml_reactions[i].getElementsByTagName((0, _reactionJs.ExcessReactantConc).tagName);
         if (xml_excessReactantConc.length > 0) {
             if (xml_excessReactantConc.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.ExcessReactantConc).tagName + " but finding " + xml_excessReactantConc.length + "!");
-            let excessReactantConc;
             let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_excessReactantConc[0])));
-            excessReactantConc = new (0, _reactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_excessReactantConc[0]), value);
+            let excessReactantConc = new (0, _reactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_excessReactantConc[0]), value);
             reaction.setExcessReactantConc(excessReactantConc);
+            let id = reaction.id + "_" + (0, _reactionJs.ExcessReactantConc).tagName;
+            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level2, (event)=>{
+                if (event.target instanceof HTMLInputElement) setNumberNode(excessReactantConc, event.target);
+            }, value.toString(), (0, _reactionJs.ExcessReactantConc).tagName);
+            reactionDiv.appendChild(inputDiv);
         }
         // Create a new collapsible div for the reaction.
         let reactionCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
             content: reactionDiv,
             buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
             buttonFontSize: fontSize2,
+            boundary: boundary1,
             level: level1,
             contentDivId: reaction.tagName + "_" + reaction.id
         });
@@ -1945,6 +1976,7 @@ window.set = setNumberNode;
         content: bathGasesDiv,
         buttonLabel: (0, _conditionsJs.BathGas).name,
         buttonFontSize: fontSize2,
+        boundary: boundary1,
         level: level1,
         contentDivId: (0, _conditionsJs.BathGas).tagName
     }));
@@ -1955,8 +1987,7 @@ window.set = setNumberNode;
         let bathGas = new (0, _conditionsJs.BathGas)(new Map(), "");
         conditions.addBathGas(bathGas);
         let containerDiv = (0, _htmlJs.createFlexDiv)(level2);
-        let bathGasLabel = document.createElement("label");
-        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+        let bathGasLabel = (0, _htmlJs.createLabel)((0, _conditionsJs.BathGas).tagName, boundary1);
         containerDiv.appendChild(bathGasLabel);
         // Create a HTMLSelectInput for the BathGas.
         // Get the ids of all the molecules.
@@ -1992,9 +2023,8 @@ window.set = setNumberNode;
         let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID);
         console.log("bathGas" + bathGas.toString());
         conditions.addBathGas(bathGas);
-        let containerDiv = document.createElement("div");
-        let bathGasLabel = document.createElement("label");
-        bathGasLabel.textContent = (0, _conditionsJs.BathGas).tagName + ": ";
+        let containerDiv = (0, _htmlJs.createFlexDiv)(level2);
+        let bathGasLabel = (0, _htmlJs.createLabel)((0, _conditionsJs.BathGas).tagName, boundary1);
         containerDiv.appendChild(bathGasLabel);
         // Create a HTMLSelectInput for the BathGas.
         // Get the ids of all the molecules.
@@ -2011,7 +2041,6 @@ window.set = setNumberNode;
             }
         });
         (0, _htmlJs.resizeSelectElement)(selectElement);
-        Object.assign(selectElement.style, level2);
         containerDiv.appendChild(selectElement);
         // Add a remove button.
         let removeButton = (0, _htmlJs.createButton)(removeString, boundary1);
@@ -2031,6 +2060,7 @@ window.set = setNumberNode;
         content: pTsDiv,
         buttonLabel: (0, _conditionsJs.PTs).name,
         buttonFontSize: fontSize2,
+        boundary: boundary1,
         level: level1,
         contentDivId: (0, _conditionsJs.BathGas).tagName
     }));
@@ -2184,10 +2214,9 @@ window.set = setNumberNode;
                     pTPair.setExperimentRate(experimentRate);
                     // Create a new div for the ExperimentRate.
                     let id = (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.ExperimentRate).tagName;
-                    let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+                    let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level0, (event)=>{
                         if (event.target instanceof HTMLInputElement) setNumberNode(experimentRate, event.target);
                     }, experimentRate.value.toString(), (0, _conditionsJs.ExperimentRate).tagName);
-                    Object.assign(inputDiv.style, boundary1);
                     pTPairDiv.appendChild(inputDiv);
                 }
                 addP(pTPairDiv, pTPair);
@@ -2210,7 +2239,7 @@ window.set = setNumberNode;
  * @param containerDiv The container div.
  * @param pTPair The PTpair.
  */ function addP(containerDiv, pTPair) {
-    let pInputDiv = (0, _htmlJs.createLabelWithInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", boundary1, (event)=>{
+    let pInputDiv = (0, _htmlJs.createLabelWithInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "P", boundary1, level0, (event)=>{
         if (event.target instanceof HTMLInputElement) {
             if ((0, _utilJs.isNumeric)(event.target.value)) {
                 pTPair.setP(parseFloat(event.target.value));
@@ -2231,7 +2260,7 @@ window.set = setNumberNode;
  * @param containerDiv The container div.
  * @param pTPair The PTpair.
  */ function addT(containerDiv, pTPair) {
-    let tInputDiv = (0, _htmlJs.createLabelWithInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", boundary1, (event)=>{
+    let tInputDiv = (0, _htmlJs.createLabelWithInput)("number", (0, _conditionsJs.PTpair).tagName + "_" + "T", boundary1, level0, (event)=>{
         if (event.target instanceof HTMLInputElement) {
             if ((0, _utilJs.isNumeric)(event.target.value)) {
                 pTPair.setT(parseFloat(event.target.value));
@@ -2381,10 +2410,9 @@ window.set = setNumberNode;
         pTPair.setExperimentRate(experimentRate);
         // Create a new div element for the input.
         let id = (0, _conditionsJs.PTpair).tagName + "_" + (0, _conditionsJs.ExperimentRate).tagName;
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level3, (event)=>{
             if (event.target instanceof HTMLInputElement) setNumberNode(experimentRate, event.target);
         }, "", (0, _conditionsJs.ExperimentRate).tagName);
-        Object.assign(inputDiv.style, level3);
         pTPairDiv.insertBefore(experimentRateDiv, button);
         pTPairDiv.removeChild(button);
     });
@@ -2414,7 +2442,7 @@ window.set = setNumberNode;
         let grainSizeDiv = (0, _htmlJs.createFlexDiv)(level1);
         // Create a new div for the grainSize.
         let grainSizeId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName;
-        let grainSizeInputDiv = (0, _htmlJs.createLabelWithInput)("number", grainSizeId, boundary1, (event)=>{
+        let grainSizeInputDiv = (0, _htmlJs.createLabelWithInput)("number", grainSizeId, boundary1, level1, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(grainSize, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -2436,7 +2464,7 @@ window.set = setNumberNode;
         modelParameters.setAutomaticallySetMaxEne(automaticallySetMaxEne);
         // Create a new div for the automaticallySetMaxEne.
         let automaticallySetMaxEneId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName;
-        let automaticallySetMaxEneInputDiv = (0, _htmlJs.createLabelWithInput)("number", automaticallySetMaxEneId, boundary1, (event)=>{
+        let automaticallySetMaxEneInputDiv = (0, _htmlJs.createLabelWithInput)("number", automaticallySetMaxEneId, boundary1, level0, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(automaticallySetMaxEne, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -2458,14 +2486,13 @@ window.set = setNumberNode;
         modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
         // Create a new div for the energyAboveTheTopHill.
         let energyAboveTheTopHillId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName;
-        let energyAboveTheTopHillInputDiv = (0, _htmlJs.createLabelWithInput)("number", energyAboveTheTopHillId, boundary1, (event)=>{
+        let energyAboveTheTopHillInputDiv = (0, _htmlJs.createLabelWithInput)("number", energyAboveTheTopHillId, boundary1, level2, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(energyAboveTheTopHill, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
         (0, _htmlJs.resizeInputElement)(energyAboveTheTopHillInputDiv.querySelector("input"));
-        Object.assign(energyAboveTheTopHillInputDiv.style, level1);
         modelParametersDiv.appendChild(energyAboveTheTopHillInputDiv);
         // Add any units
         addAnyUnits(undefined, energyAboveTheTopHillAttributes, modelParametersDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, boundary1);
@@ -2480,14 +2507,13 @@ window.set = setNumberNode;
         modelParameters.setMaxTemperature(maxTemperature);
         // Create a new div for the maxTemperature.
         let maxTemperatureId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.MaxTemperature).tagName;
-        let maxTemperatureInputDiv = (0, _htmlJs.createLabelWithInput)("number", maxTemperatureId, boundary1, (event)=>{
+        let maxTemperatureInputDiv = (0, _htmlJs.createLabelWithInput)("number", maxTemperatureId, boundary1, level1, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maxTemperature, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, maxTemperature.value.toString(), (0, _modelParametersJs.MaxTemperature).tagName);
         (0, _htmlJs.resizeInputElement)(maxTemperatureInputDiv.querySelector("input"));
-        Object.assign(modelParametersDiv.style, level1);
         modelParametersDiv.appendChild(maxTemperatureInputDiv);
         // Add any units
         addAnyUnits(undefined, maxTemperatureAttributes, modelParametersDiv, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.MaxTemperature).tagName, (0, _modelParametersJs.MaxTemperature).tagName, boundary1);
@@ -3041,7 +3067,7 @@ window.set = setNumberNode;
                 if (existingTmaxDiv != null) existingTmaxDiv.remove();
                 // Create a new div for tMax.
                 let tMax = testMicroRates.getTmax();
-                let tMaxInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTmax + "_input", boundary1, (event)=>{
+                let tMaxInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTmax + "_input", boundary1, level0, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if ((0, _utilJs.isNumeric)(event.target.value)) {
@@ -3064,7 +3090,7 @@ window.set = setNumberNode;
                 if (existingTminDiv != null) existingTminDiv.remove();
                 // Create a new div for the tMin.
                 let tMin = testMicroRates.getTmin();
-                let tMinInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTmin + "_input", boundary1, (event)=>{
+                let tMinInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTmin + "_input", boundary1, level0, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if ((0, _utilJs.isNumeric)(event.target.value)) {
@@ -3087,7 +3113,7 @@ window.set = setNumberNode;
                 if (existingTstepDiv != null) existingTstepDiv.remove();
                 // Create a new div for the tStep.
                 let tStep = testMicroRates.getTstep();
-                let tStepInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTstep + "_input", boundary1, (event)=>{
+                let tStepInputDiv = (0, _htmlJs.createLabelWithInput)("number", idTstep + "_input", boundary1, level0, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         // Check the value is a number.
                         if ((0, _utilJs.isNumeric)(event.target.value)) {
@@ -3198,7 +3224,7 @@ window.set = setNumberNode;
         control.setEigenvalues(eigenvalues);
         let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_number";
         // Create a new div for the eigenvalues.
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level0, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(eigenvalues, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -3221,7 +3247,7 @@ window.set = setNumberNode;
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) existingDiv.remove();
                 // Create a new div for the eigenvalues.
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level0, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(eigenvalues, event.target);
                         (0, _htmlJs.resizeInputElement)(event.target);
@@ -3261,7 +3287,7 @@ window.set = setNumberNode;
         control.setShortestTimeOfInterest(shortestTimeOfInterest);
         let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_number";
         // Create a new div for the shortestTimeOfInterest.
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(shortestTimeOfInterest, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -3284,7 +3310,7 @@ window.set = setNumberNode;
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) existingDiv.remove();
                 // Create a new div for the shortestTimeOfInterest.
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(shortestTimeOfInterest, event.target);
                         (0, _htmlJs.resizeInputElement)(event.target);
@@ -3324,7 +3350,7 @@ window.set = setNumberNode;
         control.setMaximumEvolutionTime(maximumEvolutionTime);
         let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_number";
         // Create a new div for the maximumEvolutionTime.
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maximumEvolutionTime, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -3347,7 +3373,7 @@ window.set = setNumberNode;
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) existingDiv.remove();
                 // Create a new div for the maximumEvolutionTime.
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(maximumEvolutionTime, event.target);
                         (0, _htmlJs.resizeInputElement)(event.target);
@@ -3399,7 +3425,7 @@ window.set = setNumberNode;
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) existingDiv.remove();
                 // Create a new div for the automaticallySetMaxEne.
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(automaticallySetMaxEne, event.target);
                         (0, _htmlJs.resizeInputElement)(event.target);
@@ -3439,7 +3465,7 @@ window.set = setNumberNode;
         control.setDiagramEnergyOffset(diagramEnergyOffset);
         let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_number";
         // Create a new div for the diagramEnergyOffset.
-        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+        let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(diagramEnergyOffset, event.target);
                 (0, _htmlJs.resizeInputElement)(event.target);
@@ -3462,7 +3488,7 @@ window.set = setNumberNode;
                 let existingDiv = document.getElementById(id);
                 if (existingDiv != null) existingDiv.remove();
                 // Create a new div for the diagramEnergyOffset.
-                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, (event)=>{
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id + "_input", boundary1, level1, (event)=>{
                     if (event.target instanceof HTMLInputElement) {
                         setNumberNode(diagramEnergyOffset, event.target);
                         (0, _htmlJs.resizeInputElement)(event.target);
@@ -3970,10 +3996,6 @@ parcelHelpers.defineInteropFlag(exports);
  * @returns The element.
  * @throws An error if there is not exactly one element with the given tag name.
  */ parcelHelpers.export(exports, "getSingularElement", ()=>getSingularElement);
-/**
- * Convert XML to HTML.
- * @param {string} text The XML text.
- */ parcelHelpers.export(exports, "toHTML", ()=>toHTML);
 var _html = require("./html");
 function getAttribute(xml, name) {
     let v = xml.getAttribute(name);
@@ -4044,7 +4066,7 @@ class TagWithAttributes extends Tag {
         let s = "";
         if (padding != undefined) s += "\n" + padding;
         s += "<" + this.tagName;
-        if (this.attributes) for (let [k, v] of this.attributes)s += " " + k + '="' + v.toString() + '"';
+        for (let [k, v] of this.attributes)s += " " + k + '="' + v.toString() + '"';
         return s + " />";
     }
 }
@@ -4204,9 +4226,6 @@ function getSingularElement(xml, tagName) {
     if (e.length != 1) throw new Error("Expecting 1 " + tagName + " but finding " + e.length);
     return e[0];
 }
-function toHTML(text) {
-    return text.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>").replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/  /g, "&nbsp;&nbsp;");
-}
 
 },{"./html":"aLPSL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aLPSL":[function(require,module,exports) {
 /**
@@ -4227,9 +4246,12 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * Create and return HTMLDivElement that contains an HTMLLabelElement and a HTMLInputElement.
  * @param type The input type (e.g. "text", "number").
  * @param id The id of the input.
+ * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
  * @param labelText The label text.
+ * @param inputFontsize The font size of the input.
+ * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */ parcelHelpers.export(exports, "createLabelWithInput", ()=>createLabelWithInput);
 /**
@@ -4297,6 +4319,15 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * @param marginBottom The bottom margin.
  * @param marginRight The right margin.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
+ */ parcelHelpers.export(exports, "createDiv", ()=>createDiv);
+/**
+ * Create and return HTMLDivElement with a 'flex' display style.
+ *
+ * @param marginLeft The left margin.
+ * @param marginTop The top margin.
+ * @param marginBottom The bottom margin.
+ * @param marginRight The right margin.
+ * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */ parcelHelpers.export(exports, "createFlexDiv", ()=>createFlexDiv);
 /**
  * Create and return HTMLLabelElement.
@@ -4306,18 +4337,25 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * @param marginTop The top margin.
  * @param marginBottom The bottom margin.
  * @param marginRight The right margin.
+ * @param fontsize The font size.
  * @returns An HTMLLabelElement with specified boundary.
  */ parcelHelpers.export(exports, "createLabel", ()=>createLabel);
 function remove(id) {
     let e = document.getElementById(id);
     if (e != null) e.parentNode?.removeChild(e);
 }
-function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = "", level = {
+function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = "", boundary = {
     marginLeft: "",
     marginTop: "",
-    marginBottom: ""
+    marginBottom: "",
+    marginRight: ""
+}, level = {
+    marginLeft: "",
+    marginTop: "",
+    marginBottom: "",
+    marginRight: ""
 }, contentDivId = "", contentDivClassName = "" }) {
-    let contentDiv = document.createElement("div");
+    let contentDiv = createDiv(boundary);
     contentDiv.id = contentDivId;
     contentDiv.className = contentDivClassName;
     let button = document.createElement("button");
@@ -4350,20 +4388,23 @@ function makeCollapsible() {
     if (contentDiv.style.display === "block") contentDiv.style.display = "none";
     else contentDiv.style.display = "block";
 }
-function createLabelWithInput(type, id, boundary, func, value, labelContent) {
-    let input = createInputWithFunction(type, id, boundary, func, value);
-    let label = createLabel(labelContent, boundary);
+function createLabelWithInput(type, id, boundary, level, func, value, labelContent, inputFontsize, labelFontsize) {
+    let input = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
+    Object.assign(input.style, boundary);
+    let label = createLabel(labelContent, boundary, labelFontsize);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
-    let container = document.createElement("div");
+    let container = createFlexDiv(level);
     container.appendChild(label);
     container.appendChild(input);
-    Object.assign(container, boundary);
     return container;
 }
-function createInputWithFunction(type, id, boundary, func, value) {
+function createInputWithFunction(type, id, boundary, func, value, inputFontsize) {
     let input = createInput(type, id, boundary);
     input.onchange = func;
+    input.value = value;
+    if (inputFontsize != undefined) input.style.fontSize = inputFontsize;
+    resizeInputElement(input);
     return input;
 }
 function createInput(type, id, boundary) {
@@ -4422,16 +4463,22 @@ function createButton(textContent, boundary) {
     Object.assign(button.style, boundary);
     return button;
 }
-function createFlexDiv(boundary) {
+function createDiv(boundary) {
     let div = document.createElement("div");
-    div.style.display = "flex";
     Object.assign(div.style, boundary);
     return div;
 }
-function createLabel(textContent, boundary) {
+function createFlexDiv(boundary) {
+    let div = createDiv(boundary);
+    div.style.display = "flex";
+    return div;
+}
+function createLabel(textContent, boundary, fontsize) {
     let label = document.createElement("label");
     Object.assign(label.style, boundary);
     label.textContent = textContent;
+    if (fontsize != undefined) //console.log("fontsize=" + fontsize);
+    label.style.fontSize = fontsize;
     return label;
 }
 
@@ -4590,42 +4637,55 @@ class Bond extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "bond";
     }
+    static{
+        /**
+     * The key for the atomRefs2 attribute.
+     */ this.s_atomRefs2 = "atomRefs2";
+    }
+    static{
+        /**
+     * The key for the id attribute.
+     */ this.s_id = "id";
+    }
+    static{
+        /**
+     * The key for the order attribute.
+     */ this.s_order = "order";
+    }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, Bond.tagName);
-        let atomRefs2 = attributes.get("atomRefs2");
-        if (atomRefs2 == undefined) throw new Error("atomRefs2 is undefined");
+        let atomRefs2 = attributes.get(Bond.s_atomRefs2);
+        if (atomRefs2 == undefined) throw new Error(Bond.s_atomRefs2 + " is undefined!");
         this.atomRefs2 = atomRefs2;
     }
     /**
      * @param atomRefs2 The atomRefs2 to set.
      */ setAtomRefs2(atomRefs2) {
         this.atomRefs2 = atomRefs2;
-        if (this.attributes != undefined) this.attributes.set("atomRefs2", atomRefs2);
+        this.attributes.set(Bond.s_atomRefs2, atomRefs2);
     }
     /**
      * @returns The attribute value referred to by "id" or undefined.
      */ getId() {
-        if (this.attributes != undefined) return this.attributes.get("id");
+        return this.attributes.get(Bond.s_id);
     }
     /**
      * @param id The id to set the attribute value referred to by "id".
      */ setId(id) {
-        if (this.attributes != undefined) this.attributes.set("id", id);
+        this.attributes.set(Bond.s_id, id);
     }
     /**
      * @returns The attribute value referred to by "order" as a number or undefined.
      */ getOrder() {
-        if (this.attributes != undefined) {
-            let order = this.attributes.get("order");
-            if (order != undefined) return parseFloat(order);
-        }
+        let order = this.attributes.get(Bond.s_order);
+        if (order != undefined) return parseFloat(order);
     }
     /**
      * @param order The order to set the attribute value referred to by "order".
      */ setOrder(order) {
-        if (this.attributes != undefined) this.attributes.set("order", order.toString());
+        this.attributes.set(Bond.s_order, order.toString());
     }
 }
 class BondArray extends (0, _xmlJs.NodeWithNodes) {
@@ -4694,6 +4754,11 @@ class PropertyScalar extends (0, _xmlJs.NumberNode) {
      * The tag name.
      */ this.tagName = "scalar";
     }
+    static{
+        /**
+     * The key for the units attribute.
+     */ this.s_units = "units";
+    }
     /**
      * @param attributes The attributes.
      * @param value The value.
@@ -4707,12 +4772,10 @@ class PropertyScalar extends (0, _xmlJs.NumberNode) {
      */ updateUnits(units) {
         // Check the units are the same and if not replace the units...
         if (units) {
-            if (this.attributes != undefined) {
-                let existingUnits = this.attributes.get("units");
-                if (existingUnits != undefined) {
-                    if (existingUnits != units) //console.log('Units are not the same, changing units...');
-                    this.attributes.set("units", units);
-                }
+            let existingUnits = this.attributes.get(PropertyScalar.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) //console.log('Units are not the same, changing units...');
+                this.attributes.set(PropertyScalar.s_units, units);
             }
         }
     }
@@ -4722,6 +4785,11 @@ class PropertyArray extends (0, _xmlJs.NumberArrayNode) {
         /**
      * The tag name.
      */ this.tagName = "array";
+    }
+    static{
+        /**
+     * The key for the units attribute.
+     */ this.s_units = "units";
     }
     /**
      * @param attributes The attributes.
@@ -4737,11 +4805,11 @@ class PropertyArray extends (0, _xmlJs.NumberArrayNode) {
      */ updateUnits(units) {
         // Check the units are the same and if not replace the units...
         if (units) {
-            if (this.attributes != undefined) {
-                let existingUnits = this.attributes.get("units");
-                if (existingUnits != undefined) {
-                    if (existingUnits != units) //console.log('Units are not the same, changing units...');
-                    this.attributes.set("units", units);
+            let existingUnits = this.attributes.get(PropertyArray.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) {
+                    this.attributes.set(PropertyArray.s_units, units);
+                    console.log("Units changed from " + existingUnits + " to " + units);
                 }
             }
         }
@@ -4753,13 +4821,18 @@ class Property extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "property";
     }
+    static{
+        /**
+     * The key for the dictRef attribute.
+     */ this.s_dictRef = "dictRef";
+    }
     /**
      * @param attributes The attributes.
      * @param property The property.
      */ constructor(attributes, property){
         super(attributes, Property.tagName);
-        let dictRef = attributes.get("dictRef");
-        if (dictRef == undefined) throw new Error("dictRef is undefined");
+        let dictRef = attributes.get(Property.s_dictRef);
+        if (dictRef == undefined) throw new Error(Property.s_dictRef + " is undefined!");
         this.dictRef = dictRef;
         if (property) this.nodes.set(0, property);
     }
@@ -4859,7 +4932,7 @@ class PropertyList extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, properties){
         super(attributes, PropertyList.tagName);
         this.index = new Map();
-        if (properties) properties.forEach((property)=>{
+        if (properties != undefined) properties.forEach((property)=>{
             this.nodes.set(this.nodes.size, property);
             this.index.set(property.dictRef, this.nodes.size - 1);
         });
@@ -4893,6 +4966,31 @@ class DeltaEDown extends (0, _xmlJs.NumberNode) {
      * The tag name.
      */ this.tagName = "me:deltaEDown";
     }
+    static{
+        /**
+     * The key for the bathGas attribute.
+     */ this.s_bathGas = "bathGas";
+    }
+    static{
+        /**
+     * The key for the units attribute.
+     */ this.s_units = "units";
+    }
+    static{
+        /**
+     * The key for the lower attribute.
+     */ this.s_lower = "lower";
+    }
+    static{
+        /**
+     * The key for the upper attribute.
+     */ this.s_upper = "upper";
+    }
+    static{
+        /**
+     * The key for the stepsize attribute.
+     */ this.s_stepsize = "stepsize";
+    }
     /**
      * @param attributes The attributes.
      * @param units The units.
@@ -4902,47 +5000,52 @@ class DeltaEDown extends (0, _xmlJs.NumberNode) {
     /**
      * @returns The bath gas of the DeltaEDown.
      */ getBathGas() {
-        if (this.attributes != undefined) return this.attributes.get("bathGas");
+        return this.attributes.get(DeltaEDown.s_bathGas);
     }
     /**
      * @param bathGas The bath gas of the DeltaEDown.
      */ setBathGas(bathGas) {
-        if (this.attributes != undefined) this.attributes.set("bathGas", bathGas);
+        this.attributes.set(DeltaEDown.s_bathGas, bathGas);
     }
     /**
      * @returns The units of the DeltaEDown.
      */ getUnits() {
-        if (this.attributes != undefined) return this.attributes.get("units");
+        return this.attributes.get(DeltaEDown.s_units);
+    }
+    /**
+     * @param units The units of the DeltaEDown.
+     */ setUnits(units) {
+        this.attributes.set(DeltaEDown.s_units, units);
     }
     /**
      * @returns The lower of the DeltaEDown.
      */ getLower() {
-        if (this.attributes != undefined) return parseFloat((0, _utilJs.get)(this.attributes, "lower"));
+        return parseFloat((0, _utilJs.get)(this.attributes, DeltaEDown.s_lower));
     }
     /**
      * @param lower The lower of the DeltaEDown.
      */ setLower(lower) {
-        if (this.attributes != undefined) this.attributes.set("lower", lower.toString());
+        this.attributes.set(DeltaEDown.s_lower, lower.toString());
     }
     /**
      * @returns The upper of the DeltaEDown.
      */ getUpper() {
-        if (this.attributes != undefined) return parseFloat((0, _utilJs.get)(this.attributes, "upper"));
+        return parseFloat((0, _utilJs.get)(this.attributes, DeltaEDown.s_upper));
     }
     /**
      * @param upper The upper of the DeltaEDown.
      */ setUpper(upper) {
-        if (this.attributes != undefined) this.attributes.set("upper", upper.toString());
+        this.attributes.set(DeltaEDown.s_upper, upper.toString());
     }
     /**
      * @returns The stepsize of the DeltaEDown.
      */ getStepsize() {
-        if (this.attributes != undefined) return parseFloat((0, _utilJs.get)(this.attributes, "stepsize"));
+        return parseFloat((0, _utilJs.get)(this.attributes, DeltaEDown.s_stepsize));
     }
     /**
      * @param stepsize The stepsize of the DeltaEDown.
      */ setStepsize(stepsize) {
-        if (this.attributes != undefined) this.attributes.set("stepsize", stepsize.toString());
+        this.attributes.set(DeltaEDown.s_stepsize, stepsize.toString());
     }
     /**
      * @param value The value of the DeltaEDown.
@@ -5011,30 +5114,30 @@ class DOSCMethod extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "me:DOSCMethod";
     }
+    static{
+        /**
+     * The key for the "xsi:type" attribute value.
+     */ this.s_xsi_type = "xsi:type";
+    }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, DOSCMethod.tagName);
-        if (attributes.get("xsi:type") == undefined) {
+        if (attributes.get(DOSCMethod.s_xsi_type) == undefined) {
             let name = attributes.get("name");
             if (name == undefined) throw new Error("Neither xsi:type or name are defined.");
-            else {
-                attributes.set("xsi:type", name);
-                attributes.delete("name");
-            }
+            else attributes.set(DOSCMethod.s_xsi_type, name);
         }
     }
     /**
      * @returns The xsi:type.
      */ getXsiType() {
-        if (this.attributes != undefined) return this.attributes.get("xsi:type");
-        else throw new Error("xsi:type is undefined");
+        return this.attributes.get(DOSCMethod.s_xsi_type);
     }
     /**
      * @param xsiType The xsi:type.
      */ setXsiType(xsiType) {
-        if (this.attributes != undefined) this.attributes.set("xsi:type", xsiType);
-        else throw new Error("xsi:type is undefined");
+        this.attributes.set(DOSCMethod.s_xsi_type, xsiType);
     }
 }
 class BondRef extends (0, _xmlJs.StringNode) {
@@ -5056,15 +5159,25 @@ class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "me:PotentialPoint";
     }
+    static{
+        /**
+     * The key angle attribute.
+     */ this.s_angle = "angle";
+    }
+    static{
+        /**
+     * The key potential attribute.
+     */ this.s_potential = "potential";
+    }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, PotentialPoint.tagName);
-        let angle = attributes.get("angle");
-        if (angle == undefined) throw new Error("angle is undefined");
+        let angle = attributes.get(PotentialPoint.s_angle);
+        if (angle == undefined) throw new Error(PotentialPoint.s_potential + " is undefined!");
         this.angle = parseFloat(angle);
-        let potential = attributes.get("potential");
-        if (potential == undefined) throw new Error("potential is undefined");
+        let potential = attributes.get(PotentialPoint.s_potential);
+        if (potential == undefined) throw new Error(PotentialPoint.s_potential + " is undefined!");
         this.potential = parseFloat(potential);
     }
     /**
@@ -5076,7 +5189,7 @@ class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
      * @param angle The angle of the PotentialPoint.
      */ setAngle(angle) {
         this.angle = angle;
-        if (this.attributes != undefined) this.attributes.set("angle", angle.toString());
+        this.attributes.set(PotentialPoint.s_angle, angle.toString());
     }
     /**
      * @returns The potential.
@@ -5087,7 +5200,7 @@ class PotentialPoint extends (0, _xmlJs.TagWithAttributes) {
      * @param potential The potential of the PotentialPoint.
      */ setPotential(potential) {
         this.potential = potential;
-        if (this.attributes != undefined) this.attributes.set("potential", potential.toString());
+        this.attributes.set(PotentialPoint.s_potential, potential.toString());
     }
 }
 class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
@@ -5113,25 +5226,45 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
             "Hartree"
         ];
     }
+    static{
+        /**
+     * The key for the format attribute value.
+     */ this.s_format = "format";
+    }
+    static{
+        /**
+     * The key for the units attribute value.
+     */ this.s_units = "units";
+    }
+    static{
+        /**
+     * The key for the expansionSize attribute value.
+     */ this.s_expansionSize = "expansionSize";
+    }
+    static{
+        /**
+     * The key for the useSineTerms attribute value.
+     */ this.s_useSineTerms = "useSineTerms";
+    }
     /**
-     * @param {Map<string, string>} attributes The attributes.
-     * @param {PotentialPoint[]} potentialPoints The PotentialPoints.
+     * @param attributes The attributes.
+     * @param potentialPoints The PotentialPoints.
      */ constructor(attributes, potentialPoints){
         super(attributes, HinderedRotorPotential.tagName);
-        let format = attributes.get("format");
-        if (format == undefined) throw new Error("format is undefined");
+        let format = attributes.get(HinderedRotorPotential.s_format);
+        if (format == undefined) throw new Error(HinderedRotorPotential.s_format + " is undefined!");
         this.format = format;
-        let units = attributes.get("units");
-        if (units == undefined) throw new Error("units is undefined");
+        let units = attributes.get(HinderedRotorPotential.s_units);
+        if (units == undefined) throw new Error(HinderedRotorPotential.s_units + " is undefined!");
         this.units = units;
         if (potentialPoints != undefined) potentialPoints.forEach((p)=>{
             this.nodes.set(this.nodes.size, p);
         });
-        let expansionSize = attributes.get("expansionSize");
-        if (expansionSize == undefined) throw new Error("expansionSize is undefined");
+        let expansionSize = attributes.get(HinderedRotorPotential.s_expansionSize);
+        if (expansionSize == undefined) throw new Error(HinderedRotorPotential.s_expansionSize + " is undefined!");
         this.expansionSize = parseFloat(expansionSize);
-        let useSineTerms = attributes.get("useSineTerms");
-        if (useSineTerms == undefined) throw new Error("useSineTerms is undefined");
+        let useSineTerms = attributes.get(HinderedRotorPotential.s_useSineTerms);
+        if (useSineTerms == undefined) throw new Error(HinderedRotorPotential.s_useSineTerms + " is undefined!");
         this.useSineTerms = useSineTerms == "yes";
     }
     /**
@@ -5145,7 +5278,7 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
      * Should be one of ["numerical", "analytical"].
      */ setFormat(format) {
         this.format = format;
-        if (this.attributes != undefined) this.attributes.set("format", format);
+        this.attributes.set(HinderedRotorPotential.s_format, format);
     }
     /**
      * @returns The units of the HinderedRotorPotential.
@@ -5158,7 +5291,7 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
      * Should be one of ["kJ/mol", "cm-1", "Hartree"].
      */ setUnits(units) {
         this.units = units;
-        if (this.attributes != undefined) this.attributes.set("units", units);
+        this.attributes.set(HinderedRotorPotential.s_units, units);
     }
     /**
      * @returns The expansionSize of the HinderedRotorPotential.
@@ -5169,7 +5302,7 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */ setExpansionSize(expansionSize) {
         this.expansionSize = expansionSize;
-        if (this.attributes != undefined) this.attributes.set("expansionSize", expansionSize.toString());
+        this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
     /**
      * @returns The useSineTerms of the HinderedRotorPotential.
@@ -5180,7 +5313,7 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
      * @param useSineTerms The useSineTerms of the HinderedRotorPotential.
      */ setUseSineTerms(useSineTerms) {
         this.useSineTerms = useSineTerms;
-        if (this.attributes != undefined) this.attributes.set("useSineTerms", useSineTerms ? "yes" : "no");
+        this.attributes.set(HinderedRotorPotential.s_useSineTerms, useSineTerms ? "yes" : "no");
     }
     /**
      * @returns The potential point with the given index.
@@ -5326,6 +5459,21 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "molecule";
     }
+    static{
+        /**
+     * The key for the id attribute value.
+     */ this.s_id = "id";
+    }
+    static{
+        /**
+     * The key for the description attribute value.
+     */ this.s_description = "description";
+    }
+    static{
+        /**
+     * The key for the active attribute value.
+     */ this.s_active = "active";
+    }
     /**
      * Create a molecule.
      * @param attributes The attributes. If there is no "id" key an error will be thrown.
@@ -5340,8 +5488,8 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        let id = attributes.get("id");
-        if (id == undefined) throw new Error("id is undefined");
+        let id = attributes.get(Molecule.s_id);
+        if (id == undefined) throw new Error(Molecule.s_id + " is undefined");
         this.id = id;
         let i = 0;
         // Atoms
@@ -5389,31 +5537,29 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * Get the description of the molecule.
      * @returns The description of the molecule, or undefined if it is not set.
      */ getDescription() {
-        if (this.attributes != undefined) return this.attributes.get("description");
+        return this.attributes.get(Molecule.s_description);
     }
     /**
      * Set the description of the molecule.
      * @param description The description of the molecule.
      */ setDescription(description) {
-        if (this.attributes != undefined) this.attributes.set("description", description);
+        this.attributes.set(Molecule.s_description, description);
     }
     /**
      * Get the active status of the molecule.
      * @returns The active status of the molecule, or undefined if it is not set.
      */ getActive() {
-        if (this.attributes != undefined) {
-            let active = this.attributes.get("active");
-            if (active != undefined) {
-                if (active == "true") return true;
-                else return false;
-            }
+        let active = this.attributes.get(Molecule.s_active);
+        if (active != undefined) {
+            if (active == "true") return true;
+            else return false;
         }
     }
     /**
      * Set the active status of the molecule.
      * @param active The active status of the molecule.
      */ setActive(active) {
-        if (this.attributes != undefined) this.attributes.set("active", active.toString());
+        this.attributes.set(Molecule.s_active, active.toString());
     }
     /**
      * Get a label for the molecule which includes the is and any description and whether active.
@@ -5424,13 +5570,12 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         let description = this.getDescription();
         if (description != undefined) label += " (" + description + ")";
         let active = this.getActive();
-        if (active) label += " (active)";
+        if (active) label += " (" + Molecule.s_active + ")";
         return label;
     }
     /**
      * @returns A comma and space separated string of the attributes of the molecule.
      */ getAttributesAsString() {
-        if (this.attributes == undefined) return "";
         return Array.from(this.attributes, ([key, value])=>`${key}=\"${value}\"`).join(", ");
     }
     /**
@@ -5565,7 +5710,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         let p = this.getProperty(ZPE.dictRef);
         if (p == undefined) {
             console.log(this.toString());
-            throw new Error("ZPE property not found");
+            throw new Error(ZPE.dictRef + " property not found!");
         //return 0;
         }
         return p.getProperty().value;
@@ -5882,6 +6027,11 @@ class Tunneling extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "me:tunneling";
     }
+    static{
+        /**
+     * The key to the name attribute value.
+     */ this.s_name = "name";
+    }
     /**
      * @param {Map<string, string>} attributes The attributes.
      */ constructor(attributes){
@@ -5890,13 +6040,12 @@ class Tunneling extends (0, _xmlJs.TagWithAttributes) {
     /**
      * @returns The name of the tunneling method.
      */ getName() {
-        if (this.attributes != undefined) return this.attributes.get("name");
-        return "";
+        return this.attributes.get(Tunneling.s_name);
     }
     /**
      * @param The name of the tunneling method.
      */ setName(name) {
-        if (this.attributes != undefined) this.attributes.set("name", name);
+        this.attributes.set(Tunneling.s_name, name);
     }
 }
 class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
@@ -5918,6 +6067,11 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "reaction";
     }
+    static{
+        /**
+     * The key to the id attribute value.
+     */ this.s_id = "id";
+    }
     /**
      * @param attributes The attributes.
      * @param id The id of the reaction.
@@ -5933,8 +6087,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         this.reactantsIndex = new Map();
         this.productsIndex = new Map();
         this.transitionStatesIndex = new Map();
-        let id = attributes.get("id");
-        if (id == undefined) throw new Error("Reaction id is undefined");
+        let id = attributes.get(Reaction.s_id);
+        if (id == undefined) throw new Error(Reaction.s_id + " is undefined!");
         this.id = id;
         if (reactants != undefined) {
             reactants.forEach((reactant)=>{
@@ -6396,6 +6550,26 @@ class ExperimentRate extends (0, _xmlJs.NumberNode) {
      * The tag name.
      */ this.tagName = "me:experimentRate";
     }
+    static{
+        /**
+     * The key to the ref1 attribute value.
+     */ this.s_ref1 = "ref1";
+    }
+    static{
+        /**
+     * The key to the ref2 attribute value.
+     */ this.s_ref2 = "ref2";
+    }
+    static{
+        /**
+     * The key to the refReaction attribute value.
+     */ this.s_refReaction = "refReaction";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
+    }
     /**
      * @param attributes The attributes. 
      * @param value The value. 
@@ -6405,49 +6579,47 @@ class ExperimentRate extends (0, _xmlJs.NumberNode) {
     /**
      * @returns The ref1 attribute or undefined if there is no ref1 attribute.
      */ getRef1() {
-        if (this.attributes != undefined) return this.attributes.get("ref1");
+        return this.attributes.get(ExperimentRate.s_ref1);
     }
     /**
      * Set the ref1 attribute.
      * @param ref1 The ref1.
      */ setRef1(ref1) {
-        if (this.attributes != undefined) this.attributes.set("ref1", ref1);
+        this.attributes.set(ExperimentRate.s_ref1, ref1);
     }
     /**
      * @returns The ref2 attribute or undefined if there is no ref2 attribute.
      */ getRef2() {
-        if (this.attributes != undefined) return this.attributes.get("ref2");
+        return this.attributes.get(ExperimentRate.s_ref2);
     }
     /**
      * Set the ref2 attribute.
      * @param ref2 The ref2.
      */ setRef2(ref2) {
-        if (this.attributes != undefined) this.attributes.set("ref2", ref2);
+        this.attributes.set(ExperimentRate.s_ref2, ref2);
     }
     /**
      * @returns The refReaction attribute or undefined if there is no refReaction attribute.
      */ getRefReaction() {
-        if (this.attributes != undefined) return this.attributes.get("refReaction");
+        return this.attributes.get(ExperimentRate.s_refReaction);
     }
     /**
      * Set the refReaction attribute.
      * @param refReaction The refReaction.
      */ setRefReaction(refReaction) {
-        if (this.attributes != undefined) this.attributes.set("refReaction", refReaction);
+        this.attributes.set(ExperimentRate.s_refReaction, refReaction);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */ getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) return parseFloat(error);
-        }
+        let error = this.attributes.get(ExperimentRate.s_error);
+        if (error != undefined) return parseFloat(error);
     }
     /**
      * Set the error attribute.
      * @param error The error.
      */ setError(error) {
-        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+        this.attributes.set(ExperimentRate.s_error, error.toString());
     }
 }
 class ExperimentalYield extends (0, _xmlJs.NumberNode) {
@@ -6455,6 +6627,21 @@ class ExperimentalYield extends (0, _xmlJs.NumberNode) {
         /**
      * The tag name.
      */ this.tagName = "me:experimentalYield";
+    }
+    static{
+        /**
+     * The key to the ref attribute value.
+     */ this.s_ref = "ref";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
+    }
+    static{
+        /**
+     * The key to the yieldTime attribute value.
+     */ this.s_yieldTime = "yieldTime";
     }
     /**
      * @param attributes The attributes.
@@ -6465,41 +6652,37 @@ class ExperimentalYield extends (0, _xmlJs.NumberNode) {
     /**
      * @returns The ref attribute or undefined if there is no ref attribute.
      */ getRef() {
-        if (this.attributes != undefined) return this.attributes.get("ref");
+        return this.attributes.get(ExperimentalYield.s_ref);
     }
     /**
      * Set the ref attribute.
      * @param ref The ref.
      */ setRef(ref) {
-        if (this.attributes != undefined) this.attributes.set("ref", ref);
+        this.attributes.set(ExperimentalYield.s_ref, ref);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */ getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) return parseFloat(error);
-        }
+        let error = this.attributes.get(ExperimentalYield.s_error);
+        if (error != undefined) return parseFloat(error);
     }
     /**
      * Set the error attribute.
      * @param error The error.
      */ setError(error) {
-        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+        this.attributes.set(ExperimentalYield.s_error, error.toString());
     }
     /**
      * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
      */ getYieldTime() {
-        if (this.attributes != undefined) {
-            let yieldTime = this.attributes.get("yieldTime");
-            if (yieldTime) return parseFloat(yieldTime);
-        }
+        let yieldTime = this.attributes.get(ExperimentalYield.s_yieldTime);
+        if (yieldTime) return parseFloat(yieldTime);
     }
     /**
      * Set the yieldTime attribute.
      * @param yieldTime The yieldTime.
      */ setYieldTime(yieldTime) {
-        if (this.attributes != undefined) this.attributes.set("yieldTime", yieldTime.toString());
+        this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
     }
 }
 class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
@@ -6507,6 +6690,16 @@ class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
         /**
     * The tag name.
     */ this.tagName = "me:experimentalEigenvalue";
+    }
+    static{
+        /**
+     * The key to the EigenvalueID attribute value.
+     */ this.s_EigenvalueID = "EigenvalueID";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
     }
     /**
      * @param attributes The attributes.
@@ -6517,27 +6710,25 @@ class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
     /**
      * @returns The EigenvalueID attribute or undefined if there is no EigenvalueID attribute.
      */ getEigenvalueID() {
-        if (this.attributes != undefined) return this.attributes.get("EigenvalueID");
+        return this.attributes.get(ExperimentalEigenvalue.s_EigenvalueID);
     }
     /**
      * Set the EigenvalueID attribute.
      * @param EigenvalueID The EigenvalueID.
      */ setEigenvalueID(EigenvalueID) {
-        if (this.attributes != undefined) this.attributes.set("EigenvalueID", EigenvalueID);
+        this.attributes.set(ExperimentalEigenvalue.s_EigenvalueID, EigenvalueID);
     }
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */ getError() {
-        if (this.attributes != undefined) {
-            let error = this.attributes.get("error");
-            if (error) return parseFloat(error);
-        }
+        let error = this.attributes.get(ExperimentalEigenvalue.s_error);
+        if (error != undefined) return parseFloat(error);
     }
     /**
      * Set the error attribute.
      * @param error The error.
      */ setError(error) {
-        if (this.attributes != undefined) this.attributes.set("error", error.toString());
+        this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
     }
 }
 class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
@@ -6545,6 +6736,11 @@ class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
         /**
      * The tag name.
      */ this.tagName = "me:excessReactantConc";
+    }
+    static{
+        /**
+     * The key to the percent attribute value.
+     */ this.s_percent = "percent";
     }
     /**
      * @param attributes The attributes.
@@ -6555,13 +6751,13 @@ class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
     /**
      * @returns The percent attribute or undefined if there is no percent attribute.
      */ getPercent() {
-        if (this.attributes != undefined) return this.attributes.get("percent");
+        return this.attributes.get(ExcessReactantConc.s_percent);
     }
     /**
      * Set the percent attribute.
      * @param percent The percent.
      */ setPercent(percent) {
-        if (this.attributes != undefined) this.attributes.set("percent", percent);
+        this.attributes.set(ExcessReactantConc.s_percent, percent);
     }
 }
 class PTpair extends (0, _xmlJs.NodeWithNodes) {
@@ -6581,6 +6777,31 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
             "double-double",
             "quad-double"
         ];
+    }
+    static{
+        /**
+     * The key to the P attribute value.
+     */ this.s_P = "P";
+    }
+    static{
+        /**
+     * The key to the T attribute value.
+     */ this.s_T = "T";
+    }
+    static{
+        /**
+     * The key to the precision attribute value.
+     */ this.s_precision = "precision";
+    }
+    static{
+        /**
+     * The key to the excessReactantConc attribute value.
+     */ this.s_excessReactantConc = "excessReactantConc";
+    }
+    static{
+        /**
+     * The key to the percentExcessReactantConc attribute value.
+     */ this.s_percentExcessReactantConc = "percentExcessReactantConc";
     }
     /**
      * @param attributes The attributes.
@@ -6609,54 +6830,50 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @returns The Pressure.
      */ getP() {
-        if (this.attributes != undefined) {
-            let p = this.attributes.get("P");
-            if (p != undefined) return parseFloat(p);
-        }
+        let p = this.attributes.get(PTpair.s_P);
+        if (p != undefined) return parseFloat(p);
         return NaN;
     }
     /**
      * Set The Pressure
      */ setP(p) {
-        if (this.attributes != undefined) this.attributes.set("P", p.toString());
+        this.attributes.set(PTpair.s_P, p.toString());
     }
     /**
      * @returns The Temperature.
      */ getT() {
-        if (this.attributes != undefined) {
-            let t = this.attributes.get("T");
-            if (t != undefined) return parseFloat(t);
-        }
+        let t = this.attributes.get(PTpair.s_T);
+        if (t != undefined) return parseFloat(t);
         return NaN;
     }
     /**
      * Set The Temperature.
      */ setT(t) {
-        if (this.attributes != undefined) this.attributes.set("T", t.toString());
+        this.attributes.set(PTpair.s_T, t.toString());
     }
     /**
      * @returns The precision attribute or undefined if there is no precision attribute.
      */ getPrecision() {
-        if (this.attributes != undefined) return this.attributes.get("precision");
+        return this.attributes.get(PTpair.s_precision);
     }
     /**
      * Set the precision attribute.
      * @param precision The precision.
      */ setPrecision(precision) {
-        if (this.attributes != undefined) this.attributes.set("precision", precision);
+        this.attributes.set(PTpair.s_precision, precision);
     }
     /**
      * @returns The bath gas.
      */ getBathGas() {
         let i = this.index.get(BathGas.tagName);
-        if (i) return this.nodes.get(i);
+        if (i != undefined) return this.nodes.get(i);
         else return undefined;
     }
     /**
      * @param bathGas The bath gas.
      */ setBathGas(bathGas) {
         let i = this.index.get(BathGas.tagName);
-        if (i) this.nodes.set(i, bathGas);
+        if (i != undefined) this.nodes.set(i, bathGas);
         else {
             this.index.set(BathGas.tagName, this.nodes.size);
             this.addNode(bathGas);
@@ -6666,7 +6883,7 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
      * Remove the bath gas.
      */ removeBathGas() {
         let i = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(BathGas.tagName);
         }
@@ -6675,14 +6892,14 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
      * @returns The experiment rate.
      */ getExperimentRate() {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) return this.nodes.get(i);
+        if (i != undefined) return this.nodes.get(i);
         else return undefined;
     }
     /**
      * @param experimentRate The experiment rate.
      */ setExperimentRate(experimentRate) {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) this.nodes.set(i, experimentRate);
+        if (i != undefined) this.nodes.set(i, experimentRate);
         else {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
             this.addNode(experimentRate);
@@ -6692,7 +6909,7 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
      * Remove the experiment rate.
      */ removeExperimentRate() {
         let i = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(ExperimentRate.tagName);
         }
@@ -6700,22 +6917,22 @@ class PTpair extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @returns this.attributes.get("excessReactantConc").
      */ getExcessReactantConc() {
-        if (this.attributes != undefined) return this.attributes.get("excessReactantConc");
+        return this.attributes.get(PTpair.s_excessReactantConc);
     }
     /**
      * this.attributes.set("excessReactantConc", excessReactantConc).
      */ setExcessReactantConc(excessReactantConc) {
-        if (this.attributes != undefined) this.attributes.set("excessReactantConc", excessReactantConc);
+        this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
     }
     /**
      * @returns this.attributes.get("percentExcessReactantConc").
      */ getPercentExcessReactantConc() {
-        if (this.attributes != undefined) return this.attributes.get("percentExcessReactantConc");
+        return this.attributes.get(PTpair.s_percentExcessReactantConc);
     }
     /**
      * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
      */ setPercentExcessReactantConc(percentExcessReactantConc) {
-        if (this.attributes != undefined) this.attributes.set("percentExcessReactantConc", percentExcessReactantConc);
+        this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
     }
 }
 class PTs extends (0, _xmlJs.NodeWithNodes) {

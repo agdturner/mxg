@@ -16,7 +16,7 @@ export class BathGas extends StringNode {
      * @param attributes The attributes.
      * @param moleculeID The moleculeID.
      */
-    constructor(attributes: Map<string, string> | undefined, moleculeID: string) {
+    constructor(attributes: Map<string, string>, moleculeID: string) {
         super(attributes, BathGas.tagName, moleculeID);
     }
 }
@@ -33,10 +33,30 @@ export class ExperimentRate extends NumberNode {
     static readonly tagName: string = "me:experimentRate";
 
     /**
+     * The key to the ref1 attribute value.
+     */
+    static readonly s_ref1: string = "ref1";
+
+    /**
+     * The key to the ref2 attribute value.
+     */
+    static readonly s_ref2: string = "ref2";
+
+    /**
+     * The key to the refReaction attribute value.
+     */
+    static readonly s_refReaction: string = "refReaction";
+
+    /**
+     * The key to the error attribute value.
+     */
+    static readonly s_error: string = "error";
+
+    /**
      * @param attributes The attributes. 
      * @param value The value. 
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes: Map<string, string>, value: number) {
         super(attributes, ExperimentRate.tagName, value);
     }
 
@@ -44,9 +64,7 @@ export class ExperimentRate extends NumberNode {
      * @returns The ref1 attribute or undefined if there is no ref1 attribute.
      */
     getRef1(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref1");
-        }
+        return this.attributes.get(ExperimentRate.s_ref1);
     }
 
     /**
@@ -54,18 +72,14 @@ export class ExperimentRate extends NumberNode {
      * @param ref1 The ref1.
      */
     setRef1(ref1: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref1", ref1);
-        }
+        this.attributes.set(ExperimentRate.s_ref1, ref1);
     }
 
     /**
      * @returns The ref2 attribute or undefined if there is no ref2 attribute.
      */
     getRef2(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref2");
-        }
+        return this.attributes.get(ExperimentRate.s_ref2);
     }
 
     /**
@@ -73,18 +87,14 @@ export class ExperimentRate extends NumberNode {
      * @param ref2 The ref2.
      */
     setRef2(ref2: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref2", ref2);
-        }
+        this.attributes.set(ExperimentRate.s_ref2, ref2);
     }
 
     /**
      * @returns The refReaction attribute or undefined if there is no refReaction attribute.
      */
     getRefReaction(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("refReaction");
-        }
+        return this.attributes.get(ExperimentRate.s_refReaction);
     }
 
     /**
@@ -92,20 +102,16 @@ export class ExperimentRate extends NumberNode {
      * @param refReaction The refReaction.
      */
     setRefReaction(refReaction: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("refReaction", refReaction);
-        }
+        this.attributes.set(ExperimentRate.s_refReaction, refReaction);
     }
 
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError(): number | undefined {
-        if (this.attributes != undefined) {
-            let error: string | undefined = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error: string | undefined = this.attributes.get(ExperimentRate.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
 
@@ -114,9 +120,7 @@ export class ExperimentRate extends NumberNode {
      * @param error The error.
      */
     setError(error: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentRate.s_error, error.toString());
     }
 }
 
@@ -135,10 +139,25 @@ export class ExperimentalYield extends NumberNode {
     static readonly tagName: string = "me:experimentalYield";
 
     /**
+     * The key to the ref attribute value.
+     */
+    static readonly s_ref: string = "ref";
+
+    /**
+     * The key to the error attribute value.
+     */
+    static readonly s_error: string = "error";
+
+    /**
+     * The key to the yieldTime attribute value.
+     */
+    static readonly s_yieldTime: string = "yieldTime";
+
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes: Map<string, string>, value: number) {
         super(attributes, ExperimentalYield.tagName, value);
     }
 
@@ -146,9 +165,7 @@ export class ExperimentalYield extends NumberNode {
      * @returns The ref attribute or undefined if there is no ref attribute.
      */
     getRef(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("ref");
-        }
+        return this.attributes.get(ExperimentalYield.s_ref);
     }
 
     /**
@@ -156,20 +173,16 @@ export class ExperimentalYield extends NumberNode {
      * @param ref The ref.
      */
     setRef(ref: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("ref", ref);
-        }
+        this.attributes.set(ExperimentalYield.s_ref, ref);
     }
 
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError(): number | undefined {
-        if (this.attributes != undefined) {
-            let error: string | undefined = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error: string | undefined = this.attributes.get(ExperimentalYield.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
 
@@ -178,20 +191,16 @@ export class ExperimentalYield extends NumberNode {
      * @param error The error.
      */
     setError(error: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentalYield.s_error, error.toString());
     }
 
     /**
      * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
      */
     getYieldTime(): number | undefined {
-        if (this.attributes != undefined) {
-            let yieldTime: string | undefined = this.attributes.get("yieldTime");
-            if (yieldTime) {
-                return parseFloat(yieldTime);
-            }
+        let yieldTime: string | undefined = this.attributes.get(ExperimentalYield.s_yieldTime);
+        if (yieldTime) {
+            return parseFloat(yieldTime);
         }
     }
 
@@ -200,9 +209,7 @@ export class ExperimentalYield extends NumberNode {
      * @param yieldTime The yieldTime.
      */
     setYieldTime(yieldTime: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("yieldTime", yieldTime.toString());
-        }
+        this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
     }
 }
 
@@ -220,10 +227,20 @@ export class ExperimentalEigenvalue extends NumberNode {
     static readonly tagName: string = "me:experimentalEigenvalue";
 
     /**
+     * The key to the EigenvalueID attribute value.
+     */
+    static readonly s_EigenvalueID = "EigenvalueID";
+
+    /**
+     * The key to the error attribute value.
+     */
+    static readonly s_error: string = "error";
+
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes: Map<string, string>, value: number) {
         super(attributes, ExperimentalEigenvalue.tagName, value);
     }
 
@@ -231,9 +248,7 @@ export class ExperimentalEigenvalue extends NumberNode {
      * @returns The EigenvalueID attribute or undefined if there is no EigenvalueID attribute.
      */
     getEigenvalueID(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("EigenvalueID");
-        }
+        return this.attributes.get(ExperimentalEigenvalue.s_EigenvalueID);
     }
 
     /**
@@ -241,20 +256,16 @@ export class ExperimentalEigenvalue extends NumberNode {
      * @param EigenvalueID The EigenvalueID.
      */
     setEigenvalueID(EigenvalueID: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("EigenvalueID", EigenvalueID);
-        }
+        this.attributes.set(ExperimentalEigenvalue.s_EigenvalueID, EigenvalueID);
     }
 
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError(): number | undefined {
-        if (this.attributes != undefined) {
-            let error: string | undefined = this.attributes.get("error");
-            if (error) {
-                return parseFloat(error);
-            }
+        let error: string | undefined = this.attributes.get(ExperimentalEigenvalue.s_error);
+        if (error != undefined) {
+            return parseFloat(error);
         }
     }
 
@@ -263,9 +274,7 @@ export class ExperimentalEigenvalue extends NumberNode {
      * @param error The error.
      */
     setError(error: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("error", error.toString());
-        }
+        this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
     }
 
 }
@@ -283,10 +292,15 @@ export class ExcessReactantConc extends NumberNode {
     static readonly tagName: string = "me:excessReactantConc";
 
     /**
+     * The key to the percent attribute value.
+     */
+    static readonly s_percent: string = "percent";
+
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string> | undefined, value: number) {
+    constructor(attributes: Map<string, string>, value: number) {
         super(attributes, ExcessReactantConc.tagName, value);
     }
 
@@ -294,9 +308,7 @@ export class ExcessReactantConc extends NumberNode {
      * @returns The percent attribute or undefined if there is no percent attribute.
      */
     getPercent(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("percent");
-        }
+        return this.attributes.get(ExcessReactantConc.s_percent);
     }
 
     /**
@@ -304,9 +316,7 @@ export class ExcessReactantConc extends NumberNode {
      * @param percent The percent.
      */
     setPercent(percent: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("percent", percent);
-        }
+        this.attributes.set(ExcessReactantConc.s_percent, percent);
     }
 }
 
@@ -336,6 +346,31 @@ export class PTpair extends NodeWithNodes {
      * The precision attribute potential values.
      */
     static readonly precisions: string[] = ["d", "dd", "qd", "double", "double-double", "quad-double"];
+
+    /**
+     * The key to the P attribute value.
+     */
+    static readonly s_P: string = "P";
+
+    /**
+     * The key to the T attribute value.
+     */
+    static readonly s_T: string = "T";
+
+    /**
+     * The key to the precision attribute value.
+     */
+    static readonly s_precision: string = "precision";
+
+    /**
+     * The key to the excessReactantConc attribute value.
+     */
+    static readonly s_excessReactantConc = "excessReactantConc";
+
+    /**
+     * The key to the percentExcessReactantConc attribute value.
+     */
+    static readonly s_percentExcessReactantConc = "percentExcessReactantConc";
 
     /**
      * The index. Keys are types and values are the node indexes.
@@ -373,11 +408,9 @@ export class PTpair extends NodeWithNodes {
      * @returns The Pressure.
      */
     getP(): number {
-        if (this.attributes != undefined) {
-            let p: string | undefined = this.attributes.get("P");
-            if (p != undefined) {
-                return parseFloat(p);
-            }
+        let p: string | undefined = this.attributes.get(PTpair.s_P);
+        if (p != undefined) {
+            return parseFloat(p);
         }
         return NaN;
     }
@@ -386,20 +419,16 @@ export class PTpair extends NodeWithNodes {
      * Set The Pressure
      */
     setP(p: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("P", p.toString());
-        }
+        this.attributes.set(PTpair.s_P, p.toString());
     }
 
     /**
      * @returns The Temperature.
      */
     getT(): number {
-        if (this.attributes != undefined) {
-            let t: string | undefined = this.attributes.get("T");
-            if (t != undefined) {
-                return parseFloat(t);
-            }
+        let t: string | undefined = this.attributes.get(PTpair.s_T);
+        if (t != undefined) {
+            return parseFloat(t);
         }
         return NaN;
     }
@@ -408,18 +437,14 @@ export class PTpair extends NodeWithNodes {
      * Set The Temperature.
      */
     setT(t: number) {
-        if (this.attributes != undefined) {
-            this.attributes.set("T", t.toString());
-        }
+        this.attributes.set(PTpair.s_T, t.toString());
     }
 
     /**
      * @returns The precision attribute or undefined if there is no precision attribute.
      */
     getPrecision(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("precision");
-        }
+        return this.attributes.get(PTpair.s_precision);
     }
 
     /**
@@ -427,9 +452,7 @@ export class PTpair extends NodeWithNodes {
      * @param precision The precision.
      */
     setPrecision(precision: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("precision", precision);
-        }
+        this.attributes.set(PTpair.s_precision, precision);
     }
 
     /**
@@ -437,7 +460,7 @@ export class PTpair extends NodeWithNodes {
      */
     getBathGas(): BathGas | undefined {
         let i: number | undefined = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i) as BathGas;
         } else {
             return undefined;
@@ -449,7 +472,7 @@ export class PTpair extends NodeWithNodes {
      */
     setBathGas(bathGas: BathGas) {
         let i: number | undefined = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, bathGas);
         } else {
             this.index.set(BathGas.tagName, this.nodes.size);
@@ -462,7 +485,7 @@ export class PTpair extends NodeWithNodes {
      */
     removeBathGas() {
         let i: number | undefined = this.index.get(BathGas.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(BathGas.tagName);
         }
@@ -473,7 +496,7 @@ export class PTpair extends NodeWithNodes {
      */
     getExperimentRate(): ExperimentRate | undefined {
         let i: number | undefined = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i) as ExperimentRate;
         } else {
             return undefined;
@@ -485,7 +508,7 @@ export class PTpair extends NodeWithNodes {
      */
     setExperimentRate(experimentRate: ExperimentRate) {
         let i: number | undefined = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, experimentRate);
         } else {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
@@ -498,7 +521,7 @@ export class PTpair extends NodeWithNodes {
      */
     removeExperimentRate() {
         let i: number | undefined = this.index.get(ExperimentRate.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(ExperimentRate.tagName);
         }
@@ -508,36 +531,28 @@ export class PTpair extends NodeWithNodes {
      * @returns this.attributes.get("excessReactantConc").
      */
     getExcessReactantConc(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("excessReactantConc");
-        }
+            return this.attributes.get(PTpair.s_excessReactantConc);
     }
 
     /**
      * this.attributes.set("excessReactantConc", excessReactantConc).
      */
     setExcessReactantConc(excessReactantConc: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("excessReactantConc", excessReactantConc);
-        }
+            this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
     }
 
     /**
      * @returns this.attributes.get("percentExcessReactantConc").
      */
     getPercentExcessReactantConc(): string | undefined {
-        if (this.attributes != undefined) {
-            return this.attributes.get("percentExcessReactantConc");
-        }
+            return this.attributes.get(PTpair.s_percentExcessReactantConc);
     }
 
     /**
      * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
      */
     setPercentExcessReactantConc(percentExcessReactantConc: string) {
-        if (this.attributes != undefined) {
-            this.attributes.set("percentExcessReactantConc", percentExcessReactantConc);
-        }
+            this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
     }
 
 
@@ -656,7 +671,7 @@ export class Conditions extends NodeWithNodes {
      * @param bathGases The bath gases.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
-    constructor(attributes: Map<string, string> | undefined, bathGases?: Set<BathGas>, pTs?: PTs) {
+    constructor(attributes: Map<string, string>, bathGases?: Set<BathGas>, pTs?: PTs) {
         super(attributes, Conditions.tagName);
         this.index = new Map();
         this.bathGasesIndex = new Map();
