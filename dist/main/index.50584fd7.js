@@ -603,6 +603,9 @@ var _modelParametersJs = require("./modelParameters.js");
 var _controlJs = require("./control.js");
 var _mesmerJs = require("./mesmer.js");
 /**
+ * The repository URL.
+ */ let gitHubRepositoryURL = "https://github.com/agdturner/mxg-pwa";
+/**
  * The font sizes for different levels of the GUI.
  */ let fontSize1 = "1.5em";
 let fontSize2 = "1.25em";
@@ -670,9 +673,11 @@ let removeSymbol = "\u2715";
 let s_Add_from_spreadsheet = "Add from spreadsheet";
 let selected = "\u2713 [SELECTED] Action to unselect.";
 let notSelected = "\u2717 [NOT SELECTED] Action to select.";
-let selectedLoadedValueText = " The appended input(s) display loaded value(s) that can be changed:";
-let unselectedText = " Then use the appended input to specify.";
-let selectedValueText = " Or use the appended input(s) to specify:";
+let selectedLoadedValueText = " Change the specification if desired:";
+let unselectedText = " Then specify using input(s) that appear.";
+let selectedValueText = " Or specify using input(s):";
+let selectAnotherOption = "Action/select another option...";
+let specifyNumberText = "Click then specify a number in the input that will appear.";
 /**
  * For mesmer.
  */ let mesmer;
@@ -692,8 +697,11 @@ let selectedValueText = " Or use the appended input(s) to specify:";
  * Once the DOM is loaded, add a load button.
  */ document.addEventListener("DOMContentLoaded", ()=>{
     // Create load button
-    let loadButton = (0, _htmlJs.createButton)("Load", boundary1);
-    loadButton.addEventListener("click", load);
+    let loadButton = (0, _htmlJs.createButton)('Welcome to the MESMER XML GUI (MXG) - a program for editing and visualising     Master Equation Solver for Multi Energy-well Reactions (MESMER) input/output XML format data. MXG is being developed     in the first quarter of 2024 with funding from EPSRC. This version of MXG works by loading an existing MESMER XML file.     Future versions may support crafting a MESMER XML file from scratch. Please read then action this button to select a     MESMER XML file to load using the file selector that should appear. The text on this button will change to "Load". Action     the "Load" button again to load a different MESMER XML file, but beware that any changes that you have made will be lost     if you do not first save them. A button with the text "Save" will appear after loading a file. This "Save" button can be     actioned to save a new MESMER XML file into your downloads folder/directory. This new file should reflect any changes made     to the input XML using the GUI. The MESMER XML file loaded is expected to contain the following main parts: "me:title",     "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". Upon loading a MESMER XML file     the "me:title" will appear beside that label and below the "Load" and "Save" buttons. The title can be edited. Changes to     the title will be stored and used to populate the "me:Title" tag in any output saved. The title will be used to compose     the filename for output saved. For security reasons, files must be saved to the normal download location on your system.     A presentation of the molecules, reactions, conditions, model parameters and control will appear below the title. The     presentation uses buttons and a canvas. The canvas should depict a well diagram. This will be redrawn if the user modifies     any "me:ZPE" property values of any molecules in the reactions. Many of the buttons will reveal other buttons and can then     do the reverse to hide details. An attempt is being made to make this GUI user-friendly and accessible. The development is     currently in an alpha release phase. The only users currently supported are those involved in alpha testing. A community     release with ongoing support from the MESMER community is tentatively scheduled for the end of April 2024. The alpha     versions are not recommended for general use, but please feel free to have a play. MXG is free and open source software     based and free and open source software. The development is currently supported and hosted on GitHub with a repository that     can be found via the following URL: ' + gitHubRepositoryURL + '. A link will appear as a button with the URL as     text next to the "Save" button.', boundary1);
+    loadButton.addEventListener("click", ()=>{
+        load();
+        loadButton.textContent = "Load";
+    });
     // Append loadButton to menu and set the display style of the menu.
     let menuDiv = document.getElementById("menu");
     if (menuDiv) menuDiv.appendChild(loadButton);
@@ -761,14 +769,24 @@ let selectedValueText = " Or use the appended input(s) to specify:";
             let blob = file.slice(start, start + chunkSize);
             reader.readAsText(blob);
             start += chunkSize;
+            // Create a menu.
+            let menuDiv = document.getElementById("menu");
             // Create save button.
             let saveButtonId = "saveButtonId";
             (0, _htmlJs.remove)(saveButtonId);
             let saveButton = (0, _htmlJs.createButton)("Save", boundary1);
             saveButton.id = saveButtonId;
             saveButton.addEventListener("click", saveXML);
-            let menuDiv = document.getElementById("menu");
             menuDiv.appendChild(saveButton);
+            // Create GitHub repository URL button.
+            let urlButtonId = "urlButtonId";
+            (0, _htmlJs.remove)(urlButtonId);
+            let urlButton = (0, _htmlJs.createButton)("Open a new Web browser loading the MXG GitHub repository: " + gitHubRepositoryURL, boundary1);
+            urlButton.id = urlButtonId;
+            urlButton.addEventListener("click", ()=>{
+                window.open(gitHubRepositoryURL, "_blank");
+            });
+            menuDiv.appendChild(urlButton);
         }
     };
     inputElement.click();
@@ -800,7 +818,7 @@ let selectedValueText = " Or use the appended input(s) to specify:";
                 console.log(titleNode.tagName + " changed to " + titleNode.value);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
-        }, titleString, "Title", fontSize1);
+        }, titleString, (0, _mesmerJs.Title).tagName, fontSize1);
         titleDiv.id = titleId;
         //let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
         //input.style.fontSize = fontSize1;
@@ -3133,16 +3151,18 @@ window.set = setNumberNode;
     button.classList.add("optionOn");
     button.classList.add("optionOff");
     div.appendChild(lwb);
+    let options = (0, _controlJs.CalcMethod).options;
     let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_input";
     let cm;
+    let first = true;
     if (xml.length == 1) {
         let value = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml[0]));
         cm = new (0, _controlJs.CalcMethod)((0, _xmlJs.getAttributes)(xml[0]), value);
         button.textContent = selected + selectedLoadedValueText;
-        createCalcMethodInput(control, div, cm, id, value);
+        first = createCalcMethodInput(control, options, div, cm, id, value, first);
         button.classList.toggle("optionOff");
     } else {
-        cm = new (0, _controlJs.CalcMethod)(new Map(), "Please use the dropdown to select a value...");
+        cm = new (0, _controlJs.CalcMethod)(new Map(), selectAnotherOption);
         button.textContent = notSelected + unselectedText;
         button.classList.toggle("optionOn");
     }
@@ -3151,7 +3171,8 @@ window.set = setNumberNode;
     button.addEventListener("click", (event)=>{
         // Check if the CalcMethod already exists
         if (!control.index.has((0, _controlJs.CalcMethod).tagName)) {
-            createCalcMethodInput(control, div, cm, id, valueString);
+            if (first) options.push(selectAnotherOption);
+            first = createCalcMethodInput(control, options, div, cm, id, valueString, first);
             button.textContent = selected + selectedValueText;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
@@ -3173,10 +3194,13 @@ window.set = setNumberNode;
  * @param eigenvalues The eigenvalues.
  * @param id The id.
  * @param valueString The value string. 
- */ function createCalcMethodInput(control, div, cm, id, valueString) {
-    let options = (0, _controlJs.CalcMethod).options;
-    options.push("Please use the dropdown to select a value...");
+ */ function createCalcMethodInput(control, options, div, cm, id, valueString, first) {
     let select = (0, _htmlJs.createSelectElement)(options, valueString, id, boundary1);
+    select.addEventListener("click", ()=>{
+        if (options[options.length - 1] == selectAnotherOption) options.pop();
+        let lastIndex = select.options.length - 1;
+        if (select.options[lastIndex].value == selectAnotherOption) select.remove(lastIndex);
+    });
     select.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLSelectElement) {
             cm.value = event.target.value;
@@ -3184,9 +3208,11 @@ window.set = setNumberNode;
         }
     });
     select.value = valueString;
+    console.log("Value: " + valueString);
     (0, _htmlJs.resizeSelectElement)(select);
     div.appendChild(select);
     control.setCalcMethod(cm);
+    return false;
 }
 /**
  * Process "me:eigenvalues".
@@ -3257,6 +3283,13 @@ window.set = setNumberNode;
     }
     // Add event listener for the button.
     button.addEventListener("click", (event)=>{
+        //let idIB = Control.tagName + "_" + Eigenvalues.tagName + "_input_infoButton";
+        let infoButton = (0, _htmlJs.createButton)(specifyNumberText, boundary1);
+        //infoButton.id = idIB;
+        div.appendChild(infoButton);
+        infoButton.addEventListener("click", (event)=>{
+            div.removeChild(infoButton);
+        });
         // Check if the Eigenvalues already exists
         if (!control.index.has((0, _controlJs.Eigenvalues).tagName)) {
             createEigenValuesInput(control, div, eigenvalues, id, valueString);
