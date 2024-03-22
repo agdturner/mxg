@@ -2895,7 +2895,7 @@ function processCalcMethod(control: Control, controlsDiv: HTMLDivElement, xml_co
                 control.removeTestMicroRates();
                 // Remove any existing CalcMethod select.
                 let e: HTMLDivElement;
-                e = document.getElementById(id) as HTMLDivElement;
+                e = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
@@ -2961,7 +2961,7 @@ function processEigenvalues(control: Control, controlsDiv: HTMLDivElement, xml_c
             } else {
                 control.removeEigenvalues();
                 // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
@@ -3022,11 +3022,11 @@ function processShortestTimeOfInterest(control: Control, controlsDiv: HTMLDivEle
     let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                createShortestTimeOfInterest(control, div, stoi, id, valueString);
+                createShortestTimeOfInterest(control, div, stoi, idI, valueString);
             } else {
                 control.removeShortestTimeOfInterest();
                 // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
@@ -3092,7 +3092,7 @@ function processMaximumEvolutionTime(control: Control, controlsDiv: HTMLDivEleme
             } else {
                 control.removeMaximumEvolutionTime();
                 // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
@@ -3158,7 +3158,7 @@ function processAutomaticallySetMaxEne(control: Control, controlsDiv: HTMLDivEle
             } else {
                 control.removeAutomaticallySetMaxEne();
                 // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
@@ -3224,7 +3224,7 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
             } else {
                 control.removeDiagramEnergyOffset();
                 // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }

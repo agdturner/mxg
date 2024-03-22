@@ -3061,7 +3061,7 @@ window.set = setNumberNode;
                 control.removeTestMicroRates();
                 // Remove any existing CalcMethod select.
                 let e;
-                e = document.getElementById(id);
+                e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
@@ -3118,7 +3118,7 @@ window.set = setNumberNode;
             else {
                 control.removeEigenvalues();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
@@ -3170,11 +3170,11 @@ window.set = setNumberNode;
     let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_input";
     let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createShortestTimeOfInterest(control, div, stoi, id, valueString);
+            if (event.target.checked) createShortestTimeOfInterest(control, div, stoi, idI, valueString);
             else {
                 control.removeShortestTimeOfInterest();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
@@ -3230,7 +3230,7 @@ window.set = setNumberNode;
             else {
                 control.removeMaximumEvolutionTime();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
@@ -3286,7 +3286,7 @@ window.set = setNumberNode;
             else {
                 control.removeAutomaticallySetMaxEne();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
@@ -3342,7 +3342,7 @@ window.set = setNumberNode;
             else {
                 control.removeDiagramEnergyOffset();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e = document.getElementById(idI);
                 if (e != null) e.remove();
             }
         }
