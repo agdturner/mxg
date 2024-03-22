@@ -191,10 +191,11 @@ exports.createSelectElement = createSelectElement;
  * @param name The name for the HTMLSelectElement.
  * @param id The id.
  * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
+ * @param level The level.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-function createLabelWithSelectElement(textContent, options, name, id, boundary) {
-    let div = document.createElement('div');
+function createLabelWithSelectElement(textContent, options, name, id, boundary, level) {
+    let div = createDiv(level);
     let label = createLabel(textContent, boundary);
     div.appendChild(label);
     let selectElement = document.createElement('select');
@@ -207,7 +208,6 @@ function createLabelWithSelectElement(textContent, options, name, id, boundary) 
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
-    Object.assign(selectElement.style, boundary);
     return div;
 }
 exports.createLabelWithSelectElement = createLabelWithSelectElement;

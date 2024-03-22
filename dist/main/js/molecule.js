@@ -16,7 +16,10 @@ const xml_js_1 = require("./xml.js");
  */
 /**
  * Atom instances must have an "elementType" attribute.
- * The attributes may include "id", "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
+ * The attributes may include:
+ * "id"
+ * "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
+ * "spinMultiplicity" - the spin multiplicity of the atom.
  * In the XML, an "atom" node is typically a child of an "atomArray" parent node.
  * If there is only one atom, it may be a child of a "molecule" parent node.
  */
@@ -355,7 +358,14 @@ exports.Property = Property;
  * The child "scalar" node should have a "units" attribute (known units=[kJ/mol]).
  */
 class ZPE extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:ZPE";
+    /**
+     * The possible units.
+     */
+    static units = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
     /**
      * @param attributes The attributes.
      * @param property The property.
@@ -376,6 +386,9 @@ exports.ZPE = ZPE;
  * "me:frequenciesScaleFactor" property.
  */
 class FrequenciesScaleFactor extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:frequenciesScaleFactor";
     /**
      * @param attributes The attributes.
@@ -391,6 +404,9 @@ exports.FrequenciesScaleFactor = FrequenciesScaleFactor;
  * The child "array" node should have a "units" attribute (known units=[cm-1]).
  */
 class VibFreqs extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:vibFreqs";
     /**
      * @param attributes The attributes.
@@ -406,7 +422,14 @@ exports.VibFreqs = VibFreqs;
  * The child "array" node should have a "units" attribute (known units=[cm-1]).
  */
 class RotConsts extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:rotConsts";
+    /**
+     * The possible units.
+     */
+    static units = ["cm-1", "GHz"];
     /**
      * @param attributes The attributes.
      * @param property The property.
@@ -421,6 +444,9 @@ exports.RotConsts = RotConsts;
  * The child "scalar" node should have a "units" attribute (known units=[amu]).
  */
 class MW extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:MW";
     /**
      * @param attributes The attributes.
@@ -435,6 +461,9 @@ exports.MW = MW;
  * "me:imFreqs"
  */
 class ImFreqs extends Property {
+    /**
+     * The dictionary reference.
+     */
     static dictRef = "me:imFreqs";
     /**
      * @param attributes The attributes.

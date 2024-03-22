@@ -304,6 +304,10 @@ class PTpair extends xml_js_1.NodeWithNodes {
      */
     static precisions = ["d", "dd", "qd", "double", "double-double", "quad-double"];
     /**
+     * The choice of units.
+     */
+    static pressureUnits = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
+    /**
      * The key to the P attribute value.
      */
     static s_P = "P";

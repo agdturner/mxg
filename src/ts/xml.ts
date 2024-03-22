@@ -308,9 +308,8 @@ export class NodeWithNodes extends TagWithAttributes {
      * @param {Tag | TagWithAttributes | NodeWithNodes} node The node.
      * @returns The index of the node added.
      */
-    addNode(node: Tag | TagWithAttributes | NodeWithNodes): number {
+    addNode(node: Tag | TagWithAttributes | NodeWithNodes): void {
         this.nodes.set(this.nodes.size, node);
-        return this.nodes.size - 1;
     }
 
     /**

@@ -287,7 +287,6 @@ class NodeWithNodes extends TagWithAttributes {
      */
     addNode(node) {
         this.nodes.set(this.nodes.size, node);
-        return this.nodes.size - 1;
     }
     /**
      * @returns A string representation.

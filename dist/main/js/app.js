@@ -50,12 +50,6 @@ let removeString = "remove";
 let removeSymbol = "\u2715";
 let addFromSpreadsheetString = "Add from spreadsheet";
 /**
- * Units for different things.
- */
-let unitsEnergy = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
-let unitsRotConsts = ["cm-1", "GHz"];
-let unitsPressure = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
-/**
  * For mesmer.
  */
 let mesmer;
@@ -463,10 +457,10 @@ function processMoleculeList(xml) {
                 pl.setProperty(p);
                 molecule.setProperties(pl);
                 if (p.dictRef == molecule_js_1.ZPE.dictRef) {
-                    processProperty(p, unitsEnergy, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                    processProperty(p, molecule_js_1.ZPE.units, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 }
                 else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
-                    processProperty(p, unitsRotConsts, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                    processProperty(p, molecule_js_1.RotConsts.units, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 }
                 else {
                     processProperty(p, undefined, molecule, xml_Ps[j], plDiv, boundary1, level3);
@@ -484,10 +478,10 @@ function processMoleculeList(xml) {
             let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
             if (p.dictRef == molecule_js_1.ZPE.dictRef) {
-                processProperty(p, unitsEnergy, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+                processProperty(p, molecule_js_1.ZPE.units, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             }
             else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
-                processProperty(p, unitsRotConsts, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+                processProperty(p, molecule_js_1.RotConsts.units, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             }
             else {
                 processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
@@ -1065,7 +1059,7 @@ function setNumberNode(node, input) {
     if ((0, util_js_1.isNumeric)(input.value)) {
         let inputNumber = parseFloat(input.value);
         node.value = inputNumber;
-        console.log("Value set to " + inputNumber);
+        console.log(node.tagName + " value set to " + inputNumber);
     }
     else {
         alert("Value is not numeric, resetting...");
@@ -1190,7 +1184,7 @@ function processReactionList(xml) {
                 let product = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), molecule);
                 products.push(product);
                 let options = ["modelled", "sink"];
-                let container = (0, html_js_1.createLabelWithSelectElement)(molecule.ref + " role:", options, molecule.ref + "_" + 'Select_Role', "Role", boundary1);
+                let container = (0, html_js_1.createLabelWithSelectElement)(molecule.ref + " role:", options, molecule.ref + "_" + 'Select_Role', "Role", boundary1, level3);
                 let selectElement = container.querySelector('select');
                 selectElement.value = molecule.role;
                 selectElement.addEventListener('change', (event) => {
@@ -1199,7 +1193,6 @@ function processReactionList(xml) {
                         console.log("Set Role to " + event.target.value);
                     }
                 });
-                Object.assign(container.style, level3);
                 productsDiv.appendChild(container);
             }
             reaction.setProducts(products);
@@ -1655,22 +1648,29 @@ function processConditions(xml) {
             console.log("inputElement.value.length=" + inputElement.value.length);
             if (inputElement.value.length > 0) {
                 let pTPairsArray = inputElement.value.split(" ");
+                // Is there a header?
+                let index = new Map();
+                pTPairsArray[0].split("\t").forEach((value, i) => {
+                    index.set(value, i);
+                });
                 console.log("pTPairsArray.length=" + pTPairsArray.length);
-                for (let i = 0; i < pTPairsArray.length; i++) {
+                for (let i = 1; i < pTPairsArray.length; i++) {
                     let pTPairAttributes = new Map();
                     pTPairAttributes.set("units", "Torr");
                     let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
                     let pTPairArray = pTPairsArray[i].split("\t");
-                    if (pTPairArray.length == 2) {
-                        let p = parseFloat(pTPairArray[0]);
-                        let t = parseFloat(pTPairArray[1]);
-                        pTPair.setP(p);
-                        pTPair.setT(t);
-                        console.log("pTPair=" + pTPair);
+                    let pIndex = index.get("P");
+                    let tIndex = index.get("T");
+                    let bathGasIndex = index.get("me:bathGas");
+                    let p = parseFloat(pTPairArray[pIndex]);
+                    let t = parseFloat(pTPairArray[tIndex]);
+                    pTPair.setP(p);
+                    pTPair.setT(t);
+                    if (index.has("me:bathGas")) {
+                        let bathGas = pTPairArray[bathGasIndex];
+                        pTPair.setBathGas(new conditions_js_1.BathGas(new Map(), bathGas));
                     }
-                    else {
-                        console.warn("pTPairArray.length=" + pTPairArray.length);
-                    }
+                    console.log("pTPair=" + pTPair);
                     let pTPairDiv = (0, html_js_1.createFlexDiv)(level2);
                     addP(pTPairDiv, pTPair);
                     addT(pTPairDiv, pTPair);
@@ -1991,20 +1991,17 @@ function processModelParameters(xml) {
         let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_grainSizes[0])));
         let grainSize = new modelParameters_js_1.GrainSize(grainSizeAttributes, value);
         modelParameters.setGrainSize(grainSize);
-        let grainSizeDiv = (0, html_js_1.createFlexDiv)(level1);
         // Create a new div for the grainSize.
         let grainSizeId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName;
-        let grainSizeInputDiv = (0, html_js_1.createLabelWithInput)("number", grainSizeId, boundary1, level1, (event) => {
+        let lwi = (0, html_js_1.createLabelWithInput)("number", grainSizeId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(grainSize, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, value.toString(), modelParameters_js_1.GrainSize.tagName);
-        (0, html_js_1.resizeInputElement)(grainSizeInputDiv.querySelector('input'));
-        grainSizeDiv.appendChild(grainSizeInputDiv);
-        // Add any units
-        addAnyUnits(undefined, grainSizeAttributes, grainSizeDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName, modelParameters_js_1.GrainSize.tagName, boundary1);
-        modelParametersDiv.appendChild(grainSizeDiv);
+        // Add any units.
+        addAnyUnits(undefined, grainSizeAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName, modelParameters_js_1.GrainSize.tagName, boundary1);
+        modelParametersDiv.appendChild(lwi);
     }
     // Process any "me:automaticallySetMaxEne" element.
     let xml_automaticallySetMaxEnes = xml_modelParameters.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
@@ -2018,17 +2015,15 @@ function processModelParameters(xml) {
         modelParameters.setAutomaticallySetMaxEne(automaticallySetMaxEne);
         // Create a new div for the automaticallySetMaxEne.
         let automaticallySetMaxEneId = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName;
-        let automaticallySetMaxEneInputDiv = (0, html_js_1.createLabelWithInput)("number", automaticallySetMaxEneId, boundary1, level0, (event) => {
+        let lwi = (0, html_js_1.createLabelWithInput)("number", automaticallySetMaxEneId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(automaticallySetMaxEne, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, value.toString(), control_js_1.AutomaticallySetMaxEne.tagName);
-        (0, html_js_1.resizeInputElement)(automaticallySetMaxEneInputDiv.querySelector('input'));
-        Object.assign(automaticallySetMaxEneInputDiv.style, level1);
-        modelParametersDiv.appendChild(automaticallySetMaxEneInputDiv);
-        // Add any units
-        addAnyUnits(undefined, automaticallySetMaxEneAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
+        // Add any units.
+        addAnyUnits(undefined, automaticallySetMaxEneAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
+        modelParametersDiv.appendChild(lwi);
     }
     // Process any "me:energyAboveTheTopHill" element.
     let xml_energyAboveTheTopHills = xml_modelParameters.getElementsByTagName(modelParameters_js_1.EnergyAboveTheTopHill.tagName);
@@ -2042,16 +2037,15 @@ function processModelParameters(xml) {
         modelParameters.setEnergyAboveTheTopHill(energyAboveTheTopHill);
         // Create a new div for the energyAboveTheTopHill.
         let energyAboveTheTopHillId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName;
-        let energyAboveTheTopHillInputDiv = (0, html_js_1.createLabelWithInput)("number", energyAboveTheTopHillId, boundary1, level2, (event) => {
+        let lwi = (0, html_js_1.createLabelWithInput)("number", energyAboveTheTopHillId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(energyAboveTheTopHill, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-        (0, html_js_1.resizeInputElement)(energyAboveTheTopHillInputDiv.querySelector('input'));
-        modelParametersDiv.appendChild(energyAboveTheTopHillInputDiv);
         // Add any units
-        addAnyUnits(undefined, energyAboveTheTopHillAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
+        addAnyUnits(undefined, energyAboveTheTopHillAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
+        modelParametersDiv.appendChild(lwi);
     }
     // Process any "me:maxTemperature" element.
     let xml_maxTemperatures = xml_modelParameters.getElementsByTagName(modelParameters_js_1.MaxTemperature.tagName);
@@ -2065,16 +2059,15 @@ function processModelParameters(xml) {
         modelParameters.setMaxTemperature(maxTemperature);
         // Create a new div for the maxTemperature.
         let maxTemperatureId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName;
-        let maxTemperatureInputDiv = (0, html_js_1.createLabelWithInput)("number", maxTemperatureId, boundary1, level1, (event) => {
+        let lwi = (0, html_js_1.createLabelWithInput)("number", maxTemperatureId, boundary1, level1, (event) => {
             if (event.target instanceof HTMLInputElement) {
                 setNumberNode(maxTemperature, event.target);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, maxTemperature.value.toString(), modelParameters_js_1.MaxTemperature.tagName);
-        (0, html_js_1.resizeInputElement)(maxTemperatureInputDiv.querySelector('input'));
-        modelParametersDiv.appendChild(maxTemperatureInputDiv);
         // Add any units
-        addAnyUnits(undefined, maxTemperatureAttributes, modelParametersDiv, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName, modelParameters_js_1.MaxTemperature.tagName, boundary1);
+        addAnyUnits(undefined, maxTemperatureAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName, modelParameters_js_1.MaxTemperature.tagName, boundary1);
+        modelParametersDiv.appendChild(lwi);
     }
     return modelParametersDiv;
 }
@@ -2127,28 +2120,61 @@ function processControl(xml) {
     let xml_control = (0, xml_js_1.getSingularElement)(xml, control_js_1.Control.tagName);
     let control = new control_js_1.Control((0, xml_js_1.getAttributes)(xml_control));
     mesmer.setControl(control);
-    // me:calculateRateCoefficientsOnly
-    let calculateRateCoefficientsOnlyDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(calculateRateCoefficientsOnlyDiv);
-    let xml_calculateRateCoefficientsOnly = xml_control.getElementsByTagName(control_js_1.CalculateRateCoefficientsOnly.tagName);
-    // Create a input checkbox for the CalculateRateCoefficientsOnly.
-    let calculateRateCoefficientsOnlyLabel = document.createElement("label");
-    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyLabel);
-    calculateRateCoefficientsOnlyLabel.textContent = control_js_1.CalculateRateCoefficientsOnly.tagName;
-    let calculateRateCoefficientsOnlyInput = document.createElement("input");
-    calculateRateCoefficientsOnlyDiv.appendChild(calculateRateCoefficientsOnlyInput);
-    calculateRateCoefficientsOnlyInput.type = "checkbox";
-    calculateRateCoefficientsOnlyInput.id = control_js_1.CalculateRateCoefficientsOnly.tagName;
-    if (xml_calculateRateCoefficientsOnly.length == 1) {
-        calculateRateCoefficientsOnlyInput.checked = true;
-        control.setCalculateRateCoefficientsOnly(new control_js_1.CalculateRateCoefficientsOnly());
-    }
-    else {
-        if (xml_calculateRateCoefficientsOnly.length > 1) {
-            console.warn("xml_calculateRateCoefficientsOnly.length=" + xml_calculateRateCoefficientsOnly.length);
+    processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control);
+    processPrintCellDOS(control, controlsDiv, xml_control);
+    processPrintCellTransitionStateFlux(control, controlsDiv, xml_control);
+    processPrintReactionOperatorColumnSums(control, controlsDiv, xml_control);
+    processPrintGrainBoltzmann(control, controlsDiv, xml_control);
+    processPrintGrainDOS(control, controlsDiv, xml_control);
+    processPrintGrainkbE(control, controlsDiv, xml_control);
+    processPrintGrainkfE(control, controlsDiv, xml_control);
+    processPrintTSsos(control, controlsDiv, xml_control);
+    processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control);
+    processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control);
+    processPrintReactionOperatorSize(control, controlsDiv, xml_control);
+    processPrintSpeciesProfile(control, controlsDiv, xml_control);
+    processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control);
+    processPrintTunnelingCoefficients(control, controlsDiv, xml_control);
+    processPrintCrossingCoefficients(control, controlsDiv, xml_control);
+    processTestDOS(control, controlsDiv, xml_control);
+    processTestRateConstants(control, controlsDiv, xml_control);
+    processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_control);
+    processHideInactive(control, controlsDiv, xml_control);
+    processForceMacroDetailedBalance(control, controlsDiv, xml_control);
+    processTestMicroRates(control, controlsDiv, xml_control);
+    processCalcMethod(control, controlsDiv, xml_control);
+    processEigenvalues(control, controlsDiv, xml_control);
+    processShortestTimeOfInterest(control, controlsDiv, xml_control);
+    processMaximumEvolutionTime(control, controlsDiv, xml_control);
+    processAutomaticallySetMaxEne(control, controlsDiv, xml_control);
+    processDiagramEnergyOffset(control, controlsDiv, xml_control);
+    return controlsDiv;
+}
+/**
+ * Set the check box.
+ * @param input The input div.
+ * @param xml_control The xml.
+ */
+function setCheck(input, xml) {
+    let cb = input.querySelector('input');
+    if (xml.length > 0) {
+        if (xml.length > 1) {
+            console.error("xml.length=" + xml.length);
         }
+        cb.checked = true;
+        return true;
     }
-    calculateRateCoefficientsOnlyInput.addEventListener('change', (event) => {
+    return false;
+}
+/**
+ * Process "me:calculateRateCoefficientsOnly".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.CalculateRateCoefficientsOnly.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setCalculateRateCoefficientsOnly(new control_js_1.CalculateRateCoefficientsOnly());
@@ -2157,29 +2183,19 @@ function processControl(xml) {
                 control.removeCalculateRateCoefficientsOnly();
             }
         }
-    });
-    // me:printCellDOS
-    let printCellDOSDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printCellDOSDiv);
-    let xml_printCellDOS = xml_control.getElementsByTagName(control_js_1.PrintCellDOS.tagName);
-    // Create a input checkbox for the PrintCellDOS.
-    let printCellDOSLabel = document.createElement("label");
-    printCellDOSDiv.appendChild(printCellDOSLabel);
-    printCellDOSLabel.textContent = control_js_1.PrintCellDOS.tagName;
-    let printCellDOSInput = document.createElement("input");
-    printCellDOSDiv.appendChild(printCellDOSInput);
-    printCellDOSInput.type = "checkbox";
-    printCellDOSInput.id = control_js_1.PrintCellDOS.tagName;
-    if (xml_printCellDOS.length == 1) {
-        printCellDOSInput.checked = true;
-        control.setPrintCellDOS(new control_js_1.PrintCellDOS());
-    }
-    else {
-        if (xml_printCellDOS.length > 1) {
-            console.warn("xml_printCellDOS.length=" + xml_printCellDOS.length);
-        }
-    }
-    printCellDOSInput.addEventListener('change', (event) => {
+    }, "", control_js_1.CalculateRateCoefficientsOnly.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.CalculateRateCoefficientsOnly.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printCellDOS".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintCellDOS(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintCellDOS.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintCellDOS(new control_js_1.PrintCellDOS());
@@ -2188,29 +2204,19 @@ function processControl(xml) {
                 control.removePrintCellDOS();
             }
         }
-    });
-    // me:printCellTransitionStateFlux
-    let printCellTransitionStateFluxDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printCellTransitionStateFluxDiv);
-    let xml_printCellTransitionStateFlux = xml_control.getElementsByTagName(control_js_1.PrintCellTransitionStateFlux.tagName);
-    // Create a input checkbox for the PrintCellTransitionStateFlux.
-    let printCellTransitionStateFluxLabel = document.createElement("label");
-    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxLabel);
-    printCellTransitionStateFluxLabel.textContent = control_js_1.PrintCellTransitionStateFlux.tagName;
-    let printCellTransitionStateFluxInput = document.createElement("input");
-    printCellTransitionStateFluxDiv.appendChild(printCellTransitionStateFluxInput);
-    printCellTransitionStateFluxInput.type = "checkbox";
-    printCellTransitionStateFluxInput.id = control_js_1.PrintCellTransitionStateFlux.tagName;
-    if (xml_printCellTransitionStateFlux.length == 1) {
-        printCellTransitionStateFluxInput.checked = true;
-        control.setPrintCellTransitionStateFlux(new control_js_1.PrintCellTransitionStateFlux());
-    }
-    else {
-        if (xml_printCellTransitionStateFlux.length > 1) {
-            console.warn("xml_printCellTransitionStateFlux.length=" + xml_printCellTransitionStateFlux.length);
-        }
-    }
-    printCellTransitionStateFluxInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintCellDOS.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellDOS.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printCellTransitionStateFlux".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintCellTransitionStateFlux(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintCellTransitionStateFlux.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintCellTransitionStateFlux(new control_js_1.PrintCellTransitionStateFlux());
@@ -2219,29 +2225,19 @@ function processControl(xml) {
                 control.removePrintCellTransitionStateFlux();
             }
         }
-    });
-    // me:printReactionOperatorColumnSums
-    let printReactionOperatorColumnSumsDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printReactionOperatorColumnSumsDiv);
-    let xml_printReactionOperatorColumnSums = xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorColumnSums.tagName);
-    // Create a input checkbox for the PrintReactionOperatorColumnSums.
-    let printReactionOperatorColumnSumsLabel = document.createElement("label");
-    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsLabel);
-    printReactionOperatorColumnSumsLabel.textContent = control_js_1.PrintReactionOperatorColumnSums.tagName;
-    let printReactionOperatorColumnSumsInput = document.createElement("input");
-    printReactionOperatorColumnSumsDiv.appendChild(printReactionOperatorColumnSumsInput);
-    printReactionOperatorColumnSumsInput.type = "checkbox";
-    printReactionOperatorColumnSumsInput.id = control_js_1.PrintReactionOperatorColumnSums.tagName;
-    if (xml_printReactionOperatorColumnSums.length == 1) {
-        printReactionOperatorColumnSumsInput.checked = true;
-        control.setPrintReactionOperatorColumnSums(new control_js_1.PrintReactionOperatorColumnSums());
-    }
-    else {
-        if (xml_printReactionOperatorColumnSums.length > 1) {
-            console.warn("xml_printReactionOperatorColumnSums.length=" + xml_printReactionOperatorColumnSums.length);
-        }
-    }
-    printReactionOperatorColumnSumsInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintCellTransitionStateFlux.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellTransitionStateFlux.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printReactionOperatorColumnSums".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintReactionOperatorColumnSums(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintReactionOperatorColumnSums.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintReactionOperatorColumnSums(new control_js_1.PrintReactionOperatorColumnSums());
@@ -2250,29 +2246,19 @@ function processControl(xml) {
                 control.removePrintReactionOperatorColumnSums();
             }
         }
-    });
-    // me:printGrainBoltzmann
-    let printGrainBoltzmannDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainBoltzmannDiv);
-    let xml_printGrainBoltzmann = xml_control.getElementsByTagName(control_js_1.PrintGrainBoltzmann.tagName);
-    // Create a input checkbox for the PrintGrainBoltzmann.
-    let printGrainBoltzmannLabel = document.createElement("label");
-    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannLabel);
-    printGrainBoltzmannLabel.textContent = control_js_1.PrintGrainBoltzmann.tagName;
-    let printGrainBoltzmannInput = document.createElement("input");
-    printGrainBoltzmannDiv.appendChild(printGrainBoltzmannInput);
-    printGrainBoltzmannInput.type = "checkbox";
-    printGrainBoltzmannInput.id = control_js_1.PrintGrainBoltzmann.tagName;
-    if (xml_printGrainBoltzmann.length == 1) {
-        printGrainBoltzmannInput.checked = true;
-        control.setPrintGrainBoltzmann(new control_js_1.PrintGrainBoltzmann());
-    }
-    else {
-        if (xml_printGrainBoltzmann.length > 1) {
-            console.warn("xml_printGrainBoltzmann.length=" + xml_printGrainBoltzmann.length);
-        }
-    }
-    printGrainBoltzmannInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintReactionOperatorColumnSums.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorColumnSums.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainBoltzmann".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainBoltzmann(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainBoltzmann.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainBoltzmann(new control_js_1.PrintGrainBoltzmann());
@@ -2281,29 +2267,19 @@ function processControl(xml) {
                 control.removePrintGrainBoltzmann();
             }
         }
-    });
-    // me:printGrainDOS
-    let printGrainDOSDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainDOSDiv);
-    let xml_printGrainDOS = xml_control.getElementsByTagName(control_js_1.PrintGrainDOS.tagName);
-    // Create a input checkbox for the PrintGrainDOS.
-    let printGrainDOSLabel = document.createElement("label");
-    printGrainDOSDiv.appendChild(printGrainDOSLabel);
-    printGrainDOSLabel.textContent = control_js_1.PrintGrainDOS.tagName;
-    let printGrainDOSInput = document.createElement("input");
-    printGrainDOSDiv.appendChild(printGrainDOSInput);
-    printGrainDOSInput.type = "checkbox";
-    printGrainDOSInput.id = control_js_1.PrintGrainDOS.tagName;
-    if (xml_printGrainDOS.length == 1) {
-        printGrainDOSInput.checked = true;
-        control.setPrintGrainDOS(new control_js_1.PrintGrainDOS());
-    }
-    else {
-        if (xml_printGrainDOS.length > 1) {
-            console.warn("xml_printGrainDOS.length=" + xml_printGrainDOS.length);
-        }
-    }
-    printGrainDOSInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainBoltzmann.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainBoltzmann.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainDOS".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainDOS(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainDOS.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainDOS(new control_js_1.PrintGrainDOS());
@@ -2312,29 +2288,19 @@ function processControl(xml) {
                 control.removePrintGrainDOS();
             }
         }
-    });
-    // me:printGrainkbE
-    let printGrainkbEDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainkbEDiv);
-    let xml_printGrainkbE = xml_control.getElementsByTagName(control_js_1.PrintGrainkbE.tagName);
-    // Create a input checkbox for the PrintGrainkbE.
-    let printGrainkbELabel = document.createElement("label");
-    printGrainkbEDiv.appendChild(printGrainkbELabel);
-    printGrainkbELabel.textContent = control_js_1.PrintGrainkbE.tagName;
-    let printGrainkbEInput = document.createElement("input");
-    printGrainkbEDiv.appendChild(printGrainkbEInput);
-    printGrainkbEInput.type = "checkbox";
-    printGrainkbEInput.id = control_js_1.PrintGrainkbE.tagName;
-    if (xml_printGrainkbE.length == 1) {
-        printGrainkbEInput.checked = true;
-        control.setPrintGrainkbE(new control_js_1.PrintGrainkbE());
-    }
-    else {
-        if (xml_printGrainkbE.length > 1) {
-            console.warn("xml_printGrainkbE.length=" + xml_printGrainkbE.length);
-        }
-    }
-    printGrainkbEInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainDOS.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainDOS.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainkbE".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainkbE(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainkbE.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainkbE(new control_js_1.PrintGrainkbE());
@@ -2343,29 +2309,19 @@ function processControl(xml) {
                 control.removePrintGrainkbE();
             }
         }
-    });
-    // me:printGrainkfE
-    let printGrainkfEDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainkfEDiv);
-    let xml_printGrainkfE = xml_control.getElementsByTagName(control_js_1.PrintGrainkfE.tagName);
-    // Create a input checkbox for the PrintGrainkfE.
-    let printGrainkfELabel = document.createElement("label");
-    printGrainkfEDiv.appendChild(printGrainkfELabel);
-    printGrainkfELabel.textContent = control_js_1.PrintGrainkfE.tagName;
-    let printGrainkfEInput = document.createElement("input");
-    printGrainkfEDiv.appendChild(printGrainkfEInput);
-    printGrainkfEInput.type = "checkbox";
-    printGrainkfEInput.id = control_js_1.PrintGrainkfE.tagName;
-    if (xml_printGrainkfE.length == 1) {
-        printGrainkfEInput.checked = true;
-        control.setPrintGrainkfE(new control_js_1.PrintGrainkfE());
-    }
-    else {
-        if (xml_printGrainkfE.length > 1) {
-            console.warn("xml_printGrainkfE.length=" + xml_printGrainkfE.length);
-        }
-    }
-    printGrainkfEInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainkbE.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkbE.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainkfE".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainkfE(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainkfE.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainkfE(new control_js_1.PrintGrainkfE());
@@ -2374,29 +2330,19 @@ function processControl(xml) {
                 control.removePrintGrainkfE();
             }
         }
-    });
-    // me:printTSsos
-    let printTSsosDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printTSsosDiv);
-    let xml_printTSsos = xml_control.getElementsByTagName(control_js_1.PrintTSsos.tagName);
-    // Create a input checkbox for the PrintTSsos.
-    let printTSsosLabel = document.createElement("label");
-    printTSsosDiv.appendChild(printTSsosLabel);
-    printTSsosLabel.textContent = control_js_1.PrintTSsos.tagName;
-    let printTSsosInput = document.createElement("input");
-    printTSsosDiv.appendChild(printTSsosInput);
-    printTSsosInput.type = "checkbox";
-    printTSsosInput.id = control_js_1.PrintTSsos.tagName;
-    if (xml_printTSsos.length == 1) {
-        printTSsosInput.checked = true;
-        control.setPrintTSsos(new control_js_1.PrintTSsos());
-    }
-    else {
-        if (xml_printTSsos.length > 1) {
-            console.warn("xml_printTSsos.length=" + xml_printTSsos.length);
-        }
-    }
-    printTSsosInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainkfE.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkfE.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printTSsos".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintTSsos(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintTSsos.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintTSsos(new control_js_1.PrintTSsos());
@@ -2405,29 +2351,19 @@ function processControl(xml) {
                 control.removePrintTSsos();
             }
         }
-    });
-    // me:printGrainedSpeciesProfile
-    let printGrainedSpeciesProfileDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainedSpeciesProfileDiv);
-    let xml_printGrainedSpeciesProfile = xml_control.getElementsByTagName(control_js_1.PrintGrainedSpeciesProfile.tagName);
-    // Create a input checkbox for the PrintGrainedSpeciesProfile.
-    let printGrainedSpeciesProfileLabel = document.createElement("label");
-    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileLabel);
-    printGrainedSpeciesProfileLabel.textContent = control_js_1.PrintGrainedSpeciesProfile.tagName;
-    let printGrainedSpeciesProfileInput = document.createElement("input");
-    printGrainedSpeciesProfileDiv.appendChild(printGrainedSpeciesProfileInput);
-    printGrainedSpeciesProfileInput.type = "checkbox";
-    printGrainedSpeciesProfileInput.id = control_js_1.PrintGrainedSpeciesProfile.tagName;
-    if (xml_printGrainedSpeciesProfile.length == 1) {
-        printGrainedSpeciesProfileInput.checked = true;
-        control.setPrintGrainedSpeciesProfile(new control_js_1.PrintGrainedSpeciesProfile());
-    }
-    else {
-        if (xml_printGrainedSpeciesProfile.length > 1) {
-            console.warn("xml_printGrainedSpeciesProfile.length=" + xml_printGrainedSpeciesProfile.length);
-        }
-    }
-    printGrainedSpeciesProfileInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintTSsos.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTSsos.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainedSpeciesProfile".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainedSpeciesProfile.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainedSpeciesProfile(new control_js_1.PrintGrainedSpeciesProfile());
@@ -2436,29 +2372,19 @@ function processControl(xml) {
                 control.removePrintGrainedSpeciesProfile();
             }
         }
-    });
-    // me:printGrainTransitionStateFlux
-    let printGrainTransitionStateFluxDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printGrainTransitionStateFluxDiv);
-    let xml_printGrainTransitionStateFlux = xml_control.getElementsByTagName(control_js_1.PrintGrainTransitionStateFlux.tagName);
-    // Create a input checkbox for the PrintGrainTransitionStateFlux.
-    let printGrainTransitionStateFluxLabel = document.createElement("label");
-    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxLabel);
-    printGrainTransitionStateFluxLabel.textContent = control_js_1.PrintGrainTransitionStateFlux.tagName;
-    let printGrainTransitionStateFluxInput = document.createElement("input");
-    printGrainTransitionStateFluxDiv.appendChild(printGrainTransitionStateFluxInput);
-    printGrainTransitionStateFluxInput.type = "checkbox";
-    printGrainTransitionStateFluxInput.id = control_js_1.PrintGrainTransitionStateFlux.tagName;
-    if (xml_printGrainTransitionStateFlux.length == 1) {
-        printGrainTransitionStateFluxInput.checked = true;
-        control.setPrintGrainTransitionStateFlux(new control_js_1.PrintGrainTransitionStateFlux());
-    }
-    else {
-        if (xml_printGrainTransitionStateFlux.length > 1) {
-            console.warn("xml_printGrainTransitionStateFlux.length=" + xml_printGrainTransitionStateFlux.length);
-        }
-    }
-    printGrainTransitionStateFluxInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainedSpeciesProfile.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainedSpeciesProfile.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printGrainTransitionStateFlux".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintGrainTransitionStateFlux.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintGrainTransitionStateFlux(new control_js_1.PrintGrainTransitionStateFlux());
@@ -2467,29 +2393,19 @@ function processControl(xml) {
                 control.removePrintGrainTransitionStateFlux();
             }
         }
-    });
-    // me:printReactionOperatorSize
-    let printReactionOperatorSizeDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printReactionOperatorSizeDiv);
-    let xml_printReactionOperatorSize = xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorSize.tagName);
-    // Create a input checkbox for the PrintReactionOperatorSize.
-    let printReactionOperatorSizeLabel = document.createElement("label");
-    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeLabel);
-    printReactionOperatorSizeLabel.textContent = control_js_1.PrintReactionOperatorSize.tagName;
-    let printReactionOperatorSizeInput = document.createElement("input");
-    printReactionOperatorSizeDiv.appendChild(printReactionOperatorSizeInput);
-    printReactionOperatorSizeInput.type = "checkbox";
-    printReactionOperatorSizeInput.id = control_js_1.PrintReactionOperatorSize.tagName;
-    if (xml_printReactionOperatorSize.length == 1) {
-        printReactionOperatorSizeInput.checked = true;
-        control.setPrintReactionOperatorSize(new control_js_1.PrintReactionOperatorSize());
-    }
-    else {
-        if (xml_printReactionOperatorSize.length > 1) {
-            console.warn("xml_printReactionOperatorSize.length=" + xml_printReactionOperatorSize.length);
-        }
-    }
-    printReactionOperatorSizeInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintGrainTransitionStateFlux.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainTransitionStateFlux.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printReactionOperatorSize".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintReactionOperatorSize(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintReactionOperatorSize.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintReactionOperatorSize(new control_js_1.PrintReactionOperatorSize());
@@ -2498,29 +2414,19 @@ function processControl(xml) {
                 control.removePrintReactionOperatorSize();
             }
         }
-    });
-    // me:printSpeciesProfile
-    let printSpeciesProfileDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printSpeciesProfileDiv);
-    let xml_printSpeciesProfile = xml_control.getElementsByTagName(control_js_1.PrintSpeciesProfile.tagName);
-    // Create a input checkbox for the PrintSpeciesProfile.
-    let printSpeciesProfileLabel = document.createElement("label");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileLabel);
-    printSpeciesProfileLabel.textContent = control_js_1.PrintSpeciesProfile.tagName;
-    let printSpeciesProfileInput = document.createElement("input");
-    printSpeciesProfileDiv.appendChild(printSpeciesProfileInput);
-    printSpeciesProfileInput.type = "checkbox";
-    printSpeciesProfileInput.id = control_js_1.PrintSpeciesProfile.tagName;
-    if (xml_printSpeciesProfile.length == 1) {
-        printSpeciesProfileInput.checked = true;
-        control.setPrintSpeciesProfile(new control_js_1.PrintSpeciesProfile());
-    }
-    else {
-        if (xml_printSpeciesProfile.length > 1) {
-            console.warn("xml_printSpeciesProfile.length=" + xml_printSpeciesProfile.length);
-        }
-    }
-    printSpeciesProfileInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintReactionOperatorSize.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorSize.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printSpeciesProfile".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintSpeciesProfile(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintSpeciesProfile.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintSpeciesProfile(new control_js_1.PrintSpeciesProfile());
@@ -2529,29 +2435,19 @@ function processControl(xml) {
                 control.removePrintSpeciesProfile();
             }
         }
-    });
-    // me:printPhenomenologicalEvolution
-    let printPhenomenologicalEvolutionDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printPhenomenologicalEvolutionDiv);
-    let xml_printPhenomenologicalEvolution = xml_control.getElementsByTagName(control_js_1.PrintPhenomenologicalEvolution.tagName);
-    // Create a input checkbox for the PrintPhenomenologicalEvolution.
-    let printPhenomenologicalEvolutionLabel = document.createElement("label");
-    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionLabel);
-    printPhenomenologicalEvolutionLabel.textContent = control_js_1.PrintPhenomenologicalEvolution.tagName;
-    let printPhenomenologicalEvolutionInput = document.createElement("input");
-    printPhenomenologicalEvolutionDiv.appendChild(printPhenomenologicalEvolutionInput);
-    printPhenomenologicalEvolutionInput.type = "checkbox";
-    printPhenomenologicalEvolutionInput.id = control_js_1.PrintPhenomenologicalEvolution.tagName;
-    if (xml_printPhenomenologicalEvolution.length == 1) {
-        printPhenomenologicalEvolutionInput.checked = true;
-        control.setPrintPhenomenologicalEvolution(new control_js_1.PrintPhenomenologicalEvolution());
-    }
-    else {
-        if (xml_printPhenomenologicalEvolution.length > 1) {
-            console.warn("xml_printPhenomenologicalEvolution.length=" + xml_printPhenomenologicalEvolution.length);
-        }
-    }
-    printPhenomenologicalEvolutionInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintSpeciesProfile.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintSpeciesProfile.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printPhenomenologicalEvolution".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintPhenomenologicalEvolution.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintPhenomenologicalEvolution(new control_js_1.PrintPhenomenologicalEvolution());
@@ -2560,29 +2456,19 @@ function processControl(xml) {
                 control.removePrintPhenomenologicalEvolution();
             }
         }
-    });
-    // me:printTunnelingCoefficients
-    let printTunnelingCoefficientsDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printTunnelingCoefficientsDiv);
-    let xml_printTunnelingCoefficients = xml_control.getElementsByTagName(control_js_1.PrintTunnelingCoefficients.tagName);
-    // Create a input checkbox for the PrintTunnelingCoefficients.
-    let printTunnelingCoefficientsLabel = document.createElement("label");
-    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsLabel);
-    printTunnelingCoefficientsLabel.textContent = control_js_1.PrintTunnelingCoefficients.tagName;
-    let printTunnelingCoefficientsInput = document.createElement("input");
-    printTunnelingCoefficientsDiv.appendChild(printTunnelingCoefficientsInput);
-    printTunnelingCoefficientsInput.type = "checkbox";
-    printTunnelingCoefficientsInput.id = control_js_1.PrintTunnelingCoefficients.tagName;
-    if (xml_printTunnelingCoefficients.length == 1) {
-        printTunnelingCoefficientsInput.checked = true;
-        control.setPrintTunnelingCoefficients(new control_js_1.PrintTunnelingCoefficients());
-    }
-    else {
-        if (xml_printTunnelingCoefficients.length > 1) {
-            console.warn("xml_printTunnelingCoefficients.length=" + xml_printTunnelingCoefficients.length);
-        }
-    }
-    printTunnelingCoefficientsInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintPhenomenologicalEvolution.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintPhenomenologicalEvolution.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printTunnelingCoefficients".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintTunnelingCoefficients(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintTunnelingCoefficients.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintTunnelingCoefficients(new control_js_1.PrintTunnelingCoefficients());
@@ -2591,29 +2477,19 @@ function processControl(xml) {
                 control.removePrintTunnelingCoefficients();
             }
         }
-    });
-    // me:printCrossingCoefficients
-    let printCrossingCoefficientsDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(printCrossingCoefficientsDiv);
-    let xml_printCrossingCoefficients = xml_control.getElementsByTagName(control_js_1.PrintCrossingCoefficients.tagName);
-    // Create a input checkbox for the PrintCrossingCoefficients.
-    let printCrossingCoefficientsLabel = document.createElement("label");
-    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsLabel);
-    printCrossingCoefficientsLabel.textContent = control_js_1.PrintCrossingCoefficients.tagName;
-    let printCrossingCoefficientsInput = document.createElement("input");
-    printCrossingCoefficientsDiv.appendChild(printCrossingCoefficientsInput);
-    printCrossingCoefficientsInput.type = "checkbox";
-    printCrossingCoefficientsInput.id = control_js_1.PrintCrossingCoefficients.tagName;
-    if (xml_printCrossingCoefficients.length == 1) {
-        printCrossingCoefficientsInput.checked = true;
-        control.setPrintCrossingCoefficients(new control_js_1.PrintCrossingCoefficients());
-    }
-    else {
-        if (xml_printCrossingCoefficients.length > 1) {
-            console.warn("xml_printCrossingCoefficients.length=" + xml_printCrossingCoefficients.length);
-        }
-    }
-    printCrossingCoefficientsInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintTunnelingCoefficients.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTunnelingCoefficients.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:printCrossingCoefficients".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processPrintCrossingCoefficients(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.PrintCrossingCoefficients.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setPrintCrossingCoefficients(new control_js_1.PrintCrossingCoefficients());
@@ -2622,29 +2498,19 @@ function processControl(xml) {
                 control.removePrintCrossingCoefficients();
             }
         }
-    });
-    // me:testDOS
-    let testDOSDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(testDOSDiv);
-    let xml_testDOS = xml_control.getElementsByTagName(control_js_1.TestDOS.tagName);
-    // Create a input checkbox for the TestDOS.
-    let testDOSLabel = document.createElement("label");
-    testDOSDiv.appendChild(testDOSLabel);
-    testDOSLabel.textContent = control_js_1.TestDOS.tagName;
-    let testDOSInput = document.createElement("input");
-    testDOSDiv.appendChild(testDOSInput);
-    testDOSInput.type = "checkbox";
-    testDOSInput.id = control_js_1.TestDOS.tagName;
-    if (xml_testDOS.length == 1) {
-        testDOSInput.checked = true;
-        control.setTestDOS(new control_js_1.TestDOS());
-    }
-    else {
-        if (xml_testDOS.length > 1) {
-            console.warn("xml_testDOS.length=" + xml_testDOS.length);
-        }
-    }
-    testDOSInput.addEventListener('change', (event) => {
+    }, "", control_js_1.PrintCrossingCoefficients.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCrossingCoefficients.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:testDOS".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processTestDOS(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.TestDOS.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setTestDOS(new control_js_1.TestDOS());
@@ -2653,29 +2519,19 @@ function processControl(xml) {
                 control.removeTestDOS();
             }
         }
-    });
-    // me:testRateConstants
-    let testRateConstantsDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(testRateConstantsDiv);
-    let xml_testRateConstants = xml_control.getElementsByTagName(control_js_1.TestRateConstants.tagName);
-    // Create a input checkbox for the TestRateConstants.
-    let testRateConstantsLabel = document.createElement("label");
-    testRateConstantsDiv.appendChild(testRateConstantsLabel);
-    testRateConstantsLabel.textContent = control_js_1.TestRateConstants.tagName;
-    let testRateConstantsInput = document.createElement("input");
-    testRateConstantsDiv.appendChild(testRateConstantsInput);
-    testRateConstantsInput.type = "checkbox";
-    testRateConstantsInput.id = control_js_1.TestRateConstants.tagName;
-    if (xml_testRateConstants.length == 1) {
-        testRateConstantsInput.checked = true;
-        control.setTestRateConstants(new control_js_1.TestRateConstants());
-    }
-    else {
-        if (xml_testRateConstants.length > 1) {
-            console.warn("xml_testRateConstants.length=" + xml_testRateConstants.length);
-        }
-    }
-    testRateConstantsInput.addEventListener('change', (event) => {
+    }, "", control_js_1.TestDOS.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.TestDOS.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:testRateConstants".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processTestRateConstants(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.TestRateConstants.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setTestRateConstants(new control_js_1.TestRateConstants());
@@ -2684,29 +2540,19 @@ function processControl(xml) {
                 control.removeTestRateConstants();
             }
         }
-    });
-    // me:useTheSameCellNumberForAllConditions
-    let useTheSameCellNumberForAllConditionsDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(useTheSameCellNumberForAllConditionsDiv);
-    let xml_useTheSameCellNumberForAllConditions = xml_control.getElementsByTagName(control_js_1.UseTheSameCellNumberForAllConditions.tagName);
-    // Create a input checkbox for the UseTheSameCellNumberForAllConditions.
-    let useTheSameCellNumberForAllConditionsLabel = document.createElement("label");
-    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsLabel);
-    useTheSameCellNumberForAllConditionsLabel.textContent = control_js_1.UseTheSameCellNumberForAllConditions.tagName;
-    let useTheSameCellNumberForAllConditionsInput = document.createElement("input");
-    useTheSameCellNumberForAllConditionsDiv.appendChild(useTheSameCellNumberForAllConditionsInput);
-    useTheSameCellNumberForAllConditionsInput.type = "checkbox";
-    useTheSameCellNumberForAllConditionsInput.id = control_js_1.UseTheSameCellNumberForAllConditions.tagName;
-    if (xml_useTheSameCellNumberForAllConditions.length == 1) {
-        useTheSameCellNumberForAllConditionsInput.checked = true;
-        control.setUseTheSameCellNumberForAllConditions(new control_js_1.UseTheSameCellNumberForAllConditions());
-    }
-    else {
-        if (xml_useTheSameCellNumberForAllConditions.length > 1) {
-            console.warn("xml_useTheSameCellNumberForAllConditions.length=" + xml_useTheSameCellNumberForAllConditions.length);
-        }
-    }
-    useTheSameCellNumberForAllConditionsInput.addEventListener('change', (event) => {
+    }, "", control_js_1.TestRateConstants.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.TestRateConstants.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:useTheSameCellNumberForAllConditions".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.UseTheSameCellNumberForAllConditions.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setUseTheSameCellNumberForAllConditions(new control_js_1.UseTheSameCellNumberForAllConditions());
@@ -2715,29 +2561,19 @@ function processControl(xml) {
                 control.removeUseTheSameCellNumberForAllConditions();
             }
         }
-    });
-    // me:hideInactive
-    let hideInactiveDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(hideInactiveDiv);
-    let xml_hideInactive = xml_control.getElementsByTagName(control_js_1.HideInactive.tagName);
-    // Create a input checkbox for the HideInactive.
-    let hideInactiveLabel = document.createElement("label");
-    hideInactiveDiv.appendChild(hideInactiveLabel);
-    hideInactiveLabel.textContent = control_js_1.HideInactive.tagName;
-    let hideInactiveInput = document.createElement("input");
-    hideInactiveDiv.appendChild(hideInactiveInput);
-    hideInactiveInput.type = "checkbox";
-    hideInactiveInput.id = control_js_1.HideInactive.tagName;
-    if (xml_hideInactive.length == 1) {
-        hideInactiveInput.checked = true;
-        control.setHideInactive(new control_js_1.HideInactive());
-    }
-    else {
-        if (xml_hideInactive.length > 1) {
-            console.warn("xml_hideInactive.length=" + xml_hideInactive.length);
-        }
-    }
-    hideInactiveInput.addEventListener('change', (event) => {
+    }, "", control_js_1.UseTheSameCellNumberForAllConditions.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.UseTheSameCellNumberForAllConditions.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:hideInactive".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processHideInactive(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.HideInactive.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setHideInactive(new control_js_1.HideInactive());
@@ -2746,29 +2582,19 @@ function processControl(xml) {
                 control.removeHideInactive();
             }
         }
-    });
-    // me:ForceMacroDetailedBalance
-    let forceMacroDetailedBalanceDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(forceMacroDetailedBalanceDiv);
-    let xml_forceMacroDetailedBalance = xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName);
-    // Create a input checkbox for the ForceMacroDetailedBalance.
-    let forceMacroDetailedBalanceLabel = document.createElement("label");
-    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceLabel);
-    forceMacroDetailedBalanceLabel.textContent = control_js_1.ForceMacroDetailedBalance.tagName;
-    let forceMacroDetailedBalanceInput = document.createElement("input");
-    forceMacroDetailedBalanceDiv.appendChild(forceMacroDetailedBalanceInput);
-    forceMacroDetailedBalanceInput.type = "checkbox";
-    forceMacroDetailedBalanceInput.id = control_js_1.ForceMacroDetailedBalance.tagName;
-    if (xml_forceMacroDetailedBalance.length == 1) {
-        forceMacroDetailedBalanceInput.checked = true;
-        control.setForceMacroDetailedBalance(new control_js_1.ForceMacroDetailedBalance());
-    }
-    else {
-        if (xml_forceMacroDetailedBalance.length > 1) {
-            console.warn("xml_forceMacroDetailedBalance.length=" + xml_forceMacroDetailedBalance.length);
-        }
-    }
-    forceMacroDetailedBalanceInput.addEventListener('change', (event) => {
+    }, "", control_js_1.HideInactive.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.HideInactive.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:forceMacroDetailedBalance".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processForceMacroDetailedBalance(control, controlsDiv, xml_control) {
+    let id = control_js_1.Control.tagName + "_" + control_js_1.ForceMacroDetailedBalance.tagName + "_checkbox";
+    let input = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level1, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 control.setForceMacroDetailedBalance(new control_js_1.ForceMacroDetailedBalance());
@@ -2777,537 +2603,522 @@ function processControl(xml) {
                 control.removeForceMacroDetailedBalance();
             }
         }
-    });
-    // me:testMicroRates
-    let testMicroRatesDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(testMicroRatesDiv);
-    let xml_testMicroRates = xml_control.getElementsByTagName(control_js_1.TestMicroRates.tagName);
-    // Create a input checkbox for the TestMicroRates.
-    let testMicroRatesLabel = document.createElement("label");
-    testMicroRatesDiv.appendChild(testMicroRatesLabel);
-    testMicroRatesLabel.textContent = control_js_1.TestMicroRates.tagName;
-    let testMicroRatesInput = document.createElement("input");
-    testMicroRatesDiv.appendChild(testMicroRatesInput);
-    testMicroRatesInput.type = "checkbox";
-    testMicroRatesInput.id = control_js_1.TestMicroRates.tagName;
-    let testMicroRatesAttributes;
-    let testMicroRates;
-    if (xml_testMicroRates.length == 1) {
-        testMicroRatesInput.checked = true;
-        testMicroRatesAttributes = (0, xml_js_1.getAttributes)(xml_testMicroRates[0]);
-        testMicroRates = new control_js_1.TestMicroRates(testMicroRatesAttributes);
-        control.setTestMicroRates(testMicroRates);
-    }
-    else {
-        testMicroRatesAttributes = new Map();
-        testMicroRatesAttributes.set("Tmax", "");
-        testMicroRatesAttributes.set("Tmin", "");
-        testMicroRatesAttributes.set("Tstep", "");
-        testMicroRates = new control_js_1.TestMicroRates(testMicroRatesAttributes);
-    }
-    testMicroRatesInput.addEventListener('change', (event) => {
+    }, "", control_js_1.ForceMacroDetailedBalance.tagName);
+    setCheck(input, xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName));
+    controlsDiv.appendChild(input);
+}
+/**
+ * Process "me:testMicroRates".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processTestMicroRates(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_checkbox";
+    let idTmax = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tmax";
+    let idTmin = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tmin";
+    let idTstep = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tstep";
+    let xml_tmr = xml_control.getElementsByTagName(control_js_1.TestMicroRates.tagName);
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setTestMicroRates(testMicroRates);
-                // Tmax.
-                let idTmax = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tmax";
-                // Remove any exising div for tMax.
-                let existingTmaxDiv = document.getElementById(idTmax);
-                if (existingTmaxDiv != null) {
-                    existingTmaxDiv.remove();
-                }
-                // Create a new div for tMax.
-                let tMax = testMicroRates.getTmax();
-                let tMaxInputDiv = (0, html_js_1.createLabelWithInput)("number", idTmax + "_input", boundary1, level0, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(event.target.value)) {
-                            testMicroRates.setTmax(parseFloat(event.target.value));
-                            console.log("Set Tmax to " + event.target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = tMax.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, tMax.toString(), "Tmax");
-                tMaxInputDiv.id = idTmax;
-                (0, html_js_1.resizeInputElement)(tMaxInputDiv.querySelector('input'));
-                testMicroRatesDiv.appendChild(tMaxInputDiv);
-                // Tmin.
-                let idTmin = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_tMin";
-                // Remove any exising div for tMin.
-                let existingTminDiv = document.getElementById(idTmin);
-                if (existingTminDiv != null) {
-                    existingTminDiv.remove();
-                }
-                // Create a new div for the tMin.
-                let tMin = testMicroRates.getTmin();
-                let tMinInputDiv = (0, html_js_1.createLabelWithInput)("number", idTmin + "_input", boundary1, level0, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(event.target.value)) {
-                            testMicroRates.setTmin(parseFloat(event.target.value));
-                            console.log("Set Tmin to " + event.target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = tMax.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, tMin.toString(), "Tmin");
-                tMinInputDiv.id = idTmin;
-                (0, html_js_1.resizeInputElement)(tMinInputDiv.querySelector('input'));
-                testMicroRatesDiv.appendChild(tMinInputDiv);
-                // Tstep.
-                let idTstep = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_tStep";
-                // Remove any exising div for tStep.
-                let existingTstepDiv = document.getElementById(idTstep);
-                if (existingTstepDiv != null) {
-                    existingTstepDiv.remove();
-                }
-                // Create a new div for the tStep.
-                let tStep = testMicroRates.getTstep();
-                let tStepInputDiv = (0, html_js_1.createLabelWithInput)("number", idTstep + "_input", boundary1, level0, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(event.target.value)) {
-                            testMicroRates.setTstep(parseFloat(event.target.value));
-                            console.log("Set Tstep to " + event.target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            event.target.value = tMax.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, tStep.toString(), "Tstep");
-                tStepInputDiv.id = idTstep;
-                (0, html_js_1.resizeInputElement)(tStepInputDiv.querySelector('input'));
-                testMicroRatesDiv.appendChild(tStepInputDiv);
+                createTestMicroRates(div, xml_tmr, idTmax, idTmin, idTstep, control);
             }
             else {
                 control.removeTestMicroRates();
-                // Tmax.
-                let idTmax = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tmax";
-                // Remove any exising div for tMax.
-                let existingTmaxDiv = document.getElementById(idTmax);
-                if (existingTmaxDiv != null) {
-                    existingTmaxDiv.remove();
+                // Remove any existing Tmax.
+                let e;
+                e = document.getElementById(idTmax);
+                if (e != null) {
+                    e.remove();
                 }
-                // Tmin.
-                let idTmin = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_tMin";
-                // Remove any exising div for tMin.
-                let existingTminDiv = document.getElementById(idTmin);
-                if (existingTminDiv != null) {
-                    existingTminDiv.remove();
+                // Remove any existing Tmin.
+                e = document.getElementById(idTmin);
+                if (e != null) {
+                    e.remove();
                 }
-                // Tstep.
-                let idTstep = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_tStep";
-                // Remove any exising div for tStep.
-                let existingTstepDiv = document.getElementById(idTstep);
-                if (existingTstepDiv != null) {
-                    existingTstepDiv.remove();
+                // Remove any existing Tstep.
+                e = document.getElementById(idTstep);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
-    });
-    // me:calcMethod
-    let calcMethodDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(calcMethodDiv);
-    let xml_calcMethod = xml_control.getElementsByTagName(control_js_1.CalcMethod.tagName);
-    // Create a input checkbox for the CalcMethod.
-    let calcMethodLabel = document.createElement("label");
-    calcMethodDiv.appendChild(calcMethodLabel);
-    calcMethodLabel.textContent = control_js_1.CalcMethod.tagName;
-    let calcMethodInput = document.createElement("input");
-    calcMethodDiv.appendChild(calcMethodInput);
-    calcMethodInput.type = "checkbox";
-    calcMethodInput.id = control_js_1.CalcMethod.tagName;
-    let calcMethodAttributes;
-    let calcMethod;
-    if (xml_calcMethod.length == 1) {
-        calcMethodInput.checked = true;
-        calcMethodAttributes = (0, xml_js_1.getAttributes)(xml_calcMethod[0]);
-        let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_calcMethod[0]));
-        calcMethod = new control_js_1.CalcMethod(calcMethodAttributes, value);
-        control.setCalcMethod(calcMethod);
+    }, "", control_js_1.TestMicroRates.tagName);
+    let isChecked = setCheck(lwi, xml_tmr);
+    if (isChecked) {
+        createTestMicroRates(div, xml_tmr, idTmax, idTmin, idTstep, control);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param div The div.
+ * @param xml_tmr The xml.
+ * @param idTmax The Tmax id.
+ * @param idTmin The Tmin id.
+ * @param idTstep The Tstep id.
+ * @param control The control.
+ */
+function createTestMicroRates(div, xml_tmr, idTmax, idTmin, idTstep, control) {
+    let attributes;
+    let tmr;
+    if (xml_tmr.length == 1) {
+        attributes = (0, xml_js_1.getAttributes)(xml_tmr[0]);
+        tmr = new control_js_1.TestMicroRates(attributes);
     }
     else {
-        calcMethodInput.checked = false;
-        calcMethodAttributes = new Map();
-        calcMethod = new control_js_1.CalcMethod(calcMethodAttributes, "");
+        attributes = new Map();
+        attributes.set("Tmax", "");
+        attributes.set("Tmin", "");
+        attributes.set("Tstep", "");
+        tmr = new control_js_1.TestMicroRates(attributes);
     }
-    calcMethodInput.addEventListener('change', (event) => {
+    // Tmax.
+    let tMax = tmr.getTmax();
+    let tMaxlwi = (0, html_js_1.createLabelWithInput)("number", idTmax + "_input", boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                control.setCalcMethod(calcMethod);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_select";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div.
-                let value = calcMethod.value;
-                let selectElement = (0, html_js_1.createSelectElement)(control_js_1.CalcMethod.options, value, id, boundary1);
-                selectElement.addEventListener('change', (event) => {
-                    if (event.target instanceof HTMLSelectElement) {
-                        calcMethod.value = event.target.value;
-                        (0, html_js_1.resizeSelectElement)(event.target);
-                    }
-                });
-                (0, html_js_1.resizeSelectElement)(selectElement);
-                calcMethodDiv.appendChild(selectElement);
+            // Check the value is a number.
+            if ((0, util_js_1.isNumeric)(event.target.value)) {
+                tmr.setTmax(parseFloat(event.target.value));
+                console.log("Set Tmax to " + event.target.value);
             }
             else {
-                control.removeCalcMethod();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_select";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                alert("Value is not numeric, resetting...");
+                event.target.value = tMax.toString();
+            }
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
+    }, tMax.toString(), "Tmax");
+    tMaxlwi.id = idTmax;
+    (0, html_js_1.resizeInputElement)(tMaxlwi.querySelector('input'));
+    div.appendChild(tMaxlwi);
+    // Tmin.
+    let tMin = tmr.getTmin();
+    let tMinlwi = (0, html_js_1.createLabelWithInput)("number", idTmin + "_input", boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            // Check the value is a number.
+            if ((0, util_js_1.isNumeric)(event.target.value)) {
+                tmr.setTmin(parseFloat(event.target.value));
+                console.log("Set Tmin to " + event.target.value);
+            }
+            else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = tMax.toString();
+            }
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
+    }, tMin.toString(), "Tmin");
+    tMinlwi.id = idTmin;
+    (0, html_js_1.resizeInputElement)(tMinlwi.querySelector('input'));
+    div.appendChild(tMinlwi);
+    // Tstep.
+    let tStep = tmr.getTstep();
+    let tSteplwi = (0, html_js_1.createLabelWithInput)("number", idTstep + "_input", boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            // Check the value is a number.
+            if ((0, util_js_1.isNumeric)(event.target.value)) {
+                tmr.setTstep(parseFloat(event.target.value));
+                console.log("Set Tstep to " + event.target.value);
+            }
+            else {
+                alert("Value is not numeric, resetting...");
+                event.target.value = tMax.toString();
+            }
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
+    }, tStep.toString(), "Tstep");
+    tSteplwi.id = idTstep;
+    (0, html_js_1.resizeInputElement)(tSteplwi.querySelector('input'));
+    div.appendChild(tSteplwi);
+    control.setTestMicroRates(tmr);
+}
+/**
+ * Process "me:eigenvalues".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processCalcMethod(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_input";
+    let xml_cm = xml_control.getElementsByTagName(control_js_1.CalcMethod.tagName);
+    let cm;
+    if (xml_cm.length == 1) {
+        cm = new control_js_1.CalcMethod((0, xml_js_1.getAttributes)(xml_cm[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_cm[0])));
+    }
+    else {
+        cm = new control_js_1.CalcMethod(new Map(), "");
+    }
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createCalcMethodInput(control, div, cm, idI, cm.value);
+            }
+            else {
+                control.removeTestMicroRates();
+                // Remove any existing CalcMethod select.
+                let e;
+                e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.CalcMethod.tagName);
+    if (setCheck(lwi, xml_cm)) {
+        createCalcMethodInput(control, div, cm, idI, cm.value);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param eigenvalues The eigenvalues.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createCalcMethodInput(control, div, cm, id, valueString) {
+    let value = cm.value;
+    let select = (0, html_js_1.createSelectElement)(control_js_1.CalcMethod.options, value, id, boundary1);
+    select.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLSelectElement) {
+            cm.value = event.target.value;
+            cm.value = event.target.value;
+            (0, html_js_1.resizeSelectElement)(event.target);
+        }
     });
-    // me:eigenvalues
-    let eigenvaluesDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(eigenvaluesDiv);
-    let xml_eigenvalues = xml_control.getElementsByTagName(control_js_1.Eigenvalues.tagName);
-    // Create a input checkbox for the Eigenvalues.
-    let eigenvaluesLabel = document.createElement("label");
-    eigenvaluesDiv.appendChild(eigenvaluesLabel);
-    eigenvaluesLabel.textContent = control_js_1.Eigenvalues.tagName;
-    let eigenvaluesInput = document.createElement("input");
-    eigenvaluesDiv.appendChild(eigenvaluesInput);
-    eigenvaluesInput.type = "checkbox";
-    eigenvaluesInput.id = control_js_1.Eigenvalues.tagName;
+    (0, html_js_1.resizeSelectElement)(select);
+    div.appendChild(select);
+    control.setCalcMethod(cm);
+}
+/**
+ * Process "me:eigenvalues".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processEigenvalues(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.Eigenvalues.tagName);
     let eigenvalues;
-    let eigenvaluesAttributes;
-    if (xml_eigenvalues.length == 1) {
-        eigenvaluesInput.checked = true;
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_eigenvalues[0])));
-        eigenvaluesAttributes = (0, xml_js_1.getAttributes)(xml_eigenvalues[0]);
-        eigenvalues = new control_js_1.Eigenvalues(eigenvaluesAttributes, value);
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        eigenvalues = new control_js_1.Eigenvalues((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setEigenvalues(eigenvalues);
-        let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
-        // Create a new div for the eigenvalues.
-        let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level0, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(eigenvalues, event.target);
-                (0, html_js_1.resizeInputElement)(event.target);
-            }
-        }, eigenvalues.value.toString(), control_js_1.Eigenvalues.tagName);
-        (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.id = id;
-        eigenvaluesDiv.appendChild(inputDiv);
     }
     else {
-        eigenvaluesInput.checked = false;
-        eigenvaluesAttributes = new Map();
-        eigenvalues = new control_js_1.Eigenvalues(eigenvaluesAttributes, NaN);
+        valueString = "";
+        eigenvalues = new control_js_1.Eigenvalues(new Map(), NaN);
     }
-    eigenvaluesInput.addEventListener('change', (event) => {
+    // Create a input checkbox for the Eigenvalues.
+    let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_input";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setEigenvalues(eigenvalues);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div for the eigenvalues.
-                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level0, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        setNumberNode(eigenvalues, event.target);
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, eigenvalues.value.toString(), control_js_1.Eigenvalues.tagName);
-                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.id = id;
-                eigenvaluesDiv.appendChild(inputDiv);
+                createEigenValuesInput(control, div, eigenvalues, idI, valueString);
             }
             else {
                 control.removeEigenvalues();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_number";
                 // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                let e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.Eigenvalues.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+    }
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param eigenvalues The eigenvalues.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createEigenValuesInput(control, div, eigenvalues, id, valueString) {
+    control.setEigenvalues(eigenvalues);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(eigenvalues, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
     });
-    // me:shortestTimeOfInterest
-    let shortestTimeOfInterestDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(shortestTimeOfInterestDiv);
-    let xml_shortestTimeOfInterest = xml_control.getElementsByTagName(control_js_1.ShortestTimeOfInterest.tagName);
-    // Create a input checkbox for the ShortestTimeOfInterest.
-    let shortestTimeOfInterestLabel = document.createElement("label");
-    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestLabel);
-    shortestTimeOfInterestLabel.textContent = control_js_1.ShortestTimeOfInterest.tagName;
-    let shortestTimeOfInterestInput = document.createElement("input");
-    shortestTimeOfInterestDiv.appendChild(shortestTimeOfInterestInput);
-    shortestTimeOfInterestInput.type = "checkbox";
-    shortestTimeOfInterestInput.id = control_js_1.ShortestTimeOfInterest.tagName;
-    let shortestTimeOfInterest;
-    let shortestTimeOfInterestAttributes;
-    if (xml_shortestTimeOfInterest.length == 1) {
-        shortestTimeOfInterestInput.checked = true;
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_shortestTimeOfInterest[0])));
-        shortestTimeOfInterestAttributes = (0, xml_js_1.getAttributes)(xml_shortestTimeOfInterest[0]);
-        shortestTimeOfInterest = new control_js_1.ShortestTimeOfInterest(shortestTimeOfInterestAttributes, value);
-        control.setShortestTimeOfInterest(shortestTimeOfInterest);
-        let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
-        // Create a new div for the shortestTimeOfInterest.
-        let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(shortestTimeOfInterest, event.target);
-                (0, html_js_1.resizeInputElement)(event.target);
-            }
-        }, shortestTimeOfInterest.value.toString(), control_js_1.ShortestTimeOfInterest.tagName);
-        (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.id = id;
-        shortestTimeOfInterestDiv.appendChild(inputDiv);
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
+}
+/**
+ * Process "me:shortestTimeOfInterest".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.ShortestTimeOfInterest.tagName);
+    let stoi;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        stoi = new control_js_1.ShortestTimeOfInterest((0, xml_js_1.getAttributes)(xml[0]), value);
+        control.setShortestTimeOfInterest(stoi);
     }
     else {
-        shortestTimeOfInterestInput.checked = false;
-        shortestTimeOfInterestAttributes = new Map();
-        shortestTimeOfInterest = new control_js_1.ShortestTimeOfInterest(shortestTimeOfInterestAttributes, NaN);
+        valueString = "";
+        stoi = new control_js_1.ShortestTimeOfInterest(new Map(), NaN);
     }
-    shortestTimeOfInterestInput.addEventListener('change', (event) => {
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_input";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setShortestTimeOfInterest(shortestTimeOfInterest);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div for the shortestTimeOfInterest.
-                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        setNumberNode(shortestTimeOfInterest, event.target);
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, shortestTimeOfInterest.value.toString(), control_js_1.ShortestTimeOfInterest.tagName);
-                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.id = id;
-                shortestTimeOfInterestDiv.appendChild(inputDiv);
+                createShortestTimeOfInterest(control, div, stoi, id, valueString);
             }
             else {
                 control.removeShortestTimeOfInterest();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_number";
                 // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                let e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.ShortestTimeOfInterest.tagName);
+    if (setCheck(lwi, xml)) {
+        createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param stoi The shortest time of interest.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createShortestTimeOfInterest(control, div, stoi, id, valueString) {
+    control.setShortestTimeOfInterest(stoi);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(stoi, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
     });
-    // me:MaximumEvolutionTime
-    let maximumEvolutionTimeDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(maximumEvolutionTimeDiv);
-    let xml_maximumEvolutionTime = xml_control.getElementsByTagName(control_js_1.MaximumEvolutionTime.tagName);
-    // Create a input checkbox for the MaximumEvolutionTime.
-    let maximumEvolutionTimeLabel = document.createElement("label");
-    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeLabel);
-    maximumEvolutionTimeLabel.textContent = control_js_1.MaximumEvolutionTime.tagName;
-    let maximumEvolutionTimeInput = document.createElement("input");
-    maximumEvolutionTimeDiv.appendChild(maximumEvolutionTimeInput);
-    maximumEvolutionTimeInput.type = "checkbox";
-    maximumEvolutionTimeInput.id = control_js_1.MaximumEvolutionTime.tagName;
-    let maximumEvolutionTime;
-    let maximumEvolutionTimeAttributes;
-    if (xml_maximumEvolutionTime.length == 1) {
-        maximumEvolutionTimeInput.checked = true;
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_maximumEvolutionTime[0])));
-        maximumEvolutionTimeAttributes = (0, xml_js_1.getAttributes)(xml_maximumEvolutionTime[0]);
-        maximumEvolutionTime = new control_js_1.MaximumEvolutionTime(maximumEvolutionTimeAttributes, value);
-        control.setMaximumEvolutionTime(maximumEvolutionTime);
-        let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
-        // Create a new div for the maximumEvolutionTime.
-        let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(maximumEvolutionTime, event.target);
-                (0, html_js_1.resizeInputElement)(event.target);
-            }
-        }, maximumEvolutionTime.value.toString(), control_js_1.MaximumEvolutionTime.tagName);
-        (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.id = id;
-        maximumEvolutionTimeDiv.appendChild(inputDiv);
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
+}
+/**
+ * Process "me:MaximumEvolutionTime".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.MaximumEvolutionTime.tagName);
+    let met;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        met = new control_js_1.MaximumEvolutionTime((0, xml_js_1.getAttributes)(xml[0]), value);
+        control.setMaximumEvolutionTime(met);
     }
     else {
-        maximumEvolutionTimeInput.checked = false;
-        maximumEvolutionTimeAttributes = new Map();
-        maximumEvolutionTime = new control_js_1.MaximumEvolutionTime(maximumEvolutionTimeAttributes, NaN);
+        valueString = "";
+        met = new control_js_1.MaximumEvolutionTime(new Map(), NaN);
     }
-    maximumEvolutionTimeInput.addEventListener('change', (event) => {
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_input";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setMaximumEvolutionTime(maximumEvolutionTime);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div for the maximumEvolutionTime.
-                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        setNumberNode(maximumEvolutionTime, event.target);
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, maximumEvolutionTime.value.toString(), control_js_1.MaximumEvolutionTime.tagName);
-                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.id = id;
-                maximumEvolutionTimeDiv.appendChild(inputDiv);
+                createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
             }
             else {
                 control.removeMaximumEvolutionTime();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_number";
                 // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                let e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.MaximumEvolutionTime.tagName);
+    if (setCheck(lwi, xml)) {
+        createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param met The maximum evolution time.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createMaximumEvolutionTimeInput(control, div, met, id, valueString) {
+    control.setMaximumEvolutionTime(met);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(met, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
     });
-    // me:automaticallySetMaxEne
-    let automaticallySetMaxEneDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(automaticallySetMaxEneDiv);
-    let xml_automaticallySetMaxEne = xml_control.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
-    // Create a input checkbox for the AutomaticallySetMaxEne.
-    let automaticallySetMaxEneLabel = document.createElement("label");
-    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneLabel);
-    automaticallySetMaxEneLabel.textContent = control_js_1.AutomaticallySetMaxEne.tagName;
-    let automaticallySetMaxEneInput = document.createElement("input");
-    automaticallySetMaxEneDiv.appendChild(automaticallySetMaxEneInput);
-    automaticallySetMaxEneInput.type = "checkbox";
-    automaticallySetMaxEneInput.id = control_js_1.AutomaticallySetMaxEne.tagName;
-    let automaticallySetMaxEneAttributes;
-    let automaticallySetMaxEne;
-    if (xml_automaticallySetMaxEne.length == 1) {
-        automaticallySetMaxEneInput.checked = true;
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_automaticallySetMaxEne[0])));
-        automaticallySetMaxEneAttributes = (0, xml_js_1.getAttributes)(xml_automaticallySetMaxEne[0]);
-        automaticallySetMaxEne = new control_js_1.AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, value);
-        control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
+}
+/**
+ * Process "me:automaticallySetMaxEne".
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processAutomaticallySetMaxEne(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
+    let asme;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
+        control.setAutomaticallySetMaxEne(asme);
     }
     else {
-        automaticallySetMaxEneInput.checked = false;
-        automaticallySetMaxEneAttributes = new Map();
-        automaticallySetMaxEne = new control_js_1.AutomaticallySetMaxEne(automaticallySetMaxEneAttributes, NaN);
+        valueString = "";
+        asme = new control_js_1.AutomaticallySetMaxEne(new Map(), NaN);
     }
-    automaticallySetMaxEneInput.addEventListener('change', (event) => {
+    // Create a input checkbox for the AutomaticallySetMaxEne.
+    let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setAutomaticallySetMaxEne(automaticallySetMaxEne);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_number";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div for the automaticallySetMaxEne.
-                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        setNumberNode(automaticallySetMaxEne, event.target);
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, automaticallySetMaxEne.value.toString(), control_js_1.AutomaticallySetMaxEne.tagName);
-                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.id = id;
-                automaticallySetMaxEneDiv.appendChild(inputDiv);
+                createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
             }
             else {
                 control.removeAutomaticallySetMaxEne();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_number";
                 // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                let e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.AutomaticallySetMaxEne.tagName);
+    if (setCheck(lwi, xml)) {
+        createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param asme The automatically set max energy.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createAutomaticallySetMaxEneInput(control, div, asme, id, valueString) {
+    control.setAutomaticallySetMaxEne(asme);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(asme, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
     });
-    // me:diagramEnergyOffset
-    let diagramEnergyOffsetDiv = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(diagramEnergyOffsetDiv);
-    let xml_diagramEnergyOffset = xml_control.getElementsByTagName(control_js_1.DiagramEnergyOffset.tagName);
-    // Create a input checkbox for the DiagramEnergyOffset.
-    let diagramEnergyOffsetLabel = document.createElement("label");
-    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetLabel);
-    diagramEnergyOffsetLabel.textContent = control_js_1.DiagramEnergyOffset.tagName;
-    let diagramEnergyOffsetInput = document.createElement("input");
-    diagramEnergyOffsetDiv.appendChild(diagramEnergyOffsetInput);
-    diagramEnergyOffsetInput.type = "checkbox";
-    diagramEnergyOffsetInput.id = control_js_1.DiagramEnergyOffset.tagName;
-    let diagramEnergyOffset;
-    let diagramEnergyOffsetAttributes;
-    if (xml_diagramEnergyOffset.length == 1) {
-        diagramEnergyOffsetInput.checked = true;
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_diagramEnergyOffset[0])));
-        diagramEnergyOffsetAttributes = (0, xml_js_1.getAttributes)(xml_diagramEnergyOffset[0]);
-        diagramEnergyOffset = new control_js_1.DiagramEnergyOffset(diagramEnergyOffsetAttributes, value);
-        control.setDiagramEnergyOffset(diagramEnergyOffset);
-        let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
-        // Create a new div for the diagramEnergyOffset.
-        let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(diagramEnergyOffset, event.target);
-                (0, html_js_1.resizeInputElement)(event.target);
-            }
-        }, diagramEnergyOffset.value.toString(), control_js_1.DiagramEnergyOffset.tagName);
-        (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-        inputDiv.id = id;
-        diagramEnergyOffsetDiv.appendChild(inputDiv);
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
+}
+/**
+ * Process me:diagramEnergyOffset.
+ * @param control The control.
+ * @param controlsDiv The controls div.
+ * @param xml_control The xml control.
+ */
+function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.DiagramEnergyOffset.tagName);
+    let deo;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        deo = new control_js_1.DiagramEnergyOffset((0, xml_js_1.getAttributes)(xml[0]), value);
+        control.setDiagramEnergyOffset(deo);
     }
     else {
-        diagramEnergyOffsetInput.checked = false;
-        diagramEnergyOffsetAttributes = new Map();
-        diagramEnergyOffset = new control_js_1.DiagramEnergyOffset(diagramEnergyOffsetAttributes, NaN);
+        valueString = "";
+        deo = new control_js_1.DiagramEnergyOffset(new Map(), NaN);
     }
-    diagramEnergyOffsetInput.addEventListener('change', (event) => {
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_checkbox";
+    let idI = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_input";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
-                control.setDiagramEnergyOffset(diagramEnergyOffset);
-                let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
-                // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
-                }
-                // Create a new div for the diagramEnergyOffset.
-                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id + "_input", boundary1, level1, (event) => {
-                    if (event.target instanceof HTMLInputElement) {
-                        setNumberNode(diagramEnergyOffset, event.target);
-                        (0, html_js_1.resizeInputElement)(event.target);
-                    }
-                }, diagramEnergyOffset.value.toString(), control_js_1.DiagramEnergyOffset.tagName);
-                (0, html_js_1.resizeInputElement)(inputDiv.querySelector('input'));
-                inputDiv.id = id;
-                diagramEnergyOffsetDiv.appendChild(inputDiv);
+                createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
             }
             else {
                 control.removeDiagramEnergyOffset();
-                let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_number";
                 // Remove any existing div.
-                let existingDiv = document.getElementById(id);
-                if (existingDiv != null) {
-                    existingDiv.remove();
+                let e = document.getElementById(id);
+                if (e != null) {
+                    e.remove();
                 }
             }
         }
+    }, "", control_js_1.DiagramEnergyOffset.tagName);
+    if (setCheck(lwi, xml)) {
+        createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
+    }
+    div.appendChild(lwi);
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param deo The diagram energy offset.
+ * @param id The id.
+ * @param valueString The value string.
+ */
+function createDiagramEnergyOffsetInput(control, div, deo, id, valueString) {
+    control.setDiagramEnergyOffset(deo);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(deo, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
     });
-    return controlsDiv;
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
 }
 /**
  * Create a diagram.

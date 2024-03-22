@@ -19,7 +19,10 @@ import {
 
 /**
  * Atom instances must have an "elementType" attribute.
- * The attributes may include "id", "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
+ * The attributes may include:
+ * "id"
+ * "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
+ * "spinMultiplicity" - the spin multiplicity of the atom.
  * In the XML, an "atom" node is typically a child of an "atomArray" parent node.
  * If there is only one atom, it may be a child of a "molecule" parent node.
  */
@@ -402,7 +405,15 @@ export class Property extends NodeWithNodes {
  */
 export class ZPE extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:ZPE";
+
+    /**
+     * The possible units.
+     */
+    static readonly units: string[] = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
 
     /**
      * @param attributes The attributes.
@@ -426,6 +437,9 @@ export class ZPE extends Property {
  */
 export class FrequenciesScaleFactor extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:frequenciesScaleFactor";
 
     /**
@@ -443,6 +457,9 @@ export class FrequenciesScaleFactor extends Property {
  */
 export class VibFreqs extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:vibFreqs";
 
     /**
@@ -460,7 +477,15 @@ export class VibFreqs extends Property {
  */
 export class RotConsts extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:rotConsts";
+
+    /**
+     * The possible units.
+     */
+    static readonly units: string[] = ["cm-1", "GHz"]
 
     /**
      * @param attributes The attributes.
@@ -477,6 +502,9 @@ export class RotConsts extends Property {
  */
 export class MW extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:MW";
 
     /**
@@ -493,6 +521,9 @@ export class MW extends Property {
  */
 export class ImFreqs extends Property {
 
+    /**
+     * The dictionary reference.
+     */
     static readonly dictRef: string = "me:imFreqs";
 
     /**

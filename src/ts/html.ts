@@ -28,8 +28,8 @@ export function getCollapsibleDiv({
     content: HTMLElement,
     buttonLabel: string,
     buttonFontSize?: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     contentDivId?: string,
     contentDivClassName?: string
 }): HTMLDivElement {
@@ -90,9 +90,9 @@ function toggleCollapsible(this: HTMLElement): void {
  * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-export function createLabelWithInput(type: string, id: string, 
-    boundary: {marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
-    level: {marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+export function createLabelWithInput(type: string, id: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     func: (event: Event) => any, value: string, labelContent: string, inputFontsize?: string, labelFontsize?: string): HTMLDivElement {
     let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
     Object.assign(input.style, boundary);
@@ -132,9 +132,9 @@ export function createInputWithFunction(type: string, id: string, boundary: {
  * @param id The id of the input.
  * @returns A HTMLInputElement.
  */
-export function createInput(type: string, id: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLInputElement {
+export function createInput(type: string, id: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
+    : HTMLInputElement {
     let input: HTMLInputElement = document.createElement('input');
     input.type = type;
     input.id = id;
@@ -190,9 +190,9 @@ export function resizeSelectElement(input: HTMLSelectElement, minSize?: number) 
  * @param id The id.
  * @returns An HTMLSelectElement.
  */
-export function createSelectElement(options: string[] | Set<string>, name: string, id: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLSelectElement {
+export function createSelectElement(options: string[] | Set<string>, name: string, id: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }):
+    HTMLSelectElement {
     let selectElement: HTMLSelectElement = document.createElement('select');
     options.forEach(option => {
         selectElement.name = name;
@@ -214,12 +214,15 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
  * @param name The name for the HTMLSelectElement.
  * @param id The id.
  * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
+ * @param level The level.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-export function createLabelWithSelectElement(textContent: string, options: string[] | Set<string>, name: string, id: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLDivElement {
-    let div: HTMLDivElement = document.createElement('div');
+export function createLabelWithSelectElement(textContent: string, options: string[] | Set<string>,
+    name: string, id: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+): HTMLDivElement {
+    let div: HTMLDivElement = createDiv(level);
     let label: HTMLLabelElement = createLabel(textContent, boundary);
     div.appendChild(label);
     let selectElement: HTMLSelectElement = document.createElement('select');
@@ -232,7 +235,6 @@ export function createLabelWithSelectElement(textContent: string, options: strin
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
-    Object.assign(selectElement.style, boundary);
     return div;
 }
 
