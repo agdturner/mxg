@@ -3,6 +3,21 @@
   display: none;
 }
 
+/* For input and select elements. */
+.auto-width {
+  width: auto;
+  min-width: 50px; /* Adjust this value as needed */
+}
+
+
+/* Button colours for options */
+.optionOn {
+  color: green;
+}
+.optionOff {
+  color: red;
+}
+
 /*
 .mol-container {
   width: 60%;

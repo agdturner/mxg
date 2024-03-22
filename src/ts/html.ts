@@ -139,6 +139,7 @@ export function createInput(type: string, id: string,
     input.type = type;
     input.id = id;
     Object.assign(input.style, boundary);
+    input.classList.add('auto-width');
     return input;
 }
 
@@ -188,10 +189,11 @@ export function resizeSelectElement(input: HTMLSelectElement, minSize?: number) 
  * @param options The options.
  * @param name The name.
  * @param id The id.
+ * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */
 export function createSelectElement(options: string[] | Set<string>, name: string, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }):
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }):
     HTMLSelectElement {
     let selectElement: HTMLSelectElement = document.createElement('select');
     options.forEach(option => {
@@ -202,7 +204,8 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
-    Object.assign(selectElement.style, boundary);
+    selectElement.classList.add('auto-width');
+    Object.assign(selectElement.style, margin);
     return selectElement;
 }
 
@@ -213,17 +216,16 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
  * @param id The id.
- * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
- * @param level The level.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
+ * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
 export function createLabelWithSelectElement(textContent: string, options: string[] | Set<string>,
     name: string, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-): HTMLDivElement {
-    let div: HTMLDivElement = createDiv(level);
-    let label: HTMLLabelElement = createLabel(textContent, boundary);
+    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    let div: HTMLDivElement = createDiv(divMargin);
+    let label: HTMLLabelElement = createLabel(textContent, componentMargin);
     div.appendChild(label);
     let selectElement: HTMLSelectElement = document.createElement('select');
     div.appendChild(selectElement);
@@ -241,16 +243,12 @@ export function createLabelWithSelectElement(textContent: string, options: strin
 /**
  * Create and return an HTMLButtonElement.
  * 
- * @param textContent The text content of the button.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin
- * @returns An HTMLButtonElement with the textContent and specified boundary.
+ * @param textContent The text content of the HTMLButtonElement.
+ * @param margin The margin to go around the HTMLButtonElement.
+ * @returns An HTMLButtonElement with the textContent and specified margin.
  */
-export function createButton(textContent: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLButtonElement {
+export function createButton(textContent: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
     let button: HTMLButtonElement = document.createElement('button');
     button.textContent = textContent;
     Object.assign(button.style, boundary);
@@ -258,35 +256,47 @@ export function createButton(textContent: string, boundary: {
 }
 
 /**
- * Create and return HTMLDivElement with a 'flex' display style.
- *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
+ * 
+ * @param textContent The text content of the button.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ * 
+ * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
+ */
+export function createLabelWithButton(labeltext: string, textContent: string,
+    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    ): HTMLDivElement {
+    let div: HTMLDivElement = createFlexDiv(divMargin);
+    let label: HTMLLabelElement = createLabel(labeltext, componentMargin);
+    Object.assign(label.style, componentMargin);
+    div.appendChild(label);
+    div.appendChild(createButton(textContent, componentMargin));
+    return div;
+}
+
+/**
+ * Create and return HTMLDivElement.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-export function createDiv(boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLDivElement {
+export function createDiv(
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string}): HTMLDivElement {
     let div: HTMLDivElement = document.createElement("div");
-    Object.assign(div.style, boundary);
+    Object.assign(div.style, margin);
     return div;
 }
 
 /**
  * Create and return HTMLDivElement with a 'flex' display style.
  *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-export function createFlexDiv(boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}): HTMLDivElement {
-    let div: HTMLDivElement = createDiv(boundary);
+export function createFlexDiv(
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    let div: HTMLDivElement = createDiv(margin);
     div.style.display = 'flex';
     return div;
 }
@@ -294,19 +304,16 @@ export function createFlexDiv(boundary: {
 /**
  * Create and return HTMLLabelElement.
  *
- * @param textContent The text content of the label.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
- * @param fontsize The font size.
+ * @param textContent The text content of the HTMLLabelElement.
+ * @param margin The margin to go around the HTMLLabelElement.
+ * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */
-export function createLabel(textContent: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-}, fontsize?: string): HTMLLabelElement {
+export function createLabel(textContent: string,
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
+    fontsize?: string): HTMLLabelElement {
     let label: HTMLLabelElement = document.createElement("label");
-    Object.assign(label.style, boundary);
+    Object.assign(label.style, margin);
     label.textContent = textContent;
     if (fontsize != undefined) {
         //console.log("fontsize=" + fontsize);

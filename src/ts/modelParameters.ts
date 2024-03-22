@@ -92,6 +92,13 @@ export class ModelParameters extends NodeWithNodes {
      */
     index: Map<string, number>;
 
+    /**
+     * @param attributes The attributes.
+     * @param grainSize The grain size.
+     * @param automaticallySetMaxEne The automatically set max energy.
+     * @param energyAboveTheTopHill The energy above the top hill.
+     * @param maxTemperature The max temperature.
+     */
     constructor(attributes: Map<string, string>, grainSize?: GrainSize, 
         automaticallySetMaxEne?: AutomaticallySetMaxEne, energyAboveTheTopHill?: EnergyAboveTheTopHill,
         maxTemperature?: MaxTemperature) {
@@ -139,6 +146,17 @@ export class ModelParameters extends NodeWithNodes {
     }
 
     /**
+     * Removes the grain size.
+     */
+    removeGrainSize() {
+        let i: number | undefined = this.index.get(GrainSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(GrainSize.tagName);
+        }
+    }
+
+    /**
      * @returns The automatically set max energy or undefined.
      */
     getAutomaticallySetMaxEne(): AutomaticallySetMaxEne | undefined {
@@ -158,6 +176,17 @@ export class ModelParameters extends NodeWithNodes {
         } else {
             this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
             this.addNode(automaticallySetMaxEne);
+        }
+    }
+
+    /**
+     * Removes the automatically set max energy.
+     */
+    removeAutomaticallySetMaxEne() {
+        let i: number | undefined = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
         }
     }
 
@@ -185,6 +214,17 @@ export class ModelParameters extends NodeWithNodes {
     }
 
     /**
+     * Removes the energy above the top hill.
+     */
+    removeEnergyAboveTheTopHill() {
+        let i: number | undefined = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(EnergyAboveTheTopHill.tagName);
+        }
+    }
+
+    /**
      * @returns The max temperature or undefined.
      */
     getMaxTemperature(): MaxTemperature | undefined {
@@ -204,6 +244,17 @@ export class ModelParameters extends NodeWithNodes {
         } else {
             this.index.set(MaxTemperature.tagName, this.nodes.size);
             this.addNode(maxTemperature);
+        }
+    }
+
+    /**
+     * Removes the max temperature.
+     */
+    removeMaxTemperature() {
+        let i: number | undefined = this.index.get(MaxTemperature.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaxTemperature.tagName);
         }
     }
 }

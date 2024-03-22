@@ -667,7 +667,12 @@ let boundary3 = {
 let addSymbol = "\uFF0B";
 let removeString = "remove";
 let removeSymbol = "\u2715";
-let addFromSpreadsheetString = "Add from spreadsheet";
+let s_Add_from_spreadsheet = "Add from spreadsheet";
+let selected = "\u2713 [SELECTED] Action to unselect.";
+let notSelected = "\u2717 [NOT SELECTED] Action to select.";
+let selectedLoadedValueText = " The appended input(s) display loaded value(s) that can be changed:";
+let unselectedText = " Then use the appended input to specify.";
+let selectedValueText = " Or use the appended input(s) to specify:";
 /**
  * For mesmer.
  */ let mesmer;
@@ -2094,7 +2099,7 @@ window.set = setNumberNode;
         pTsDiv.appendChild(pTPairDiv);
     });
     // Create an add from spreadsheet button to add multiple PTPairs.
-    let addMultipleButton = (0, _htmlJs.createButton)(addFromSpreadsheetString, boundary1);
+    let addMultipleButton = (0, _htmlJs.createButton)(s_Add_from_spreadsheet, boundary1);
     pTsDiv.appendChild(addMultipleButton);
     // Add event listener to the addMultipleButton.
     addMultipleButton.addEventListener("click", ()=>{
@@ -2420,26 +2425,7 @@ window.set = setNumberNode;
     let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, (0, _modelParametersJs.ModelParameters).tagName);
     let modelParameters = new (0, _modelParametersJs.ModelParameters)((0, _xmlJs.getAttributes)(xml_modelParameters));
     mesmer.setModelParameters(modelParameters);
-    // Process any "me:grainSize" element.
-    let xml_grainSizes = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.GrainSize).tagName);
-    if (xml_grainSizes.length > 0) {
-        if (xml_grainSizes.length > 1) throw new Error("Expecting 1 " + (0, _modelParametersJs.GrainSize).tagName + " but finding " + xml_grainSizes.length + "!");
-        let grainSizeAttributes = (0, _xmlJs.getAttributes)(xml_grainSizes[0]);
-        let value = parseFloat((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_grainSizes[0])));
-        let grainSize = new (0, _modelParametersJs.GrainSize)(grainSizeAttributes, value);
-        modelParameters.setGrainSize(grainSize);
-        // Create a new div for the grainSize.
-        let grainSizeId = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName;
-        let lwi = (0, _htmlJs.createLabelWithInput)("number", grainSizeId, boundary1, level1, (event)=>{
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(grainSize, event.target);
-                (0, _htmlJs.resizeInputElement)(event.target);
-            }
-        }, value.toString(), (0, _modelParametersJs.GrainSize).tagName);
-        // Add any units.
-        addAnyUnits(undefined, grainSizeAttributes, lwi, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName, (0, _modelParametersJs.GrainSize).tagName, boundary1);
-        modelParametersDiv.appendChild(lwi);
-    }
+    processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv);
     // Process any "me:automaticallySetMaxEne" element.
     let xml_automaticallySetMaxEnes = xml_modelParameters.getElementsByTagName((0, _controlJs.AutomaticallySetMaxEne).tagName);
     if (xml_automaticallySetMaxEnes.length > 0) {
@@ -2456,7 +2442,7 @@ window.set = setNumberNode;
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, value.toString(), (0, _controlJs.AutomaticallySetMaxEne).tagName);
-        // Add any units.
+        // Add any units. 
         addAnyUnits(undefined, automaticallySetMaxEneAttributes, lwi, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName, (0, _controlJs.AutomaticallySetMaxEne).tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
@@ -2476,8 +2462,10 @@ window.set = setNumberNode;
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), (0, _modelParametersJs.EnergyAboveTheTopHill).tagName);
-        // Add any units
-        addAnyUnits(undefined, energyAboveTheTopHillAttributes, lwi, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, boundary1);
+        // Add any units. The default units are "kT".
+        addAnyUnits([
+            "kT"
+        ], energyAboveTheTopHillAttributes, lwi, (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, (0, _modelParametersJs.EnergyAboveTheTopHill).tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
     // Process any "me:maxTemperature" element.
@@ -2501,6 +2489,66 @@ window.set = setNumberNode;
         modelParametersDiv.appendChild(lwi);
     }
     return modelParametersDiv;
+}
+/**
+ * @param modelParameters The model parameters.
+ * @param xml_modelParameters The XML model parameters.
+ * @param modelParametersDiv The model parameters div.
+ */ function processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv) {
+    let div = (0, _htmlJs.createFlexDiv)(level1);
+    modelParametersDiv.appendChild(div);
+    let xml = xml_modelParameters.getElementsByTagName((0, _modelParametersJs.GrainSize).tagName);
+    let gs;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        gs = new (0, _modelParametersJs.GrainSize)((0, _xmlJs.getAttributes)(xml[0]), value);
+        modelParameters.setGrainSize(gs);
+    } else {
+        valueString = "";
+        gs = new (0, _modelParametersJs.GrainSize)(new Map(), NaN);
+    }
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let id = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName + "_checkbox";
+    let idI = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName + "_input";
+    let idS = (0, _modelParametersJs.ModelParameters).tagName + "_" + (0, _modelParametersJs.GrainSize).tagName + "_SelectUnits";
+    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+            else {
+                modelParameters.removeGrainSize();
+                // Remove any existing div.
+                let e = document.getElementById(idI);
+                if (e != null) e.remove();
+                e = document.getElementById(idS);
+                if (e != null) e.remove();
+            }
+        }
+    }, "", (0, _modelParametersJs.GrainSize).tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+}
+/**
+ * @param modelParameters The model parameters.
+ * @param div The div.
+ * @param gs The grain size.
+ * @param id The id.
+ * @param idS The id for the select units.
+ * @param valueString The value string.
+ */ function createGrainSizeInput(modelParameters, div, gs, id, idS, valueString) {
+    modelParameters.setGrainSize(gs);
+    let input = (0, _htmlJs.createInput)("number", id, boundary1);
+    input.addEventListener("change", (event)=>{
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(gs, event.target);
+            (0, _htmlJs.resizeInputElement)(event.target);
+        }
+    });
+    input.value = valueString;
+    (0, _htmlJs.resizeInputElement)(input);
+    div.appendChild(input);
+    addAnyUnits((0, _moleculeJs.ZPE).units, gs.attributes, div, idS, (0, _modelParametersJs.GrainSize).tagName, boundary1);
 }
 /**
  * Parses xml to initialise controls.
@@ -3046,28 +3094,78 @@ window.set = setNumberNode;
  * @param controlsDiv The controls div.
  * @param xml_control The xml control.
  */ function processCalcMethod(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_input";
-    let xml_cm = xml_control.getElementsByTagName((0, _controlJs.CalcMethod).tagName);
-    let cm;
-    if (xml_cm.length == 1) cm = new (0, _controlJs.CalcMethod)((0, _xmlJs.getAttributes)(xml_cm[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_cm[0])));
-    else cm = new (0, _controlJs.CalcMethod)(new Map(), "");
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
+    let id = Control.tagName + "_" + CalcMethod.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + CalcMethod.tagName + "_input";
+    let xml_cm: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(CalcMethod.tagName);
+    let cm: CalcMethod;
+    if (xml_cm.length == 1) {
+        cm = new CalcMethod(getAttributes(xml_cm[0]), getNodeValue(getFirstChildNode(xml_cm[0])));
+    } else {
+        cm = new CalcMethod(new Map(), "");
+    }
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createCalcMethodInput(control, div, cm, idI, cm.value);
-            else {
+            if (event.target.checked) {
+                createCalcMethodInput(control, div, cm, idI, cm.value);
+            } else {
                 control.removeTestMicroRates();
                 // Remove any existing CalcMethod select.
-                let e;
-                e = document.getElementById(idI);
-                if (e != null) e.remove();
+                let e: HTMLDivElement;
+                e = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
             }
         }
-    }, "", (0, _controlJs.CalcMethod).tagName);
+    }, "", CalcMethod.tagName);
     div.appendChild(lwi);
-    if (setCheck(lwi, xml_cm)) createCalcMethodInput(control, div, cm, idI, cm.value);
+    if (setCheck(lwi, xml_cm)) {
+        createCalcMethodInput(control, div, cm, idI, cm.value);
+    }
+    */ let div = (0, _htmlJs.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName((0, _controlJs.CalcMethod).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.CalcMethod).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.CalcMethod).tagName + "_input";
+    let cm;
+    if (xml.length == 1) {
+        let value = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml[0]));
+        cm = new (0, _controlJs.CalcMethod)((0, _xmlJs.getAttributes)(xml[0]), value);
+        button.textContent = selected + selectedLoadedValueText;
+        createCalcMethodInput(control, div, cm, id, value);
+        button.classList.toggle("optionOff");
+    } else {
+        cm = new (0, _controlJs.CalcMethod)(new Map(), "Please use the dropdown to select a value...");
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
+    }
+    let valueString = cm.value;
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the CalcMethod already exists
+        if (!control.index.has((0, _controlJs.CalcMethod).tagName)) {
+            createCalcMethodInput(control, div, cm, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = cm.value;
+            control.removeCalcMethod();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
+        }
+    });
 }
 /**
  * @param control The control.
@@ -3076,15 +3174,16 @@ window.set = setNumberNode;
  * @param id The id.
  * @param valueString The value string. 
  */ function createCalcMethodInput(control, div, cm, id, valueString) {
-    let value = cm.value;
-    let select = (0, _htmlJs.createSelectElement)((0, _controlJs.CalcMethod).options, value, id, boundary1);
+    let options = (0, _controlJs.CalcMethod).options;
+    options.push("Please use the dropdown to select a value...");
+    let select = (0, _htmlJs.createSelectElement)(options, valueString, id, boundary1);
     select.addEventListener("change", (event)=>{
         if (event.target instanceof HTMLSelectElement) {
-            cm.value = event.target.value;
             cm.value = event.target.value;
             (0, _htmlJs.resizeSelectElement)(event.target);
         }
     });
+    select.value = valueString;
     (0, _htmlJs.resizeSelectElement)(select);
     div.appendChild(select);
     control.setCalcMethod(cm);
@@ -3095,9 +3194,51 @@ window.set = setNumberNode;
  * @param controlsDiv The controls div.
  * @param xml_control The xml control.
  */ function processEigenvalues(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(Eigenvalues.tagName);
+    let eigenvalues: Eigenvalues;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        eigenvalues = new Eigenvalues(getAttributes(xml[0]), value);
+        control.setEigenvalues(eigenvalues);
+    } else {
+        valueString = "";
+        eigenvalues = new Eigenvalues(new Map(), NaN);
+    }
+    // Create a input checkbox for the Eigenvalues.
+    let id = Control.tagName + "_" + Eigenvalues.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + Eigenvalues.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+            } else {
+                control.removeEigenvalues();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", Eigenvalues.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+    }
+    */ let div = (0, _htmlJs.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName((0, _controlJs.Eigenvalues).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.Eigenvalues).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_input";
     let eigenvalues;
     let valueString;
     if (xml.length == 1) {
@@ -3105,26 +3246,34 @@ window.set = setNumberNode;
         let value = parseFloat(valueString);
         eigenvalues = new (0, _controlJs.Eigenvalues)((0, _xmlJs.getAttributes)(xml[0]), value);
         control.setEigenvalues(eigenvalues);
+        button.textContent = selected + selectedLoadedValueText;
+        createEigenValuesInput(control, div, eigenvalues, id, valueString);
+        button.classList.toggle("optionOff");
     } else {
         valueString = "";
         eigenvalues = new (0, _controlJs.Eigenvalues)(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
     }
-    // Create a input checkbox for the Eigenvalues.
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.Eigenvalues).tagName + "_input";
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createEigenValuesInput(control, div, eigenvalues, idI, valueString);
-            else {
-                control.removeEigenvalues();
-                // Remove any existing div.
-                let e = document.getElementById(idI);
-                if (e != null) e.remove();
-            }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the Eigenvalues already exists
+        if (!control.index.has((0, _controlJs.Eigenvalues).tagName)) {
+            createEigenValuesInput(control, div, eigenvalues, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = eigenvalues.value.toString();
+            control.removeEigenvalues();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
         }
-    }, "", (0, _controlJs.Eigenvalues).tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+    });
 }
 /**
  * @param control The control.
@@ -3151,9 +3300,51 @@ window.set = setNumberNode;
  * @param controlsDiv The controls div.
  * @param xml_control The xml control.
  */ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ShortestTimeOfInterest.tagName);
+    let stoi: ShortestTimeOfInterest;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        stoi = new ShortestTimeOfInterest(getAttributes(xml[0]), value);
+        control.setShortestTimeOfInterest(stoi);
+    } else {
+        valueString = "";
+        stoi = new ShortestTimeOfInterest(new Map(), NaN);
+    }
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+            } else {
+                control.removeShortestTimeOfInterest();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", ShortestTimeOfInterest.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+    }
+    */ let div = (0, _htmlJs.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName((0, _controlJs.ShortestTimeOfInterest).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.ShortestTimeOfInterest).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_input";
     let stoi;
     let valueString;
     if (xml.length == 1) {
@@ -3161,26 +3352,34 @@ window.set = setNumberNode;
         let value = parseFloat(valueString);
         stoi = new (0, _controlJs.ShortestTimeOfInterest)((0, _xmlJs.getAttributes)(xml[0]), value);
         control.setShortestTimeOfInterest(stoi);
+        button.textContent = selected + selectedLoadedValueText;
+        createShortestTimeOfInterest(control, div, stoi, id, valueString);
+        button.classList.toggle("optionOff");
     } else {
         valueString = "";
         stoi = new (0, _controlJs.ShortestTimeOfInterest)(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
     }
-    // Create a input checkbox for the ShortestTimeOfInterest.
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.ShortestTimeOfInterest).tagName + "_input";
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createShortestTimeOfInterest(control, div, stoi, idI, valueString);
-            else {
-                control.removeShortestTimeOfInterest();
-                // Remove any existing div.
-                let e = document.getElementById(idI);
-                if (e != null) e.remove();
-            }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the ShortestTimeOfInterest already exists
+        if (!control.index.has((0, _controlJs.ShortestTimeOfInterest).tagName)) {
+            createShortestTimeOfInterest(control, div, stoi, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = stoi.value.toString();
+            control.removeShortestTimeOfInterest();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
         }
-    }, "", (0, _controlJs.ShortestTimeOfInterest).tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+    });
 }
 /**
  * @param control The control.
@@ -3207,9 +3406,51 @@ window.set = setNumberNode;
  * @param controlsDiv The controls div.
  * @param xml_control The xml control.
  */ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(MaximumEvolutionTime.tagName);
+    let met: MaximumEvolutionTime;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        met = new MaximumEvolutionTime(getAttributes(xml[0]), value);
+        control.setMaximumEvolutionTime(met);
+    } else {
+        valueString = "";
+        met = new MaximumEvolutionTime(new Map(), NaN);
+    }
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+            } else {
+                control.removeMaximumEvolutionTime();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", MaximumEvolutionTime.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+    }
+    */ let div = (0, _htmlJs.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName((0, _controlJs.MaximumEvolutionTime).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.MaximumEvolutionTime).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_input";
     let met;
     let valueString;
     if (xml.length == 1) {
@@ -3217,26 +3458,34 @@ window.set = setNumberNode;
         let value = parseFloat(valueString);
         met = new (0, _controlJs.MaximumEvolutionTime)((0, _xmlJs.getAttributes)(xml[0]), value);
         control.setMaximumEvolutionTime(met);
+        button.textContent = selected + selectedLoadedValueText;
+        createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+        button.classList.toggle("optionOff");
     } else {
         valueString = "";
         met = new (0, _controlJs.MaximumEvolutionTime)(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
     }
-    // Create a input checkbox for the MaximumEvolutionTime.
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.MaximumEvolutionTime).tagName + "_input";
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
-            else {
-                control.removeMaximumEvolutionTime();
-                // Remove any existing div.
-                let e = document.getElementById(idI);
-                if (e != null) e.remove();
-            }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the MaximumEvolutionTime already exists
+        if (!control.index.has((0, _controlJs.MaximumEvolutionTime).tagName)) {
+            createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = met.value.toString();
+            control.removeMaximumEvolutionTime();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
         }
-    }, "", (0, _controlJs.MaximumEvolutionTime).tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+    });
 }
 /**
  * @param control The control.
@@ -3266,6 +3515,12 @@ window.set = setNumberNode;
     let div = (0, _htmlJs.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName((0, _controlJs.AutomaticallySetMaxEne).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.AutomaticallySetMaxEne).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName + "_input";
     let asme;
     let valueString;
     if (xml.length == 1) {
@@ -3273,26 +3528,34 @@ window.set = setNumberNode;
         let value = parseFloat(valueString);
         asme = new (0, _controlJs.AutomaticallySetMaxEne)((0, _xmlJs.getAttributes)(xml[0]), value);
         control.setAutomaticallySetMaxEne(asme);
+        button.textContent = selected + selectedLoadedValueText;
+        createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+        button.classList.toggle("optionOff");
     } else {
         valueString = "";
         asme = new (0, _controlJs.AutomaticallySetMaxEne)(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
     }
-    // Create a input checkbox for the AutomaticallySetMaxEne.
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.AutomaticallySetMaxEne).tagName + "_input";
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
-            else {
-                control.removeAutomaticallySetMaxEne();
-                // Remove any existing div.
-                let e = document.getElementById(idI);
-                if (e != null) e.remove();
-            }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the AutomaticallySetMaxEne already exists
+        if (!control.index.has((0, _controlJs.AutomaticallySetMaxEne).tagName)) {
+            createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = asme.value.toString();
+            control.removeAutomaticallySetMaxEne();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
         }
-    }, "", (0, _controlJs.AutomaticallySetMaxEne).tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
+    });
 }
 /**
  * @param control The control.
@@ -3322,6 +3585,12 @@ window.set = setNumberNode;
     let div = (0, _htmlJs.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName((0, _controlJs.DiagramEnergyOffset).tagName);
+    let lwb = (0, _htmlJs.createLabelWithButton)((0, _controlJs.DiagramEnergyOffset).tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector("button");
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    div.appendChild(lwb);
+    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_input";
     let deo;
     let valueString;
     if (xml.length == 1) {
@@ -3329,27 +3598,56 @@ window.set = setNumberNode;
         let value = parseFloat(valueString);
         deo = new (0, _controlJs.DiagramEnergyOffset)((0, _xmlJs.getAttributes)(xml[0]), value);
         control.setDiagramEnergyOffset(deo);
+        button.textContent = selected + selectedLoadedValueText;
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        button.classList.toggle("optionOff");
     } else {
         valueString = "";
         deo = new (0, _controlJs.DiagramEnergyOffset)(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle("optionOn");
     }
-    // Create a input checkbox for the DiagramEnergyOffset.
-    let id = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_checkbox";
-    let idI = (0, _controlJs.Control).tagName + "_" + (0, _controlJs.DiagramEnergyOffset).tagName + "_input";
-    let lwi = (0, _htmlJs.createLabelWithInput)("checkbox", id, boundary1, level0, (event)=>{
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the DiagramEnergyOffset already exists
+        if (!control.index.has((0, _controlJs.DiagramEnergyOffset).tagName)) {
+            createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            valueString = deo.value.toString();
+            control.removeDiagramEnergyOffset();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) e.remove();
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
+        }
+    });
+/*
+    // Checkbox to toggle the DiagramEnergyOffset.
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
-            else {
+            if (event.target.checked) {
+                createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
+            } else {
                 control.removeDiagramEnergyOffset();
                 // Remove any existing div.
-                let e = document.getElementById(idI);
-                if (e != null) e.remove();
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
             }
         }
-    }, "", (0, _controlJs.DiagramEnergyOffset).tagName);
+    }, "", DiagramEnergyOffset.tagName);
     div.appendChild(lwi);
-    if (setCheck(lwi, xml)) createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
-}
+    if (setCheck(lwi, xml)) {
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        lwi.textContent = "Hide Diagram Energy Offset";
+    }
+    */ }
 /**
  * @param control The control.
  * @param div The div.
@@ -4149,6 +4447,7 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * @param options The options.
  * @param name The name.
  * @param id The id.
+ * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */ parcelHelpers.export(exports, "createSelectElement", ()=>createSelectElement);
 /**
@@ -4158,47 +4457,43 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
  * @param id The id.
- * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
- * @param level The level.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
+ * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */ parcelHelpers.export(exports, "createLabelWithSelectElement", ()=>createLabelWithSelectElement);
 /**
  * Create and return an HTMLButtonElement.
  * 
- * @param textContent The text content of the button.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin
- * @returns An HTMLButtonElement with the textContent and specified boundary.
+ * @param textContent The text content of the HTMLButtonElement.
+ * @param margin The margin to go around the HTMLButtonElement.
+ * @returns An HTMLButtonElement with the textContent and specified margin.
  */ parcelHelpers.export(exports, "createButton", ()=>createButton);
 /**
- * Create and return HTMLDivElement with a 'flex' display style.
- *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
+ * 
+ * @param textContent The text content of the button.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ * 
+ * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
+ */ parcelHelpers.export(exports, "createLabelWithButton", ()=>createLabelWithButton);
+/**
+ * Create and return HTMLDivElement.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */ parcelHelpers.export(exports, "createDiv", ()=>createDiv);
 /**
  * Create and return HTMLDivElement with a 'flex' display style.
  *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */ parcelHelpers.export(exports, "createFlexDiv", ()=>createFlexDiv);
 /**
  * Create and return HTMLLabelElement.
  *
- * @param textContent The text content of the label.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
- * @param fontsize The font size.
+ * @param textContent The text content of the HTMLLabelElement.
+ * @param margin The margin to go around the HTMLLabelElement.
+ * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */ parcelHelpers.export(exports, "createLabel", ()=>createLabel);
 function remove(id) {
@@ -4273,6 +4568,7 @@ function createInput(type, id, boundary) {
     input.type = type;
     input.id = id;
     Object.assign(input.style, boundary);
+    input.classList.add("auto-width");
     return input;
 }
 function getSelfClosingTag(attributes, tagName) {
@@ -4288,7 +4584,7 @@ function resizeSelectElement(input, minSize) {
     if (minSize == undefined) minSize = 6;
     input.style.width = input.value.length + minSize + "ch";
 }
-function createSelectElement(options, name, id, boundary) {
+function createSelectElement(options, name, id, margin) {
     let selectElement = document.createElement("select");
     options.forEach((option)=>{
         selectElement.name = name;
@@ -4298,12 +4594,13 @@ function createSelectElement(options, name, id, boundary) {
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
-    Object.assign(selectElement.style, boundary);
+    selectElement.classList.add("auto-width");
+    Object.assign(selectElement.style, margin);
     return selectElement;
 }
-function createLabelWithSelectElement(textContent, options, name, id, boundary, level) {
-    let div = createDiv(level);
-    let label = createLabel(textContent, boundary);
+function createLabelWithSelectElement(textContent, options, name, id, componentMargin, divMargin) {
+    let div = createDiv(divMargin);
+    let label = createLabel(textContent, componentMargin);
     div.appendChild(label);
     let selectElement = document.createElement("select");
     div.appendChild(selectElement);
@@ -4323,19 +4620,27 @@ function createButton(textContent, boundary) {
     Object.assign(button.style, boundary);
     return button;
 }
-function createDiv(boundary) {
-    let div = document.createElement("div");
-    Object.assign(div.style, boundary);
+function createLabelWithButton(labeltext, textContent, componentMargin, divMargin) {
+    let div = createFlexDiv(divMargin);
+    let label = createLabel(labeltext, componentMargin);
+    Object.assign(label.style, componentMargin);
+    div.appendChild(label);
+    div.appendChild(createButton(textContent, componentMargin));
     return div;
 }
-function createFlexDiv(boundary) {
-    let div = createDiv(boundary);
+function createDiv(margin) {
+    let div = document.createElement("div");
+    Object.assign(div.style, margin);
+    return div;
+}
+function createFlexDiv(margin) {
+    let div = createDiv(margin);
     div.style.display = "flex";
     return div;
 }
-function createLabel(textContent, boundary, fontsize) {
+function createLabel(textContent, margin, fontsize) {
     let label = document.createElement("label");
-    Object.assign(label.style, boundary);
+    Object.assign(label.style, margin);
     label.textContent = textContent;
     if (fontsize != undefined) //console.log("fontsize=" + fontsize);
     label.style.fontSize = fontsize;
@@ -7043,7 +7348,13 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
      * The tag name.
      */ this.tagName = "me:modelParameters";
     }
-    constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature){
+    /**
+     * @param attributes The attributes.
+     * @param grainSize The grain size.
+     * @param automaticallySetMaxEne The automatically set max energy.
+     * @param energyAboveTheTopHill The energy above the top hill.
+     * @param maxTemperature The max temperature.
+     */ constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature){
         super(attributes, ModelParameters.tagName);
         this.index = new Map();
         if (grainSize != undefined) {
@@ -7080,6 +7391,15 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
+     * Removes the grain size.
+     */ removeGrainSize() {
+        let i = this.index.get(GrainSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(GrainSize.tagName);
+        }
+    }
+    /**
      * @returns The automatically set max energy or undefined.
      */ getAutomaticallySetMaxEne() {
         let i = this.index.get(AutomaticallySetMaxEne.tagName);
@@ -7093,6 +7413,15 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         else {
             this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
             this.addNode(automaticallySetMaxEne);
+        }
+    }
+    /**
+     * Removes the automatically set max energy.
+     */ removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
         }
     }
     /**
@@ -7112,6 +7441,15 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
+     * Removes the energy above the top hill.
+     */ removeEnergyAboveTheTopHill() {
+        let i = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(EnergyAboveTheTopHill.tagName);
+        }
+    }
+    /**
      * @returns The max temperature or undefined.
      */ getMaxTemperature() {
         let i = this.index.get(MaxTemperature.tagName);
@@ -7125,6 +7463,15 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         else {
             this.index.set(MaxTemperature.tagName, this.nodes.size);
             this.addNode(maxTemperature);
+        }
+    }
+    /**
+     * Removes the max temperature.
+     */ removeMaxTemperature() {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaxTemperature.tagName);
         }
     }
 }

@@ -23,7 +23,7 @@ import { arrayToString, toNumberArray } from './util.js';
 
 import {
     createLabelWithInput, makeCollapsible, getCollapsibleDiv, resizeInputElement, createSelectElement,
-    resizeSelectElement, createFlexDiv, createButton, remove, createLabel, createInputWithFunction, createInput, createLabelWithSelectElement as createLabelWithSelect, createDiv
+    resizeSelectElement, createFlexDiv, createButton, remove, createLabel, createInputWithFunction, createInput, createLabelWithSelectElement as createLabelWithSelect, createDiv, createLabelWithButton
 } from './html.js';
 
 import { drawLevel, drawLine, getTextHeight, getTextWidth } from './canvas.js';
@@ -81,7 +81,12 @@ let addString: string = "add";
 let addSymbol: string = "\uFF0B";
 let removeString: string = "remove";
 let removeSymbol: string = "\u2715";
-let addFromSpreadsheetString: string = "Add from spreadsheet";
+let s_Add_from_spreadsheet: string = "Add from spreadsheet";
+let selected: string = "\u2713 [SELECTED] Action to unselect.";
+let notSelected: string = "\u2717 [NOT SELECTED] Action to select.";
+let selectedLoadedValueText: string = " The appended input(s) display loaded value(s) that can be changed:";
+let unselectedText: string = " Then use the appended input to specify.";
+let selectedValueText: string = " Or use the appended input(s) to specify:";
 
 /**
  * For mesmer.
@@ -112,11 +117,9 @@ let reactions: Map<string, Reaction> = new Map();
  * Once the DOM is loaded, add a load button.
  */
 document.addEventListener('DOMContentLoaded', () => {
-
     // Create load button
     let loadButton = createButton('Load', boundary1);
     loadButton.addEventListener('click', load);
-
     // Append loadButton to menu and set the display style of the menu.
     let menuDiv: HTMLDivElement = document.getElementById('menu') as HTMLDivElement;
     if (menuDiv) {
@@ -1710,7 +1713,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         pTsDiv.appendChild(pTPairDiv);
     });
     // Create an add from spreadsheet button to add multiple PTPairs.
-    let addMultipleButton: HTMLButtonElement = createButton(addFromSpreadsheetString, boundary1);
+    let addMultipleButton: HTMLButtonElement = createButton(s_Add_from_spreadsheet, boundary1);
     pTsDiv.appendChild(addMultipleButton);
     // Add event listener to the addMultipleButton.
     addMultipleButton.addEventListener('click', () => {
@@ -2067,29 +2070,9 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
     let xml_modelParameters: Element = getSingularElement(xml, ModelParameters.tagName);
     let modelParameters: ModelParameters = new ModelParameters(getAttributes(xml_modelParameters));
     mesmer.setModelParameters(modelParameters);
+    processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv);
 
-    // Process any "me:grainSize" element.
-    let xml_grainSizes: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(GrainSize.tagName);
-    if (xml_grainSizes.length > 0) {
-        if (xml_grainSizes.length > 1) {
-            throw new Error("Expecting 1 " + GrainSize.tagName + " but finding " + xml_grainSizes.length + "!");
-        }
-        let grainSizeAttributes: Map<string, string> = getAttributes(xml_grainSizes[0]);
-        let value: number = parseFloat(getNodeValue(getFirstChildNode(xml_grainSizes[0])));
-        let grainSize: GrainSize = new GrainSize(grainSizeAttributes, value);
-        modelParameters.setGrainSize(grainSize);
-        // Create a new div for the grainSize.
-        let grainSizeId = ModelParameters.tagName + "_" + GrainSize.tagName;
-        let lwi: HTMLDivElement = createLabelWithInput("number", grainSizeId, boundary1, level1, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(grainSize, event.target);
-                resizeInputElement(event.target);
-            }
-        }, value.toString(), GrainSize.tagName);
-        // Add any units.
-        addAnyUnits(undefined, grainSizeAttributes, lwi, ModelParameters.tagName + "_" + GrainSize.tagName, GrainSize.tagName, boundary1);
-        modelParametersDiv.appendChild(lwi);
-    }
+
 
     // Process any "me:automaticallySetMaxEne" element.
     let xml_automaticallySetMaxEnes: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(AutomaticallySetMaxEne.tagName);
@@ -2109,7 +2092,7 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
                 resizeInputElement(event.target);
             }
         }, value.toString(), AutomaticallySetMaxEne.tagName);
-        // Add any units.
+        // Add any units. 
         addAnyUnits(undefined, automaticallySetMaxEneAttributes, lwi, ModelParameters.tagName + "_" + AutomaticallySetMaxEne.tagName, AutomaticallySetMaxEne.tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
@@ -2133,8 +2116,8 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
                 resizeInputElement(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), EnergyAboveTheTopHill.tagName);
-        // Add any units
-        addAnyUnits(undefined, energyAboveTheTopHillAttributes, lwi, ModelParameters.tagName + "_" + EnergyAboveTheTopHill.tagName, EnergyAboveTheTopHill.tagName, boundary1);
+        // Add any units. The default units are "kT".
+        addAnyUnits(["kT"], energyAboveTheTopHillAttributes, lwi, ModelParameters.tagName + "_" + EnergyAboveTheTopHill.tagName, EnergyAboveTheTopHill.tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
 
@@ -2162,6 +2145,79 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
     }
 
     return modelParametersDiv;
+}
+
+/**
+ * @param modelParameters The model parameters.
+ * @param xml_modelParameters The XML model parameters.
+ * @param modelParametersDiv The model parameters div.
+ */
+function processGrainSize(modelParameters: ModelParameters, xml_modelParameters: Element, modelParametersDiv: HTMLDivElement) {
+    let div: HTMLDivElement = createFlexDiv(level1);
+    modelParametersDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(GrainSize.tagName);
+
+    let gs: GrainSize;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        gs = new GrainSize(getAttributes(xml[0]), value);
+        modelParameters.setGrainSize(gs);
+    } else {
+        valueString = "";
+        gs = new GrainSize(new Map(), NaN);
+    }
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let id = ModelParameters.tagName + "_" + GrainSize.tagName + "_checkbox";
+    let idI = ModelParameters.tagName + "_" + GrainSize.tagName + "_input";
+    let idS = ModelParameters.tagName + "_" + GrainSize.tagName + "_SelectUnits";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+            } else {
+                modelParameters.removeGrainSize();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+                e = document.getElementById(idS) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", GrainSize.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+    }
+}
+
+/**
+ * @param modelParameters The model parameters.
+ * @param div The div.
+ * @param gs The grain size.
+ * @param id The id.
+ * @param idS The id for the select units.
+ * @param valueString The value string.
+ */
+function createGrainSizeInput(modelParameters: ModelParameters, div: HTMLDivElement, gs: GrainSize,
+    id: string, idS: string, valueString: string): void {
+    modelParameters.setGrainSize(gs);
+    let input: HTMLInputElement = createInput("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(gs, event.target);
+            resizeInputElement(event.target);
+        }
+    });
+    input.value = valueString;
+    resizeInputElement(input);
+    div.appendChild(input);
+    addAnyUnits(ZPE.units, gs.attributes, div, idS, GrainSize.tagName, boundary1);
 }
 
 /**
@@ -2876,6 +2932,7 @@ function createTestMicroRates(div: HTMLDivElement, xml_tmr: HTMLCollectionOf<Ele
  * @param xml_control The xml control.
  */
 function processCalcMethod(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
+    /*
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let id = Control.tagName + "_" + CalcMethod.tagName + "_checkbox";
@@ -2906,6 +2963,50 @@ function processCalcMethod(control: Control, controlsDiv: HTMLDivElement, xml_co
     if (setCheck(lwi, xml_cm)) {
         createCalcMethodInput(control, div, cm, idI, cm.value);
     }
+    */
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(CalcMethod.tagName);
+    let lwb = createLabelWithButton(CalcMethod.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + CalcMethod.tagName + "_input";
+    let cm: CalcMethod;
+    if (xml.length == 1) {
+        let value: string = getNodeValue(getFirstChildNode(xml[0]));
+        cm = new CalcMethod(getAttributes(xml[0]), value);
+        button.textContent = selected + selectedLoadedValueText;
+        createCalcMethodInput(control, div, cm, id, value);
+        button.classList.toggle('optionOff');
+    } else {
+        cm = new CalcMethod(new Map(), "Please use the dropdown to select a value...");
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
+    }
+    let valueString: string = cm.value;
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the CalcMethod already exists
+        if (!control.index.has(CalcMethod.tagName)) {
+            createCalcMethodInput(control, div, cm, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = cm.value;
+            control.removeCalcMethod();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 
 /**
@@ -2916,15 +3017,16 @@ function processCalcMethod(control: Control, controlsDiv: HTMLDivElement, xml_co
  * @param valueString The value string. 
  */
 function createCalcMethodInput(control: Control, div: HTMLDivElement, cm: CalcMethod, id: string, valueString: string): void {
-    let value: string = cm.value;
-    let select: HTMLSelectElement = createSelectElement(CalcMethod.options, value, id, boundary1);
+    let options: string[] =  CalcMethod.options;
+    options.push("Please use the dropdown to select a value...");
+    let select: HTMLSelectElement = createSelectElement(options, valueString, id, boundary1);
     select.addEventListener('change', (event) => {
         if (event.target instanceof HTMLSelectElement) {
-            cm.value = event.target.value;
             cm.value = event.target.value;
             resizeSelectElement(event.target);
         }
     });
+    select.value = valueString;
     resizeSelectElement(select);
     div.appendChild(select);
     control.setCalcMethod(cm);
@@ -2937,6 +3039,7 @@ function createCalcMethodInput(control: Control, div: HTMLDivElement, cm: CalcMe
  * @param xml_control The xml control.
  */
 function processEigenvalues(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
+    /*
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(Eigenvalues.tagName);
@@ -2972,6 +3075,53 @@ function processEigenvalues(control: Control, controlsDiv: HTMLDivElement, xml_c
     if (setCheck(lwi, xml)) {
         createEigenValuesInput(control, div, eigenvalues, idI, valueString);
     }
+    */
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(Eigenvalues.tagName);
+    let lwb = createLabelWithButton(Eigenvalues.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + Eigenvalues.tagName + "_input";
+    let eigenvalues: Eigenvalues;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        eigenvalues = new Eigenvalues(getAttributes(xml[0]), value);
+        control.setEigenvalues(eigenvalues);
+        button.textContent = selected + selectedLoadedValueText;
+        createEigenValuesInput(control, div, eigenvalues, id, valueString);
+        button.classList.toggle('optionOff');
+    } else {
+        valueString = "";
+        eigenvalues = new Eigenvalues(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the Eigenvalues already exists
+        if (!control.index.has(Eigenvalues.tagName)) {
+            createEigenValuesInput(control, div, eigenvalues, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = eigenvalues.value.toString();
+            control.removeEigenvalues();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 
 /**
@@ -3002,6 +3152,7 @@ function createEigenValuesInput(control: Control, div: HTMLDivElement, eigenvalu
  * @param xml_control The xml control.
  */
 function processShortestTimeOfInterest(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
+    /*
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ShortestTimeOfInterest.tagName);
@@ -3037,6 +3188,53 @@ function processShortestTimeOfInterest(control: Control, controlsDiv: HTMLDivEle
     if (setCheck(lwi, xml)) {
         createShortestTimeOfInterest(control, div, stoi, idI, valueString);
     }
+    */
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ShortestTimeOfInterest.tagName);
+    let lwb = createLabelWithButton(ShortestTimeOfInterest.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_input";
+    let stoi: ShortestTimeOfInterest;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        stoi = new ShortestTimeOfInterest(getAttributes(xml[0]), value);
+        control.setShortestTimeOfInterest(stoi);
+        button.textContent = selected + selectedLoadedValueText;
+        createShortestTimeOfInterest(control, div, stoi, id, valueString);
+        button.classList.toggle('optionOff');
+    } else {
+        valueString = "";
+        stoi = new ShortestTimeOfInterest(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the ShortestTimeOfInterest already exists
+        if (!control.index.has(ShortestTimeOfInterest.tagName)) {
+            createShortestTimeOfInterest(control, div, stoi, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = stoi.value.toString();
+            control.removeShortestTimeOfInterest();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 
 /**
@@ -3068,6 +3266,7 @@ function createShortestTimeOfInterest(control: Control, div: HTMLDivElement, sto
  * @param xml_control The xml control.
  */
 function processMaximumEvolutionTime(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
+    /*
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(MaximumEvolutionTime.tagName);
@@ -3103,6 +3302,53 @@ function processMaximumEvolutionTime(control: Control, controlsDiv: HTMLDivEleme
     if (setCheck(lwi, xml)) {
         createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
     }
+    */
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(MaximumEvolutionTime.tagName);
+    let lwb = createLabelWithButton(MaximumEvolutionTime.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_input";
+    let met: MaximumEvolutionTime;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        met = new MaximumEvolutionTime(getAttributes(xml[0]), value);
+        control.setMaximumEvolutionTime(met);
+        button.textContent = selected + selectedLoadedValueText;
+        createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+        button.classList.toggle('optionOff');
+    } else {
+        valueString = "";
+        met = new MaximumEvolutionTime(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the MaximumEvolutionTime already exists
+        if (!control.index.has(MaximumEvolutionTime.tagName)) {
+            createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = met.value.toString();
+            control.removeMaximumEvolutionTime();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 
 /**
@@ -3137,6 +3383,12 @@ function processAutomaticallySetMaxEne(control: Control, controlsDiv: HTMLDivEle
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(AutomaticallySetMaxEne.tagName);
+    let lwb = createLabelWithButton(AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + AutomaticallySetMaxEne.tagName + "_input";
     let asme: AutomaticallySetMaxEne;
     let valueString: string;
     if (xml.length == 1) {
@@ -3144,31 +3396,36 @@ function processAutomaticallySetMaxEne(control: Control, controlsDiv: HTMLDivEle
         let value: number = parseFloat(valueString);
         asme = new AutomaticallySetMaxEne(getAttributes(xml[0]), value);
         control.setAutomaticallySetMaxEne(asme);
+        button.textContent = selected + selectedLoadedValueText;
+        createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+        button.classList.toggle('optionOff');
     } else {
         valueString = "";
         asme = new AutomaticallySetMaxEne(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the AutomaticallySetMaxEne.
-    let id = Control.tagName + "_" + AutomaticallySetMaxEne.tagName + "_checkbox";
-    let idI = Control.tagName + "_" + AutomaticallySetMaxEne.tagName + "_input";
-    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
-            } else {
-                control.removeAutomaticallySetMaxEne();
-                // Remove any existing div.
-                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
-                if (e != null) {
-                    e.remove();
-                }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the AutomaticallySetMaxEne already exists
+        if (!control.index.has(AutomaticallySetMaxEne.tagName)) {
+            createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = asme.value.toString();
+            control.removeAutomaticallySetMaxEne();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
             }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
         }
-    }, "", AutomaticallySetMaxEne.tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) {
-        createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
-    }
+    });
 }
 
 /**
@@ -3203,6 +3460,12 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
     let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(DiagramEnergyOffset.tagName);
+    let lwb = createLabelWithButton(DiagramEnergyOffset.tagName, "", boundary1, boundary1);
+    let button: HTMLButtonElement = lwb.querySelector('button') as HTMLButtonElement;
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_input";
     let deo: DiagramEnergyOffset;
     let valueString: string;
     if (xml.length == 1) {
@@ -3210,13 +3473,38 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
         let value: number = parseFloat(valueString);
         deo = new DiagramEnergyOffset(getAttributes(xml[0]), value);
         control.setDiagramEnergyOffset(deo);
+        button.textContent = selected + selectedLoadedValueText;
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        button.classList.toggle('optionOff');
     } else {
         valueString = "";
         deo = new DiagramEnergyOffset(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the DiagramEnergyOffset.
-    let id = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_checkbox";
-    let idI = Control.tagName + "_" + DiagramEnergyOffset.tagName + "_input";
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the DiagramEnergyOffset already exists
+        if (!control.index.has(DiagramEnergyOffset.tagName)) {
+            createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            valueString = deo.value.toString();
+            control.removeDiagramEnergyOffset();
+            // Remove any existing div.
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
+    /*
+    // Checkbox to toggle the DiagramEnergyOffset.
     let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
@@ -3233,8 +3521,10 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
     }, "", DiagramEnergyOffset.tagName);
     div.appendChild(lwi);
     if (setCheck(lwi, xml)) {
-        createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        lwi.textContent = "Hide Diagram Energy Offset";
     }
+    */
 }
 
 /**
@@ -3244,8 +3534,8 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
  * @param id The id.
  * @param valueString The value string.
  */
-function createDiagramEnergyOffsetInput(control: Control, div: HTMLDivElement, deo: DiagramEnergyOffset,
-    id: string, valueString: string) {
+function createDiagramEnergyOffsetInput(control: Control, div: HTMLDivElement,
+    deo: DiagramEnergyOffset, id: string, valueString: string) {
     control.setDiagramEnergyOffset(deo);
     let input: HTMLInputElement = createInput("number", id, boundary1);
     input.addEventListener('change', (event) => {
