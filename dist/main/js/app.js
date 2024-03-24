@@ -14,6 +14,13 @@ const modelParameters_js_1 = require("./modelParameters.js");
 const control_js_1 = require("./control.js");
 const mesmer_js_1 = require("./mesmer.js");
 /**
+ * The repository URL.
+ */
+let gitHubRepositoryURL = "https://github.com/agdturner/mxg-pwa";
+let gitHubRepositoryURLa = document.createElement('a');
+gitHubRepositoryURLa.href = gitHubRepositoryURL;
+gitHubRepositoryURLa.textContent = gitHubRepositoryURL;
+/**
  * The font sizes for different levels of the GUI.
  */
 let fontSize1 = "1.5em";
@@ -48,7 +55,14 @@ let addString = "add";
 let addSymbol = "\uFF0B";
 let removeString = "remove";
 let removeSymbol = "\u2715";
-let addFromSpreadsheetString = "Add from spreadsheet";
+let s_Add_from_spreadsheet = "Add from spreadsheet";
+let selected = "\u2713 [SELECTED] Action to unselect.";
+let notSelected = "\u2717 [NOT SELECTED] Action to select.";
+let selectedLoadedValueText = " Change the specification if desired:";
+let unselectedText = " Then specify using input(s) that appear.";
+let selectedValueText = " Or specify using input(s):";
+let selectAnotherOption = "Action/select another option...";
+let specifyNumberText = "Click then specify a number in the input that will appear.";
 /**
  * For mesmer.
  */
@@ -73,15 +87,115 @@ let reactions = new Map();
  * Once the DOM is loaded, add a load button.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Create load button
-    let loadButton = (0, html_js_1.createButton)('Load', boundary1);
-    loadButton.addEventListener('click', load);
-    // Append loadButton to menu and set the display style of the menu.
+    // Create a menu for the GUI.
     let menuDiv = document.getElementById('menu');
-    if (menuDiv) {
-        menuDiv.appendChild(loadButton);
-    }
     menuDiv.style.display = 'flex';
+    menuDiv.style.justifyContent = 'center';
+    menuDiv.style.margin = '5px';
+    menuDiv.style.padding = '5px';
+    menuDiv.style.border = '1px solid black';
+    menuDiv.style.backgroundColor = 'lightgrey';
+    // Create Load button.
+    let loadButton = (0, html_js_1.createButton)('Load', boundary1);
+    loadButton.addEventListener('click', () => {
+        load();
+        loadButton.textContent = 'Load';
+    });
+    loadButton.style.fontSize = '1em'; // Set the font size with a relative unit.
+    menuDiv.appendChild(loadButton);
+    // Create Save button.
+    let saveButtonId = 'saveButtonId';
+    (0, html_js_1.remove)(saveButtonId);
+    let saveButton = (0, html_js_1.createButton)('Save', boundary1);
+    saveButton.id = saveButtonId;
+    saveButton.addEventListener('click', saveXML);
+    saveButton.style.fontSize = '1em'; // Set the font size with a relative unit.
+    menuDiv.appendChild(saveButton);
+    // Create GitHub repository URL button.
+    let gitHubRepositoryButtonId = 'gitHubRepositoryButtonId';
+    (0, html_js_1.remove)(gitHubRepositoryButtonId);
+    let gitHubRepositoryButton = (0, html_js_1.createButton)(gitHubRepositoryURL, boundary1);
+    gitHubRepositoryButton.id = gitHubRepositoryButtonId;
+    gitHubRepositoryButton.addEventListener('click', () => {
+        window.open(gitHubRepositoryURL, '_blank');
+    });
+    menuDiv.appendChild(gitHubRepositoryButton);
+    // Create style/theme option buttons.
+    // Create button to increase the font size.
+    let increaseFontSizeButton = (0, html_js_1.createButton)("Increase Font Size", boundary1);
+    increaseFontSizeButton.addEventListener('click', () => {
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (fontSize + 1) + 'px';
+    });
+    menuDiv.appendChild(increaseFontSizeButton);
+    // Create button to increase the font size.
+    let decreaseFontSizeButton = (0, html_js_1.createButton)("Decrease Font Size", boundary1);
+    decreaseFontSizeButton.addEventListener('click', () => {
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (fontSize - 1) + 'px';
+    });
+    menuDiv.appendChild(decreaseFontSizeButton);
+    // Create div for welcome.
+    let welcomeDiv = (0, html_js_1.createDiv)(boundary1);
+    document.body.appendChild(welcomeDiv);
+    // Create text for welcome.
+    let p1 = document.createElement('p');
+    welcomeDiv.appendChild(p1);
+    p1.textContent = 'Welcome to MXG - a Graphical User Interface (GUI) program for creating, editing and visualising Master \
+    Equation Solver for Multi Energy-well Reactions (MESMER) data.';
+    let p2 = document.createElement('p');
+    welcomeDiv.appendChild(p2);
+    p2.textContent = 'MXG development was initially funded by the UK Engineering and Physical Sciences Research Council (EPSRC).';
+    let p3 = document.createElement('p');
+    welcomeDiv.appendChild(p3);
+    p3.textContent = 'There should be a Load button located above this welcome message. Action the Load button and select a MESMER \
+    input file. MXG does not modify the file loaded. It reads the file and creates an internal representation of the data that can \
+    be modified. This internal representation can be saved using the Save button that should appear alongside the Load button. The \
+    Save button can be actioned to save a MESMER file to your Downloads. The saved file should have the same content as what was \
+    loaded except it will contain no comments, values are trimmed of white space, and number formats are standardised in a \
+    scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.';
+    let p6 = document.createElement('p');
+    welcomeDiv.appendChild(p6);
+    p6.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer" element: \
+    "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a child element is \
+    missing or there are multiple ones, an Error is thrown.';
+    let p7 = document.createElement('p');
+    welcomeDiv.appendChild(p7);
+    p7.textContent = 'Upon loading a MESMER file, an input containing the "me:title" value should appear along side a label. \
+    Users can change the value using the input. The "me:title" is used to compose the filename for data saved using the Save \
+    button. Characters that are unsuitable for filenames will be replaced with the underscore character "_" in the filename.';
+    let p8 = document.createElement('p');
+    welcomeDiv.appendChild(p8);
+    p8.textContent = '"moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" details are presented \
+    below the "me:title" in a series of buttons. A canvas should depict a well diagram for the reactions. The diagram should redraw \
+    if the "me:ZPE" property values of molecules in a listed reaction are changed. Below all this is a text representation of the \
+    file loaded.';
+    let p9 = document.createElement('p');
+    welcomeDiv.appendChild(p9);
+    p9.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain \
+    a triangular symbol which indicate a collapsed (triangle orientated with a point down: ▼) or expanded (triangle with a point \
+    up: ▲) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
+    let p10 = document.createElement('p');
+    welcomeDiv.appendChild(p10);
+    p10.textContent = 'MXG is designed to be user-friendly and accessible. The development is currently in an alpha release phase \
+    and is not recommended to be used by MESMER users. A community release with ongoing support from MESMER developers is \
+    tentatively scheduled for the end of April 2024. MXG is free and open source software based and free and open source software. \
+    The main development GitHub repository is:';
+    p10.appendChild(gitHubRepositoryURLa);
+    p10.textContent += 'Please feel free to explore the \
+    code and have a play with MXG.';
+    let p11 = document.createElement('p');
+    welcomeDiv.appendChild(p11);
+    p11.textContent = 'Alongside the Repository Link Button there are buttons to increase or decrease the font size. It is expected \
+    that future releases will have styling themes selectable to allow for dark mode and to support users that do not have normal \
+    colour vision.';
+    let p12 = document.createElement('p');
+    welcomeDiv.appendChild(p12);
+    p12.textContent = 'MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software \
+    delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended \
+    to work on any platform with a standards-compliant browser, including desktop and mobile devices. PWA installation varies by \
+    Web browser/device. Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer \
+    to that README for further details.';
 });
 /**
  * Prompts the user for a MESMER XML file, initiates the parsing of the chosen file, and
@@ -152,14 +266,6 @@ function load() {
             let blob = file.slice(start, start + chunkSize);
             reader.readAsText(blob);
             start += chunkSize;
-            // Create save button.
-            let saveButtonId = 'saveButtonId';
-            (0, html_js_1.remove)(saveButtonId);
-            let saveButton = (0, html_js_1.createButton)('Save', boundary1);
-            saveButton.id = saveButtonId;
-            saveButton.addEventListener('click', saveXML);
-            let menuDiv = document.getElementById('menu');
-            menuDiv.appendChild(saveButton);
         }
     };
     inputElement.click();
@@ -194,7 +300,7 @@ function parse(xml) {
                 console.log(titleNode.tagName + " changed to " + titleNode.value);
                 (0, html_js_1.resizeInputElement)(event.target);
             }
-        }, titleString, "Title", fontSize1);
+        }, titleString, mesmer_js_1.Title.tagName, fontSize1);
         titleDiv.id = titleId;
         //let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
         //input.style.fontSize = fontSize1;
@@ -1632,7 +1738,7 @@ function processConditions(xml) {
         pTsDiv.appendChild(pTPairDiv);
     });
     // Create an add from spreadsheet button to add multiple PTPairs.
-    let addMultipleButton = (0, html_js_1.createButton)(addFromSpreadsheetString, boundary1);
+    let addMultipleButton = (0, html_js_1.createButton)(s_Add_from_spreadsheet, boundary1);
     pTsDiv.appendChild(addMultipleButton);
     // Add event listener to the addMultipleButton.
     addMultipleButton.addEventListener('click', () => {
@@ -1981,28 +2087,7 @@ function processModelParameters(xml) {
     let xml_modelParameters = (0, xml_js_1.getSingularElement)(xml, modelParameters_js_1.ModelParameters.tagName);
     let modelParameters = new modelParameters_js_1.ModelParameters((0, xml_js_1.getAttributes)(xml_modelParameters));
     mesmer.setModelParameters(modelParameters);
-    // Process any "me:grainSize" element.
-    let xml_grainSizes = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
-    if (xml_grainSizes.length > 0) {
-        if (xml_grainSizes.length > 1) {
-            throw new Error("Expecting 1 " + modelParameters_js_1.GrainSize.tagName + " but finding " + xml_grainSizes.length + "!");
-        }
-        let grainSizeAttributes = (0, xml_js_1.getAttributes)(xml_grainSizes[0]);
-        let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_grainSizes[0])));
-        let grainSize = new modelParameters_js_1.GrainSize(grainSizeAttributes, value);
-        modelParameters.setGrainSize(grainSize);
-        // Create a new div for the grainSize.
-        let grainSizeId = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName;
-        let lwi = (0, html_js_1.createLabelWithInput)("number", grainSizeId, boundary1, level1, (event) => {
-            if (event.target instanceof HTMLInputElement) {
-                setNumberNode(grainSize, event.target);
-                (0, html_js_1.resizeInputElement)(event.target);
-            }
-        }, value.toString(), modelParameters_js_1.GrainSize.tagName);
-        // Add any units.
-        addAnyUnits(undefined, grainSizeAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName, modelParameters_js_1.GrainSize.tagName, boundary1);
-        modelParametersDiv.appendChild(lwi);
-    }
+    processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv);
     // Process any "me:automaticallySetMaxEne" element.
     let xml_automaticallySetMaxEnes = xml_modelParameters.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
     if (xml_automaticallySetMaxEnes.length > 0) {
@@ -2021,7 +2106,7 @@ function processModelParameters(xml) {
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, value.toString(), control_js_1.AutomaticallySetMaxEne.tagName);
-        // Add any units.
+        // Add any units. 
         addAnyUnits(undefined, automaticallySetMaxEneAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
@@ -2043,8 +2128,8 @@ function processModelParameters(xml) {
                 (0, html_js_1.resizeInputElement)(event.target);
             }
         }, energyAboveTheTopHill.value.toString(), modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-        // Add any units
-        addAnyUnits(undefined, energyAboveTheTopHillAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
+        // Add any units. The default units are "kT".
+        addAnyUnits(["kT"], energyAboveTheTopHillAttributes, lwi, modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
         modelParametersDiv.appendChild(lwi);
     }
     // Process any "me:maxTemperature" element.
@@ -2070,6 +2155,77 @@ function processModelParameters(xml) {
         modelParametersDiv.appendChild(lwi);
     }
     return modelParametersDiv;
+}
+/**
+ * @param modelParameters The model parameters.
+ * @param xml_modelParameters The XML model parameters.
+ * @param modelParametersDiv The model parameters div.
+ */
+function processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv) {
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    modelParametersDiv.appendChild(div);
+    let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
+    let gs;
+    let valueString;
+    if (xml.length == 1) {
+        valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        let value = parseFloat(valueString);
+        gs = new modelParameters_js_1.GrainSize((0, xml_js_1.getAttributes)(xml[0]), value);
+        modelParameters.setGrainSize(gs);
+    }
+    else {
+        valueString = "";
+        gs = new modelParameters_js_1.GrainSize(new Map(), NaN);
+    }
+    // Create a input checkbox for the DiagramEnergyOffset.
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName + "_checkbox";
+    let idI = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName + "_input";
+    let idS = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName + "_SelectUnits";
+    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+            }
+            else {
+                modelParameters.removeGrainSize();
+                // Remove any existing div.
+                let e = document.getElementById(idI);
+                if (e != null) {
+                    e.remove();
+                }
+                e = document.getElementById(idS);
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", modelParameters_js_1.GrainSize.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createGrainSizeInput(modelParameters, div, gs, idI, idS, valueString);
+    }
+}
+/**
+ * @param modelParameters The model parameters.
+ * @param div The div.
+ * @param gs The grain size.
+ * @param id The id.
+ * @param idS The id for the select units.
+ * @param valueString The value string.
+ */
+function createGrainSizeInput(modelParameters, div, gs, id, idS, valueString) {
+    modelParameters.setGrainSize(gs);
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    input.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            setNumberNode(gs, event.target);
+            (0, html_js_1.resizeInputElement)(event.target);
+        }
+    });
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    div.appendChild(input);
+    addAnyUnits(molecule_js_1.ZPE.units, gs.attributes, div, idS, modelParameters_js_1.GrainSize.tagName, boundary1);
 }
 /**
  * Parses xml to initialise controls.
@@ -2184,7 +2340,9 @@ function processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control)
             }
         }
     }, "", control_js_1.CalculateRateCoefficientsOnly.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.CalculateRateCoefficientsOnly.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.CalculateRateCoefficientsOnly.tagName))) {
+        control.setCalculateRateCoefficientsOnly(new control_js_1.CalculateRateCoefficientsOnly());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2205,7 +2363,9 @@ function processPrintCellDOS(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintCellDOS.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellDOS.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellDOS.tagName))) {
+        control.setPrintCellDOS(new control_js_1.PrintCellDOS());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2226,7 +2386,9 @@ function processPrintCellTransitionStateFlux(control, controlsDiv, xml_control) 
             }
         }
     }, "", control_js_1.PrintCellTransitionStateFlux.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellTransitionStateFlux.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCellTransitionStateFlux.tagName))) {
+        control.setPrintCellTransitionStateFlux(new control_js_1.PrintCellTransitionStateFlux());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2247,7 +2409,9 @@ function processPrintReactionOperatorColumnSums(control, controlsDiv, xml_contro
             }
         }
     }, "", control_js_1.PrintReactionOperatorColumnSums.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorColumnSums.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorColumnSums.tagName))) {
+        control.setPrintReactionOperatorColumnSums(new control_js_1.PrintReactionOperatorColumnSums());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2268,7 +2432,9 @@ function processPrintGrainBoltzmann(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintGrainBoltzmann.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainBoltzmann.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainBoltzmann.tagName))) {
+        control.setPrintGrainBoltzmann(new control_js_1.PrintGrainBoltzmann());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2289,7 +2455,9 @@ function processPrintGrainDOS(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintGrainDOS.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainDOS.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainDOS.tagName))) {
+        control.setPrintGrainDOS(new control_js_1.PrintGrainDOS());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2310,7 +2478,9 @@ function processPrintGrainkbE(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintGrainkbE.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkbE.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkbE.tagName))) {
+        control.setPrintGrainkbE(new control_js_1.PrintGrainkbE());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2331,7 +2501,9 @@ function processPrintGrainkfE(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintGrainkfE.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkfE.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainkfE.tagName))) {
+        control.setPrintGrainkfE(new control_js_1.PrintGrainkfE());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2353,6 +2525,9 @@ function processPrintTSsos(control, controlsDiv, xml_control) {
         }
     }, "", control_js_1.PrintTSsos.tagName);
     setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTSsos.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTSsos.tagName))) {
+        control.setPrintTSsos(new control_js_1.PrintTSsos());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2373,7 +2548,9 @@ function processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintGrainedSpeciesProfile.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainedSpeciesProfile.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainedSpeciesProfile.tagName))) {
+        control.setPrintGrainedSpeciesProfile(new control_js_1.PrintGrainedSpeciesProfile());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2394,7 +2571,9 @@ function processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control)
             }
         }
     }, "", control_js_1.PrintGrainTransitionStateFlux.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainTransitionStateFlux.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintGrainTransitionStateFlux.tagName))) {
+        control.setPrintGrainTransitionStateFlux(new control_js_1.PrintGrainTransitionStateFlux());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2415,7 +2594,9 @@ function processPrintReactionOperatorSize(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintReactionOperatorSize.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorSize.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorSize.tagName))) {
+        control.setPrintReactionOperatorSize(new control_js_1.PrintReactionOperatorSize());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2436,7 +2617,9 @@ function processPrintSpeciesProfile(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintSpeciesProfile.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintSpeciesProfile.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintSpeciesProfile.tagName))) {
+        control.setPrintSpeciesProfile(new control_js_1.PrintSpeciesProfile());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2457,7 +2640,9 @@ function processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control
             }
         }
     }, "", control_js_1.PrintPhenomenologicalEvolution.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintPhenomenologicalEvolution.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintPhenomenologicalEvolution.tagName))) {
+        control.setPrintPhenomenologicalEvolution(new control_js_1.PrintPhenomenologicalEvolution());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2478,7 +2663,9 @@ function processPrintTunnelingCoefficients(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintTunnelingCoefficients.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTunnelingCoefficients.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintTunnelingCoefficients.tagName))) {
+        control.setPrintTunnelingCoefficients(new control_js_1.PrintTunnelingCoefficients());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2499,7 +2686,9 @@ function processPrintCrossingCoefficients(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.PrintCrossingCoefficients.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCrossingCoefficients.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.PrintCrossingCoefficients.tagName))) {
+        control.setPrintCrossingCoefficients(new control_js_1.PrintCrossingCoefficients());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2520,7 +2709,9 @@ function processTestDOS(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.TestDOS.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.TestDOS.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.TestDOS.tagName))) {
+        control.setTestDOS(new control_js_1.TestDOS());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2541,7 +2732,9 @@ function processTestRateConstants(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.TestRateConstants.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.TestRateConstants.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.TestRateConstants.tagName))) {
+        control.setTestRateConstants(new control_js_1.TestRateConstants());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2562,7 +2755,9 @@ function processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_c
             }
         }
     }, "", control_js_1.UseTheSameCellNumberForAllConditions.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.UseTheSameCellNumberForAllConditions.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.UseTheSameCellNumberForAllConditions.tagName))) {
+        control.setUseTheSameCellNumberForAllConditions(new control_js_1.UseTheSameCellNumberForAllConditions());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2583,7 +2778,9 @@ function processHideInactive(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.HideInactive.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.HideInactive.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.HideInactive.tagName))) {
+        control.setHideInactive(new control_js_1.HideInactive());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2604,7 +2801,9 @@ function processForceMacroDetailedBalance(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.ForceMacroDetailedBalance.tagName);
-    setCheck(input, xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName));
+    if (setCheck(input, xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName))) {
+        control.setForceMacroDetailedBalance(new control_js_1.ForceMacroDetailedBalance());
+    }
     controlsDiv.appendChild(input);
 }
 /**
@@ -2647,11 +2846,10 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
             }
         }
     }, "", control_js_1.TestMicroRates.tagName);
-    let isChecked = setCheck(lwi, xml_tmr);
-    if (isChecked) {
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml_tmr)) {
         createTestMicroRates(div, xml_tmr, idTmax, idTmin, idTstep, control);
     }
-    div.appendChild(lwi);
 }
 /**
  * @param div The div.
@@ -2741,38 +2939,88 @@ function createTestMicroRates(div, xml_tmr, idTmax, idTmin, idTstep, control) {
  * @param xml_control The xml control.
  */
 function processCalcMethod(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_input";
-    let xml_cm = xml_control.getElementsByTagName(control_js_1.CalcMethod.tagName);
-    let cm;
+    let id = Control.tagName + "_" + CalcMethod.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + CalcMethod.tagName + "_input";
+    let xml_cm: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(CalcMethod.tagName);
+    let cm: CalcMethod;
     if (xml_cm.length == 1) {
-        cm = new control_js_1.CalcMethod((0, xml_js_1.getAttributes)(xml_cm[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_cm[0])));
+        cm = new CalcMethod(getAttributes(xml_cm[0]), getNodeValue(getFirstChildNode(xml_cm[0])));
+    } else {
+        cm = new CalcMethod(new Map(), "");
     }
-    else {
-        cm = new control_js_1.CalcMethod(new Map(), "");
-    }
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 createCalcMethodInput(control, div, cm, idI, cm.value);
-            }
-            else {
+            } else {
                 control.removeTestMicroRates();
                 // Remove any existing CalcMethod select.
-                let e;
-                e = document.getElementById(id);
+                let e: HTMLDivElement;
+                e = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
             }
         }
-    }, "", control_js_1.CalcMethod.tagName);
+    }, "", CalcMethod.tagName);
+    div.appendChild(lwi);
     if (setCheck(lwi, xml_cm)) {
         createCalcMethodInput(control, div, cm, idI, cm.value);
     }
-    div.appendChild(lwi);
+    */
+    let div = (0, html_js_1.createFlexDiv)(level1);
+    controlsDiv.appendChild(div);
+    let xml = xml_control.getElementsByTagName(control_js_1.CalcMethod.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.CalcMethod.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let options = control_js_1.CalcMethod.options;
+    let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_input";
+    let cm;
+    let first = true;
+    if (xml.length == 1) {
+        let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
+        cm = new control_js_1.CalcMethod((0, xml_js_1.getAttributes)(xml[0]), value);
+        button.textContent = selected + selectedLoadedValueText;
+        first = createCalcMethodInput(control, options, div, cm, id, value, first);
+        button.classList.toggle('optionOff');
+    }
+    else {
+        cm = new control_js_1.CalcMethod(new Map(), selectAnotherOption);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
+    }
+    let valueString = cm.value;
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the CalcMethod already exists
+        if (!control.index.has(control_js_1.CalcMethod.tagName)) {
+            if (first) {
+                options.push(selectAnotherOption);
+            }
+            first = createCalcMethodInput(control, options, div, cm, id, valueString, first);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        }
+        else {
+            valueString = cm.value;
+            control.removeCalcMethod();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 /**
  * @param control The control.
@@ -2781,19 +3029,29 @@ function processCalcMethod(control, controlsDiv, xml_control) {
  * @param id The id.
  * @param valueString The value string.
  */
-function createCalcMethodInput(control, div, cm, id, valueString) {
-    let value = cm.value;
-    let select = (0, html_js_1.createSelectElement)(control_js_1.CalcMethod.options, value, id, boundary1);
+function createCalcMethodInput(control, options, div, cm, id, valueString, first) {
+    let select = (0, html_js_1.createSelectElement)(options, valueString, id, boundary1);
+    select.addEventListener('click', () => {
+        if (options[options.length - 1] == selectAnotherOption) {
+            options.pop();
+        }
+        let lastIndex = select.options.length - 1;
+        if (select.options[lastIndex].value == selectAnotherOption) {
+            select.remove(lastIndex);
+        }
+    });
     select.addEventListener('change', (event) => {
         if (event.target instanceof HTMLSelectElement) {
-            cm.value = event.target.value;
             cm.value = event.target.value;
             (0, html_js_1.resizeSelectElement)(event.target);
         }
     });
+    select.value = valueString;
+    console.log("Value: " + valueString);
     (0, html_js_1.resizeSelectElement)(select);
     div.appendChild(select);
     control.setCalcMethod(cm);
+    return false;
 }
 /**
  * Process "me:eigenvalues".
@@ -2802,9 +3060,52 @@ function createCalcMethodInput(control, div, cm, id, valueString) {
  * @param xml_control The xml control.
  */
 function processEigenvalues(control, controlsDiv, xml_control) {
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(Eigenvalues.tagName);
+    let eigenvalues: Eigenvalues;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        eigenvalues = new Eigenvalues(getAttributes(xml[0]), value);
+        control.setEigenvalues(eigenvalues);
+    } else {
+        valueString = "";
+        eigenvalues = new Eigenvalues(new Map(), NaN);
+    }
+    // Create a input checkbox for the Eigenvalues.
+    let id = Control.tagName + "_" + Eigenvalues.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + Eigenvalues.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+            } else {
+                control.removeEigenvalues();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", Eigenvalues.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createEigenValuesInput(control, div, eigenvalues, idI, valueString);
+    }
+    */
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.Eigenvalues.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.Eigenvalues.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_input";
     let eigenvalues;
     let valueString;
     if (xml.length == 1) {
@@ -2812,33 +3113,45 @@ function processEigenvalues(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         eigenvalues = new control_js_1.Eigenvalues((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setEigenvalues(eigenvalues);
+        button.textContent = selected + selectedLoadedValueText;
+        createEigenValuesInput(control, div, eigenvalues, id, valueString);
+        button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         eigenvalues = new control_js_1.Eigenvalues(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the Eigenvalues.
-    let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_input";
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                createEigenValuesInput(control, div, eigenvalues, idI, valueString);
-            }
-            else {
-                control.removeEigenvalues();
-                // Remove any existing div.
-                let e = document.getElementById(id);
-                if (e != null) {
-                    e.remove();
-                }
-            }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        //let idIB = Control.tagName + "_" + Eigenvalues.tagName + "_input_infoButton";
+        let infoButton = (0, html_js_1.createButton)(specifyNumberText, boundary1);
+        //infoButton.id = idIB;
+        div.appendChild(infoButton);
+        infoButton.addEventListener('click', (event) => {
+            div.removeChild(infoButton);
+        });
+        // Check if the Eigenvalues already exists
+        if (!control.index.has(control_js_1.Eigenvalues.tagName)) {
+            createEigenValuesInput(control, div, eigenvalues, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
         }
-    }, "", control_js_1.Eigenvalues.tagName);
-    div.appendChild(lwi);
-    if (setCheck(lwi, xml)) {
-        createEigenValuesInput(control, div, eigenvalues, idI, valueString);
-    }
+        else {
+            valueString = eigenvalues.value.toString();
+            control.removeEigenvalues();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 /**
  * @param control The control.
@@ -2867,9 +3180,52 @@ function createEigenValuesInput(control, div, eigenvalues, id, valueString) {
  * @param xml_control The xml control.
  */
 function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ShortestTimeOfInterest.tagName);
+    let stoi: ShortestTimeOfInterest;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        stoi = new ShortestTimeOfInterest(getAttributes(xml[0]), value);
+        control.setShortestTimeOfInterest(stoi);
+    } else {
+        valueString = "";
+        stoi = new ShortestTimeOfInterest(new Map(), NaN);
+    }
+    // Create a input checkbox for the ShortestTimeOfInterest.
+    let id = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + ShortestTimeOfInterest.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+            } else {
+                control.removeShortestTimeOfInterest();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", ShortestTimeOfInterest.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createShortestTimeOfInterest(control, div, stoi, idI, valueString);
+    }
+    */
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.ShortestTimeOfInterest.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.ShortestTimeOfInterest.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_input";
     let stoi;
     let valueString;
     if (xml.length == 1) {
@@ -2877,33 +3233,38 @@ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         stoi = new control_js_1.ShortestTimeOfInterest((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setShortestTimeOfInterest(stoi);
+        button.textContent = selected + selectedLoadedValueText;
+        createShortestTimeOfInterest(control, div, stoi, id, valueString);
+        button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         stoi = new control_js_1.ShortestTimeOfInterest(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the ShortestTimeOfInterest.
-    let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_input";
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                createShortestTimeOfInterest(control, div, stoi, id, valueString);
-            }
-            else {
-                control.removeShortestTimeOfInterest();
-                // Remove any existing div.
-                let e = document.getElementById(id);
-                if (e != null) {
-                    e.remove();
-                }
-            }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the ShortestTimeOfInterest already exists
+        if (!control.index.has(control_js_1.ShortestTimeOfInterest.tagName)) {
+            createShortestTimeOfInterest(control, div, stoi, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
         }
-    }, "", control_js_1.ShortestTimeOfInterest.tagName);
-    if (setCheck(lwi, xml)) {
-        createShortestTimeOfInterest(control, div, stoi, idI, valueString);
-    }
-    div.appendChild(lwi);
+        else {
+            valueString = stoi.value.toString();
+            control.removeShortestTimeOfInterest();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 /**
  * @param control The control.
@@ -2932,9 +3293,52 @@ function createShortestTimeOfInterest(control, div, stoi, id, valueString) {
  * @param xml_control The xml control.
  */
 function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
+    controlsDiv.appendChild(div);
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(MaximumEvolutionTime.tagName);
+    let met: MaximumEvolutionTime;
+    let valueString: string;
+    if (xml.length == 1) {
+        valueString = getNodeValue(getFirstChildNode(xml[0]));
+        let value: number = parseFloat(valueString);
+        met = new MaximumEvolutionTime(getAttributes(xml[0]), value);
+        control.setMaximumEvolutionTime(met);
+    } else {
+        valueString = "";
+        met = new MaximumEvolutionTime(new Map(), NaN);
+    }
+    // Create a input checkbox for the MaximumEvolutionTime.
+    let id = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_checkbox";
+    let idI = Control.tagName + "_" + MaximumEvolutionTime.tagName + "_input";
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
+        if (event.target instanceof HTMLInputElement) {
+            if (event.target.checked) {
+                createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+            } else {
+                control.removeMaximumEvolutionTime();
+                // Remove any existing div.
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
+                if (e != null) {
+                    e.remove();
+                }
+            }
+        }
+    }, "", MaximumEvolutionTime.tagName);
+    div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
+    }
+    */
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.MaximumEvolutionTime.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.MaximumEvolutionTime.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_input";
     let met;
     let valueString;
     if (xml.length == 1) {
@@ -2942,33 +3346,38 @@ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         met = new control_js_1.MaximumEvolutionTime((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setMaximumEvolutionTime(met);
+        button.textContent = selected + selectedLoadedValueText;
+        createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+        button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         met = new control_js_1.MaximumEvolutionTime(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the MaximumEvolutionTime.
-    let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_input";
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
-            }
-            else {
-                control.removeMaximumEvolutionTime();
-                // Remove any existing div.
-                let e = document.getElementById(id);
-                if (e != null) {
-                    e.remove();
-                }
-            }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the MaximumEvolutionTime already exists
+        if (!control.index.has(control_js_1.MaximumEvolutionTime.tagName)) {
+            createMaximumEvolutionTimeInput(control, div, met, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
         }
-    }, "", control_js_1.MaximumEvolutionTime.tagName);
-    if (setCheck(lwi, xml)) {
-        createMaximumEvolutionTimeInput(control, div, met, idI, valueString);
-    }
-    div.appendChild(lwi);
+        else {
+            valueString = met.value.toString();
+            control.removeMaximumEvolutionTime();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 /**
  * @param control The control.
@@ -3000,6 +3409,12 @@ function processAutomaticallySetMaxEne(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
     let asme;
     let valueString;
     if (xml.length == 1) {
@@ -3007,33 +3422,38 @@ function processAutomaticallySetMaxEne(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setAutomaticallySetMaxEne(asme);
+        button.textContent = selected + selectedLoadedValueText;
+        createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+        button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         asme = new control_js_1.AutomaticallySetMaxEne(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the AutomaticallySetMaxEne.
-    let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            if (event.target.checked) {
-                createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
-            }
-            else {
-                control.removeAutomaticallySetMaxEne();
-                // Remove any existing div.
-                let e = document.getElementById(id);
-                if (e != null) {
-                    e.remove();
-                }
-            }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the AutomaticallySetMaxEne already exists
+        if (!control.index.has(control_js_1.AutomaticallySetMaxEne.tagName)) {
+            createAutomaticallySetMaxEneInput(control, div, asme, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
         }
-    }, "", control_js_1.AutomaticallySetMaxEne.tagName);
-    if (setCheck(lwi, xml)) {
-        createAutomaticallySetMaxEneInput(control, div, asme, idI, valueString);
-    }
-    div.appendChild(lwi);
+        else {
+            valueString = asme.value.toString();
+            control.removeAutomaticallySetMaxEne();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
 }
 /**
  * @param control The control.
@@ -3065,6 +3485,12 @@ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.DiagramEnergyOffset.tagName);
+    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.DiagramEnergyOffset.tagName, "", boundary1, boundary1);
+    let button = lwb.querySelector('button');
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    div.appendChild(lwb);
+    let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_input";
     let deo;
     let valueString;
     if (xml.length == 1) {
@@ -3072,33 +3498,60 @@ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         deo = new control_js_1.DiagramEnergyOffset((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setDiagramEnergyOffset(deo);
+        button.textContent = selected + selectedLoadedValueText;
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         deo = new control_js_1.DiagramEnergyOffset(new Map(), NaN);
+        button.textContent = notSelected + unselectedText;
+        button.classList.toggle('optionOn');
     }
-    // Create a input checkbox for the DiagramEnergyOffset.
-    let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_checkbox";
-    let idI = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_input";
-    let lwi = (0, html_js_1.createLabelWithInput)("checkbox", id, boundary1, level0, (event) => {
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the DiagramEnergyOffset already exists
+        if (!control.index.has(control_js_1.DiagramEnergyOffset.tagName)) {
+            createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+            button.textContent = selected + selectedValueText;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        }
+        else {
+            valueString = deo.value.toString();
+            control.removeDiagramEnergyOffset();
+            // Remove any existing div.
+            let e = document.getElementById(id);
+            if (e != null) {
+                e.remove();
+            }
+            button.textContent = notSelected + unselectedText;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
+    /*
+    // Checkbox to toggle the DiagramEnergyOffset.
+    let lwi: HTMLDivElement = createLabelWithInput("checkbox", id, boundary1, level0, (event) => {
         if (event.target instanceof HTMLInputElement) {
             if (event.target.checked) {
                 createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
-            }
-            else {
+            } else {
                 control.removeDiagramEnergyOffset();
                 // Remove any existing div.
-                let e = document.getElementById(id);
+                let e: HTMLDivElement = document.getElementById(idI) as HTMLDivElement;
                 if (e != null) {
                     e.remove();
                 }
             }
         }
-    }, "", control_js_1.DiagramEnergyOffset.tagName);
-    if (setCheck(lwi, xml)) {
-        createDiagramEnergyOffsetInput(control, div, deo, idI, valueString);
-    }
+    }, "", DiagramEnergyOffset.tagName);
     div.appendChild(lwi);
+    if (setCheck(lwi, xml)) {
+        createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
+        lwi.textContent = "Hide Diagram Energy Offset";
+    }
+    */
 }
 /**
  * @param control The control.

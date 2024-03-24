@@ -16,23 +16,21 @@ export function remove(id: string) {
  * @param options The options for creating the collapsible div.
  * @returns A collapsible div.
  */
-export function getCollapsibleDiv({
-    content,
-    buttonLabel,
-    buttonFontSize = '',
-    boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
-    level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
-    contentDivId = '',
-    contentDivClassName = ''
-}: {
-    content: HTMLElement,
-    buttonLabel: string,
-    buttonFontSize?: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    contentDivId?: string,
-    contentDivClassName?: string
-}): HTMLDivElement {
+export function getCollapsibleDiv(
+    { content, buttonLabel, buttonFontSize = '',
+        boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
+        level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
+        contentDivId = '',
+        contentDivClassName = ''
+    }: {
+        content: HTMLElement,
+        buttonLabel: string,
+        buttonFontSize?: string,
+        boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+        level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+        contentDivId?: string,
+        contentDivClassName?: string
+    }): HTMLDivElement {
     let contentDiv: HTMLDivElement = createDiv(boundary);
     contentDiv.id = contentDivId;
     contentDiv.className = contentDivClassName;
@@ -93,10 +91,10 @@ function toggleCollapsible(this: HTMLElement): void {
 export function createLabelWithInput(type: string, id: string,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    func: (event: Event) => any, value: string, labelContent: string, inputFontsize?: string, labelFontsize?: string): HTMLDivElement {
+    func: (event: Event) => any, value: string, labelContent: string, inputFontsize?: string): HTMLDivElement {
     let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
     Object.assign(input.style, boundary);
-    let label: HTMLLabelElement = createLabel(labelContent, boundary, labelFontsize);
+    let label: HTMLLabelElement = createLabel(labelContent, boundary);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
     let container: HTMLDivElement = createFlexDiv(level);
@@ -130,15 +128,16 @@ export function createInputWithFunction(type: string, id: string, boundary: {
  * Create and return a HTMLInputElement.
  * @param type The input type (e.g. "text", "number", "checkbox").
  * @param id The id of the input.
+ * @param margin The margin for the HTMLInputElement.
  * @returns A HTMLInputElement.
  */
 export function createInput(type: string, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
     : HTMLInputElement {
     let input: HTMLInputElement = document.createElement('input');
     input.type = type;
     input.id = id;
-    Object.assign(input.style, boundary);
+    Object.assign(input.style, margin);
     input.classList.add('auto-width');
     return input;
 }
@@ -204,6 +203,7 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
+    selectElement.style.fontSize = '1em'; // Set the font size with a relative unit.
     selectElement.classList.add('auto-width');
     Object.assign(selectElement.style, margin);
     return selectElement;
@@ -252,6 +252,7 @@ export function createButton(textContent: string,
     let button: HTMLButtonElement = document.createElement('button');
     button.textContent = textContent;
     Object.assign(button.style, boundary);
+    button.style.fontSize = '1em'; // Set the font size with a relative unit.
     return button;
 }
 
@@ -267,7 +268,7 @@ export function createButton(textContent: string,
 export function createLabelWithButton(labeltext: string, textContent: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    ): HTMLDivElement {
+): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(divMargin);
     let label: HTMLLabelElement = createLabel(labeltext, componentMargin);
     Object.assign(label.style, componentMargin);
@@ -282,7 +283,7 @@ export function createLabelWithButton(labeltext: string, textContent: string,
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
 export function createDiv(
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string}): HTMLDivElement {
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = document.createElement("div");
     Object.assign(div.style, margin);
     return div;
@@ -310,14 +311,10 @@ export function createFlexDiv(
  * @returns An HTMLLabelElement with specified boundary.
  */
 export function createLabel(textContent: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string},
-    fontsize?: string): HTMLLabelElement {
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLLabelElement {
     let label: HTMLLabelElement = document.createElement("label");
     Object.assign(label.style, margin);
     label.textContent = textContent;
-    if (fontsize != undefined) {
-        //console.log("fontsize=" + fontsize);
-        label.style.fontSize = fontsize;
-    }
+    label.style.fontSize = '1em'; // Set the font size with a relative unit.
     return label;
 }

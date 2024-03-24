@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createButton = exports.createLabelWithSelectElement = exports.createSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
+exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelectElement = exports.createSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
 /**
  * Remove a top level element.
  * @param id The id of the element to remove.
@@ -77,10 +77,10 @@ function toggleCollapsible() {
  * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-function createLabelWithInput(type, id, boundary, level, func, value, labelContent, inputFontsize, labelFontsize) {
+function createLabelWithInput(type, id, boundary, level, func, value, labelContent, inputFontsize) {
     let input = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
     Object.assign(input.style, boundary);
-    let label = createLabel(labelContent, boundary, labelFontsize);
+    let label = createLabel(labelContent, boundary);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
     let container = createFlexDiv(level);
@@ -111,13 +111,15 @@ exports.createInputWithFunction = createInputWithFunction;
  * Create and return a HTMLInputElement.
  * @param type The input type (e.g. "text", "number", "checkbox").
  * @param id The id of the input.
+ * @param margin The margin for the HTMLInputElement.
  * @returns A HTMLInputElement.
  */
-function createInput(type, id, boundary) {
+function createInput(type, id, margin) {
     let input = document.createElement('input');
     input.type = type;
     input.id = id;
-    Object.assign(input.style, boundary);
+    Object.assign(input.style, margin);
+    input.classList.add('auto-width');
     return input;
 }
 exports.createInput = createInput;
@@ -167,9 +169,10 @@ exports.resizeSelectElement = resizeSelectElement;
  * @param options The options.
  * @param name The name.
  * @param id The id.
+ * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */
-function createSelectElement(options, name, id, boundary) {
+function createSelectElement(options, name, id, margin) {
     let selectElement = document.createElement('select');
     options.forEach(option => {
         selectElement.name = name;
@@ -179,7 +182,9 @@ function createSelectElement(options, name, id, boundary) {
         optionElement.text = option;
         selectElement.appendChild(optionElement);
     });
-    Object.assign(selectElement.style, boundary);
+    selectElement.style.fontSize = '1em'; // Set the font size with a relative unit.
+    selectElement.classList.add('auto-width');
+    Object.assign(selectElement.style, margin);
     return selectElement;
 }
 exports.createSelectElement = createSelectElement;
@@ -190,13 +195,13 @@ exports.createSelectElement = createSelectElement;
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
  * @param id The id.
- * @param boundary The boundary to go around the HTMLLabelElement and HTMLSelectElement.
- * @param level The level.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
+ * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-function createLabelWithSelectElement(textContent, options, name, id, boundary, level) {
-    let div = createDiv(level);
-    let label = createLabel(textContent, boundary);
+function createLabelWithSelectElement(textContent, options, name, id, componentMargin, divMargin) {
+    let div = createDiv(divMargin);
+    let label = createLabel(textContent, componentMargin);
     div.appendChild(label);
     let selectElement = document.createElement('select');
     div.appendChild(selectElement);
@@ -214,46 +219,55 @@ exports.createLabelWithSelectElement = createLabelWithSelectElement;
 /**
  * Create and return an HTMLButtonElement.
  *
- * @param textContent The text content of the button.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin
- * @returns An HTMLButtonElement with the textContent and specified boundary.
+ * @param textContent The text content of the HTMLButtonElement.
+ * @param margin The margin to go around the HTMLButtonElement.
+ * @returns An HTMLButtonElement with the textContent and specified margin.
  */
 function createButton(textContent, boundary) {
     let button = document.createElement('button');
     button.textContent = textContent;
     Object.assign(button.style, boundary);
+    button.style.fontSize = '1em'; // Set the font size with a relative unit.
     return button;
 }
 exports.createButton = createButton;
 /**
- * Create and return HTMLDivElement with a 'flex' display style.
+ * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
  *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * @param textContent The text content of the button.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ *
+ * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
+ */
+function createLabelWithButton(labeltext, textContent, componentMargin, divMargin) {
+    let div = createFlexDiv(divMargin);
+    let label = createLabel(labeltext, componentMargin);
+    Object.assign(label.style, componentMargin);
+    div.appendChild(label);
+    div.appendChild(createButton(textContent, componentMargin));
+    return div;
+}
+exports.createLabelWithButton = createLabelWithButton;
+/**
+ * Create and return HTMLDivElement.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-function createDiv(boundary) {
+function createDiv(margin) {
     let div = document.createElement("div");
-    Object.assign(div.style, boundary);
+    Object.assign(div.style, margin);
     return div;
 }
 exports.createDiv = createDiv;
 /**
  * Create and return HTMLDivElement with a 'flex' display style.
  *
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
+ * @param margin The margin to go around the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-function createFlexDiv(boundary) {
-    let div = createDiv(boundary);
+function createFlexDiv(margin) {
+    let div = createDiv(margin);
     div.style.display = 'flex';
     return div;
 }
@@ -261,22 +275,16 @@ exports.createFlexDiv = createFlexDiv;
 /**
  * Create and return HTMLLabelElement.
  *
- * @param textContent The text content of the label.
- * @param marginLeft The left margin.
- * @param marginTop The top margin.
- * @param marginBottom The bottom margin.
- * @param marginRight The right margin.
- * @param fontsize The font size.
+ * @param textContent The text content of the HTMLLabelElement.
+ * @param margin The margin to go around the HTMLLabelElement.
+ * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */
-function createLabel(textContent, boundary, fontsize) {
+function createLabel(textContent, margin) {
     let label = document.createElement("label");
-    Object.assign(label.style, boundary);
+    Object.assign(label.style, margin);
     label.textContent = textContent;
-    if (fontsize != undefined) {
-        //console.log("fontsize=" + fontsize);
-        label.style.fontSize = fontsize;
-    }
+    label.style.fontSize = '1em'; // Set the font size with a relative unit.
     return label;
 }
 exports.createLabel = createLabel;

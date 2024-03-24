@@ -48,6 +48,9 @@ import { Mesmer, MoleculeList, ReactionList, Title } from './mesmer.js';
  * The repository URL.
  */
 let gitHubRepositoryURL: string = "https://github.com/agdturner/mxg-pwa";
+let gitHubRepositoryURLa = document.createElement('a');
+gitHubRepositoryURLa.href = gitHubRepositoryURL;
+gitHubRepositoryURLa.textContent = gitHubRepositoryURL;
 
 /**
  * The font sizes for different levels of the GUI.
@@ -124,40 +127,115 @@ let reactions: Map<string, Reaction> = new Map();
  * Once the DOM is loaded, add a load button.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Create load button
-    let loadButton = createButton('Welcome to the MESMER XML GUI (MXG) - a program for editing and visualising \
-    Master Equation Solver for Multi Energy-well Reactions (MESMER) input/output XML format data. MXG is being developed \
-    in the first quarter of 2024 with funding from EPSRC. This version of MXG works by loading an existing MESMER XML file. \
-    Future versions may support crafting a MESMER XML file from scratch. Please read then action this button to select a \
-    MESMER XML file to load using the file selector that should appear. The text on this button will change to "Load". Action \
-    the "Load" button again to load a different MESMER XML file, but beware that any changes that you have made will be lost \
-    if you do not first save them. A button with the text "Save" will appear after loading a file. This "Save" button can be \
-    actioned to save a new MESMER XML file into your downloads folder/directory. This new file should reflect any changes made \
-    to the input XML using the GUI. The MESMER XML file loaded is expected to contain the following main parts: "me:title", \
-    "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". Upon loading a MESMER XML file \
-    the "me:title" will appear beside that label and below the "Load" and "Save" buttons. The title can be edited. Changes to \
-    the title will be stored and used to populate the "me:Title" tag in any output saved. The title will be used to compose \
-    the filename for output saved. For security reasons, files must be saved to the normal download location on your system. \
-    A presentation of the molecules, reactions, conditions, model parameters and control will appear below the title. The \
-    presentation uses buttons and a canvas. The canvas should depict a well diagram. This will be redrawn if the user modifies \
-    any "me:ZPE" property values of any molecules in the reactions. Many of the buttons will reveal other buttons and can then \
-    do the reverse to hide details. An attempt is being made to make this GUI user-friendly and accessible. The development is \
-    currently in an alpha release phase. The only users currently supported are those involved in alpha testing. A community \
-    release with ongoing support from the MESMER community is tentatively scheduled for the end of April 2024. The alpha \
-    versions are not recommended for general use, but please feel free to have a play. MXG is free and open source software \
-    based and free and open source software. The development is currently supported and hosted on GitHub with a repository that \
-    can be found via the following URL: ' + gitHubRepositoryURL + '. A link will appear as a button with the URL as \
-    text next to the "Save" button.', boundary1);
+    // Create a menu for the GUI.
+    let menuDiv: HTMLDivElement = document.getElementById('menu') as HTMLDivElement;
+    menuDiv.style.display = 'flex';
+    menuDiv.style.justifyContent = 'center';
+    menuDiv.style.margin = '5px';
+    menuDiv.style.padding = '5px';
+    menuDiv.style.border = '1px solid black';
+    menuDiv.style.backgroundColor = 'lightgrey';
+    // Create Load button.
+    let loadButton = createButton('Load', boundary1);
     loadButton.addEventListener('click', () => {
         load();
         loadButton.textContent = 'Load';
     });
-    // Append loadButton to menu and set the display style of the menu.
-    let menuDiv: HTMLDivElement = document.getElementById('menu') as HTMLDivElement;
-    if (menuDiv) {
-        menuDiv.appendChild(loadButton);
-    }
-    menuDiv.style.display = 'flex';
+    loadButton.style.fontSize = '1em'; // Set the font size with a relative unit.
+    menuDiv.appendChild(loadButton);
+    // Create Save button.
+    let saveButtonId = 'saveButtonId';
+    remove(saveButtonId);
+    let saveButton = createButton('Save', boundary1);
+    saveButton.id = saveButtonId;
+    saveButton.addEventListener('click', saveXML);
+    saveButton.style.fontSize = '1em'; // Set the font size with a relative unit.
+    menuDiv.appendChild(saveButton);
+    // Create GitHub repository URL button.
+    let gitHubRepositoryButtonId = 'gitHubRepositoryButtonId';
+    remove(gitHubRepositoryButtonId);
+    let gitHubRepositoryButton = createButton(gitHubRepositoryURL, boundary1);
+    gitHubRepositoryButton.id = gitHubRepositoryButtonId;
+    gitHubRepositoryButton.addEventListener('click', () => {
+        window.open(gitHubRepositoryURL, '_blank');
+    });
+    menuDiv.appendChild(gitHubRepositoryButton);
+    // Create style/theme option buttons.
+    // Create button to increase the font size.
+    let increaseFontSizeButton = createButton("Increase Font Size", boundary1);
+    increaseFontSizeButton.addEventListener('click', () => {
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (fontSize + 1) + 'px';
+    });
+    menuDiv.appendChild(increaseFontSizeButton);
+    // Create button to increase the font size.
+    let decreaseFontSizeButton = createButton("Decrease Font Size", boundary1);
+    decreaseFontSizeButton.addEventListener('click', () => {
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = (fontSize - 1) + 'px';
+    });
+    menuDiv.appendChild(decreaseFontSizeButton);
+    // Create div for welcome.
+    let welcomeDiv: HTMLDivElement = createDiv(boundary1);
+    document.body.appendChild(welcomeDiv);
+    // Create text for welcome.
+    let p1 = document.createElement('p');
+    welcomeDiv.appendChild(p1);
+    p1.textContent = 'Welcome to MXG - a Graphical User Interface (GUI) program for creating, editing and visualising Master \
+    Equation Solver for Multi Energy-well Reactions (MESMER) data.';
+    let p2 = document.createElement('p');
+    welcomeDiv.appendChild(p2);
+    p2.textContent = 'MXG development was initially funded by the UK Engineering and Physical Sciences Research Council (EPSRC).';
+    let p3 = document.createElement('p');
+    welcomeDiv.appendChild(p3);
+    p3.textContent = 'There should be a Load button located above this welcome message. Action the Load button and select a MESMER \
+    input file. MXG does not modify the file loaded. It reads the file and creates an internal representation of the data that can \
+    be modified. This internal representation can be saved using the Save button that should appear alongside the Load button. The \
+    Save button can be actioned to save a MESMER file to your Downloads. The saved file should have the same content as what was \
+    loaded except it will contain no comments, values are trimmed of white space, and number formats are standardised in a \
+    scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.';
+    let p6 = document.createElement('p');
+    welcomeDiv.appendChild(p6);
+    p6.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer" element: \
+    "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a child element is \
+    missing or there are multiple ones, an Error is thrown.';
+    let p7 = document.createElement('p');
+    welcomeDiv.appendChild(p7);
+    p7.textContent = 'Upon loading a MESMER file, an input containing the "me:title" value should appear along side a label. \
+    Users can change the value using the input. The "me:title" is used to compose the filename for data saved using the Save \
+    button. Characters that are unsuitable for filenames will be replaced with the underscore character "_" in the filename.';
+    let p8 = document.createElement('p');
+    welcomeDiv.appendChild(p8);
+    p8.textContent = '"moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" details are presented \
+    below the "me:title" in a series of buttons. A canvas should depict a well diagram for the reactions. The diagram should redraw \
+    if the "me:ZPE" property values of molecules in a listed reaction are changed. Below all this is a text representation of the \
+    file loaded.';
+    let p9 = document.createElement('p');
+    welcomeDiv.appendChild(p9);
+    p9.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain \
+    a triangular symbol which indicate a collapsed (triangle orientated with a point down: ▼) or expanded (triangle with a point \
+    up: ▲) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
+    let p10 = document.createElement('p');
+    welcomeDiv.appendChild(p10);
+    p10.textContent = 'MXG is designed to be user-friendly and accessible. The development is currently in an alpha release phase \
+    and is not recommended to be used by MESMER users. A community release with ongoing support from MESMER developers is \
+    tentatively scheduled for the end of April 2024. MXG is free and open source software based and free and open source software. \
+    The main development GitHub repository is:';
+    p10.appendChild(gitHubRepositoryURLa);
+    p10.textContent += 'Please feel free to explore the \
+    code and have a play with MXG.';
+    let p11 = document.createElement('p');
+    welcomeDiv.appendChild(p11);
+    p11.textContent = 'Alongside the Repository Link Button there are buttons to increase or decrease the font size. It is expected \
+    that future releases will have styling themes selectable to allow for dark mode and to support users that do not have normal \
+    colour vision.';
+    let p12 = document.createElement('p');
+    welcomeDiv.appendChild(p12);
+    p12.textContent = 'MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software \
+    delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended \
+    to work on any platform with a standards-compliant browser, including desktop and mobile devices. PWA installation varies by \
+    Web browser/device. Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer \
+    to that README for further details.';
 });
 
 /**
@@ -228,24 +306,6 @@ function load() {
             let blob = file.slice(start, start + chunkSize);
             reader.readAsText(blob);
             start += chunkSize;
-            // Create a menu.
-            let menuDiv: HTMLDivElement = document.getElementById('menu') as HTMLDivElement;
-            // Create save button.
-            let saveButtonId = 'saveButtonId';
-            remove(saveButtonId);
-            let saveButton = createButton('Save', boundary1);
-            saveButton.id = saveButtonId;
-            saveButton.addEventListener('click', saveXML);
-            menuDiv.appendChild(saveButton);
-            // Create GitHub repository URL button.
-            let urlButtonId = 'urlButtonId';
-            remove(urlButtonId);
-            let urlButton = createButton("Open a new Web browser loading the MXG GitHub repository: " + gitHubRepositoryURL, boundary1);
-            urlButton.id = urlButtonId;
-            urlButton.addEventListener('click', () => {
-                window.open(gitHubRepositoryURL, '_blank');
-            });
-            menuDiv.appendChild(urlButton);
         }
     };
     inputElement.click();

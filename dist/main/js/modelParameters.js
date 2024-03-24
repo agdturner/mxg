@@ -81,6 +81,13 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
      * The index.
      */
     index;
+    /**
+     * @param attributes The attributes.
+     * @param grainSize The grain size.
+     * @param automaticallySetMaxEne The automatically set max energy.
+     * @param energyAboveTheTopHill The energy above the top hill.
+     * @param maxTemperature The max temperature.
+     */
     constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature) {
         super(attributes, ModelParameters.tagName);
         this.index = new Map();
@@ -124,6 +131,16 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Removes the grain size.
+     */
+    removeGrainSize() {
+        let i = this.index.get(GrainSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(GrainSize.tagName);
+        }
+    }
+    /**
      * @returns The automatically set max energy or undefined.
      */
     getAutomaticallySetMaxEne() {
@@ -143,6 +160,16 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
         else {
             this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
             this.addNode(automaticallySetMaxEne);
+        }
+    }
+    /**
+     * Removes the automatically set max energy.
+     */
+    removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
         }
     }
     /**
@@ -168,6 +195,16 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * Removes the energy above the top hill.
+     */
+    removeEnergyAboveTheTopHill() {
+        let i = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(EnergyAboveTheTopHill.tagName);
+        }
+    }
+    /**
      * @returns The max temperature or undefined.
      */
     getMaxTemperature() {
@@ -187,6 +224,16 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
         else {
             this.index.set(MaxTemperature.tagName, this.nodes.size);
             this.addNode(maxTemperature);
+        }
+    }
+    /**
+     * Removes the max temperature.
+     */
+    removeMaxTemperature() {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaxTemperature.tagName);
         }
     }
 }
