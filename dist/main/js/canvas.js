@@ -8,12 +8,12 @@ exports.getTextWidth = exports.getTextHeight = exports.writeText = exports.drawL
  * @param strokewidth The width of the line.
  * @param x0 The start x-coordinate of the line.
  * @param y0 The start y-coordinate of the line. Also used for an energy label.
- * @param {number} x1 The end x-coordinate of the line.
- * @param {number} y1 The end y-coordinate of the line.
- * @param {string} font The font to use.
- * @param {number} th The height of the text in pixels.
- * @param {string} label The label.
- * @param {string} energyString The energy.
+ * @param x1 The end x-coordinate of the line.
+ * @param y1 The end y-coordinate of the line.
+ * @param font The font to use.
+ * @param th The height of the text in pixels.
+ * @param label The label.
+ * @param energyString The energy.
  */
 function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, label, energyString) {
     let x_centre = x0 + ((x1 - x0) / 2);
@@ -23,10 +23,10 @@ function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, labe
 }
 exports.drawLevel = drawLevel;
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the start x-coordinate of.
- * @param {string} font The font to use.
- * @param {number} x_centre The x-coordinate of the centre of the text.
+ * @param ctx The context to use.
+ * @param text The text to get the start x-coordinate of.
+ * @paramfont The font to use.
+ * @param x_centre The x-coordinate of the centre of the text.
  * @returns The x-coordinate of the start of the text.
  */
 function getTextStartX(ctx, text, font, x_centre) {
@@ -35,12 +35,12 @@ function getTextStartX(ctx, text, font, x_centre) {
 }
 /**
  * Draw a line (segment) on the canvas.
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} strokeStyle The name of a style to use for the line.
- * @param {Integer} x1 The start x-coordinate of the line.
- * @param {Integer} y1 The start y-coordinate of the line.
- * @param {Integer} x2 The end x-coordinate of the line.
- * @param {Integer} y2 The end y-coordinate of the line.
+ * @param ctx The context to use.
+ * @param strokeStyle The name of a style to use for the line.
+ * @param x1 The start x-coordinate of the line.
+ * @param y1 The start y-coordinate of the line.
+ * @param x2 The end x-coordinate of the line.
+ * @param y2 The end y-coordinate of the line.
  */
 function drawLine(ctx, strokeStyle, strokewidth, x1, y1, x2, y2) {
     ctx.beginPath();
@@ -53,12 +53,12 @@ function drawLine(ctx, strokeStyle, strokewidth, x1, y1, x2, y2) {
 exports.drawLine = drawLine;
 /**
  * Writes text to the canvas. (It is probably better to write all the labels in one go.)
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to write.
- * @param {string} font The font to use.
- * @param {string} colour The colour of the text.
- * @param {number} x The horizontal position of the text.
- * @param {number} y The vertical position of the text.
+ * @param ctx The context to use.
+ * @param text The text to write.
+ * @param font The font to use.
+ * @param colour The colour of the text.
+ * @param x The horizontal position of the text.
+ * @param y The vertical position of the text.
  */
 function writeText(ctx, text, font, colour, x, y) {
     // Save the context (to restore after).
@@ -78,10 +78,10 @@ function writeText(ctx, text, font, colour, x, y) {
 }
 exports.writeText = writeText;
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the height of.
- * @param {string} font The font to use.
- * @returns {number} The height of the text in pixels.
+ * @param ctx The context to use.
+ * @param text The text to get the height of.
+ * @param font The font to use.
+ * @returns The height of the text in pixels.
  */
 function getTextHeight(ctx, text, font) {
     ctx.font = font;
@@ -90,10 +90,10 @@ function getTextHeight(ctx, text, font) {
 }
 exports.getTextHeight = getTextHeight;
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the width of.
- * @param {string} font The font to use.
- * @returns {number} The width of the text in pixels.
+ * @param ctx The context to use.
+ * @param text The text to get the width of.
+ * @param font The font to use.
+ * @returns The width of the text in pixels.
  */
 function getTextWidth(ctx, text, font) {
     ctx.font = font;

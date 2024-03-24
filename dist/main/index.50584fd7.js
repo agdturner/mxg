@@ -603,11 +603,17 @@ var _modelParametersJs = require("./modelParameters.js");
 var _controlJs = require("./control.js");
 var _mesmerJs = require("./mesmer.js");
 /**
- * The repository URL.
- */ let gitHubRepositoryURL = "https://github.com/agdturner/mxg-pwa";
-let gitHubRepositoryURLa = document.createElement("a");
-gitHubRepositoryURLa.href = gitHubRepositoryURL;
-gitHubRepositoryURLa.textContent = gitHubRepositoryURL;
+ * MXG.
+ */ let mxg_url = "https://github.com/agdturner/mxg-pwa";
+let mxg_a = document.createElement("a");
+mxg_a.href = mxg_url;
+mxg_a.textContent = mxg_url;
+/**
+ * MESMER.
+ */ let mesmer_url = "https://sourceforge.net/projects/mesmer/";
+let memser_a = document.createElement("a");
+memser_a.href = mesmer_url;
+memser_a.textContent = mesmer_url;
 /**
  * The font sizes for different levels of the GUI.
  */ let fontSize1 = "1.5em";
@@ -697,6 +703,9 @@ let specifyNumberText = "Click then specify a number in the input that will appe
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */ let reactions = new Map();
 /**
+ * The reactions diagram id.
+ */ let reactionsDiagramId = "reactionsDiagram";
+/**
  * Once the DOM is loaded, add a load button.
  */ document.addEventListener("DOMContentLoaded", ()=>{
     // Create a menu for the GUI.
@@ -715,6 +724,35 @@ let specifyNumberText = "Click then specify a number in the input that will appe
     });
     loadButton.style.fontSize = "1em"; // Set the font size with a relative unit.
     menuDiv.appendChild(loadButton);
+    /*
+    // Create GitHub repository URL button.
+    let gitHubRepositoryButtonId = 'gitHubRepositoryButtonId';
+    remove(gitHubRepositoryButtonId);
+    let gitHubRepositoryButton = createButton(gitHubRepositoryURL, boundary1);
+    gitHubRepositoryButton.id = gitHubRepositoryButtonId;
+    gitHubRepositoryButton.addEventListener('click', () => {
+        window.open(gitHubRepositoryURL, '_blank');
+    });
+    menuDiv.appendChild(gitHubRepositoryButton);
+    */ // Create style/theme option buttons.
+    // Create button to increase the font size.
+    let increaseFontSizeButton = (0, _htmlJs.createButton)("Increase Font Size", boundary1);
+    increaseFontSizeButton.addEventListener("click", ()=>{
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = fontSize + 1 + "px";
+        // Redraw the reactions diagram.
+        displayReactionsDiagram(reactionsDiagramId);
+    });
+    menuDiv.appendChild(increaseFontSizeButton);
+    // Create button to increase the font size.
+    let decreaseFontSizeButton = (0, _htmlJs.createButton)("Decrease Font Size", boundary1);
+    decreaseFontSizeButton.addEventListener("click", ()=>{
+        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
+        document.body.style.fontSize = fontSize - 1 + "px";
+        // Redraw the reactions diagram.
+        displayReactionsDiagram(reactionsDiagramId);
+    });
+    menuDiv.appendChild(decreaseFontSizeButton);
     // Create Save button.
     let saveButtonId = "saveButtonId";
     (0, _htmlJs.remove)(saveButtonId);
@@ -723,66 +761,45 @@ let specifyNumberText = "Click then specify a number in the input that will appe
     saveButton.addEventListener("click", saveXML);
     saveButton.style.fontSize = "1em"; // Set the font size with a relative unit.
     menuDiv.appendChild(saveButton);
-    // Create GitHub repository URL button.
-    let gitHubRepositoryButtonId = "gitHubRepositoryButtonId";
-    (0, _htmlJs.remove)(gitHubRepositoryButtonId);
-    let gitHubRepositoryButton = (0, _htmlJs.createButton)(gitHubRepositoryURL, boundary1);
-    gitHubRepositoryButton.id = gitHubRepositoryButtonId;
-    gitHubRepositoryButton.addEventListener("click", ()=>{
-        window.open(gitHubRepositoryURL, "_blank");
-    });
-    menuDiv.appendChild(gitHubRepositoryButton);
-    // Create style/theme option buttons.
-    // Create button to increase the font size.
-    let increaseFontSizeButton = (0, _htmlJs.createButton)("Increase Font Size", boundary1);
-    increaseFontSizeButton.addEventListener("click", ()=>{
-        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
-        document.body.style.fontSize = fontSize + 1 + "px";
-    });
-    menuDiv.appendChild(increaseFontSizeButton);
-    // Create button to increase the font size.
-    let decreaseFontSizeButton = (0, _htmlJs.createButton)("Decrease Font Size", boundary1);
-    decreaseFontSizeButton.addEventListener("click", ()=>{
-        let fontSize = parseFloat(getComputedStyle(document.body).fontSize);
-        document.body.style.fontSize = fontSize - 1 + "px";
-    });
-    menuDiv.appendChild(decreaseFontSizeButton);
-    // Create div for welcome.
     let welcomeDiv = (0, _htmlJs.createDiv)(boundary1);
-    document.body.appendChild(welcomeDiv);
     // Create text for welcome.
     let p1 = document.createElement("p");
     welcomeDiv.appendChild(p1);
-    p1.textContent = "Welcome to MXG - a Graphical User Interface (GUI) program for creating, editing and visualising Master     Equation Solver for Multi Energy-well Reactions (MESMER) data.";
+    p1.textContent = "Welcome to MXG - a Graphical User Interface (GUI) program to assist MEMSER users in creating, editing     and visualising MESMER data. MESMER is the Master Equation Solver for Multi Energy-well Reactions, details can be found     at: ";
+    p1.appendChild(memser_a);
+    p1.style.alignContent = "center";
     let p2 = document.createElement("p");
     welcomeDiv.appendChild(p2);
-    p2.textContent = "MXG development was initially funded by the UK Engineering and Physical Sciences Research Council (EPSRC).";
+    p2.textContent = "MXG development is being funded by the UK Engineering and Physical Sciences Research Council (EPSRC).";
     let p3 = document.createElement("p");
     welcomeDiv.appendChild(p3);
-    p3.textContent = "There should be a Load button located above this welcome message. Action the Load button and select a MESMER     input file. MXG does not modify the file loaded. It reads the file and creates an internal representation of the data that can     be modified. This internal representation can be saved using the Save button that should appear alongside the Load button. The     Save button can be actioned to save a MESMER file to your Downloads. The saved file should have the same content as what was     loaded except it will contain no comments, values are trimmed of white space, and number formats are standardised in a     scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.";
+    p3.textContent = "There is a menu above containing buttons. Use the Load button to select a MESMER file to load (the file         will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use         the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it         will contain no comments, values will be trimmed of white space, and number formats will be in a standard         scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.";
+    let p4 = document.createElement("p");
+    welcomeDiv.appendChild(p4);
+    p4.textContent = "MXG is designed to be user-friendly and accessible. Between the Load and Save buttons are buttons to         increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to         support users without normal colour vision.The development is in an alpha release phase, is undergoing testing, and         is not recommended for general use. A community release with ongoing support from MESMER developers is scheduled for         the end of April 2024. MXG is free and open source software based and free and open source software. The main         development GitHub repository is: ";
+    p4.appendChild(mxg_a);
+    let p5 = document.createElement("p");
+    p5.textContent += "Please feel free to explore the code and have a play with MXG.";
+    welcomeDiv.appendChild(p5);
     let p6 = document.createElement("p");
     welcomeDiv.appendChild(p6);
-    p6.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer" element:     "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a child element is     missing or there are multiple ones, an Error is thrown.';
+    p6.textContent = "MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software     that works on any platform with a standards-compliant Web browser. PWA installation varies by Web browser/device.     Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer to that     README for further details. Below the menu is a section for instructions on how to use MXG.";
     let p7 = document.createElement("p");
     welcomeDiv.appendChild(p7);
-    p7.textContent = 'Upon loading a MESMER file, an input containing the "me:title" value should appear along side a label.     Users can change the value using the input. The "me:title" is used to compose the filename for data saved using the Save     button. Characters that are unsuitable for filenames will be replaced with the underscore character "_" in the filename.';
+    p7.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer"     element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a     child element is missing or there are multiple of the same, an Error is currently thrown. MXG should support files     loaded with multiple "me:contol" sections soon...';
+    document.body.appendChild(welcomeDiv);
+    // Create div for instructions.
+    let instructionsDiv = (0, _htmlJs.createDiv)(boundary1);
+    document.body.appendChild(instructionsDiv);
     let p8 = document.createElement("p");
-    welcomeDiv.appendChild(p8);
-    p8.textContent = '"moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" details are presented     below the "me:title" in a series of buttons. A canvas should depict a well diagram for the reactions. The diagram should redraw     if the "me:ZPE" property values of molecules in a listed reaction are changed. Below all this is a text representation of the     file loaded.';
+    instructionsDiv.appendChild(p8);
+    p8.textContent = 'Upon loading a MESMER file, an input containing the "me:title" value should appear along side a label.         The value can be changed using the input. The "me:title" value is used to compose the filename for data saved using         the Save button. Characters that are unsuitable for filenames will be replaced with the underscore character "_" in         the filename.';
     let p9 = document.createElement("p");
-    welcomeDiv.appendChild(p9);
-    p9.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain     a triangular symbol which indicate a collapsed (triangle orientated with a point down: \u25BC) or expanded (triangle with a point     up: \u25B2) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
+    instructionsDiv.appendChild(p9);
+    p9.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" details         are presented below the "me:title" in a series of buttons. A canvas depicts a well diagram for the reactions. The         diagram redraws if an "me:ZPE" property value of a molecule a listed reaction are changed. Below all this is a text         representation of the file loaded.';
     let p10 = document.createElement("p");
-    welcomeDiv.appendChild(p10);
-    p10.textContent = "MXG is designed to be user-friendly and accessible. The development is currently in an alpha release phase     and is not recommended to be used by MESMER users. A community release with ongoing support from MESMER developers is     tentatively scheduled for the end of April 2024. MXG is free and open source software based and free and open source software.     The main development GitHub repository is:";
-    p10.appendChild(gitHubRepositoryURLa);
-    p10.textContent += "Please feel free to explore the     code and have a play with MXG.";
-    let p11 = document.createElement("p");
-    welcomeDiv.appendChild(p11);
-    p11.textContent = "Alongside the Repository Link Button there are buttons to increase or decrease the font size. It is expected     that future releases will have styling themes selectable to allow for dark mode and to support users that do not have normal     colour vision.";
-    let p12 = document.createElement("p");
-    welcomeDiv.appendChild(p12);
-    p12.textContent = "MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software     delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended     to work on any platform with a standards-compliant browser, including desktop and mobile devices. PWA installation varies by     Web browser/device. Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer     to that README for further details.";
+    instructionsDiv.appendChild(p10);
+    p10.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain         a triangular symbol which indicate a collapsed (triangle orientated with a point down: \u25BC) or expanded (triangle with a point         up: \u25B2) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
 });
 /**
  * Prompts the user for a MESMER XML file, initiates the parsing of the chosen file, and 
@@ -871,19 +888,16 @@ let specifyNumberText = "Click then specify a number in the input that will appe
         // Remove any existing titleDiv.
         (0, _htmlJs.remove)(titleId);
         // Create input element.
-        let titleDiv = (0, _htmlJs.createLabelWithInput)("text", titleId + "Input", boundary1, level0, (event)=>{
+        let titleDiv = (0, _htmlJs.createDiv)(boundary1);
+        let lwi = (0, _htmlJs.createLabelWithInput)("text", titleId + "Input", boundary1, level0, (event)=>{
             if (event.target instanceof HTMLInputElement) {
                 titleNode.value = event.target.value;
                 console.log(titleNode.tagName + " changed to " + titleNode.value);
                 (0, _htmlJs.resizeInputElement)(event.target);
             }
         }, titleString, (0, _mesmerJs.Title).tagName, fontSize1);
+        titleDiv.appendChild(lwi);
         titleDiv.id = titleId;
-        //let input: HTMLInputElement = titleDiv.querySelector('input') as HTMLInputElement;
-        //input.style.fontSize = fontSize1;
-        //input.value = titleString;
-        //resizeInputElement(input, 0);
-        // Insert.
         titleElement.parentNode?.insertBefore(titleDiv, titleElement);
     }
     // Molecules.
@@ -893,17 +907,27 @@ let specifyNumberText = "Click then specify a number in the input that will appe
     (0, _htmlJs.remove)(moleculesDivId);
     if (moleculesElement == null) ;
     else {
-        let moleculesDiv = processMoleculeList(xml);
-        moleculesDiv.id = moleculesDivId;
-        moleculesElement.appendChild((0, _htmlJs.getCollapsibleDiv)({
-            content: moleculesDiv,
+        let moleculesDiv = (0, _htmlJs.createFlexDiv)(boundary1);
+        moleculesElement.appendChild(moleculesDiv);
+        let moleculeListDiv = processMoleculeList(xml);
+        moleculeListDiv.id = "moleculesListDivId";
+        moleculeListDiv.style.maxWidth = "50vw"; // Add this line
+        moleculesDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: moleculeListDiv,
             buttonLabel: "Molecules",
             buttonFontSize: fontSize1,
             boundary: boundary1,
             level: level0,
-            contentDivId: moleculesDivId
+            contentDivId: moleculeListDiv.id
         }));
-        mesmer.setMoleculeList(new (0, _mesmerJs.MoleculeList)((0, _xmlJs.getAttributes)(moleculesDiv), Array.from(molecules.values())));
+        mesmer.setMoleculeList(new (0, _mesmerJs.MoleculeList)((0, _xmlJs.getAttributes)(moleculeListDiv), Array.from(molecules.values())));
+        // Add the reactions diagram canvas. 
+        let reactionsDiagramDiv = (0, _htmlJs.createDiv)(boundary1);
+        moleculesDiv.append(reactionsDiagramDiv);
+        // Create a new canvas.
+        let canvas = document.createElement("canvas");
+        canvas.id = reactionsDiagramId;
+        reactionsDiagramDiv.appendChild(canvas);
     }
     // Reactions.
     let reactionsElement = document.getElementById("reactions");
@@ -925,7 +949,7 @@ let specifyNumberText = "Click then specify a number in the input that will appe
         mesmer.setReactionList(new (0, _mesmerJs.ReactionList)((0, _xmlJs.getAttributes)(reactionsDiv), Array.from(reactions.values())));
     }
     // Display reaction diagram. 
-    displayReactionsDiagram();
+    displayReactionsDiagram(reactionsDiagramId);
     // Conditions
     let conditionsElement = document.getElementById("conditions");
     let conditionsDivId = "conditionsDivId";
@@ -989,7 +1013,7 @@ let specifyNumberText = "Click then specify a number in the input that will appe
  * @returns The HTMLDivElement.
  */ function processMoleculeList(xml) {
     // Create div to contain the molecules list.
-    let moleculeListDiv = document.createElement("div");
+    let moleculeListDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "moleculeList" element.
     let xml_moleculeList = (0, _xmlJs.getSingularElement)(xml, (0, _mesmerJs.MoleculeList).tagName);
     // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
@@ -1434,7 +1458,7 @@ let specifyNumberText = "Click then specify a number in the input that will appe
                 if (value < minMoleculeEnergy) minMoleculeEnergy = value;
                 if (value > maxMoleculeEnergy) maxMoleculeEnergy = value;
                 // Update the molecule energy diagram.
-                displayReactionsDiagram();
+                displayReactionsDiagram(reactionsDiagramId);
             }
         });
         addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
@@ -1641,7 +1665,7 @@ window.set = setNumberNode;
  * @param {XMLDocument} xml The XML document.
  */ function processReactionList(xml) {
     // Create div to contain the reaction list.
-    let reactionListDiv = (0, _htmlJs.createFlexDiv)(boundary1);
+    let reactionListDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "reactionList" element.
     let xml_reactionList = (0, _xmlJs.getSingularElement)(xml, (0, _mesmerJs.ReactionList).tagName);
     // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
@@ -2024,7 +2048,7 @@ window.set = setNumberNode;
  */ function processConditions(xml) {
     console.log((0, _conditionsJs.Conditions).tagName);
     // Create div to contain the conditions.
-    let conditionsDiv = document.createElement("div");
+    let conditionsDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "moleculeList" element.
     let xml_conditions = (0, _xmlJs.getSingularElement)(xml, (0, _conditionsJs.Conditions).tagName);
     let conditions = new (0, _conditionsJs.Conditions)((0, _xmlJs.getAttributes)(xml_conditions));
@@ -2498,7 +2522,7 @@ window.set = setNumberNode;
  * @param xml The XML document.
  */ function processModelParameters(xml) {
     console.log((0, _modelParametersJs.ModelParameters).tagName);
-    let modelParametersDiv = document.createElement("div");
+    let modelParametersDiv = (0, _htmlJs.createDiv)(boundary1);
     let xml_modelParameters = (0, _xmlJs.getSingularElement)(xml, (0, _modelParametersJs.ModelParameters).tagName);
     let modelParameters = new (0, _modelParametersJs.ModelParameters)((0, _xmlJs.getAttributes)(xml_modelParameters));
     mesmer.setModelParameters(modelParameters);
@@ -2670,7 +2694,7 @@ window.set = setNumberNode;
  */ function processControl(xml) {
     console.log((0, _controlJs.Control).tagName);
     // Create div to contain the controls.
-    let controlsDiv = document.createElement("div");
+    let controlsDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "me:control" element.
     let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
     let control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
@@ -3763,7 +3787,7 @@ window.set = setNumberNode;
  * Create a diagram.
  * @param canvas The canvas.
  * @param dark True for dark mode.
- * @param font The font to use.
+ * @param fontSize The fontSize to use.
  * @param lw The line width of reactants, transition states and products.
  * @param lwc The line width color to use.
  */ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
@@ -3779,9 +3803,11 @@ window.set = setNumberNode;
     let background = "black";
     let foreground = "white";
     const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas.
     //ctx.fillStyle = background;
+    ctx.font = font;
     // Get text height for font size.
-    let th = (0, _canvasJs.getTextHeight)(ctx, "Aj", font);
+    let th = (0, _canvasJs.getTextHeight)(ctx, "Aj", ctx.font);
     //console.log("th=" + th);
     // Go through reactions:
     // 1. Create sets of reactants, end products, intermediate products and transition states.
@@ -4000,29 +4026,25 @@ window.set = setNumberNode;
 }
 /**
  * Display reactions diagram.
- */ function displayReactionsDiagram() {
+ */ function displayReactionsDiagram(id) {
     if (reactions.size > 0) {
-        let reactionsDiv = document.getElementById("reactions");
-        let id = "reactionsDiagram";
-        // Remove any existing canvas.
-        let existingCanvas = document.getElementById(id);
-        if (existingCanvas != null) existingCanvas.remove();
-        // Create a new canvas.
-        let canvas = document.createElement("canvas");
-        canvas.id = id;
-        canvas.width = 800;
-        canvas.height = 400;
-        canvas.style.border = "1px solid black";
-        let font = "14px Arial";
-        let dark = true;
-        let lw = 4;
-        let lwc = 2;
+        let canvas = document.getElementById(id);
         if (canvas != null) {
-            canvas.style.display = "block";
-            drawReactionDiagram(canvas, dark, font, lw, lwc);
+            canvas.width = 800;
+            canvas.height = 400;
+            canvas.style.border = "1px solid black";
+            let font = document.body.style.fontSize + " SensSerif";
+            let dark = true;
+            let lw = 4;
+            let lwc = 2;
+            if (canvas != null) {
+                canvas.style.display = "block";
+                canvas.id = id;
+                canvas.style.margin = "auto";
+                canvas.style.marginRight = "10px";
+                drawReactionDiagram(canvas, dark, font, lw, lwc);
+            }
         }
-        // Add the canvas to the document.
-        reactionsDiv.appendChild(canvas);
     }
 }
 /**
@@ -6684,44 +6706,44 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
  * @param strokewidth The width of the line.
  * @param x0 The start x-coordinate of the line.
  * @param y0 The start y-coordinate of the line. Also used for an energy label.
- * @param {number} x1 The end x-coordinate of the line.
- * @param {number} y1 The end y-coordinate of the line.
- * @param {string} font The font to use.
- * @param {number} th The height of the text in pixels.
- * @param {string} label The label.
- * @param {string} energyString The energy.
+ * @param x1 The end x-coordinate of the line.
+ * @param y1 The end y-coordinate of the line.
+ * @param font The font to use.
+ * @param th The height of the text in pixels.
+ * @param label The label.
+ * @param energyString The energy.
  */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "drawLevel", ()=>drawLevel);
 /**
  * Draw a line (segment) on the canvas.
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} strokeStyle The name of a style to use for the line.
- * @param {Integer} x1 The start x-coordinate of the line.
- * @param {Integer} y1 The start y-coordinate of the line.
- * @param {Integer} x2 The end x-coordinate of the line.
- * @param {Integer} y2 The end y-coordinate of the line.
+ * @param ctx The context to use.
+ * @param strokeStyle The name of a style to use for the line.
+ * @param x1 The start x-coordinate of the line.
+ * @param y1 The start y-coordinate of the line.
+ * @param x2 The end x-coordinate of the line.
+ * @param y2 The end y-coordinate of the line.
  */ parcelHelpers.export(exports, "drawLine", ()=>drawLine);
 /**
  * Writes text to the canvas. (It is probably better to write all the labels in one go.)
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to write.
- * @param {string} font The font to use.
- * @param {string} colour The colour of the text.
- * @param {number} x The horizontal position of the text.
- * @param {number} y The vertical position of the text.
+ * @param ctx The context to use.
+ * @param text The text to write.
+ * @param font The font to use.
+ * @param colour The colour of the text.
+ * @param x The horizontal position of the text.
+ * @param y The vertical position of the text.
  */ parcelHelpers.export(exports, "writeText", ()=>writeText);
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the height of.
- * @param {string} font The font to use.
- * @returns {number} The height of the text in pixels.
+ * @param ctx The context to use.
+ * @param text The text to get the height of.
+ * @param font The font to use.
+ * @returns The height of the text in pixels.
  */ parcelHelpers.export(exports, "getTextHeight", ()=>getTextHeight);
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the width of.
- * @param {string} font The font to use.
- * @returns {number} The width of the text in pixels.
+ * @param ctx The context to use.
+ * @param text The text to get the width of.
+ * @param font The font to use.
+ * @returns The width of the text in pixels.
  */ parcelHelpers.export(exports, "getTextWidth", ()=>getTextWidth);
 function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, label, energyString) {
     let x_centre = x0 + (x1 - x0) / 2;
@@ -6730,10 +6752,10 @@ function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, labe
     drawLine(ctx, strokeStyle, strokewidth, x0, y0, x1, y1);
 }
 /**
- * @param {CanvasRenderingContext2D} ctx The context to use.
- * @param {string} text The text to get the start x-coordinate of.
- * @param {string} font The font to use.  
- * @param {number} x_centre The x-coordinate of the centre of the text.
+ * @param ctx The context to use.
+ * @param text The text to get the start x-coordinate of.
+ * @paramfont The font to use.  
+ * @param x_centre The x-coordinate of the centre of the text.
  * @returns The x-coordinate of the start of the text.
  */ function getTextStartX(ctx, text, font, x_centre) {
     let tw = getTextWidth(ctx, text, font);
