@@ -64,13 +64,16 @@ let addSymbol = "\uFF0B";
 let removeString = "remove";
 let removeSymbol = "\u2715";
 let s_Add_from_spreadsheet = "Add from spreadsheet";
-let selected = "\u2713 [SELECTED] Action to unselect.";
-let notSelected = "\u2717 [NOT SELECTED] Action to select.";
-let selectedLoadedValueText = " Change the specification if desired:";
-let unselectedText = " Then specify using input(s) that appear.";
-let selectedValueText = " Or specify using input(s):";
+// Selected and deselected symbology.
+let selected = " \u2713";
+let deselected = " \u2717";
+let selectedLoadedText1 = ", change using input:";
+let selectedLoadedText2 = ", change using inputs:";
+let deselectedText1 = ", then specify using input.";
+let deselectedText2 = ", then specify using inputs.";
+//let specifyText1: string = ". Click then specify using the input.";
+//let specifyText2: string = ". Click then specify using the inputs.";
 let selectAnotherOption = "Action/select another option...";
-let specifyNumberText = "Click then specify a number in the input that will appear.";
 let dark;
 /*
 const db = await openDB('my-db', 1, {
@@ -801,7 +804,7 @@ function processMoleculeList(xml) {
                 hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
                 let expansionSizeInputElementId = molecule.id + "_" + molecule_js_1.DOSCMethod.tagName + "_" + molecule_js_1.HinderedRotorPotential.tagName + "_expansionSize";
                 let expansionSizeInputElement = (0, html_js_1.createInput)("number", expansionSizeInputElementId, boundary1);
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 expansionSizeInputElement.addEventListener('change', (event) => {
                     let target = event.target;
                     // Check the input is a number.
@@ -811,11 +814,11 @@ function processMoleculeList(xml) {
                     else {
                         // Reset the input to the current value.
                         alert("Expansion size input is not a number, resetting...");
-                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                     }
                     (0, html_js_1.resizeInputElement)(expansionSizeInputElement);
                 });
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 (0, html_js_1.resizeInputElement)(expansionSizeInputElement);
                 hinderedRotorPotentialDiv.appendChild(expansionSizeInputElement);
                 // Add useSineTerms.
@@ -864,11 +867,11 @@ function processMoleculeList(xml) {
                         else {
                             // Reset the input to the current value.
                             alert("Angle input is not a number, resetting...");
-                            angleInputElement.value = potentialPoint.getAngle().toString();
+                            angleInputElement.value = potentialPoint.getAngle().toExponential();
                         }
                         (0, html_js_1.resizeInputElement)(angleInputElement);
                     });
-                    angleInputElement.value = potentialPoint.getAngle().toString();
+                    angleInputElement.value = potentialPoint.getAngle().toExponential();
                     (0, html_js_1.resizeInputElement)(angleInputElement);
                     potentialPointDiv.appendChild(angleInputElement);
                     // Create a new div element for the potential.
@@ -882,16 +885,16 @@ function processMoleculeList(xml) {
                         if ((0, util_js_1.isNumeric)(target.value)) {
                             let value = parseFloat(target.value);
                             potentialPoint.setPotential(value);
-                            console.log("Set " + molecule_js_1.PotentialPoint.tagName + " to " + value.toString());
+                            console.log("Set " + molecule_js_1.PotentialPoint.tagName + " to " + value.toExponential());
                         }
                         else {
                             // Reset the input to the current value.
                             alert("Potential input is not a number, resetting...");
-                            potentialInputElement.value = potentialPoint.getPotential().toString();
+                            potentialInputElement.value = potentialPoint.getPotential().toExponential();
                         }
                         (0, html_js_1.resizeInputElement)(potentialInputElement);
                     });
-                    potentialInputElement.value = potentialPoint.getPotential().toString();
+                    potentialInputElement.value = potentialPoint.getPotential().toExponential();
                     (0, html_js_1.resizeInputElement)(potentialInputElement);
                     potentialPointDiv.appendChild(potentialInputElement);
                     potentialPointsDiv.appendChild(potentialPointDiv);
@@ -921,7 +924,7 @@ function processMoleculeList(xml) {
                     else {
                         // Reset the input to the current value.
                         alert("Periodicity input is not a number, resetting...");
-                        target.value = periodicity.value.toString();
+                        target.value = periodicity.value.toExponential();
                     }
                 }, valueString, molecule_js_1.Periodicity.tagName);
                 extraDOSCMethodDiv.appendChild(inputDiv);
@@ -1259,7 +1262,7 @@ function setNumberNode(node, input) {
     }
     else {
         alert("Value is not numeric, resetting...");
-        input.value = node.value.toString();
+        input.value = node.value.toExponential();
     }
 }
 exports.setNumberNode = setNumberNode;
@@ -1379,7 +1382,7 @@ function processReactionList(xml) {
                 let product = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), molecule);
                 products.push(product);
                 let options = ["modelled", "sink"];
-                let container = (0, html_js_1.createLabelWithSelectElement)(molecule.ref + " role:", options, molecule.ref + "_" + 'Select_Role', "Role", boundary1, level3);
+                let container = (0, html_js_1.createLabelWithSelect)(molecule.ref + " role:", options, molecule.ref + "_" + 'Select_Role', "Role", boundary1, level3);
                 let selectElement = container.querySelector('select');
                 selectElement.value = molecule.role;
                 selectElement.addEventListener('change', (event) => {
@@ -1640,7 +1643,7 @@ function processReactionList(xml) {
             let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level2, (event) => {
                 let target = event.target;
                 setNumberNode(excessReactantConc, target);
-            }, value.toString(), reaction_js_1.ExcessReactantConc.tagName);
+            }, value.toExponential(), reaction_js_1.ExcessReactantConc.tagName);
             reactionDiv.appendChild(inputDiv);
         }
         // Create a new collapsible div for the reaction.
@@ -1937,7 +1940,7 @@ function processConditions(xml) {
                     let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level0, (event) => {
                         let target = event.target;
                         setNumberNode(experimentRate, target);
-                    }, experimentRate.value.toString(), conditions_js_1.ExperimentRate.tagName);
+                    }, experimentRate.value.toExponential(), conditions_js_1.ExperimentRate.tagName);
                     pTPairDiv.appendChild(inputDiv);
                 }
                 addP(pTPairDiv, pTPair);
@@ -1969,12 +1972,12 @@ function addP(containerDiv, pTPair) {
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getP().toString();
+            target.value = pTPair.getP().toExponential();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, pTPair.getP().toString(), "P");
+    }, pTPair.getP().toExponential(), "P");
     let pInputElement = pInputDiv.querySelector('input');
-    pInputElement.value = pTPair.getP().toString();
+    pInputElement.value = pTPair.getP().toExponential();
     (0, html_js_1.resizeInputElement)(pInputElement);
     containerDiv.appendChild(pInputDiv);
 }
@@ -1991,12 +1994,12 @@ function addT(containerDiv, pTPair) {
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getT().toString();
+            target.value = pTPair.getT().toExponential();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, pTPair.getT().toString(), "T");
+    }, pTPair.getT().toExponential(), "T");
     let tInputElement = tInputDiv.querySelector('input');
-    tInputElement.value = pTPair.getT().toString();
+    tInputElement.value = pTPair.getT().toExponential();
     (0, html_js_1.resizeInputElement)(tInputElement);
     containerDiv.appendChild(tInputDiv);
 }
@@ -2175,7 +2178,7 @@ function processGrainSize(modelParameters, xml_modelParameters, modelParametersD
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
     let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(modelParameters_js_1.GrainSize.tagName, "", boundary1, boundary1);
+    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.GrainSize.tagName, "", boundary1, boundary1);
     let button = lwb.querySelector('button');
     button.classList.add('optionOn');
     button.classList.add('optionOff');
@@ -2189,39 +2192,41 @@ function processGrainSize(modelParameters, xml_modelParameters, modelParametersD
         let value = parseFloat(valueString);
         gs = new modelParameters_js_1.GrainSize((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setGrainSize(gs);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = selected + selectedLoadedText1;
         createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         gs = new modelParameters_js_1.GrainSize(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = deselected + deselectedText1;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
     button.addEventListener('click', () => {
-        let infoButton = (0, html_js_1.createButton)(specifyNumberText, boundary1);
+        /*
+        let infoButton = createButton(specifyText1, boundary1);
         div.appendChild(infoButton);
         infoButton.addEventListener('click', () => {
             div.removeChild(infoButton);
         });
+        */
         // Check if the GrainSize already exists
         if (!modelParameters.index.has(modelParameters_js_1.GrainSize.tagName)) {
             createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = selected + selectedLoadedText1;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = gs.value.toString();
+            valueString = gs.value.toExponential();
             modelParameters.removeGrainSize();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = deselected + deselectedText1;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2259,7 +2264,7 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
     let xml = xml_modelParameters.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
+    let lwb = (0, html_js_1.createButtonWithLabel)(control_js_1.AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
     let button = lwb.querySelector('button');
     button.classList.add('optionOn');
     button.classList.add('optionOff');
@@ -2273,14 +2278,14 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
         let value = parseFloat(valueString);
         asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setAutomaticallySetMaxEne(asme);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = selected + selectedLoadedText1;
         createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         asme = new control_js_1.AutomaticallySetMaxEne(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = deselected + deselectedText1;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2288,19 +2293,19 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
         // Check if the AutomaticallySetMaxEne already exists
         if (!modelParameters.index.has(control_js_1.AutomaticallySetMaxEne.tagName)) {
             createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = selected + selectedLoadedText1;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             modelParameters.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = deselected + deselectedText1;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2337,7 +2342,7 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
     let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(modelParameters_js_1.EnergyAboveTheTopHill.tagName, "", boundary1, boundary1);
+    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.EnergyAboveTheTopHill.tagName, "", boundary1, boundary1);
     let button = lwb.querySelector('button');
     button.classList.add('optionOn');
     button.classList.add('optionOff');
@@ -2351,14 +2356,14 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
         let value = parseFloat(valueString);
         eatth = new modelParameters_js_1.EnergyAboveTheTopHill((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setEnergyAboveTheTopHill(eatth);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = selected + selectedLoadedText1;
         createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         eatth = new modelParameters_js_1.EnergyAboveTheTopHill(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = deselected + deselectedText1;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2366,19 +2371,19 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
         // Check if the EnergyAboveTheTopHill already exists
         if (!modelParameters.index.has(modelParameters_js_1.EnergyAboveTheTopHill.tagName)) {
             createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = selected + selectedLoadedText1;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = eatth.value.toString();
+            valueString = eatth.value.toExponential();
             modelParameters.removeEnergyAboveTheTopHill();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = deselected + deselectedText1;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2415,7 +2420,7 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
     let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.MaxTemperature.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(modelParameters_js_1.MaxTemperature.tagName, "", boundary1, boundary1);
+    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.MaxTemperature.tagName, "", boundary1, boundary1);
     let button = lwb.querySelector('button');
     button.classList.add('optionOn');
     button.classList.add('optionOff');
@@ -2429,14 +2434,14 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
         let value = parseFloat(valueString);
         mt = new modelParameters_js_1.MaxTemperature((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setMaxTemperature(mt);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = selected + selectedLoadedText1;
         createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         mt = new modelParameters_js_1.MaxTemperature(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = deselected + deselectedText1;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2444,19 +2449,19 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
         // Check if the MaxTemperature already exists
         if (!modelParameters.index.has(modelParameters_js_1.MaxTemperature.tagName)) {
             createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = selected + selectedLoadedText1;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = mt.value.toString();
+            valueString = mt.value.toExponential();
             modelParameters.removeMaxTemperature();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = deselected + deselectedText1;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2532,27 +2537,36 @@ function processControl(xml) {
     let xml_control = (0, xml_js_1.getSingularElement)(xml, control_js_1.Control.tagName);
     let control = new control_js_1.Control((0, xml_js_1.getAttributes)(xml_control));
     mesmer.setControl(control);
-    processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control);
-    processPrintCellDOS(control, controlsDiv, xml_control);
-    processPrintCellTransitionStateFlux(control, controlsDiv, xml_control);
-    processPrintReactionOperatorColumnSums(control, controlsDiv, xml_control);
-    processPrintGrainBoltzmann(control, controlsDiv, xml_control);
-    processPrintGrainDOS(control, controlsDiv, xml_control);
-    processPrintGrainkbE(control, controlsDiv, xml_control);
-    processPrintGrainkfE(control, controlsDiv, xml_control);
-    processPrintTSsos(control, controlsDiv, xml_control);
-    processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control);
-    processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control);
-    processPrintReactionOperatorSize(control, controlsDiv, xml_control);
-    processPrintSpeciesProfile(control, controlsDiv, xml_control);
-    processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control);
-    processPrintTunnelingCoefficients(control, controlsDiv, xml_control);
-    processPrintCrossingCoefficients(control, controlsDiv, xml_control);
-    processTestDOS(control, controlsDiv, xml_control);
-    processTestRateConstants(control, controlsDiv, xml_control);
-    processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_control);
-    processHideInactive(control, controlsDiv, xml_control);
-    processForceMacroDetailedBalance(control, controlsDiv, xml_control);
+    // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
+    let onOffControls = new Map();
+    processCalculateRateCoefficientsOnly(control, onOffControls, xml_control);
+    processPrintCellDOS(control, onOffControls, xml_control);
+    processPrintCellTransitionStateFlux(control, onOffControls, xml_control);
+    processPrintReactionOperatorColumnSums(control, onOffControls, xml_control);
+    processPrintGrainBoltzmann(control, onOffControls, xml_control);
+    processPrintGrainDOS(control, onOffControls, xml_control);
+    processPrintGrainkbE(control, onOffControls, xml_control);
+    processPrintGrainkfE(control, onOffControls, xml_control);
+    processPrintTSsos(control, onOffControls, xml_control);
+    processPrintGrainedSpeciesProfile(control, onOffControls, xml_control);
+    processPrintGrainTransitionStateFlux(control, onOffControls, xml_control);
+    processPrintReactionOperatorSize(control, onOffControls, xml_control);
+    processPrintSpeciesProfile(control, onOffControls, xml_control);
+    processPrintPhenomenologicalEvolution(control, onOffControls, xml_control);
+    processPrintTunnelingCoefficients(control, onOffControls, xml_control);
+    processPrintCrossingCoefficients(control, onOffControls, xml_control);
+    processTestDOS(control, onOffControls, xml_control);
+    processTestRateConstants(control, onOffControls, xml_control);
+    processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control);
+    processForceMacroDetailedBalance(control, onOffControls, xml_control);
+    // Create a div for the on/off controls.
+    let onOffControlsDiv = (0, html_js_1.createFlexDiv)(level1);
+    let orderedOnOffControls = new Map([...onOffControls.entries()].sort());
+    orderedOnOffControls.forEach((button) => {
+        onOffControlsDiv.appendChild(button);
+    });
+    controlsDiv.appendChild(onOffControlsDiv);
+    // Controls with additional things to set.
     processTestMicroRates(control, controlsDiv, xml_control);
     processCalcMethod(control, controlsDiv, xml_control);
     processEigenvalues(control, controlsDiv, xml_control);
@@ -2565,26 +2579,26 @@ function processControl(xml) {
 /**
  * Process "me:calculateRateCoefficientsOnly".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.CalculateRateCoefficientsOnly.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.CalculateRateCoefficientsOnly.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processCalculateRateCoefficientsOnly(control, onOffControls, xml_control) {
+    let tagName = control_js_1.CalculateRateCoefficientsOnly.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let crco = new control_js_1.CalculateRateCoefficientsOnly();
     if (xml.length == 1) {
         control.setCalculateRateCoefficientsOnly(crco);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2592,13 +2606,13 @@ function processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control)
         // Check if the CalculateRateCoefficientsOnly already exists
         if (!control.index.has(control_js_1.CalculateRateCoefficientsOnly.tagName)) {
             control.setCalculateRateCoefficientsOnly(crco);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removeCalculateRateCoefficientsOnly();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2607,26 +2621,26 @@ function processCalculateRateCoefficientsOnly(control, controlsDiv, xml_control)
 /**
  * Process "me:printCellDOS".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintCellDOS(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintCellDOS.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintCellDOS.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintCellDOS(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintCellDOS.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pcd = new control_js_1.PrintCellDOS();
     if (xml.length == 1) {
         control.setPrintCellDOS(pcd);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2634,13 +2648,13 @@ function processPrintCellDOS(control, controlsDiv, xml_control) {
         // Check if the PrintCellDOS already exists
         if (!control.index.has(control_js_1.PrintCellDOS.tagName)) {
             control.setPrintCellDOS(pcd);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintCellDOS();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2649,26 +2663,26 @@ function processPrintCellDOS(control, controlsDiv, xml_control) {
 /**
  * Process "me:printCellTransitionStateFlux".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintCellTransitionStateFlux(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintCellTransitionStateFlux.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintCellTransitionStateFlux.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintCellTransitionStateFlux(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintCellTransitionStateFlux.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pctsf = new control_js_1.PrintCellTransitionStateFlux();
     if (xml.length == 1) {
         control.setPrintCellTransitionStateFlux(pctsf);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2676,13 +2690,13 @@ function processPrintCellTransitionStateFlux(control, controlsDiv, xml_control) 
         // Check if the PrintCellTransitionStateFlux already exists
         if (!control.index.has(control_js_1.PrintCellTransitionStateFlux.tagName)) {
             control.setPrintCellTransitionStateFlux(pctsf);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintCellTransitionStateFlux();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2691,26 +2705,26 @@ function processPrintCellTransitionStateFlux(control, controlsDiv, xml_control) 
 /**
  * Process "me:printReactionOperatorColumnSums".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintReactionOperatorColumnSums(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorColumnSums.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintReactionOperatorColumnSums.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintReactionOperatorColumnSums(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintReactionOperatorColumnSums.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let proc = new control_js_1.PrintReactionOperatorColumnSums();
     if (xml.length == 1) {
         control.setPrintReactionOperatorColumnSums(proc);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2718,13 +2732,13 @@ function processPrintReactionOperatorColumnSums(control, controlsDiv, xml_contro
         // Check if the PrintReactionOperatorColumnSums already exists
         if (!control.index.has(control_js_1.PrintReactionOperatorColumnSums.tagName)) {
             control.setPrintReactionOperatorColumnSums(proc);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintReactionOperatorColumnSums();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2733,26 +2747,26 @@ function processPrintReactionOperatorColumnSums(control, controlsDiv, xml_contro
 /**
  * Process "me:printGrainBoltzmann".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainBoltzmann(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainBoltzmann.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainBoltzmann.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainBoltzmann(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainBoltzmann.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgb = new control_js_1.PrintGrainBoltzmann();
     if (xml.length == 1) {
         control.setPrintGrainBoltzmann(pgb);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2760,13 +2774,13 @@ function processPrintGrainBoltzmann(control, controlsDiv, xml_control) {
         // Check if the PrintGrainBoltzmann already exists
         if (!control.index.has(control_js_1.PrintGrainBoltzmann.tagName)) {
             control.setPrintGrainBoltzmann(pgb);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainBoltzmann();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2775,26 +2789,26 @@ function processPrintGrainBoltzmann(control, controlsDiv, xml_control) {
 /**
  * Process "me:printGrainDOS".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainDOS(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainDOS.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainDOS.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainDOS(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainDOS.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgd = new control_js_1.PrintGrainDOS();
     if (xml.length == 1) {
         control.setPrintGrainDOS(pgd);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2802,13 +2816,13 @@ function processPrintGrainDOS(control, controlsDiv, xml_control) {
         // Check if the PrintGrainDOS already exists
         if (!control.index.has(control_js_1.PrintGrainDOS.tagName)) {
             control.setPrintGrainDOS(pgd);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainDOS();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2817,26 +2831,26 @@ function processPrintGrainDOS(control, controlsDiv, xml_control) {
 /**
  * Process "me:printGrainkbE".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainkbE(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainkbE.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainkbE.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainkbE(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainkbE.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgkbE = new control_js_1.PrintGrainkbE();
     if (xml.length == 1) {
         control.setPrintGrainkbE(pgkbE);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2844,13 +2858,13 @@ function processPrintGrainkbE(control, controlsDiv, xml_control) {
         // Check if the PrintGrainkbE already exists
         if (!control.index.has(control_js_1.PrintGrainkbE.tagName)) {
             control.setPrintGrainkbE(pgkbE);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainkbE();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2859,26 +2873,26 @@ function processPrintGrainkbE(control, controlsDiv, xml_control) {
 /**
  * Process "me:printGrainkfE".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainkfE(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainkfE.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainkfE.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainkfE(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainkfE.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgkfE = new control_js_1.PrintGrainkfE();
     if (xml.length == 1) {
         control.setPrintGrainkfE(pgkfE);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2886,13 +2900,13 @@ function processPrintGrainkfE(control, controlsDiv, xml_control) {
         // Check if the PrintGrainkfE already exists
         if (!control.index.has(control_js_1.PrintGrainkfE.tagName)) {
             control.setPrintGrainkfE(pgkfE);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainkfE();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2901,26 +2915,26 @@ function processPrintGrainkfE(control, controlsDiv, xml_control) {
 /**
  * Process "me:printTSsos".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintTSsos(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintTSsos.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintTSsos.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintTSsos(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintTSsos.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pts = new control_js_1.PrintTSsos();
     if (xml.length == 1) {
         control.setPrintTSsos(pts);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2928,13 +2942,13 @@ function processPrintTSsos(control, controlsDiv, xml_control) {
         // Check if the PrintTSsos already exists
         if (!control.index.has(control_js_1.PrintTSsos.tagName)) {
             control.setPrintTSsos(pts);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintTSsos();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2943,26 +2957,26 @@ function processPrintTSsos(control, controlsDiv, xml_control) {
 /**
  * Process "me:printGrainedSpeciesProfile".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainedSpeciesProfile.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainedSpeciesProfile.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainedSpeciesProfile(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainedSpeciesProfile.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgsp = new control_js_1.PrintGrainedSpeciesProfile();
     if (xml.length == 1) {
         control.setPrintGrainedSpeciesProfile(pgsp);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2970,13 +2984,13 @@ function processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control) {
         // Check if the PrintGrainedSpeciesProfile already exists
         if (!control.index.has(control_js_1.PrintGrainedSpeciesProfile.tagName)) {
             control.setPrintGrainedSpeciesProfile(pgsp);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainedSpeciesProfile();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2985,26 +2999,26 @@ function processPrintGrainedSpeciesProfile(control, controlsDiv, xml_control) {
 /**
  * Process "me:printGrainTransitionStateFlux".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintGrainTransitionStateFlux.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintGrainTransitionStateFlux.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintGrainTransitionStateFlux(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintGrainTransitionStateFlux.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pgtsf = new control_js_1.PrintGrainTransitionStateFlux();
     if (xml.length == 1) {
         control.setPrintGrainTransitionStateFlux(pgtsf);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3012,13 +3026,13 @@ function processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control)
         // Check if the PrintGrainTransitionStateFlux already exists
         if (!control.index.has(control_js_1.PrintGrainTransitionStateFlux.tagName)) {
             control.setPrintGrainTransitionStateFlux(pgtsf);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintGrainTransitionStateFlux();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3027,26 +3041,26 @@ function processPrintGrainTransitionStateFlux(control, controlsDiv, xml_control)
 /**
  * Process "me:printReactionOperatorSize".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintReactionOperatorSize(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintReactionOperatorSize.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintReactionOperatorSize.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintReactionOperatorSize(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintReactionOperatorSize.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pros = new control_js_1.PrintReactionOperatorSize();
     if (xml.length == 1) {
         control.setPrintReactionOperatorSize(pros);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3054,13 +3068,13 @@ function processPrintReactionOperatorSize(control, controlsDiv, xml_control) {
         // Check if the PrintReactionOperatorSize already exists
         if (!control.index.has(control_js_1.PrintReactionOperatorSize.tagName)) {
             control.setPrintReactionOperatorSize(pros);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintReactionOperatorSize();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3069,26 +3083,26 @@ function processPrintReactionOperatorSize(control, controlsDiv, xml_control) {
 /**
  * Process "me:printSpeciesProfile".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintSpeciesProfile(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintSpeciesProfile.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintSpeciesProfile.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintSpeciesProfile(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintSpeciesProfile.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let psp = new control_js_1.PrintSpeciesProfile();
     if (xml.length == 1) {
         control.setPrintSpeciesProfile(psp);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3096,13 +3110,13 @@ function processPrintSpeciesProfile(control, controlsDiv, xml_control) {
         // Check if the PrintSpeciesProfile already exists
         if (!control.index.has(control_js_1.PrintSpeciesProfile.tagName)) {
             control.setPrintSpeciesProfile(psp);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintSpeciesProfile();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3111,26 +3125,26 @@ function processPrintSpeciesProfile(control, controlsDiv, xml_control) {
 /**
  * Process "me:printPhenomenologicalEvolution".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintPhenomenologicalEvolution.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintPhenomenologicalEvolution.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintPhenomenologicalEvolution(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintPhenomenologicalEvolution.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let ppe = new control_js_1.PrintPhenomenologicalEvolution();
     if (xml.length == 1) {
         control.setPrintPhenomenologicalEvolution(ppe);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3138,13 +3152,13 @@ function processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control
         // Check if the PrintPhenomenologicalEvolution already exists
         if (!control.index.has(control_js_1.PrintPhenomenologicalEvolution.tagName)) {
             control.setPrintPhenomenologicalEvolution(ppe);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintPhenomenologicalEvolution();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3153,26 +3167,26 @@ function processPrintPhenomenologicalEvolution(control, controlsDiv, xml_control
 /**
  * Process "me:printTunnelingCoefficients".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintTunnelingCoefficients(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintTunnelingCoefficients.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintTunnelingCoefficients.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintTunnelingCoefficients(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintTunnelingCoefficients.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let ptc = new control_js_1.PrintTunnelingCoefficients();
     if (xml.length == 1) {
         control.setPrintTunnelingCoefficients(ptc);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3180,13 +3194,13 @@ function processPrintTunnelingCoefficients(control, controlsDiv, xml_control) {
         // Check if the PrintTunnelingCoefficients already exists
         if (!control.index.has(control_js_1.PrintTunnelingCoefficients.tagName)) {
             control.setPrintTunnelingCoefficients(ptc);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintTunnelingCoefficients();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3195,26 +3209,26 @@ function processPrintTunnelingCoefficients(control, controlsDiv, xml_control) {
 /**
  * Process "me:printCrossingCoefficients".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processPrintCrossingCoefficients(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.PrintCrossingCoefficients.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.PrintCrossingCoefficients.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processPrintCrossingCoefficients(control, onOffControls, xml_control) {
+    let tagName = control_js_1.PrintCrossingCoefficients.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let pcc = new control_js_1.PrintCrossingCoefficients();
     if (xml.length == 1) {
         control.setPrintCrossingCoefficients(pcc);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3222,13 +3236,13 @@ function processPrintCrossingCoefficients(control, controlsDiv, xml_control) {
         // Check if the PrintCrossingCoefficients already exists
         if (!control.index.has(control_js_1.PrintCrossingCoefficients.tagName)) {
             control.setPrintCrossingCoefficients(pcc);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removePrintCrossingCoefficients();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3237,26 +3251,26 @@ function processPrintCrossingCoefficients(control, controlsDiv, xml_control) {
 /**
  * Process "me:testDOS".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processTestDOS(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.TestDOS.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.TestDOS.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processTestDOS(control, onOffControls, xml_control) {
+    let tagName = control_js_1.TestDOS.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let tdos = new control_js_1.TestDOS();
     if (xml.length == 1) {
         control.setTestDOS(tdos);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3264,13 +3278,13 @@ function processTestDOS(control, controlsDiv, xml_control) {
         // Check if the TestDOS already exists
         if (!control.index.has(control_js_1.TestDOS.tagName)) {
             control.setTestDOS(tdos);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removeTestDOS();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3279,26 +3293,26 @@ function processTestDOS(control, controlsDiv, xml_control) {
 /**
  * Process "me:testRateConstants".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processTestRateConstants(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.TestRateConstants.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.TestRateConstants.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processTestRateConstants(control, onOffControls, xml_control) {
+    let tagName = control_js_1.TestRateConstants.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let trc = new control_js_1.TestRateConstants();
     if (xml.length == 1) {
         control.setTestRateConstants(trc);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3306,13 +3320,13 @@ function processTestRateConstants(control, controlsDiv, xml_control) {
         // Check if the TestRateConstants already exists
         if (!control.index.has(control_js_1.TestRateConstants.tagName)) {
             control.setTestRateConstants(trc);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removeTestRateConstants();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3321,26 +3335,26 @@ function processTestRateConstants(control, controlsDiv, xml_control) {
 /**
  * Process "me:useTheSameCellNumberForAllConditions".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.UseTheSameCellNumberForAllConditions.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.UseTheSameCellNumberForAllConditions.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control) {
+    let tagName = control_js_1.UseTheSameCellNumberForAllConditions.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let utsnfac = new control_js_1.UseTheSameCellNumberForAllConditions();
     if (xml.length == 1) {
         control.setUseTheSameCellNumberForAllConditions(utsnfac);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3348,55 +3362,13 @@ function processUseTheSameCellNumberForAllConditions(control, controlsDiv, xml_c
         // Check if the UseTheSameCellNumberForAllConditions already exists
         if (!control.index.has(control_js_1.UseTheSameCellNumberForAllConditions.tagName)) {
             control.setUseTheSameCellNumberForAllConditions(utsnfac);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removeUseTheSameCellNumberForAllConditions();
-            button.textContent = notSelected + unselectedText;
-            button.classList.toggle('optionOn');
-            button.classList.toggle('optionOff');
-        }
-    });
-}
-/**
- * Process "me:hideInactive".
- * @param control The control.
- * @param controlsDiv The controls div.
- * @param xml_control The xml control.
- */
-function processHideInactive(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.HideInactive.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.HideInactive.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let hi = new control_js_1.HideInactive();
-    if (xml.length == 1) {
-        control.setHideInactive(hi);
-        button.textContent = selected + selectedLoadedValueText;
-        button.classList.toggle('optionOff');
-    }
-    else {
-        button.textContent = notSelected + unselectedText;
-        button.classList.toggle('optionOn');
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event) => {
-        // Check if the HideInactive already exists
-        if (!control.index.has(control_js_1.HideInactive.tagName)) {
-            control.setHideInactive(hi);
-            button.textContent = selected + selectedValueText;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        }
-        else {
-            control.removeHideInactive();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3405,26 +3377,26 @@ function processHideInactive(control, controlsDiv, xml_control) {
 /**
  * Process "me:forceMacroDetailedBalance".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param onOffControls The on/off controls map.
  * @param xml_control The xml control.
  */
-function processForceMacroDetailedBalance(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.ForceMacroDetailedBalance.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+function processForceMacroDetailedBalance(control, onOffControls, xml_control) {
+    let tagName = control_js_1.ForceMacroDetailedBalance.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
+    onOffControls.set(tagName, button);
     let fmd = new control_js_1.ForceMacroDetailedBalance();
     if (xml.length == 1) {
         control.setForceMacroDetailedBalance(fmd);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         button.classList.toggle('optionOff');
     }
     else {
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3432,13 +3404,13 @@ function processForceMacroDetailedBalance(control, controlsDiv, xml_control) {
         // Check if the ForceMacroDetailedBalance already exists
         if (!control.index.has(control_js_1.ForceMacroDetailedBalance.tagName)) {
             control.setForceMacroDetailedBalance(fmd);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             control.removeForceMacroDetailedBalance();
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3454,7 +3426,7 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
     let xml = xml_control.getElementsByTagName(control_js_1.TestMicroRates.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.TestMicroRates.tagName, "", boundary1, boundary1);
+    let lwb = (0, html_js_1.createButtonWithLabel)(control_js_1.TestMicroRates.tagName, "", boundary1, boundary1);
     let button = lwb.querySelector('button');
     button.classList.add('optionOn');
     button.classList.add('optionOff');
@@ -3464,22 +3436,21 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
     let idTmin = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tmin";
     let idTstep = control_js_1.Control.tagName + "_" + control_js_1.TestMicroRates.tagName + "_Tstep";
     let tmr;
-    let valueString;
     if (xml.length == 1) {
         tmr = new control_js_1.TestMicroRates((0, xml_js_1.getAttributes)(xml[0]));
         control.setTestMicroRates(tmr);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = selected + selectedLoadedText2;
         createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
         button.classList.toggle('optionOff');
     }
     else {
         tmr = new control_js_1.TestMicroRates(new Map());
-        button.textContent = notSelected + unselectedText;
+        button.textContent = deselected + deselectedText1;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
-        let infoButton = (0, html_js_1.createButton)(specifyNumberText, boundary1);
+        let infoButton = (0, html_js_1.createButton)(selectedLoadedText1, boundary1);
         div.appendChild(infoButton);
         infoButton.addEventListener('click', (event) => {
             div.removeChild(infoButton);
@@ -3487,7 +3458,7 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
         // Check if the TestMicroRates already exists
         if (!control.index.has(control_js_1.Eigenvalues.tagName)) {
             createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
-            button.textContent = selected + selectedValueText;
+            button.textContent = selected + selectedLoadedText1;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
@@ -3514,7 +3485,7 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = deselected + deselectedText1;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3553,10 +3524,10 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, tMax.toString(), "Tmax");
+    }, tMax.toExponential(), "Tmax");
     tMaxlwi.id = idTmax;
     (0, html_js_1.resizeInputElement)(tMaxlwi.querySelector('input'));
     div.appendChild(tMaxlwi);
@@ -3571,10 +3542,10 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, tMin.toString(), "Tmin");
+    }, tMin.toExponential(), "Tmin");
     tMinlwi.id = idTmin;
     (0, html_js_1.resizeInputElement)(tMinlwi.querySelector('input'));
     div.appendChild(tMinlwi);
@@ -3589,10 +3560,10 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, tStep.toString(), "Tstep");
+    }, tStep.toExponential(), "Tstep");
     tSteplwi.id = idTstep;
     (0, html_js_1.resizeInputElement)(tSteplwi.querySelector('input'));
     div.appendChild(tSteplwi);
@@ -3605,56 +3576,236 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
  * @param xml_control The xml control.
  */
 function processCalcMethod(control, controlsDiv, xml_control) {
-    let div = (0, html_js_1.createFlexDiv)(level1);
+    /*
+    let div: HTMLDivElement = createFlexDiv(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.CalcMethod.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.CalcMethod.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName: string = CalcMethod.tagName;
+    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected: string = tagName + selected;
+    let buttonTextContentDeselected: string = tagName + deselected;
+    let button = createButton(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let options = control_js_1.CalcMethod.options;
-    let id = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName + "_input";
-    let cm;
-    let first = true;
-    if (xml.length == 1) {
-        let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
-        cm = new control_js_1.CalcMethod((0, xml_js_1.getAttributes)(xml[0]), value);
-        button.textContent = selected + selectedLoadedValueText;
-        first = createCalcMethodInput(control, options, div, cm, id, value, first);
-        button.classList.toggle('optionOff');
-    }
-    else {
-        cm = new control_js_1.CalcMethod(new Map(), selectAnotherOption);
-        button.textContent = notSelected + unselectedText;
-        button.classList.toggle('optionOn');
-    }
-    let valueString = cm.value;
+    let cm: CalcMethod;
+    let options: string[] = CalcMethod.options;
+    let id = Control.tagName + "_" + CalcMethod.tagName + "_input";
+    let first: boolean = true;
     // Add event listener for the button.
-    button.addEventListener('click', (event) => {
+    button.addEventListener('click', (event: MouseEvent) => {
         // Check if the CalcMethod already exists
-        if (!control.index.has(control_js_1.CalcMethod.tagName)) {
+        if (!control.index.has(CalcMethod.tagName)) {
             if (first) {
                 options.push(selectAnotherOption);
             }
-            first = createCalcMethodInput(control, options, div, cm, id, valueString, first);
-            button.textContent = selected + selectedValueText;
+            first = createCalcMethodInput(control, options, div, cm, id, valueString);
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
-        }
-        else {
+        } else {
             valueString = cm.value;
             control.removeCalcMethod();
             // Remove any existing div.
-            let e = document.getElementById(id);
+            let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
-            button.classList.toggle('optionOn');
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle('optionOn')
             button.classList.toggle('optionOff');
         }
     });
+
+
+    if (xml.length == 1) {
+        
+        button.textContent = buttonTextContentSelected;
+        first = createCalcMethodInput(control, options, div, cm, id, value);
+        button.classList.toggle('optionOff');
+    } else {
+        cm = new CalcMethod(new Map());
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle('optionOn');
+    }
+    */
+}
+/**
+ * @param xml The xml containing the CalcMethod.
+ * @returns CalcMethod
+ */
+function loadCalcMethod(xml) {
+    let cm;
+    let attributes = (0, xml_js_1.getAttributes)(xml[0]);
+    let xsi_type = attributes.get("xsi:type");
+    if (xsi_type == control_js_1.CalcMethodMarquardt.xsi_type) {
+        let cmm = new control_js_1.CalcMethodMarquardt(attributes);
+        // MarquardtIterations.
+        let mi_xml = xml[0].getElementsByTagName(control_js_1.MarquardtIterations.tagName);
+        if (mi_xml.length > 0) {
+            if (mi_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mi_xml[0])));
+                let marquardtIterations = new control_js_1.MarquardtIterations((0, xml_js_1.getAttributes)(mi_xml[0]), value);
+                cmm.setMarquardtIterations(marquardtIterations);
+            }
+            else {
+                throw new Error("More than one MarquardtIterations element.");
+            }
+        }
+        // MarquardtTolerance.
+        let mt_xml = xml[0].getElementsByTagName(control_js_1.MarquardtTolerance.tagName);
+        if (mt_xml.length > 0) {
+            if (mt_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mt_xml[0])));
+                let marquardtTolerance = new control_js_1.MarquardtTolerance((0, xml_js_1.getAttributes)(mt_xml[0]), value);
+                cmm.setMarquardtTolerance(marquardtTolerance);
+            }
+            else {
+                throw new Error("More than one MarquardtTolerance element.");
+            }
+        }
+        // MarquardtDerivDelta.
+        let mdd_xml = xml[0].getElementsByTagName(control_js_1.MarquardtDerivDelta.tagName);
+        if (mdd_xml.length > 0) {
+            if (mdd_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mdd_xml[0])));
+                let marquardtDerivDelta = new control_js_1.MarquardtDerivDelta((0, xml_js_1.getAttributes)(mdd_xml[0]), value);
+                cmm.setMarquardtDerivDelta(marquardtDerivDelta);
+            }
+            else {
+                throw new Error("More than one MarquardtDerivDelta element.");
+            }
+        }
+        cm = cmm;
+    }
+    else if (xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type) {
+        let cmar = new control_js_1.CalcMethodAnalyticalRepresentation(attributes);
+        cm = cmar;
+        // Format.
+        let format_xml = xml[0].getElementsByTagName(control_js_1.Format.tagName);
+        if (format_xml.length > 0) {
+            if (format_xml.length == 1) {
+                let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(format_xml[0]));
+                let format = new control_js_1.Format((0, xml_js_1.getAttributes)(format_xml[0]), value);
+                cmar.setFormat(format);
+            }
+            else {
+                throw new Error("More than one Format element.");
+            }
+        }
+        // Precision.
+        let precision_xml = xml[0].getElementsByTagName(control_js_1.Precision.tagName);
+        if (precision_xml.length > 0) {
+            if (precision_xml.length == 1) {
+                let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(precision_xml[0]));
+                let precision = new control_js_1.Precision((0, xml_js_1.getAttributes)(precision_xml[0]), value);
+                cmar.setPrecision(precision);
+            }
+            else {
+                throw new Error("More than one Precision element.");
+            }
+        }
+        // ChebNumTemp.
+        let chebNumTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebNumTemp.tagName);
+        if (chebNumTemp_xml.length > 0) {
+            if (chebNumTemp_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumTemp_xml[0])));
+                let chebNumTemp = new control_js_1.ChebNumTemp((0, xml_js_1.getAttributes)(chebNumTemp_xml[0]), value);
+                cmar.setChebNumTemp(chebNumTemp);
+            }
+            else {
+                throw new Error("More than one ChebNumTemp element.");
+            }
+        }
+        // ChebNumConc.
+        let chebNumConc_xml = xml[0].getElementsByTagName(control_js_1.ChebNumConc.tagName);
+        if (chebNumConc_xml.length > 0) {
+            if (chebNumConc_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumConc_xml[0])));
+                let chebNumConc = new control_js_1.ChebNumConc((0, xml_js_1.getAttributes)(chebNumConc_xml[0]), value);
+                cmar.setChebNumConc(chebNumConc);
+            }
+            else {
+                throw new Error("More than one ChebNumConc element.");
+            }
+        }
+        // ChebMaxTemp.
+        let chebMaxTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxTemp.tagName);
+        if (chebMaxTemp_xml.length > 0) {
+            if (chebMaxTemp_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxTemp_xml[0])));
+                let chebMaxTemp = new control_js_1.ChebMaxTemp((0, xml_js_1.getAttributes)(chebMaxTemp_xml[0]), value);
+                cmar.setChebMaxTemp(chebMaxTemp);
+            }
+            else {
+                throw new Error("More than one ChebMaxTemp element.");
+            }
+        }
+        // ChebMinTemp.
+        let chebMinTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMinTemp.tagName);
+        if (chebMinTemp_xml.length > 0) {
+            if (chebMinTemp_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinTemp_xml[0])));
+                let chebMinTemp = new control_js_1.ChebMinTemp((0, xml_js_1.getAttributes)(chebMinTemp_xml[0]), value);
+                cmar.setChebMinTemp(chebMinTemp);
+            }
+            else {
+                throw new Error("More than one ChebMinTemp element.");
+            }
+        }
+        // ChebMaxConc.
+        let chebMaxConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxConc.tagName);
+        if (chebMaxConc_xml.length > 0) {
+            if (chebMaxConc_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxConc_xml[0])));
+                let chebMaxConc = new control_js_1.ChebMaxConc((0, xml_js_1.getAttributes)(chebMaxConc_xml[0]), value);
+                cmar.setChebMaxConc(chebMaxConc);
+            }
+            else {
+                throw new Error("More than one ChebMaxConc element.");
+            }
+        }
+        // ChebMinConc.
+        let chebMinConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMinConc.tagName);
+        if (chebMinConc_xml.length > 0) {
+            if (chebMinConc_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinConc_xml[0])));
+                let chebMinConc = new control_js_1.ChebMinConc((0, xml_js_1.getAttributes)(chebMinConc_xml[0]), value);
+                cmar.setChebMinConc(chebMinConc);
+            }
+            else {
+                throw new Error("More than one ChebMinConc element.");
+            }
+        }
+        // ChebTExSize.
+        let chebTExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebTExSize.tagName);
+        if (chebTExSize_xml.length > 0) {
+            if (chebTExSize_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebTExSize_xml[0])));
+                let chebTExSize = new control_js_1.ChebTExSize((0, xml_js_1.getAttributes)(chebTExSize_xml[0]), value);
+                cmar.setChebTExSize(chebTExSize);
+            }
+            else {
+                throw new Error("More than one ChebTExSize element.");
+            }
+        }
+        // ChebPExSize.
+        let chebPExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebPExSize.tagName);
+        if (chebPExSize_xml.length > 0) {
+            if (chebPExSize_xml.length == 1) {
+                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebPExSize_xml[0])));
+                let chebPExSize = new control_js_1.ChebPExSize((0, xml_js_1.getAttributes)(chebPExSize_xml[0]), value);
+                cmar.setChebPExSize(chebPExSize);
+            }
+            else {
+                throw new Error("More than one ChebPExSize element.");
+            }
+        }
+        cm = cmar;
+    }
+    else {
+        throw new Error("Unknown xsi:type: " + xsi_type);
+    }
+    return cm;
 }
 /**
  * @param control The control.
@@ -3663,7 +3814,7 @@ function processCalcMethod(control, controlsDiv, xml_control) {
  * @param id The id.
  * @param valueString The value string.
  */
-function createCalcMethodInput(control, options, div, cm, id, valueString, first) {
+function createCalcMethodInput(control, xml, options, div, id, valueString) {
     let select = (0, html_js_1.createSelectElement)(options, valueString, id, boundary1);
     select.addEventListener('click', (event) => {
         if (options[options.length - 1] == selectAnotherOption) {
@@ -3676,14 +3827,12 @@ function createCalcMethodInput(control, options, div, cm, id, valueString, first
     });
     select.addEventListener('change', (event) => {
         let target = event.target;
-        cm.value = target.value;
         (0, html_js_1.resizeSelectElement)(target);
     });
     select.value = valueString;
     console.log("Value: " + valueString);
     (0, html_js_1.resizeSelectElement)(select);
     div.appendChild(select);
-    control.setCalcMethod(cm);
     return false;
 }
 /**
@@ -3695,13 +3844,15 @@ function createCalcMethodInput(control, options, div, cm, id, valueString, first
 function processEigenvalues(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.Eigenvalues.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.Eigenvalues.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.Eigenvalues.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.Eigenvalues.tagName + "_input";
+    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let eigenvalues;
     let valueString;
     if (xml.length == 1) {
@@ -3709,20 +3860,20 @@ function processEigenvalues(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         eigenvalues = new control_js_1.Eigenvalues((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setEigenvalues(eigenvalues);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         createEigenValuesInput(control, div, eigenvalues, id, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         eigenvalues = new control_js_1.Eigenvalues(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         //let idIB = Control.tagName + "_" + Eigenvalues.tagName + "_input_infoButton";
-        let infoButton = (0, html_js_1.createButton)(specifyNumberText, boundary1);
+        let infoButton = (0, html_js_1.createButton)(selectedLoadedText1, boundary1);
         //infoButton.id = idIB;
         div.appendChild(infoButton);
         infoButton.addEventListener('click', (event) => {
@@ -3731,19 +3882,19 @@ function processEigenvalues(control, controlsDiv, xml_control) {
         // Check if the Eigenvalues already exists
         if (!control.index.has(control_js_1.Eigenvalues.tagName)) {
             createEigenValuesInput(control, div, eigenvalues, id, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = eigenvalues.value.toString();
+            valueString = eigenvalues.value.toExponential();
             control.removeEigenvalues();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3777,13 +3928,15 @@ function createEigenValuesInput(control, div, eigenvalues, id, valueString) {
 function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.ShortestTimeOfInterest.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.ShortestTimeOfInterest.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.ShortestTimeOfInterest.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.ShortestTimeOfInterest.tagName + "_input";
+    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let stoi;
     let valueString;
     if (xml.length == 1) {
@@ -3791,14 +3944,14 @@ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         stoi = new control_js_1.ShortestTimeOfInterest((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setShortestTimeOfInterest(stoi);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         createShortestTimeOfInterest(control, div, stoi, id, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         stoi = new control_js_1.ShortestTimeOfInterest(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3806,19 +3959,19 @@ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
         // Check if the ShortestTimeOfInterest already exists
         if (!control.index.has(control_js_1.ShortestTimeOfInterest.tagName)) {
             createShortestTimeOfInterest(control, div, stoi, id, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = stoi.value.toString();
+            valueString = stoi.value.toExponential();
             control.removeShortestTimeOfInterest();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3852,13 +4005,15 @@ function createShortestTimeOfInterest(control, div, stoi, id, valueString) {
 function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.MaximumEvolutionTime.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.MaximumEvolutionTime.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.MaximumEvolutionTime.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.MaximumEvolutionTime.tagName + "_input";
+    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let met;
     let valueString;
     if (xml.length == 1) {
@@ -3866,14 +4021,14 @@ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         met = new control_js_1.MaximumEvolutionTime((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setMaximumEvolutionTime(met);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         createMaximumEvolutionTimeInput(control, div, met, id, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         met = new control_js_1.MaximumEvolutionTime(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3881,19 +4036,19 @@ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
         // Check if the MaximumEvolutionTime already exists
         if (!control.index.has(control_js_1.MaximumEvolutionTime.tagName)) {
             createMaximumEvolutionTimeInput(control, div, met, id, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = met.value.toString();
+            valueString = met.value.toExponential();
             control.removeMaximumEvolutionTime();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3927,13 +4082,15 @@ function createMaximumEvolutionTimeInput(control, div, met, id, valueString) {
 function processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.AutomaticallySetMaxEne.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
+    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let asme;
     let valueString;
     if (xml.length == 1) {
@@ -3941,14 +4098,14 @@ function processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control)
         let value = parseFloat(valueString);
         asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setAutomaticallySetMaxEne(asme);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         createAutomaticallySetMaxEneInputControl(control, div, asme, id, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         asme = new control_js_1.AutomaticallySetMaxEne(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -3956,19 +4113,19 @@ function processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control)
         // Check if the AutomaticallySetMaxEne already exists
         if (!control.index.has(control_js_1.AutomaticallySetMaxEne.tagName)) {
             createAutomaticallySetMaxEneInputControl(control, div, asme, id, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             control.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -4002,13 +4159,15 @@ function createAutomaticallySetMaxEneInputControl(control, div, asme, id, valueS
 function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     controlsDiv.appendChild(div);
-    let xml = xml_control.getElementsByTagName(control_js_1.DiagramEnergyOffset.tagName);
-    let lwb = (0, html_js_1.createLabelWithButton)(control_js_1.DiagramEnergyOffset.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.DiagramEnergyOffset.tagName;
+    let xml = xml_control.getElementsByTagName(tagName);
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.DiagramEnergyOffset.tagName + "_input";
+    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let deo;
     let valueString;
     if (xml.length == 1) {
@@ -4016,14 +4175,14 @@ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
         let value = parseFloat(valueString);
         deo = new control_js_1.DiagramEnergyOffset((0, xml_js_1.getAttributes)(xml[0]), value);
         control.setDiagramEnergyOffset(deo);
-        button.textContent = selected + selectedLoadedValueText;
+        button.textContent = buttonTextContentSelected;
         createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         deo = new control_js_1.DiagramEnergyOffset(new Map(), NaN);
-        button.textContent = notSelected + unselectedText;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -4031,19 +4190,19 @@ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
         // Check if the DiagramEnergyOffset already exists
         if (!control.index.has(control_js_1.DiagramEnergyOffset.tagName)) {
             createDiagramEnergyOffsetInput(control, div, deo, id, valueString);
-            button.textContent = selected + selectedValueText;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
-            valueString = deo.value.toString();
+            valueString = deo.value.toExponential();
             control.removeDiagramEnergyOffset();
             // Remove any existing div.
             let e = document.getElementById(id);
             if (e != null) {
                 e.remove();
             }
-            button.textContent = notSelected + unselectedText;
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }

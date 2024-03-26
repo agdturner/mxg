@@ -319,8 +319,11 @@ export class HideInactive extends Tag {
 
 /**
  * A class for "me:calcMethod".
+ * Expected to have an attribute "xsi_type" with one of the following values:
+ * "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis",
+ * "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt", "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis".
  */
-export class CalcMethod extends StringNode {
+export class CalcMethod extends NodeWithNodes {
 
     /**
      * The tag name.
@@ -331,13 +334,1096 @@ export class CalcMethod extends StringNode {
      * The possible values.
      */
     static readonly options: string[] = ["simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation",
-        "ThermodynamicTable", "sensitivityAnalysis"];
+        "ThermodynamicTable", "sensitivityAnalysis", "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt",
+        "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis"];
 
     /**
      * @param value The value.
      */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, CalcMethod.tagName);
+    }
+}
+
+/**
+ * A class for "me:MarquardtIterations".
+ */
+export class MarquardtIterations extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:MarquardtIterations";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, MarquardtIterations.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:MarquardtTolerance".
+ */
+export class MarquardtTolerance extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:MarquardtTolerance";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, MarquardtTolerance.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:MarquardtDerivDelta".
+ */
+export class MarquardtDerivDelta extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:MarquardtDerivDelta";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, MarquardtDerivDelta.tagName, value);
+    }
+}
+
+export class CalcMethodMarquardt extends CalcMethod {
+
+    /**
+     * The tag name.
+     */
+    static readonly xsi_type: string = "me:marquardt";
+
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, marquardtIterations?: MarquardtIterations,
+        marquardtTolerance?: MarquardtTolerance, marquardtDerivDelta?: MarquardtDerivDelta) {
+        super(attributes);
+        this.index = new Map<string, number>();
+        if (marquardtIterations != undefined) {
+            this.index.set(MarquardtIterations.tagName, this.nodes.size);
+            this.addNode(marquardtIterations);
+        }
+        if (marquardtTolerance != undefined) {
+            this.index.set(MarquardtTolerance.tagName, this.nodes.size);
+            this.addNode(marquardtTolerance);
+        }
+        if (marquardtDerivDelta != undefined) {
+            this.index.set(MarquardtDerivDelta.tagName, this.nodes.size);
+            this.addNode(marquardtDerivDelta);
+        }
+    }
+
+
+    /**
+     * @returns The marquardtIterations or undefined.
+     */
+    getMarquardtIterations(): MarquardtIterations | undefined {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MarquardtIterations;
+        }
+    }
+
+    /**
+     * @param marquardtIterations The marquardtIterations.
+     */
+    setMarquardtIterations(marquardtIterations: MarquardtIterations) {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtIterations);
+        } else {
+            this.index.set(MarquardtIterations.tagName, this.nodes.size);
+            this.addNode(marquardtIterations);
+        }
+    }
+
+    /**
+     * Remove the marquardtIterations.
+     */
+    removeMarquardtIterations() {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtIterations.tagName);
+        }
+    }
+
+    /**
+     * @returns The marquardtTolerance or undefined.
+     */
+    getMarquardtTolerance(): MarquardtTolerance | undefined {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MarquardtTolerance;
+        }
+    }
+
+    /**
+     * @param marquardtTolerance The marquardtTolerance.
+     */
+    setMarquardtTolerance(marquardtTolerance: MarquardtTolerance) {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtTolerance);
+        } else {
+            this.index.set(MarquardtTolerance.tagName, this.nodes.size);
+            this.addNode(marquardtTolerance);
+        }
+    }
+
+    /**
+     * Remove the marquardtTolerance.
+     */
+    removeMarquardtTolerance() {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtTolerance.tagName);
+        }
+    }
+
+    /**
+     * @returns The marquardtDerivDelta or undefined.
+     */
+    getMarquardtDerivDelta(): MarquardtDerivDelta | undefined {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MarquardtDerivDelta;
+        }
+    }
+
+    /**
+     * @param marquardtDerivDelta The marquardtDerivDelta.
+     */
+    setMarquardtDerivDelta(marquardtDerivDelta: MarquardtDerivDelta) {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtDerivDelta);
+        } else {
+            this.index.set(MarquardtDerivDelta.tagName, this.nodes.size);
+            this.addNode(marquardtDerivDelta);
+        }
+    }
+
+    /**
+     * Remove the marquardtDerivDelta.
+     */
+    removeMarquardtDerivDelta() {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtDerivDelta.tagName);
+        }
+    }
+}
+
+/**
+ * A class for "me:useTraceWeighting".
+ */
+export class UseTraceWeighting extends Tag {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:useTraceWeighting";
+
+    constructor() {
+        super(UseTraceWeighting.tagName);
+    }
+}
+
+/**
+ * A class for "me:format".
+ * The attributes are expected to have the following keys:
+ * "rateUnits" (with known values: "cm3mole-1s-1")
+ * Known values include:
+ * "cantera"
+ */
+export class Format extends StringNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:format";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
     constructor(attributes: Map<string, string>, value: string) {
-        super(attributes, CalcMethod.tagName, value);
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:precision".
+ * Known values include:
+ * "d", "dd", "qd", "double", "double-double" or "quad-double"
+ */
+export class Precision extends StringNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:format";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: string) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebNumTemp".
+ */
+export class ChebNumTemp extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebNumTemp";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebNumConc".
+ */
+export class ChebNumConc extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebNumConc";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebMaxTemp".
+ */
+export class ChebMaxTemp extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebMaxTemp";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebMinTemp".
+ */
+export class ChebMinTemp extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebMinTemp";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebMaxConc".
+ * Known attributes include:
+ * "units" (known values include "atm").
+ */
+export class ChebMaxConc extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebMaxConc";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+
+    /**
+     * @returns The units.
+     */
+    getUnits(): string | undefined {
+        return this.attributes.get("units");
+    }
+
+    /**
+     * @param units The units.
+     */
+    setUnits(units: string) {
+        this.attributes.set("units", units);
+    }
+}
+
+/**
+ * A class for "me:chebMinConc".
+ */
+export class ChebMinConc extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebMinConc";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebTExSize".
+ */
+export class ChebTExSize extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebTExSize";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:chebPExSize".
+ */
+export class ChebPExSize extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:chebPExSize";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Format.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:analyticalRepresentation" CalcMethod.
+ */
+export class CalcMethodAnalyticalRepresentation extends CalcMethod {
+
+    /**
+     * The tag name.
+     */
+    static readonly xsi_type: string = "me:analyticalRepresentation";
+
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, format?: Format, precision?: Precision, chebNumTemp?: ChebNumTemp, 
+        chebNumConc?: ChebNumConc, chebMaxTemp?: ChebMaxTemp, chebMinTemp?: ChebMinTemp, chebMaxConc?: ChebMaxConc,
+        chebMinConc?: ChebMinConc, chebTExSize?: ChebTExSize, chebPExSize?: ChebPExSize) {
+        super(attributes);
+        this.index = new Map<string, number>();
+        if (format != undefined) {
+            this.index.set(Format.tagName, this.nodes.size);
+            this.addNode(format);
+        }
+        if (precision != undefined) {
+            this.index.set(Precision.tagName, this.nodes.size);
+            this.addNode(precision);
+        }
+        if (chebNumTemp != undefined) {
+            this.index.set(ChebNumTemp.tagName, this.nodes.size);
+            this.addNode(chebNumTemp);
+        }
+        if (chebNumConc != undefined) {
+            this.index.set(ChebNumConc.tagName, this.nodes.size);
+            this.addNode(chebNumConc);
+        }
+        if (chebMaxTemp != undefined) {
+            this.index.set(ChebMaxTemp.tagName, this.nodes.size);
+            this.addNode(chebMaxTemp);
+        }
+        if (chebMinTemp != undefined) {
+            this.index.set(ChebMinTemp.tagName, this.nodes.size);
+            this.addNode(chebMinTemp);
+        }
+        if (chebMaxConc != undefined) {
+            this.index.set(ChebMaxConc.tagName, this.nodes.size);
+            this.addNode(chebMaxConc);
+        }
+        if (chebMinConc != undefined) {
+            this.index.set(ChebMinConc.tagName, this.nodes.size);
+            this.addNode(chebMinConc);
+        }
+        if (chebTExSize != undefined) {
+            this.index.set(ChebTExSize.tagName, this.nodes.size);
+            this.addNode(chebTExSize);
+        }
+        if (chebPExSize != undefined) {
+            this.index.set(ChebPExSize.tagName, this.nodes.size);
+            this.addNode(chebPExSize);
+        }
+    }
+    
+    /**
+     * @returns The format or undefined.
+     */
+    getFormat(): Format | undefined {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Format;
+        }
+    }
+
+    /**
+     * @param format The format.
+     */
+    setFormat(format: Format) {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, format);
+        } else {
+            this.index.set(Format.tagName, this.nodes.size);
+            this.addNode(format);
+        }
+    }
+
+    /**
+     * Remove the format.
+     */
+    removeFormat() {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Format.tagName);
+        }
+    }
+
+    /**
+     * @returns The precision or undefined.
+     */
+    getPrecision(): Precision | undefined {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Precision;
+        }
+    }
+
+    /**
+     * @param precision The precision.
+     */
+    setPrecision(precision: Precision) {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, precision);
+        } else {
+            this.index.set(Precision.tagName, this.nodes.size);
+            this.addNode(precision);
+        }
+    }
+
+    /**
+     * Remove the precision.
+     */
+    removePrecision() {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Precision.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebNumTemp or undefined.
+     */
+    getChebNumTemp(): ChebNumTemp | undefined {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebNumTemp;
+        }
+    }
+
+    /**
+     * @param chebNumTemp The chebNumTemp.
+     */
+    setChebNumTemp(chebNumTemp: ChebNumTemp) {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebNumTemp);
+        } else {
+            this.index.set(ChebNumTemp.tagName, this.nodes.size);
+            this.addNode(chebNumTemp);
+        }
+    }
+
+    /**
+     * Remove the chebNumTemp.
+     */
+    removeChebNumTemp() {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebNumTemp.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebNumConc or undefined.
+     */
+    getChebNumConc(): ChebNumConc | undefined {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebNumConc;
+        }
+    }
+
+    /**
+     * @param chebNumConc The chebNumConc.
+     */
+    setChebNumConc(chebNumConc: ChebNumConc) {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebNumConc);
+        } else {
+            this.index.set(ChebNumConc.tagName, this.nodes.size);
+            this.addNode(chebNumConc);
+        }
+    }
+
+    /**
+     * Remove the chebNumConc.
+     */
+    removeChebNumConc() {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebNumConc.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebMaxTemp or undefined.
+     */
+    getChebMaxTemp(): ChebMaxTemp | undefined {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebMaxTemp;
+        }
+    }
+
+    /**
+     * @param chebMaxTemp The chebMaxTemp.
+     */
+    setChebMaxTemp(chebMaxTemp: ChebMaxTemp) {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMaxTemp);
+        } else {
+            this.index.set(ChebMaxTemp.tagName, this.nodes.size);
+            this.addNode(chebMaxTemp);
+        }
+    }
+
+    /**
+     * Remove the chebMaxTemp.
+     */
+    removeChebMaxTemp() {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMaxTemp.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebMinTemp or undefined.
+     */
+    getChebMinTemp(): ChebMinTemp | undefined {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebMinTemp;
+        }
+    }
+
+    /**
+     * @param chebMinTemp The chebMinTemp.
+     */
+    setChebMinTemp(chebMinTemp: ChebMinTemp) {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMinTemp);
+        } else {
+            this.index.set(ChebMinTemp.tagName, this.nodes.size);
+            this.addNode(chebMinTemp);
+        }
+    }
+
+    /**
+     * Remove the chebMinTemp.
+     */
+    removeChebMinTemp() {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMinTemp.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebMaxConc or undefined.
+     */
+    getChebMaxConc(): ChebMaxConc | undefined {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebMaxConc;
+        }
+    }
+
+    /**
+     * @param chebMaxConc The chebMaxConc.
+     */
+    setChebMaxConc(chebMaxConc: ChebMaxConc) {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMaxConc);
+        } else {
+            this.index.set(ChebMaxConc.tagName, this.nodes.size);
+            this.addNode(chebMaxConc);
+        }
+    }
+
+    /**
+     * Remove the chebMaxConc.
+     */
+    removeChebMaxConc() {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMaxConc.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebMinConc or undefined.
+     */
+    getChebMinConc(): ChebMinConc | undefined {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebMinConc;
+        }
+    }
+
+    /**
+     * @param chebMinConc The chebMinConc.
+     */
+    setChebMinConc(chebMinConc: ChebMinConc) {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMinConc);
+        } else {
+            this.index.set(ChebMinConc.tagName, this.nodes.size);
+            this.addNode(chebMinConc);
+        }
+    }
+
+    /**
+     * Remove the chebMinConc.
+     */
+    removeChebMinConc() {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMinConc.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebTExSize or undefined.
+     */
+    getChebTExSize(): ChebTExSize | undefined {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebTExSize;
+        }
+    }
+
+    /**
+     * @param chebTExSize The chebTExSize.
+     */
+    setChebTExSize(chebTExSize: ChebTExSize) {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebTExSize);
+        } else {
+            this.index.set(ChebTExSize.tagName, this.nodes.size);
+            this.addNode(chebTExSize);
+        }
+    }
+
+    /**
+     * Remove the chebTExSize.
+     */
+    removeChebTExSize() {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebTExSize.tagName);
+        }
+    }
+
+    /**
+     * @returns The chebPExSize or undefined.
+     */
+    getChebPExSize(): ChebPExSize | undefined {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ChebPExSize;
+        }
+    }
+
+    /**
+     * @param chebPExSize The chebPExSize.
+     */
+    setChebPExSize(chebPExSize: ChebPExSize) {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebPExSize);
+        } else {
+            this.index.set(ChebPExSize.tagName, this.nodes.size);
+            this.addNode(chebPExSize);
+        }
+    }
+
+    /**
+     * Remove the chebPExSize.
+     */
+    removeChebPExSize() {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebPExSize.tagName);
+        }
+    }
+}
+
+/**
+ * A class for "me:Tmin" CalcMethod.
+ */
+export class Tmin extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:Tmin";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Tmin.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:Tmid" CalcMethod.
+ */
+export class Tmid extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:Tmid";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Tmid.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:Tmax" CalcMethod.
+ */
+export class Tmax extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:Tmax";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Tmax.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:Tstep" CalcMethod.
+ */
+export class Tstep extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:Tstep";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, Tmin.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:ThermodynamicTable" CalcMethod.
+ * Expected to have attributes:
+ * "xsi_type" with the value "me:ThermodynamicTable";
+ * "units" with known values "kJ/mol".
+ */
+export class ThermodynamicTable extends CalcMethod {
+
+    /**
+     * The tag name.
+     */
+    static readonly xsi_type: string = "me:ThermodynamicTable";
+
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, tmin?: Tmin, tmid?: Tmid, tmax?: Tmax, tstep?: Tstep) {
+        super(attributes);
+        this.index = new Map<string, number>();
+        if (tmin != undefined) {
+            this.index.set(Tmin.tagName, this.nodes.size);
+            this.addNode(tmin);
+        }
+        if (tmid != undefined) {
+            this.index.set(Tmid.tagName, this.nodes.size);
+            this.addNode(tmid);
+        }
+        if (tmax != undefined) {
+            this.index.set(Tmax.tagName, this.nodes.size);
+            this.addNode(tmax);
+        }
+        if (tstep != undefined) {
+            this.index.set(Tstep.tagName, this.nodes.size);
+            this.addNode(tstep);
+        }
+    }
+
+    /**
+     * @returns The tmin or undefined.
+     */
+    getTmin(): Tmin | undefined {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Tmin;
+        }
+    }
+
+    /**
+     * @param tmin The tmin.
+     */
+    setTmin(tmin: Tmin) {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmin);
+        } else {
+            this.index.set(Tmin.tagName, this.nodes.size);
+            this.addNode(tmin);
+        }
+    }
+
+    /**
+     * Remove the tmin.
+     */
+    removeTmin() {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmin.tagName);
+        }
+    }
+
+    /**
+     * @returns The tmid or undefined.
+     */
+    getTmid(): Tmid | undefined {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Tmid;
+        }
+    }
+
+    /**
+     * @param tmid The tmid.
+     */
+    setTmid(tmid: Tmid) {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmid);
+        } else {
+            this.index.set(Tmid.tagName, this.nodes.size);
+            this.addNode(tmid);
+        }
+    }
+
+    /**
+     * Remove the tmid.
+     */
+    removeTmid() {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmid.tagName);
+        }
+    }
+
+    /**
+     * @returns The tmax or undefined.
+     */
+    getTmax(): Tmax | undefined {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Tmax;
+        }
+    }
+
+    /**
+     * @param tmax The tmax.
+     */
+    setTmax(tmax: Tmax) {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmax);
+        } else {
+            this.index.set(Tmax.tagName, this.nodes.size);
+            this.addNode(tmax);
+        }
+    }
+
+    /**
+     * Remove the tmax.
+     */
+    removeTmax() {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmax.tagName);
+        }
+    }
+
+    /**
+     * @returns The tstep or undefined.
+     */
+    getTstep(): Tstep | undefined {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Tstep;
+        }
+    }
+
+    /**
+     * @param tstep The tstep.
+     */
+    setTstep(tstep: Tstep) {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tstep);
+        } else {
+            this.index.set(Tstep.tagName, this.nodes.size);
+            this.addNode(tstep);
+        }
+    }
+
+    /**
+     * Remove the tstep.
+     */
+    removeTstep() {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tstep.tagName);
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelectElement = exports.createSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
+exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createButtonWithLabel = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.makeCollapsible = exports.getCollapsibleDiv = exports.remove = void 0;
 /**
  * Remove a top level element.
  * @param id The id of the element to remove.
@@ -199,7 +199,7 @@ exports.createSelectElement = createSelectElement;
  * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-function createLabelWithSelectElement(textContent, options, name, id, componentMargin, divMargin) {
+function createLabelWithSelect(textContent, options, name, id, componentMargin, divMargin) {
     let div = createDiv(divMargin);
     let label = createLabel(textContent, componentMargin);
     div.appendChild(label);
@@ -215,7 +215,7 @@ function createLabelWithSelectElement(textContent, options, name, id, componentM
     });
     return div;
 }
-exports.createLabelWithSelectElement = createLabelWithSelectElement;
+exports.createLabelWithSelect = createLabelWithSelect;
 /**
  * Create and return an HTMLButtonElement.
  *
@@ -233,11 +233,10 @@ function createButton(textContent, boundary) {
 exports.createButton = createButton;
 /**
  * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
- *
+ * @param labeltext The text content of the label.
  * @param textContent The text content of the button.
  * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
  * @param divMargin The margin for the HTMLDivElement.
- *
  * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
  */
 function createLabelWithButton(labeltext, textContent, componentMargin, divMargin) {
@@ -249,6 +248,23 @@ function createLabelWithButton(labeltext, textContent, componentMargin, divMargi
     return div;
 }
 exports.createLabelWithButton = createLabelWithButton;
+/**
+ * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
+ * @param labeltext The text content of the label.
+ * @param textContent The text content of the button.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
+ */
+function createButtonWithLabel(labeltext, textContent, componentMargin, divMargin) {
+    let div = createFlexDiv(divMargin);
+    div.appendChild(createButton(textContent, componentMargin));
+    let label = createLabel(labeltext, componentMargin);
+    Object.assign(label.style, componentMargin);
+    div.appendChild(label);
+    return div;
+}
+exports.createButtonWithLabel = createButtonWithLabel;
 /**
  * Create and return HTMLDivElement.
  * @param margin The margin to go around the HTMLDivElement.
@@ -269,6 +285,7 @@ exports.createDiv = createDiv;
 function createFlexDiv(margin) {
     let div = createDiv(margin);
     div.style.display = 'flex';
+    div.style.flexWrap = 'wrap';
     return div;
 }
 exports.createFlexDiv = createFlexDiv;

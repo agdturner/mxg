@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstants = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
+exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.ThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstants = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
 const xml_1 = require("./xml");
 /**
  * A class for "me:calculateRateCoefficientsOnly".
@@ -277,8 +277,11 @@ class HideInactive extends xml_1.Tag {
 exports.HideInactive = HideInactive;
 /**
  * A class for "me:calcMethod".
+ * Expected to have an attribute "xsi_type" with one of the following values:
+ * "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis",
+ * "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt", "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis".
  */
-class CalcMethod extends xml_1.StringNode {
+class CalcMethod extends xml_1.NodeWithNodes {
     /**
      * The tag name.
      */
@@ -287,15 +290,1013 @@ class CalcMethod extends xml_1.StringNode {
      * The possible values.
      */
     static options = ["simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation",
-        "ThermodynamicTable", "sensitivityAnalysis"];
+        "ThermodynamicTable", "sensitivityAnalysis", "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt",
+        "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis"];
     /**
      * @param value The value.
      */
-    constructor(attributes, value) {
-        super(attributes, CalcMethod.tagName, value);
+    constructor(attributes) {
+        super(attributes, CalcMethod.tagName);
     }
 }
 exports.CalcMethod = CalcMethod;
+/**
+ * A class for "me:MarquardtIterations".
+ */
+class MarquardtIterations extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:MarquardtIterations";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, MarquardtIterations.tagName, value);
+    }
+}
+exports.MarquardtIterations = MarquardtIterations;
+/**
+ * A class for "me:MarquardtTolerance".
+ */
+class MarquardtTolerance extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:MarquardtTolerance";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, MarquardtTolerance.tagName, value);
+    }
+}
+exports.MarquardtTolerance = MarquardtTolerance;
+/**
+ * A class for "me:MarquardtDerivDelta".
+ */
+class MarquardtDerivDelta extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:MarquardtDerivDelta";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, MarquardtDerivDelta.tagName, value);
+    }
+}
+exports.MarquardtDerivDelta = MarquardtDerivDelta;
+class CalcMethodMarquardt extends CalcMethod {
+    /**
+     * The tag name.
+     */
+    static xsi_type = "me:marquardt";
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, marquardtIterations, marquardtTolerance, marquardtDerivDelta) {
+        super(attributes);
+        this.index = new Map();
+        if (marquardtIterations != undefined) {
+            this.index.set(MarquardtIterations.tagName, this.nodes.size);
+            this.addNode(marquardtIterations);
+        }
+        if (marquardtTolerance != undefined) {
+            this.index.set(MarquardtTolerance.tagName, this.nodes.size);
+            this.addNode(marquardtTolerance);
+        }
+        if (marquardtDerivDelta != undefined) {
+            this.index.set(MarquardtDerivDelta.tagName, this.nodes.size);
+            this.addNode(marquardtDerivDelta);
+        }
+    }
+    /**
+     * @returns The marquardtIterations or undefined.
+     */
+    getMarquardtIterations() {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param marquardtIterations The marquardtIterations.
+     */
+    setMarquardtIterations(marquardtIterations) {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtIterations);
+        }
+        else {
+            this.index.set(MarquardtIterations.tagName, this.nodes.size);
+            this.addNode(marquardtIterations);
+        }
+    }
+    /**
+     * Remove the marquardtIterations.
+     */
+    removeMarquardtIterations() {
+        let i = this.index.get(MarquardtIterations.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtIterations.tagName);
+        }
+    }
+    /**
+     * @returns The marquardtTolerance or undefined.
+     */
+    getMarquardtTolerance() {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param marquardtTolerance The marquardtTolerance.
+     */
+    setMarquardtTolerance(marquardtTolerance) {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtTolerance);
+        }
+        else {
+            this.index.set(MarquardtTolerance.tagName, this.nodes.size);
+            this.addNode(marquardtTolerance);
+        }
+    }
+    /**
+     * Remove the marquardtTolerance.
+     */
+    removeMarquardtTolerance() {
+        let i = this.index.get(MarquardtTolerance.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtTolerance.tagName);
+        }
+    }
+    /**
+     * @returns The marquardtDerivDelta or undefined.
+     */
+    getMarquardtDerivDelta() {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param marquardtDerivDelta The marquardtDerivDelta.
+     */
+    setMarquardtDerivDelta(marquardtDerivDelta) {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, marquardtDerivDelta);
+        }
+        else {
+            this.index.set(MarquardtDerivDelta.tagName, this.nodes.size);
+            this.addNode(marquardtDerivDelta);
+        }
+    }
+    /**
+     * Remove the marquardtDerivDelta.
+     */
+    removeMarquardtDerivDelta() {
+        let i = this.index.get(MarquardtDerivDelta.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MarquardtDerivDelta.tagName);
+        }
+    }
+}
+exports.CalcMethodMarquardt = CalcMethodMarquardt;
+/**
+ * A class for "me:useTraceWeighting".
+ */
+class UseTraceWeighting extends xml_1.Tag {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:useTraceWeighting";
+    constructor() {
+        super(UseTraceWeighting.tagName);
+    }
+}
+exports.UseTraceWeighting = UseTraceWeighting;
+/**
+ * A class for "me:format".
+ * The attributes are expected to have the following keys:
+ * "rateUnits" (with known values: "cm3mole-1s-1")
+ * Known values include:
+ * "cantera"
+ */
+class Format extends xml_1.StringNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:format";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.Format = Format;
+/**
+ * A class for "me:precision".
+ * Known values include:
+ * "d", "dd", "qd", "double", "double-double" or "quad-double"
+ */
+class Precision extends xml_1.StringNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:format";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.Precision = Precision;
+/**
+ * A class for "me:chebNumTemp".
+ */
+class ChebNumTemp extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebNumTemp";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebNumTemp = ChebNumTemp;
+/**
+ * A class for "me:chebNumConc".
+ */
+class ChebNumConc extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebNumConc";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebNumConc = ChebNumConc;
+/**
+ * A class for "me:chebMaxTemp".
+ */
+class ChebMaxTemp extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebMaxTemp";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebMaxTemp = ChebMaxTemp;
+/**
+ * A class for "me:chebMinTemp".
+ */
+class ChebMinTemp extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebMinTemp";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebMinTemp = ChebMinTemp;
+/**
+ * A class for "me:chebMaxConc".
+ * Known attributes include:
+ * "units" (known values include "atm").
+ */
+class ChebMaxConc extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebMaxConc";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+    /**
+     * @returns The units.
+     */
+    getUnits() {
+        return this.attributes.get("units");
+    }
+    /**
+     * @param units The units.
+     */
+    setUnits(units) {
+        this.attributes.set("units", units);
+    }
+}
+exports.ChebMaxConc = ChebMaxConc;
+/**
+ * A class for "me:chebMinConc".
+ */
+class ChebMinConc extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebMinConc";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebMinConc = ChebMinConc;
+/**
+ * A class for "me:chebTExSize".
+ */
+class ChebTExSize extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebTExSize";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebTExSize = ChebTExSize;
+/**
+ * A class for "me:chebPExSize".
+ */
+class ChebPExSize extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:chebPExSize";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Format.tagName, value);
+    }
+}
+exports.ChebPExSize = ChebPExSize;
+/**
+ * A class for "me:analyticalRepresentation" CalcMethod.
+ */
+class CalcMethodAnalyticalRepresentation extends CalcMethod {
+    /**
+     * The tag name.
+     */
+    static xsi_type = "me:analyticalRepresentation";
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, format, precision, chebNumTemp, chebNumConc, chebMaxTemp, chebMinTemp, chebMaxConc, chebMinConc, chebTExSize, chebPExSize) {
+        super(attributes);
+        this.index = new Map();
+        if (format != undefined) {
+            this.index.set(Format.tagName, this.nodes.size);
+            this.addNode(format);
+        }
+        if (precision != undefined) {
+            this.index.set(Precision.tagName, this.nodes.size);
+            this.addNode(precision);
+        }
+        if (chebNumTemp != undefined) {
+            this.index.set(ChebNumTemp.tagName, this.nodes.size);
+            this.addNode(chebNumTemp);
+        }
+        if (chebNumConc != undefined) {
+            this.index.set(ChebNumConc.tagName, this.nodes.size);
+            this.addNode(chebNumConc);
+        }
+        if (chebMaxTemp != undefined) {
+            this.index.set(ChebMaxTemp.tagName, this.nodes.size);
+            this.addNode(chebMaxTemp);
+        }
+        if (chebMinTemp != undefined) {
+            this.index.set(ChebMinTemp.tagName, this.nodes.size);
+            this.addNode(chebMinTemp);
+        }
+        if (chebMaxConc != undefined) {
+            this.index.set(ChebMaxConc.tagName, this.nodes.size);
+            this.addNode(chebMaxConc);
+        }
+        if (chebMinConc != undefined) {
+            this.index.set(ChebMinConc.tagName, this.nodes.size);
+            this.addNode(chebMinConc);
+        }
+        if (chebTExSize != undefined) {
+            this.index.set(ChebTExSize.tagName, this.nodes.size);
+            this.addNode(chebTExSize);
+        }
+        if (chebPExSize != undefined) {
+            this.index.set(ChebPExSize.tagName, this.nodes.size);
+            this.addNode(chebPExSize);
+        }
+    }
+    /**
+     * @returns The format or undefined.
+     */
+    getFormat() {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param format The format.
+     */
+    setFormat(format) {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, format);
+        }
+        else {
+            this.index.set(Format.tagName, this.nodes.size);
+            this.addNode(format);
+        }
+    }
+    /**
+     * Remove the format.
+     */
+    removeFormat() {
+        let i = this.index.get(Format.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Format.tagName);
+        }
+    }
+    /**
+     * @returns The precision or undefined.
+     */
+    getPrecision() {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param precision The precision.
+     */
+    setPrecision(precision) {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, precision);
+        }
+        else {
+            this.index.set(Precision.tagName, this.nodes.size);
+            this.addNode(precision);
+        }
+    }
+    /**
+     * Remove the precision.
+     */
+    removePrecision() {
+        let i = this.index.get(Precision.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Precision.tagName);
+        }
+    }
+    /**
+     * @returns The chebNumTemp or undefined.
+     */
+    getChebNumTemp() {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebNumTemp The chebNumTemp.
+     */
+    setChebNumTemp(chebNumTemp) {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebNumTemp);
+        }
+        else {
+            this.index.set(ChebNumTemp.tagName, this.nodes.size);
+            this.addNode(chebNumTemp);
+        }
+    }
+    /**
+     * Remove the chebNumTemp.
+     */
+    removeChebNumTemp() {
+        let i = this.index.get(ChebNumTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebNumTemp.tagName);
+        }
+    }
+    /**
+     * @returns The chebNumConc or undefined.
+     */
+    getChebNumConc() {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebNumConc The chebNumConc.
+     */
+    setChebNumConc(chebNumConc) {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebNumConc);
+        }
+        else {
+            this.index.set(ChebNumConc.tagName, this.nodes.size);
+            this.addNode(chebNumConc);
+        }
+    }
+    /**
+     * Remove the chebNumConc.
+     */
+    removeChebNumConc() {
+        let i = this.index.get(ChebNumConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebNumConc.tagName);
+        }
+    }
+    /**
+     * @returns The chebMaxTemp or undefined.
+     */
+    getChebMaxTemp() {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebMaxTemp The chebMaxTemp.
+     */
+    setChebMaxTemp(chebMaxTemp) {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMaxTemp);
+        }
+        else {
+            this.index.set(ChebMaxTemp.tagName, this.nodes.size);
+            this.addNode(chebMaxTemp);
+        }
+    }
+    /**
+     * Remove the chebMaxTemp.
+     */
+    removeChebMaxTemp() {
+        let i = this.index.get(ChebMaxTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMaxTemp.tagName);
+        }
+    }
+    /**
+     * @returns The chebMinTemp or undefined.
+     */
+    getChebMinTemp() {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebMinTemp The chebMinTemp.
+     */
+    setChebMinTemp(chebMinTemp) {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMinTemp);
+        }
+        else {
+            this.index.set(ChebMinTemp.tagName, this.nodes.size);
+            this.addNode(chebMinTemp);
+        }
+    }
+    /**
+     * Remove the chebMinTemp.
+     */
+    removeChebMinTemp() {
+        let i = this.index.get(ChebMinTemp.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMinTemp.tagName);
+        }
+    }
+    /**
+     * @returns The chebMaxConc or undefined.
+     */
+    getChebMaxConc() {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebMaxConc The chebMaxConc.
+     */
+    setChebMaxConc(chebMaxConc) {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMaxConc);
+        }
+        else {
+            this.index.set(ChebMaxConc.tagName, this.nodes.size);
+            this.addNode(chebMaxConc);
+        }
+    }
+    /**
+     * Remove the chebMaxConc.
+     */
+    removeChebMaxConc() {
+        let i = this.index.get(ChebMaxConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMaxConc.tagName);
+        }
+    }
+    /**
+     * @returns The chebMinConc or undefined.
+     */
+    getChebMinConc() {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebMinConc The chebMinConc.
+     */
+    setChebMinConc(chebMinConc) {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebMinConc);
+        }
+        else {
+            this.index.set(ChebMinConc.tagName, this.nodes.size);
+            this.addNode(chebMinConc);
+        }
+    }
+    /**
+     * Remove the chebMinConc.
+     */
+    removeChebMinConc() {
+        let i = this.index.get(ChebMinConc.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebMinConc.tagName);
+        }
+    }
+    /**
+     * @returns The chebTExSize or undefined.
+     */
+    getChebTExSize() {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebTExSize The chebTExSize.
+     */
+    setChebTExSize(chebTExSize) {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebTExSize);
+        }
+        else {
+            this.index.set(ChebTExSize.tagName, this.nodes.size);
+            this.addNode(chebTExSize);
+        }
+    }
+    /**
+     * Remove the chebTExSize.
+     */
+    removeChebTExSize() {
+        let i = this.index.get(ChebTExSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebTExSize.tagName);
+        }
+    }
+    /**
+     * @returns The chebPExSize or undefined.
+     */
+    getChebPExSize() {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param chebPExSize The chebPExSize.
+     */
+    setChebPExSize(chebPExSize) {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, chebPExSize);
+        }
+        else {
+            this.index.set(ChebPExSize.tagName, this.nodes.size);
+            this.addNode(chebPExSize);
+        }
+    }
+    /**
+     * Remove the chebPExSize.
+     */
+    removeChebPExSize() {
+        let i = this.index.get(ChebPExSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ChebPExSize.tagName);
+        }
+    }
+}
+exports.CalcMethodAnalyticalRepresentation = CalcMethodAnalyticalRepresentation;
+/**
+ * A class for "me:Tmin" CalcMethod.
+ */
+class Tmin extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:Tmin";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Tmin.tagName, value);
+    }
+}
+exports.Tmin = Tmin;
+/**
+ * A class for "me:Tmid" CalcMethod.
+ */
+class Tmid extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:Tmid";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Tmid.tagName, value);
+    }
+}
+exports.Tmid = Tmid;
+/**
+ * A class for "me:Tmax" CalcMethod.
+ */
+class Tmax extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:Tmax";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Tmax.tagName, value);
+    }
+}
+exports.Tmax = Tmax;
+/**
+ * A class for "me:Tstep" CalcMethod.
+ */
+class Tstep extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:Tstep";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, Tmin.tagName, value);
+    }
+}
+exports.Tstep = Tstep;
+/**
+ * A class for "me:ThermodynamicTable" CalcMethod.
+ * Expected to have attributes:
+ * "xsi_type" with the value "me:ThermodynamicTable";
+ * "units" with known values "kJ/mol".
+ */
+class ThermodynamicTable extends CalcMethod {
+    /**
+     * The tag name.
+     */
+    static xsi_type = "me:ThermodynamicTable";
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, tmin, tmid, tmax, tstep) {
+        super(attributes);
+        this.index = new Map();
+        if (tmin != undefined) {
+            this.index.set(Tmin.tagName, this.nodes.size);
+            this.addNode(tmin);
+        }
+        if (tmid != undefined) {
+            this.index.set(Tmid.tagName, this.nodes.size);
+            this.addNode(tmid);
+        }
+        if (tmax != undefined) {
+            this.index.set(Tmax.tagName, this.nodes.size);
+            this.addNode(tmax);
+        }
+        if (tstep != undefined) {
+            this.index.set(Tstep.tagName, this.nodes.size);
+            this.addNode(tstep);
+        }
+    }
+    /**
+     * @returns The tmin or undefined.
+     */
+    getTmin() {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param tmin The tmin.
+     */
+    setTmin(tmin) {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmin);
+        }
+        else {
+            this.index.set(Tmin.tagName, this.nodes.size);
+            this.addNode(tmin);
+        }
+    }
+    /**
+     * Remove the tmin.
+     */
+    removeTmin() {
+        let i = this.index.get(Tmin.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmin.tagName);
+        }
+    }
+    /**
+     * @returns The tmid or undefined.
+     */
+    getTmid() {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param tmid The tmid.
+     */
+    setTmid(tmid) {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmid);
+        }
+        else {
+            this.index.set(Tmid.tagName, this.nodes.size);
+            this.addNode(tmid);
+        }
+    }
+    /**
+     * Remove the tmid.
+     */
+    removeTmid() {
+        let i = this.index.get(Tmid.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmid.tagName);
+        }
+    }
+    /**
+     * @returns The tmax or undefined.
+     */
+    getTmax() {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param tmax The tmax.
+     */
+    setTmax(tmax) {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tmax);
+        }
+        else {
+            this.index.set(Tmax.tagName, this.nodes.size);
+            this.addNode(tmax);
+        }
+    }
+    /**
+     * Remove the tmax.
+     */
+    removeTmax() {
+        let i = this.index.get(Tmax.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tmax.tagName);
+        }
+    }
+    /**
+     * @returns The tstep or undefined.
+     */
+    getTstep() {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param tstep The tstep.
+     */
+    setTstep(tstep) {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, tstep);
+        }
+        else {
+            this.index.set(Tstep.tagName, this.nodes.size);
+            this.addNode(tstep);
+        }
+    }
+    /**
+     * Remove the tstep.
+     */
+    removeTstep() {
+        let i = this.index.get(Tstep.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Tstep.tagName);
+        }
+    }
+}
+exports.ThermodynamicTable = ThermodynamicTable;
 /**
  * A class for "me:eigenvalues".
  */

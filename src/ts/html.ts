@@ -318,6 +318,7 @@ export function createFlexDiv(
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createDiv(margin);
     div.style.display = 'flex';
+    div.style.flexWrap = 'wrap';
     return div;
 }
 
