@@ -1306,7 +1306,7 @@ let popWindow;
                 hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
                 let expansionSizeInputElementId = molecule.id + "_" + (0, _moleculeJs.DOSCMethod).tagName + "_" + (0, _moleculeJs.HinderedRotorPotential).tagName + "_expansionSize";
                 let expansionSizeInputElement = (0, _htmlJs.createInput)("number", expansionSizeInputElementId, boundary1);
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 expansionSizeInputElement.addEventListener("change", (event)=>{
                     let target = event.target;
                     // Check the input is a number.
@@ -1314,11 +1314,11 @@ let popWindow;
                     else {
                         // Reset the input to the current value.
                         alert("Expansion size input is not a number, resetting...");
-                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                     }
                     (0, _htmlJs.resizeInputElement)(expansionSizeInputElement);
                 });
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 (0, _htmlJs.resizeInputElement)(expansionSizeInputElement);
                 hinderedRotorPotentialDiv.appendChild(expansionSizeInputElement);
                 // Add useSineTerms.
@@ -1366,11 +1366,11 @@ let popWindow;
                         } else {
                             // Reset the input to the current value.
                             alert("Angle input is not a number, resetting...");
-                            angleInputElement.value = potentialPoint.getAngle().toString();
+                            angleInputElement.value = potentialPoint.getAngle().toExponential();
                         }
                         (0, _htmlJs.resizeInputElement)(angleInputElement);
                     });
-                    angleInputElement.value = potentialPoint.getAngle().toString();
+                    angleInputElement.value = potentialPoint.getAngle().toExponential();
                     (0, _htmlJs.resizeInputElement)(angleInputElement);
                     potentialPointDiv.appendChild(angleInputElement);
                     // Create a new div element for the potential.
@@ -1384,15 +1384,15 @@ let popWindow;
                         if ((0, _utilJs.isNumeric)(target.value)) {
                             let value = parseFloat(target.value);
                             potentialPoint.setPotential(value);
-                            console.log("Set " + (0, _moleculeJs.PotentialPoint).tagName + " to " + value.toString());
+                            console.log("Set " + (0, _moleculeJs.PotentialPoint).tagName + " to " + value.toExponential());
                         } else {
                             // Reset the input to the current value.
                             alert("Potential input is not a number, resetting...");
-                            potentialInputElement.value = potentialPoint.getPotential().toString();
+                            potentialInputElement.value = potentialPoint.getPotential().toExponential();
                         }
                         (0, _htmlJs.resizeInputElement)(potentialInputElement);
                     });
-                    potentialInputElement.value = potentialPoint.getPotential().toString();
+                    potentialInputElement.value = potentialPoint.getPotential().toExponential();
                     (0, _htmlJs.resizeInputElement)(potentialInputElement);
                     potentialPointDiv.appendChild(potentialInputElement);
                     potentialPointsDiv.appendChild(potentialPointDiv);
@@ -1419,7 +1419,7 @@ let popWindow;
                     } else {
                         // Reset the input to the current value.
                         alert("Periodicity input is not a number, resetting...");
-                        target.value = periodicity.value.toString();
+                        target.value = periodicity.value.toExponential();
                     }
                 }, valueString, (0, _moleculeJs.Periodicity).tagName);
                 extraDOSCMethodDiv.appendChild(inputDiv);
@@ -1723,7 +1723,7 @@ function setNumberNode(node, input) {
         console.log(node.tagName + " value set to " + inputNumber);
     } else {
         alert("Value is not numeric, resetting...");
-        input.value = node.value.toString();
+        input.value = node.value.toExponential();
     }
 }
 window.set = setNumberNode;
@@ -2093,7 +2093,7 @@ window.set = setNumberNode;
             let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level2, (event)=>{
                 let target = event.target;
                 setNumberNode(excessReactantConc, target);
-            }, value.toString(), (0, _reactionJs.ExcessReactantConc).tagName);
+            }, value.toExponential(), (0, _reactionJs.ExcessReactantConc).tagName);
             reactionDiv.appendChild(inputDiv);
         }
         // Create a new collapsible div for the reaction.
@@ -2378,7 +2378,7 @@ window.set = setNumberNode;
                     let inputDiv = (0, _htmlJs.createLabelWithInput)("number", id, boundary1, level0, (event)=>{
                         let target = event.target;
                         setNumberNode(experimentRate, target);
-                    }, experimentRate.value.toString(), (0, _conditionsJs.ExperimentRate).tagName);
+                    }, experimentRate.value.toExponential(), (0, _conditionsJs.ExperimentRate).tagName);
                     pTPairDiv.appendChild(inputDiv);
                 }
                 addP(pTPairDiv, pTPair);
@@ -2408,12 +2408,12 @@ window.set = setNumberNode;
             console.log("Set P to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getP().toString();
+            target.value = pTPair.getP().toExponential();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, pTPair.getP().toString(), "P");
+    }, pTPair.getP().toExponential(), "P");
     let pInputElement = pInputDiv.querySelector("input");
-    pInputElement.value = pTPair.getP().toString();
+    pInputElement.value = pTPair.getP().toExponential();
     (0, _htmlJs.resizeInputElement)(pInputElement);
     containerDiv.appendChild(pInputDiv);
 }
@@ -2428,12 +2428,12 @@ window.set = setNumberNode;
             console.log("Set T to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getT().toString();
+            target.value = pTPair.getT().toExponential();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, pTPair.getT().toString(), "T");
+    }, pTPair.getT().toExponential(), "T");
     let tInputElement = tInputDiv.querySelector("input");
-    tInputElement.value = pTPair.getT().toString();
+    tInputElement.value = pTPair.getT().toExponential();
     (0, _htmlJs.resizeInputElement)(tInputElement);
     containerDiv.appendChild(tInputDiv);
 }
@@ -2642,7 +2642,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = gs.value.toString();
+            valueString = gs.value.toExponential();
             modelParameters.removeGrainSize();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -2715,7 +2715,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             modelParameters.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -2787,7 +2787,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = eatth.value.toString();
+            valueString = eatth.value.toExponential();
             modelParameters.removeEnergyAboveTheTopHill();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -2859,7 +2859,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = mt.value.toString();
+            valueString = mt.value.toExponential();
             modelParameters.removeMaxTemperature();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -3882,10 +3882,10 @@ window.set = setNumberNode;
             console.log("Set Tmax to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, tMax.toString(), "Tmax");
+    }, tMax.toExponential(), "Tmax");
     tMaxlwi.id = idTmax;
     (0, _htmlJs.resizeInputElement)(tMaxlwi.querySelector("input"));
     div.appendChild(tMaxlwi);
@@ -3899,10 +3899,10 @@ window.set = setNumberNode;
             console.log("Set Tmin to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, tMin.toString(), "Tmin");
+    }, tMin.toExponential(), "Tmin");
     tMinlwi.id = idTmin;
     (0, _htmlJs.resizeInputElement)(tMinlwi.querySelector("input"));
     div.appendChild(tMinlwi);
@@ -3916,10 +3916,10 @@ window.set = setNumberNode;
             console.log("Set Tstep to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = tMax.toString();
+            target.value = tMax.toExponential();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, tStep.toString(), "Tstep");
+    }, tStep.toExponential(), "Tstep");
     tSteplwi.id = idTstep;
     (0, _htmlJs.resizeInputElement)(tSteplwi.querySelector("input"));
     div.appendChild(tSteplwi);
@@ -4048,7 +4048,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = eigenvalues.value.toString();
+            valueString = eigenvalues.value.toExponential();
             control.removeEigenvalues();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -4117,7 +4117,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = stoi.value.toString();
+            valueString = stoi.value.toExponential();
             control.removeShortestTimeOfInterest();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -4186,7 +4186,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = met.value.toString();
+            valueString = met.value.toExponential();
             control.removeMaximumEvolutionTime();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -4255,7 +4255,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             control.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e = document.getElementById(id);
@@ -4324,7 +4324,7 @@ window.set = setNumberNode;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
         } else {
-            valueString = deo.value.toString();
+            valueString = deo.value.toExponential();
             control.removeDiagramEnergyOffset();
             // Remove any existing div.
             let e = document.getElementById(id);

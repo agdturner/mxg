@@ -871,7 +871,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
                 let expansionSizeInputElementId: string = molecule.id + "_" + DOSCMethod.tagName + "_" + HinderedRotorPotential.tagName + "_expansionSize";
                 let expansionSizeInputElement: HTMLInputElement = createInput("number", expansionSizeInputElementId, boundary1);
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 expansionSizeInputElement.addEventListener('change', (event: Event) => {
                     let target = event.target as HTMLInputElement;
                     // Check the input is a number.
@@ -880,11 +880,11 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     } else {
                         // Reset the input to the current value.
                         alert("Expansion size input is not a number, resetting...");
-                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                        expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                     }
                     resizeInputElement(expansionSizeInputElement);
                 });
-                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toString();
+                expansionSizeInputElement.value = hinderedRotorPotential.getExpansionSize().toExponential();
                 resizeInputElement(expansionSizeInputElement);
                 hinderedRotorPotentialDiv.appendChild(expansionSizeInputElement);
                 // Add useSineTerms.
@@ -932,11 +932,11 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                         } else {
                             // Reset the input to the current value.
                             alert("Angle input is not a number, resetting...");
-                            angleInputElement.value = potentialPoint.getAngle().toString();
+                            angleInputElement.value = potentialPoint.getAngle().toExponential();
                         }
                         resizeInputElement(angleInputElement);
                     });
-                    angleInputElement.value = potentialPoint.getAngle().toString();
+                    angleInputElement.value = potentialPoint.getAngle().toExponential();
                     resizeInputElement(angleInputElement);
                     potentialPointDiv.appendChild(angleInputElement);
                     // Create a new div element for the potential.
@@ -950,15 +950,15 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                         if (isNumeric(target.value)) {
                             let value: number = parseFloat(target.value);
                             potentialPoint.setPotential(value);
-                            console.log("Set " + PotentialPoint.tagName + " to " + value.toString());
+                            console.log("Set " + PotentialPoint.tagName + " to " + value.toExponential());
                         } else {
                             // Reset the input to the current value.
                             alert("Potential input is not a number, resetting...");
-                            potentialInputElement.value = potentialPoint.getPotential().toString();
+                            potentialInputElement.value = potentialPoint.getPotential().toExponential();
                         }
                         resizeInputElement(potentialInputElement);
                     });
-                    potentialInputElement.value = potentialPoint.getPotential().toString();
+                    potentialInputElement.value = potentialPoint.getPotential().toExponential();
                     resizeInputElement(potentialInputElement);
                     potentialPointDiv.appendChild(potentialInputElement);
                     potentialPointsDiv.appendChild(potentialPointDiv);
@@ -989,7 +989,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                         } else {
                             // Reset the input to the current value.
                             alert("Periodicity input is not a number, resetting...");
-                            target.value = periodicity.value.toString();
+                            target.value = periodicity.value.toExponential();
                         }
                     }, valueString, Periodicity.tagName);
                 extraDOSCMethodDiv.appendChild(inputDiv);
@@ -1339,7 +1339,7 @@ export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
         console.log(node.tagName + " value set to " + inputNumber);
     } else {
         alert("Value is not numeric, resetting...");
-        input.value = node.value.toString();
+        input.value = node.value.toExponential();
     }
 }
 
@@ -1730,7 +1730,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 (event: Event) => {
                     let target = event.target as HTMLInputElement;
                     setNumberNode(excessReactantConc, target);
-                }, value.toString(), ExcessReactantConc.tagName);
+                }, value.toExponential(), ExcessReactantConc.tagName);
             reactionDiv.appendChild(inputDiv);
         }
 
@@ -2042,7 +2042,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                         (event: Event) => {
                             let target = event.target as HTMLInputElement;
                             setNumberNode(experimentRate, target);
-                        }, experimentRate.value.toString(), ExperimentRate.tagName);
+                        }, experimentRate.value.toExponential(), ExperimentRate.tagName);
                     pTPairDiv.appendChild(inputDiv);
                 }
                 addP(pTPairDiv, pTPair);
@@ -2076,12 +2076,12 @@ function addP(containerDiv: HTMLDivElement, pTPair: PTpair): void {
                 console.log("Set P to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = pTPair.getP().toString();
+                target.value = pTPair.getP().toExponential();
             }
             resizeInputElement(target);
-        }, pTPair.getP().toString(), "P");
+        }, pTPair.getP().toExponential(), "P");
     let pInputElement: HTMLInputElement = pInputDiv.querySelector('input') as HTMLInputElement;
-    pInputElement.value = pTPair.getP().toString();
+    pInputElement.value = pTPair.getP().toExponential();
     resizeInputElement(pInputElement);
     containerDiv.appendChild(pInputDiv);
 }
@@ -2099,12 +2099,12 @@ function addT(containerDiv: HTMLDivElement, pTPair: PTpair): void {
                 console.log("Set T to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = pTPair.getT().toString();
+                target.value = pTPair.getT().toExponential();
             }
             resizeInputElement(target);
-        }, pTPair.getT().toString(), "T");
+        }, pTPair.getT().toExponential(), "T");
     let tInputElement: HTMLInputElement = tInputDiv.querySelector('input') as HTMLInputElement;
-    tInputElement.value = pTPair.getT().toString();
+    tInputElement.value = pTPair.getT().toExponential();
     resizeInputElement(tInputElement);
     containerDiv.appendChild(tInputDiv);
 }
@@ -2331,7 +2331,7 @@ function processGrainSize(modelParameters: ModelParameters, xml_modelParameters:
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = gs.value.toString();
+            valueString = gs.value.toExponential();
             modelParameters.removeGrainSize();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -2412,7 +2412,7 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters: ModelPara
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             modelParameters.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -2491,7 +2491,7 @@ function processEnergyAboveTheTopHill(modelParameters: ModelParameters, xml_mode
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = eatth.value.toString();
+            valueString = eatth.value.toExponential();
             modelParameters.removeEnergyAboveTheTopHill();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -2570,7 +2570,7 @@ function processMaxTemperature(modelParameters: ModelParameters, xml_modelParame
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = mt.value.toString();
+            valueString = mt.value.toExponential();
             modelParameters.removeMaxTemperature();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -3656,10 +3656,10 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
                 console.log("Set Tmax to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = tMax.toString();
+                target.value = tMax.toExponential();
             }
             resizeInputElement(target);
-        }, tMax.toString(), "Tmax");
+        }, tMax.toExponential(), "Tmax");
     tMaxlwi.id = idTmax;
     resizeInputElement(tMaxlwi.querySelector('input') as HTMLInputElement);
     div.appendChild(tMaxlwi);
@@ -3674,10 +3674,10 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
                 console.log("Set Tmin to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = tMax.toString();
+                target.value = tMax.toExponential();
             }
             resizeInputElement(target);
-        }, tMin.toString(), "Tmin");
+        }, tMin.toExponential(), "Tmin");
     tMinlwi.id = idTmin;
     resizeInputElement(tMinlwi.querySelector('input') as HTMLInputElement);
     div.appendChild(tMinlwi);
@@ -3692,10 +3692,10 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
                 console.log("Set Tstep to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = tMax.toString();
+                target.value = tMax.toExponential();
             }
             resizeInputElement(target);
-        }, tStep.toString(), "Tstep");
+        }, tStep.toExponential(), "Tstep");
     tSteplwi.id = idTstep;
     resizeInputElement(tSteplwi.querySelector('input') as HTMLInputElement);
     div.appendChild(tSteplwi);
@@ -3838,7 +3838,7 @@ function processEigenvalues(control: Control, controlsDiv: HTMLDivElement, xml_c
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = eigenvalues.value.toString();
+            valueString = eigenvalues.value.toExponential();
             control.removeEigenvalues();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -3913,7 +3913,7 @@ function processShortestTimeOfInterest(control: Control, controlsDiv: HTMLDivEle
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = stoi.value.toString();
+            valueString = stoi.value.toExponential();
             control.removeShortestTimeOfInterest();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -3989,7 +3989,7 @@ function processMaximumEvolutionTime(control: Control, controlsDiv: HTMLDivEleme
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = met.value.toString();
+            valueString = met.value.toExponential();
             control.removeMaximumEvolutionTime();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -4065,7 +4065,7 @@ function processAutomaticallySetMaxEneControl(control: Control, controlsDiv: HTM
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = asme.value.toString();
+            valueString = asme.value.toExponential();
             control.removeAutomaticallySetMaxEne();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
@@ -4141,7 +4141,7 @@ function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElemen
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         } else {
-            valueString = deo.value.toString();
+            valueString = deo.value.toExponential();
             control.removeDiagramEnergyOffset();
             // Remove any existing div.
             let e: HTMLDivElement = document.getElementById(id) as HTMLDivElement;
