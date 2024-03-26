@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lightDarkModeButton = (0, html_js_1.createButton)("Light/Dark Mode", boundary1);
     lightDarkModeButton.addEventListener('click', () => {
         dark = !dark;
-        localStorage.setItem('darkMode', dark ? 'true' : 'false');
+        //localStorage.setItem('darkMode', dark ? 'true' : 'false');
         if (dark) {
             document.body.className = 'dark-mode';
         }
@@ -2232,10 +2232,10 @@ function processGrainSize(modelParameters, xml_modelParameters, modelParametersD
  * @param div The div.
  * @param gs The grain size.
  * @param id The id.
- * @param idS The id for the select units.
+ * @param ids The id for the units select.
  * @param valueString The value string.
  */
-function createGrainSizeInput(modelParameters, div, gs, id, idS, valueString) {
+function createGrainSizeInput(modelParameters, div, gs, id, ids, valueString) {
     modelParameters.setGrainSize(gs);
     let input = (0, html_js_1.createInput)("number", id, boundary1);
     input.addEventListener('change', (event) => {
@@ -2247,7 +2247,7 @@ function createGrainSizeInput(modelParameters, div, gs, id, idS, valueString) {
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
-    addAnyUnits(molecule_js_1.ZPE.units, gs.attributes, div, idS, modelParameters_js_1.GrainSize.tagName, boundary1);
+    addAnyUnits(molecule_js_1.ZPE.units, gs.attributes, div, ids, modelParameters_js_1.GrainSize.tagName, boundary1);
 }
 /**
  * Process "me:automaticallySetMaxEne".
@@ -2264,7 +2264,8 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
     button.classList.add('optionOn');
     button.classList.add('optionOff');
     div.appendChild(lwb);
-    let id = control_js_1.Control.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_select";
     let asme;
     let valueString;
     if (xml.length == 1) {
@@ -2273,7 +2274,7 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
         asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setAutomaticallySetMaxEne(asme);
         button.textContent = selected + selectedLoadedValueText;
-        createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, valueString);
+        createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
@@ -2286,7 +2287,7 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
     button.addEventListener('click', () => {
         // Check if the AutomaticallySetMaxEne already exists
         if (!modelParameters.index.has(control_js_1.AutomaticallySetMaxEne.tagName)) {
-            createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, valueString);
+            createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
             button.textContent = selected + selectedValueText;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
@@ -2310,9 +2311,10 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
  * @param div The div.
  * @param asme The automatically set max energy.
  * @param id The id.
+ * @param ids The id for the units select.
  * @param valueString The value string.
  */
-function createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, valueString) {
+function createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString) {
     modelParameters.setAutomaticallySetMaxEne(asme);
     let input = (0, html_js_1.createInput)("number", id, boundary1);
     input.addEventListener('change', (event) => {
@@ -2323,6 +2325,7 @@ function createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, 
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
+    addAnyUnits(molecule_js_1.ZPE.units, asme.attributes, div, ids, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
 }
 /**
  * Process "me:energyAboveTheTopHill".
@@ -2340,6 +2343,7 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
     button.classList.add('optionOff');
     div.appendChild(lwb);
     let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName + "_select";
     let eatth;
     let valueString;
     if (xml.length == 1) {
@@ -2348,7 +2352,7 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
         eatth = new modelParameters_js_1.EnergyAboveTheTopHill((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setEnergyAboveTheTopHill(eatth);
         button.textContent = selected + selectedLoadedValueText;
-        createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, valueString);
+        createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
@@ -2361,7 +2365,7 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
     button.addEventListener('click', (event) => {
         // Check if the EnergyAboveTheTopHill already exists
         if (!modelParameters.index.has(modelParameters_js_1.EnergyAboveTheTopHill.tagName)) {
-            createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, valueString);
+            createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
             button.textContent = selected + selectedValueText;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
@@ -2385,20 +2389,21 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
  * @param div The div.
  * @param eatth The energy above the top hill.
  * @param id The id.
+ * @param ids The id for the units select.
  * @param valueString The value string.
  */
-function createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, valueString) {
+function createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString) {
     modelParameters.setEnergyAboveTheTopHill(eatth);
     let input = (0, html_js_1.createInput)("number", id, boundary1);
     input.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            setNumberNode(eatth, event.target);
-            (0, html_js_1.resizeInputElement)(event.target);
-        }
+        let target = event.target;
+        setNumberNode(eatth, target);
+        (0, html_js_1.resizeInputElement)(target);
     });
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
+    addAnyUnits(molecule_js_1.ZPE.units, eatth.attributes, div, ids, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
 }
 /**
  * Process "me:maxTemperature".
@@ -2416,6 +2421,7 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
     button.classList.add('optionOff');
     div.appendChild(lwb);
     let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName + "_select";
     let mt;
     let valueString;
     if (xml.length == 1) {
@@ -2424,7 +2430,7 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
         mt = new modelParameters_js_1.MaxTemperature((0, xml_js_1.getAttributes)(xml[0]), value);
         modelParameters.setMaxTemperature(mt);
         button.textContent = selected + selectedLoadedValueText;
-        createMaxTemperatureInput(modelParameters, div, mt, id, valueString);
+        createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
@@ -2437,7 +2443,7 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
     button.addEventListener('click', (event) => {
         // Check if the MaxTemperature already exists
         if (!modelParameters.index.has(modelParameters_js_1.MaxTemperature.tagName)) {
-            createMaxTemperatureInput(modelParameters, div, mt, id, valueString);
+            createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
             button.textContent = selected + selectedValueText;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
@@ -2461,20 +2467,21 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
  * @param div The div.
  * @param mt The max temperature.
  * @param id The id.
+ * @param ids The id for the units select.
  * @param valueString The value string.
  */
-function createMaxTemperatureInput(modelParameters, div, mt, id, valueString) {
+function createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString) {
     modelParameters.setMaxTemperature(mt);
     let input = (0, html_js_1.createInput)("number", id, boundary1);
     input.addEventListener('change', (event) => {
-        if (event.target instanceof HTMLInputElement) {
-            setNumberNode(mt, event.target);
-            (0, html_js_1.resizeInputElement)(event.target);
-        }
+        let target = event.target;
+        setNumberNode(mt, target);
+        (0, html_js_1.resizeInputElement)(target);
     });
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
+    addAnyUnits(undefined, mt.attributes, div, ids, modelParameters_js_1.MaxTemperature.tagName, boundary1);
 }
 /**
  * Parses xml to initialise controls.

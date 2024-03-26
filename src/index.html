@@ -53,6 +53,7 @@
       window.addEventListener('load', function () {
         //navigator.serviceWorker.register('/sw.js')
         navigator.serviceWorker.register(new URL('/sw.js', import.meta.url))
+        //navigator.serviceWorker.register(new URL('/sw.js', import.meta.url), { scope: '/' })
         .then(function (registration) {
           // Registration was successful
           console.log('ServiceWorker registration successful with scope: ', registration.scope);

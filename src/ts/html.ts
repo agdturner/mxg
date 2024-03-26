@@ -220,7 +220,7 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
  * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-export function createLabelWithSelectElement(textContent: string, options: string[] | Set<string>,
+export function createLabelWithSelect(textContent: string, options: string[] | Set<string>,
     name: string, id: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
@@ -258,11 +258,10 @@ export function createButton(textContent: string,
 
 /**
  * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
- * 
+ * @param labeltext The text content of the label.
  * @param textContent The text content of the button.
  * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
  * @param divMargin The margin for the HTMLDivElement.
- * 
  * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
  */
 export function createLabelWithButton(labeltext: string, textContent: string,
@@ -274,6 +273,26 @@ export function createLabelWithButton(labeltext: string, textContent: string,
     Object.assign(label.style, componentMargin);
     div.appendChild(label);
     div.appendChild(createButton(textContent, componentMargin));
+    return div;
+}
+
+/**
+ * Create and return an HTMLDivElement containing an HTMLLabelElement and a HTMLButtonElement.
+ * @param labeltext The text content of the label.
+ * @param textContent The text content of the button.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLButtonElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
+ */
+export function createButtonWithLabel(labeltext: string, textContent: string,
+    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+): HTMLDivElement {
+    let div: HTMLDivElement = createFlexDiv(divMargin);
+    div.appendChild(createButton(textContent, componentMargin));
+    let label: HTMLLabelElement = createLabel(labeltext, componentMargin);
+    Object.assign(label.style, componentMargin);
+    div.appendChild(label);
     return div;
 }
 

@@ -633,7 +633,8 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"i6Qrq":[function(require,module,exports) {
 if ("serviceWorker" in navigator) window.addEventListener("load", function() {
     //navigator.serviceWorker.register('/sw.js')
-    navigator.serviceWorker.register(require("ac841797bc4c2dfe")).then(function(registration) {
+    navigator.serviceWorker.register(require("ac841797bc4c2dfe"))//navigator.serviceWorker.register(new URL('/sw.js', import.meta.url), { scope: '/' })
+    .then(function(registration) {
         // Registration was successful
         console.log("ServiceWorker registration successful with scope: ", registration.scope);
     }, function(err) {
