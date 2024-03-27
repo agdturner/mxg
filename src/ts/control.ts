@@ -346,6 +346,120 @@ export class CalcMethod extends NodeWithNodes {
 }
 
 /**
+ * A class for "me:SimpleCalc" CalcMethod.
+ */
+export class CalcMethodSimpleCalc extends CalcMethod {
+
+    /**
+     * The xsi_type.
+     */
+    static readonly xsi_type: string = "me:simpleCalc";
+
+    /**
+     * The xsi_type2.
+     */
+    static readonly xsi_type2: string = "simpleCalc";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes);
+    }
+}
+
+/**
+ * A class for "me:GridSearch" CalcMethod.
+ */
+export class CalcMethodGridSearch extends CalcMethod {
+
+    /**
+    * The xsi_type.
+    */
+    static readonly xsi_type: string = "me:gridSearch";
+
+    /**
+     * The xsi_type2.
+     */
+    static readonly xsi_type2: string = "gridSearch";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes);
+    }
+}
+
+/**
+ * A class for "me:fittingIterations".
+ */
+export class FittingIterations extends NumberNode {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:fittingIterations";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, FittingIterations.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:Fitting" CalcMethod.
+ * Nodes:
+ * "me:fittingIterations"
+ */
+export class CalcMethodFitting extends CalcMethod {
+
+    /**
+     * The xsi_type.
+     */
+    static readonly xsi_type: string = "me:fitting";
+
+    /**
+     * The xsi_type2.
+     */
+    static readonly xsi_type2: string = "fitting";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, fittingIterations?: FittingIterations) {
+        super(attributes);
+        if (fittingIterations != undefined) {
+            this.addNode(fittingIterations);
+        }
+    }
+
+    /**
+     * @returns The fittingIterations or undefined.
+     */
+    getFittingIterations(): FittingIterations | undefined {
+        return this.nodes.get(0) as FittingIterations;
+    }
+
+    /**
+     * @param fittingIterations The fittingIterations.
+     */
+    setFittingIterations(fittingIterations: FittingIterations) {
+        this.nodes.set(0, fittingIterations);
+    }
+
+    /**
+     * Remove the fittingIterations.
+     */
+    removeFittingIterations() {
+        this.nodes.delete(0);
+    }
+}
+
+/**
  * A class for "me:MarquardtIterations".
  */
 export class MarquardtIterations extends NumberNode {
@@ -408,6 +522,11 @@ export class CalcMethodMarquardt extends CalcMethod {
      * The tag name.
      */
     static readonly xsi_type: string = "me:marquardt";
+
+    /**
+     * The tag name.
+     */
+    static readonly xsi_type2: string = "marquardt";
 
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
@@ -768,6 +887,11 @@ export class ChebPExSize extends NumberNode {
 
 /**
  * A class for "me:analyticalRepresentation" CalcMethod.
+ * Expected to have attributes:
+ * "xsi_type" with the value "me:analyticalRepresentation".
+ * Nodes:
+ * "me:format", "me:precision", "me:chebNumTemp", "me:chebNumConc", "me:chebMaxTemp", "me:chebMinTemp", 
+ * "me:chebMaxConc", "me:chebMinConc", "me:chebTExSize", "me:chebPExSize".
  */
 export class CalcMethodAnalyticalRepresentation extends CalcMethod {
 
@@ -777,6 +901,11 @@ export class CalcMethodAnalyticalRepresentation extends CalcMethod {
     static readonly xsi_type: string = "me:analyticalRepresentation";
 
     /**
+     * The tag name.
+     */
+    static readonly xsi_type2: string = "analyticalRepresentation";
+
+    /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
     index: Map<string, number>;
@@ -784,7 +913,7 @@ export class CalcMethodAnalyticalRepresentation extends CalcMethod {
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, format?: Format, precision?: Precision, chebNumTemp?: ChebNumTemp, 
+    constructor(attributes: Map<string, string>, format?: Format, precision?: Precision, chebNumTemp?: ChebNumTemp,
         chebNumConc?: ChebNumConc, chebMaxTemp?: ChebMaxTemp, chebMinTemp?: ChebMinTemp, chebMaxConc?: ChebMaxConc,
         chebMinConc?: ChebMinConc, chebTExSize?: ChebTExSize, chebPExSize?: ChebPExSize) {
         super(attributes);
@@ -830,7 +959,7 @@ export class CalcMethodAnalyticalRepresentation extends CalcMethod {
             this.addNode(chebPExSize);
         }
     }
-    
+
     /**
      * @returns The format or undefined.
      */
@@ -1253,13 +1382,20 @@ export class Tstep extends NumberNode {
  * Expected to have attributes:
  * "xsi_type" with the value "me:ThermodynamicTable";
  * "units" with known values "kJ/mol".
+ * Nodes:
+ * "me:Tmin", "me:Tmid", "me:Tmax", "me:Tstep".
  */
-export class ThermodynamicTable extends CalcMethod {
+export class CalcMethodThermodynamicTable extends CalcMethod {
 
     /**
      * The tag name.
      */
     static readonly xsi_type: string = "me:ThermodynamicTable";
+
+    /**
+     * The tag name.
+     */
+    static readonly xsi_type2: string = "ThermodynamicTable";
 
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
@@ -1423,6 +1559,269 @@ export class ThermodynamicTable extends CalcMethod {
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(Tstep.tagName);
+        }
+    }
+}
+
+/**
+ * A class for "me:sensitivityAnalysisSamples".
+ */
+export class SensitivityAnalysisSamples extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sensitivityAnalysisSamples";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, SensitivityAnalysisSamples.tagName, value);
+    }
+
+}
+
+/**
+ * A class for "me:sensitivityAnalysisOrder".
+ */
+export class SensitivityAnalysisOrder extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sensitivityAnalysisOrder";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, SensitivityAnalysisOrder.tagName, value);
+    }
+}
+
+/**
+ * A class for "me:sensitivityNumVarRedIters".
+ */
+export class SensitivityNumVarRedIters extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sensitivityNumVarRedIters";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: number) {
+        super(attributes, SensitivityNumVarRedIters.tagName, value);
+    }
+}
+
+/**
+ * A class for "sensitivityVarRedMethod".
+ */
+export class SensitivityVarRedMethod extends StringNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sensitivityVarRedMethod";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: string) {
+        super(attributes, SensitivityVarRedMethod.tagName, value);
+    }
+
+}
+
+/**
+ * A class for "me:sensitivityAnalysis".
+ * Nodes:
+ * "me:sensitivityAnalysisSamples", "me:sensitivityAnalysisOrder", "me:sensitivityNumVarRedIters", "me:sensitivityVarRedMethod".
+ */
+export class CalcMethodSensitivityAnalysis extends CalcMethod {
+
+    /**
+    * The xsi_type.
+    */
+    static readonly xsi_type: string = "me:sensitivityAnalysis";
+
+    /**
+     * The xsi_type2.
+     */
+    static readonly xsi_type2: string = "sensitivityAnalysis";
+
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, sensitivityAnalysisSamples?: SensitivityAnalysisSamples,
+        sensitivityAnalysisOrder?: SensitivityAnalysisOrder, sensitivityNumVarRedIters?: SensitivityNumVarRedIters,
+        sensitivityVarRedMethod?: SensitivityVarRedMethod) {
+        super(attributes);
+        this.index = new Map<string, number>();
+        if (sensitivityAnalysisSamples != undefined) {
+            this.index.set(SensitivityAnalysisSamples.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisSamples);
+        }
+        if (sensitivityAnalysisOrder != undefined) {
+            this.index.set(SensitivityAnalysisOrder.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisOrder);
+        }
+        if (sensitivityNumVarRedIters != undefined) {
+            this.index.set(SensitivityNumVarRedIters.tagName, this.nodes.size);
+            this.addNode(sensitivityNumVarRedIters);
+        }
+        if (sensitivityVarRedMethod != undefined) {
+            this.index.set(SensitivityVarRedMethod.tagName, this.nodes.size);
+            this.addNode(sensitivityVarRedMethod);
+        }
+    }
+
+    /**
+     * @returns The sensitivityAnalysisSamples or undefined.
+     */
+    getSensitivityAnalysisSamples(): SensitivityAnalysisSamples | undefined {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as SensitivityAnalysisSamples;
+        }
+    }
+
+    /**
+     * @param sensitivityAnalysisSamples The sensitivityAnalysisSamples.
+     */
+    setSensitivityAnalysisSamples(sensitivityAnalysisSamples: SensitivityAnalysisSamples) {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityAnalysisSamples);
+        } else {
+            this.index.set(SensitivityAnalysisSamples.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisSamples);
+        }
+    }
+
+    /**
+     * Remove the sensitivityAnalysisSamples.
+     */
+    removeSensitivityAnalysisSamples() {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityAnalysisSamples.tagName);
+        }
+    }
+
+    /**
+     * @returns The sensitivityAnalysisOrder or undefined.
+     */
+    getSensitivityAnalysisOrder(): SensitivityAnalysisOrder | undefined {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as SensitivityAnalysisOrder;
+        }
+    }
+
+    /**
+     * @param sensitivityAnalysisOrder The sensitivityAnalysisOrder.
+     */
+    setSensitivityAnalysisOrder(sensitivityAnalysisOrder: SensitivityAnalysisOrder) {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityAnalysisOrder);
+        } else {
+            this.index.set(SensitivityAnalysisOrder.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisOrder);
+        }
+    }
+
+    /**
+     * Remove the sensitivityAnalysisOrder.
+     */
+    removeSensitivityAnalysisOrder() {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityAnalysisOrder.tagName);
+        }
+    }
+
+    /**
+     * @returns The sensitivityNumVarRedIters or undefined.
+     */
+    getSensitivityNumVarRedIters(): SensitivityNumVarRedIters | undefined {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as SensitivityNumVarRedIters;
+        }
+    }
+
+    /**
+     * @param sensitivityNumVarRedIters The sensitivityNumVarRedIters.
+     */
+    setSensitivityNumVarRedIters(sensitivityNumVarRedIters: SensitivityNumVarRedIters) {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityNumVarRedIters);
+        } else {
+            this.index.set(SensitivityNumVarRedIters.tagName, this.nodes.size);
+            this.addNode(sensitivityNumVarRedIters);
+        }
+    }
+
+    /**
+     * Remove the sensitivityNumVarRedIters.
+     */
+    removeSensitivityNumVarRedIters() {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityNumVarRedIters.tagName);
+        }
+    }
+
+    /**
+     * @returns The sensitivityVarRedMethod or undefined.
+     */
+    getSensitivityVarRedMethod(): SensitivityVarRedMethod | undefined {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as SensitivityVarRedMethod;
+        }
+    }
+
+    /**
+     * @param sensitivityVarRedMethod The sensitivityVarRedMethod.
+     */
+    setSensitivityVarRedMethod(sensitivityVarRedMethod: SensitivityVarRedMethod) {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityVarRedMethod);
+        } else {
+            this.index.set(SensitivityVarRedMethod.tagName, this.nodes.size);
+            this.addNode(sensitivityVarRedMethod);
+        }
+    }
+
+    /**
+     * Remove the sensitivityVarRedMethod.
+     */
+    removeSensitivityVarRedMethod() {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityVarRedMethod.tagName);
         }
     }
 }

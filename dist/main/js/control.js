@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.ThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstants = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
+exports.SensitivityNumVarRedIters = exports.SensitivityAnalysisOrder = exports.SensitivityAnalysisSamples = exports.CalcMethodThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethodFitting = exports.FittingIterations = exports.CalcMethodGridSearch = exports.CalcMethodSimpleCalc = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstants = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
+exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.CalcMethodSensitivityAnalysis = exports.SensitivityVarRedMethod = void 0;
 const xml_1 = require("./xml");
 /**
  * A class for "me:calculateRateCoefficientsOnly".
@@ -301,6 +302,106 @@ class CalcMethod extends xml_1.NodeWithNodes {
 }
 exports.CalcMethod = CalcMethod;
 /**
+ * A class for "me:SimpleCalc" CalcMethod.
+ */
+class CalcMethodSimpleCalc extends CalcMethod {
+    /**
+     * The xsi_type.
+     */
+    static xsi_type = "me:simpleCalc";
+    /**
+     * The xsi_type2.
+     */
+    static xsi_type2 = "simpleCalc";
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes) {
+        super(attributes);
+    }
+}
+exports.CalcMethodSimpleCalc = CalcMethodSimpleCalc;
+/**
+ * A class for "me:GridSearch" CalcMethod.
+ */
+class CalcMethodGridSearch extends CalcMethod {
+    /**
+    * The xsi_type.
+    */
+    static xsi_type = "me:gridSearch";
+    /**
+     * The xsi_type2.
+     */
+    static xsi_type2 = "gridSearch";
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes) {
+        super(attributes);
+    }
+}
+exports.CalcMethodGridSearch = CalcMethodGridSearch;
+/**
+ * A class for "me:fittingIterations".
+ */
+class FittingIterations extends xml_1.NumberNode {
+    /**
+    * The tag name.
+    */
+    static tagName = "me:fittingIterations";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, FittingIterations.tagName, value);
+    }
+}
+exports.FittingIterations = FittingIterations;
+/**
+ * A class for "me:Fitting" CalcMethod.
+ * Nodes:
+ * "me:fittingIterations"
+ */
+class CalcMethodFitting extends CalcMethod {
+    /**
+     * The xsi_type.
+     */
+    static xsi_type = "me:fitting";
+    /**
+     * The xsi_type2.
+     */
+    static xsi_type2 = "fitting";
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, fittingIterations) {
+        super(attributes);
+        if (fittingIterations != undefined) {
+            this.addNode(fittingIterations);
+        }
+    }
+    /**
+     * @returns The fittingIterations or undefined.
+     */
+    getFittingIterations() {
+        return this.nodes.get(0);
+    }
+    /**
+     * @param fittingIterations The fittingIterations.
+     */
+    setFittingIterations(fittingIterations) {
+        this.nodes.set(0, fittingIterations);
+    }
+    /**
+     * Remove the fittingIterations.
+     */
+    removeFittingIterations() {
+        this.nodes.delete(0);
+    }
+}
+exports.CalcMethodFitting = CalcMethodFitting;
+/**
  * A class for "me:MarquardtIterations".
  */
 class MarquardtIterations extends xml_1.NumberNode {
@@ -356,6 +457,10 @@ class CalcMethodMarquardt extends CalcMethod {
      * The tag name.
      */
     static xsi_type = "me:marquardt";
+    /**
+     * The tag name.
+     */
+    static xsi_type2 = "marquardt";
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
@@ -682,12 +787,21 @@ class ChebPExSize extends xml_1.NumberNode {
 exports.ChebPExSize = ChebPExSize;
 /**
  * A class for "me:analyticalRepresentation" CalcMethod.
+ * Expected to have attributes:
+ * "xsi_type" with the value "me:analyticalRepresentation".
+ * Nodes:
+ * "me:format", "me:precision", "me:chebNumTemp", "me:chebNumConc", "me:chebMaxTemp", "me:chebMinTemp",
+ * "me:chebMaxConc", "me:chebMinConc", "me:chebTExSize", "me:chebPExSize".
  */
 class CalcMethodAnalyticalRepresentation extends CalcMethod {
     /**
      * The tag name.
      */
     static xsi_type = "me:analyticalRepresentation";
+    /**
+     * The tag name.
+     */
+    static xsi_type2 = "analyticalRepresentation";
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
@@ -1134,12 +1248,18 @@ exports.Tstep = Tstep;
  * Expected to have attributes:
  * "xsi_type" with the value "me:ThermodynamicTable";
  * "units" with known values "kJ/mol".
+ * Nodes:
+ * "me:Tmin", "me:Tmid", "me:Tmax", "me:Tstep".
  */
-class ThermodynamicTable extends CalcMethod {
+class CalcMethodThermodynamicTable extends CalcMethod {
     /**
      * The tag name.
      */
     static xsi_type = "me:ThermodynamicTable";
+    /**
+     * The tag name.
+     */
+    static xsi_type2 = "ThermodynamicTable";
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
@@ -1296,7 +1416,246 @@ class ThermodynamicTable extends CalcMethod {
         }
     }
 }
-exports.ThermodynamicTable = ThermodynamicTable;
+exports.CalcMethodThermodynamicTable = CalcMethodThermodynamicTable;
+/**
+ * A class for "me:sensitivityAnalysisSamples".
+ */
+class SensitivityAnalysisSamples extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:sensitivityAnalysisSamples";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, SensitivityAnalysisSamples.tagName, value);
+    }
+}
+exports.SensitivityAnalysisSamples = SensitivityAnalysisSamples;
+/**
+ * A class for "me:sensitivityAnalysisOrder".
+ */
+class SensitivityAnalysisOrder extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:sensitivityAnalysisOrder";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, SensitivityAnalysisOrder.tagName, value);
+    }
+}
+exports.SensitivityAnalysisOrder = SensitivityAnalysisOrder;
+/**
+ * A class for "me:sensitivityNumVarRedIters".
+ */
+class SensitivityNumVarRedIters extends xml_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:sensitivityNumVarRedIters";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, SensitivityNumVarRedIters.tagName, value);
+    }
+}
+exports.SensitivityNumVarRedIters = SensitivityNumVarRedIters;
+/**
+ * A class for "sensitivityVarRedMethod".
+ */
+class SensitivityVarRedMethod extends xml_1.StringNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:sensitivityVarRedMethod";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, SensitivityVarRedMethod.tagName, value);
+    }
+}
+exports.SensitivityVarRedMethod = SensitivityVarRedMethod;
+/**
+ * A class for "me:sensitivityAnalysis".
+ * Nodes:
+ * "me:sensitivityAnalysisSamples", "me:sensitivityAnalysisOrder", "me:sensitivityNumVarRedIters", "me:sensitivityVarRedMethod".
+ */
+class CalcMethodSensitivityAnalysis extends CalcMethod {
+    /**
+    * The xsi_type.
+    */
+    static xsi_type = "me:sensitivityAnalysis";
+    /**
+     * The xsi_type2.
+     */
+    static xsi_type2 = "sensitivityAnalysis";
+    /**
+     * The index. A map from the tag name to the index of the node in the nodes array.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, sensitivityAnalysisSamples, sensitivityAnalysisOrder, sensitivityNumVarRedIters, sensitivityVarRedMethod) {
+        super(attributes);
+        this.index = new Map();
+        if (sensitivityAnalysisSamples != undefined) {
+            this.index.set(SensitivityAnalysisSamples.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisSamples);
+        }
+        if (sensitivityAnalysisOrder != undefined) {
+            this.index.set(SensitivityAnalysisOrder.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisOrder);
+        }
+        if (sensitivityNumVarRedIters != undefined) {
+            this.index.set(SensitivityNumVarRedIters.tagName, this.nodes.size);
+            this.addNode(sensitivityNumVarRedIters);
+        }
+        if (sensitivityVarRedMethod != undefined) {
+            this.index.set(SensitivityVarRedMethod.tagName, this.nodes.size);
+            this.addNode(sensitivityVarRedMethod);
+        }
+    }
+    /**
+     * @returns The sensitivityAnalysisSamples or undefined.
+     */
+    getSensitivityAnalysisSamples() {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param sensitivityAnalysisSamples The sensitivityAnalysisSamples.
+     */
+    setSensitivityAnalysisSamples(sensitivityAnalysisSamples) {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityAnalysisSamples);
+        }
+        else {
+            this.index.set(SensitivityAnalysisSamples.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisSamples);
+        }
+    }
+    /**
+     * Remove the sensitivityAnalysisSamples.
+     */
+    removeSensitivityAnalysisSamples() {
+        let i = this.index.get(SensitivityAnalysisSamples.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityAnalysisSamples.tagName);
+        }
+    }
+    /**
+     * @returns The sensitivityAnalysisOrder or undefined.
+     */
+    getSensitivityAnalysisOrder() {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param sensitivityAnalysisOrder The sensitivityAnalysisOrder.
+     */
+    setSensitivityAnalysisOrder(sensitivityAnalysisOrder) {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityAnalysisOrder);
+        }
+        else {
+            this.index.set(SensitivityAnalysisOrder.tagName, this.nodes.size);
+            this.addNode(sensitivityAnalysisOrder);
+        }
+    }
+    /**
+     * Remove the sensitivityAnalysisOrder.
+     */
+    removeSensitivityAnalysisOrder() {
+        let i = this.index.get(SensitivityAnalysisOrder.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityAnalysisOrder.tagName);
+        }
+    }
+    /**
+     * @returns The sensitivityNumVarRedIters or undefined.
+     */
+    getSensitivityNumVarRedIters() {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param sensitivityNumVarRedIters The sensitivityNumVarRedIters.
+     */
+    setSensitivityNumVarRedIters(sensitivityNumVarRedIters) {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityNumVarRedIters);
+        }
+        else {
+            this.index.set(SensitivityNumVarRedIters.tagName, this.nodes.size);
+            this.addNode(sensitivityNumVarRedIters);
+        }
+    }
+    /**
+     * Remove the sensitivityNumVarRedIters.
+     */
+    removeSensitivityNumVarRedIters() {
+        let i = this.index.get(SensitivityNumVarRedIters.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityNumVarRedIters.tagName);
+        }
+    }
+    /**
+     * @returns The sensitivityVarRedMethod or undefined.
+     */
+    getSensitivityVarRedMethod() {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param sensitivityVarRedMethod The sensitivityVarRedMethod.
+     */
+    setSensitivityVarRedMethod(sensitivityVarRedMethod) {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, sensitivityVarRedMethod);
+        }
+        else {
+            this.index.set(SensitivityVarRedMethod.tagName, this.nodes.size);
+            this.addNode(sensitivityVarRedMethod);
+        }
+    }
+    /**
+     * Remove the sensitivityVarRedMethod.
+     */
+    removeSensitivityVarRedMethod() {
+        let i = this.index.get(SensitivityVarRedMethod.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(SensitivityVarRedMethod.tagName);
+        }
+    }
+}
+exports.CalcMethodSensitivityAnalysis = CalcMethodSensitivityAnalysis;
 /**
  * A class for "me:eigenvalues".
  */
