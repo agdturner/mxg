@@ -1013,21 +1013,26 @@ let popWindow;
     // Add action listener to the pop diagram button.
     popButton.addEventListener("click", ()=>{
         if (popWindow == null) {
-            let c = rd_canvas;
+            /**
+             * Cloning is necessary for Chrome.
+             */ let c = rd_canvas.cloneNode(true);
             c.id = rd_canvas_Id;
             popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height);
             popWindow.document.body.appendChild(c);
             drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+            // If the canvas already exists, remove it.
+            (0, _htmlJs.remove)(rd_canvas_Id);
             popButton.textContent = "Pop back reaction diagram";
         } else {
-            let c = popWindow.document.getElementById(rd_canvas_Id);
-            rd_canvas = c;
-            // Add the canvas back to the main document.
-            reactionsDiagramDiv.appendChild(c);
+            /**
+             * Cloning is necessary for Chrome.
+             */ let c = popWindow.document.getElementById(rd_canvas_Id);
+            let rd_canvas = c.cloneNode(true);
+            reactionsDiagramDiv.appendChild(rd_canvas);
+            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
             popButton.textContent = "Pop out reaction diagram to a new window";
-            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
         }
     });
     // Conditions

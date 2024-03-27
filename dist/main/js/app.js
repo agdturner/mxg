@@ -462,8 +462,13 @@ function parse(xml) {
         else {
             let c = popWindow.document.getElementById(rd_canvas_Id);
             rd_canvas = c;
-            // Add the canvas back to the main document.
-            reactionsDiagramDiv.appendChild(c);
+            /**
+             * Clone the canvas before appending it to the main document.
+             * This is necessary as although Firefox allows the canvas to be moved between windows, Chrome does not.
+             */
+            let clonedCanvas = c.cloneNode(true);
+            reactionsDiagramDiv.appendChild(clonedCanvas);
+            popWindow.close();
             popWindow.close();
             popWindow = null;
             popButton.textContent = "Pop out reaction diagram to a new window";

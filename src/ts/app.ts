@@ -515,26 +515,28 @@ function parse(xml: XMLDocument) {
     // Add action listener to the pop diagram button.
     popButton.addEventListener('click', () => {
         if (popWindow == null) {
-            let c: HTMLCanvasElement = rd_canvas as HTMLCanvasElement;
+            /**
+             * Cloning is necessary for Chrome.
+             */
+            let c: HTMLCanvasElement = (rd_canvas as HTMLCanvasElement).cloneNode(true) as HTMLCanvasElement;
             c.id = rd_canvas_Id;
             popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height) as Window;
             popWindow.document.body.appendChild(c);
             drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+            // If the canvas already exists, remove it.
+            remove(rd_canvas_Id);
             popButton.textContent = "Pop back reaction diagram";
         } else {
-            let c: HTMLCanvasElement = popWindow.document.getElementById(rd_canvas_Id) as HTMLCanvasElement;
-            rd_canvas = c;
             /**
-             * Clone the canvas before appending it to the main document.
-             * This is necessary as although Firefox allows the canvas to be moved between windows, Chrome does not.
+             * Cloning is necessary for Chrome.
              */
-            let clonedCanvas = c.cloneNode(true) as HTMLCanvasElement;
-            reactionsDiagramDiv.appendChild(clonedCanvas);
-            popWindow.close();
+            let c: HTMLCanvasElement = popWindow.document.getElementById(rd_canvas_Id) as HTMLCanvasElement;
+            let rd_canvas = c.cloneNode(true) as HTMLCanvasElement;
+            reactionsDiagramDiv.appendChild(rd_canvas);
+            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
             popButton.textContent = "Pop out reaction diagram to a new window";
-            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
         }
     });
 
