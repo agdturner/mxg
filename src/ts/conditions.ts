@@ -343,16 +343,6 @@ export class PTpair extends NodeWithNodes {
     static readonly tagName: string = "me:PTpair";
 
     /**
-     * The precision attribute potential values.
-     */
-    static readonly precisions: string[] = ["d", "dd", "qd", "double", "double-double", "quad-double"];
-
-    /**
-     * The choice of units.
-     */
-    static readonly pressureUnits: string[] = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
-
-    /**
      * The key to the P attribute value.
      */
     static readonly s_P: string = "P";

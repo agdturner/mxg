@@ -172,20 +172,22 @@ exports.resizeSelectElement = resizeSelectElement;
  * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */
-function createSelectElement(options, name, id, margin) {
-    let selectElement = document.createElement('select');
+function createSelectElement(options, name, value, id, margin) {
+    let select = document.createElement('select');
     options.forEach(option => {
-        selectElement.name = name;
-        selectElement.id = id;
+        select.name = name;
+        select.id = id;
         let optionElement = document.createElement('option');
         optionElement.value = option;
         optionElement.text = option;
-        selectElement.appendChild(optionElement);
+        select.appendChild(optionElement);
     });
-    selectElement.style.fontSize = '1em'; // Set the font size with a relative unit.
-    selectElement.classList.add('auto-width');
-    Object.assign(selectElement.style, margin);
-    return selectElement;
+    select.style.fontSize = '1em'; // Set the font size with a relative unit.
+    select.classList.add('auto-width');
+    select.value = value;
+    resizeSelectElement(select);
+    Object.assign(select.style, margin);
+    return select;
 }
 exports.createSelectElement = createSelectElement;
 /**
@@ -194,25 +196,17 @@ exports.createSelectElement = createSelectElement;
  * @param textContent The text content of the label.
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
+ * @param value The value for the HTMLSelectElement.
  * @param id The id.
  * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
  * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
-function createLabelWithSelect(textContent, options, name, id, componentMargin, divMargin) {
+function createLabelWithSelect(textContent, options, name, value, id, componentMargin, divMargin) {
     let div = createDiv(divMargin);
     let label = createLabel(textContent, componentMargin);
     div.appendChild(label);
-    let selectElement = document.createElement('select');
-    div.appendChild(selectElement);
-    options.forEach(option => {
-        selectElement.name = name;
-        selectElement.id = id;
-        let optionElement = document.createElement('option');
-        optionElement.value = option;
-        optionElement.text = option;
-        selectElement.appendChild(optionElement);
-    });
+    div.appendChild(createSelectElement(options, name, value, id, componentMargin));
     return div;
 }
 exports.createLabelWithSelect = createLabelWithSelect;

@@ -21,8 +21,8 @@ export function getCollapsibleDiv(
         boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
         level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
         contentDivId = '',
-        contentDivClassName = ''
-    }: {
+        contentDivClassName = '' }:
+    {
         content: HTMLElement,
         buttonLabel: string,
         buttonFontSize?: string,

@@ -173,6 +173,29 @@ export class Mesmer extends NodeWithNodes {
     static readonly tagName: string = "me:mesmer";
 
     /**
+     * Precision options.
+     */
+    static readonly precisionOptions: string[] = ["d", "dd", "qd", "double", "double-double", "quad-double"];
+
+    /**
+     * Pressure units.
+     */
+    static readonly pressureUnits: string[] = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
+
+    /**
+     * Energy units.
+     */
+    static readonly energyUnits: string[] = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
+
+    /**
+     * Frequency units.
+     */
+    static readonly frequencyUnits: string[] = ["cm-1", "GHz"]
+
+    
+    
+
+    /**
      * The header of the XML file.
      */
     static header: string = `<?xml version="1.0" encoding="utf-8" ?>

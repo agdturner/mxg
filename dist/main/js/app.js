@@ -67,13 +67,10 @@ let s_Add_from_spreadsheet = "Add from spreadsheet";
 // Selected and deselected symbology.
 let selected = " \u2713";
 let deselected = " \u2717";
-let selectedLoadedText1 = ", change using input:";
-let selectedLoadedText2 = ", change using inputs:";
-let deselectedText1 = ", then specify using input.";
-let deselectedText2 = ", then specify using inputs.";
-//let specifyText1: string = ". Click then specify using the input.";
-//let specifyText2: string = ". Click then specify using the inputs.";
 let selectAnotherOption = "Action/select another option...";
+// IDs
+let divCmId = control_js_1.Control.tagName + "_" + control_js_1.CalcMethod.tagName;
+let divCmDetailsId = divCmId + "_details";
 let dark;
 /*
 const db = await openDB('my-db', 1, {
@@ -274,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function redrawReactionsDiagram() {
     if (popWindow == null) {
+        let rdCanvas = document.getElementById(rdCanvasId);
         drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     }
     else {
@@ -450,13 +448,11 @@ function parse(xml) {
     let popButton = (0, html_js_1.createButton)("Pop out diagram into a new window", boundary1);
     popButton.id = popButtonID;
     popButtonDiv.appendChild(popButton);
-    // If the canvas already exists, remove it.
-    if (rdCanvas != null) {
-        // Set the height to 0 to remove the canvas.
-        rdCanvas.height = 0;
-        rdCanvas.remove();
+    let existingCanvas = document.getElementById(rdCanvasId);
+    if (existingCanvas) {
+        existingCanvas.remove();
     }
-    rdCanvas = document.createElement('canvas');
+    let rdCanvas = document.createElement('canvas');
     rdCanvas.id = rdCanvasId;
     rdDiv.appendChild(rdCanvas);
     //rd_canvas.width = rd_canvas_width;
@@ -465,16 +461,16 @@ function parse(xml) {
     drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     // Add action listener to the pop diagram button.
     popButton.addEventListener('click', () => {
+        let cid = rdCanvasId + "clone";
         if (popWindow == null) {
             /**
              * Cloning is necessary for Chrome.
              */
             let c = rdCanvas.cloneNode(true);
-            c.id = rdCanvasId;
+            c.id = cid;
             popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height);
             popWindow.document.body.appendChild(c);
             drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
-            // If the canvas already exists, remove it.
             (0, html_js_1.remove)(rdCanvasId);
             popButton.textContent = "Pop back reaction diagram";
         }
@@ -483,11 +479,12 @@ function parse(xml) {
              * Cloning is necessary for Chrome.
              */
             let c = popWindow.document.getElementById(rdCanvasId);
-            let rd_canvas = c.cloneNode(true);
+            rdCanvas = c.cloneNode(true);
+            rdCanvas.id = rdCanvasId;
             if (rdDiv != null) {
-                rdDiv.appendChild(rd_canvas);
+                rdDiv.appendChild(rdCanvas);
             }
-            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
+            drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
             popButton.textContent = "Pop out reaction diagram to a new window";
@@ -689,10 +686,10 @@ function processMoleculeList(xml) {
                 pl.setProperty(p);
                 molecule.setProperties(pl);
                 if (p.dictRef == molecule_js_1.ZPE.dictRef) {
-                    processProperty(p, molecule_js_1.ZPE.units, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                    processProperty(p, mesmer_js_1.Mesmer.energyUnits, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 }
                 else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
-                    processProperty(p, molecule_js_1.RotConsts.units, molecule, xml_Ps[j], plDiv, boundary1, level3);
+                    processProperty(p, mesmer_js_1.Mesmer.frequencyUnits, molecule, xml_Ps[j], plDiv, boundary1, level3);
                 }
                 else {
                     processProperty(p, undefined, molecule, xml_Ps[j], plDiv, boundary1, level3);
@@ -710,10 +707,10 @@ function processMoleculeList(xml) {
             let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml_Ps[0]));
             molecule.setProperties(p);
             if (p.dictRef == molecule_js_1.ZPE.dictRef) {
-                processProperty(p, molecule_js_1.ZPE.units, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+                processProperty(p, mesmer_js_1.Mesmer.energyUnits, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             }
             else if (p.dictRef == molecule_js_1.RotConsts.dictRef) {
-                processProperty(p, molecule_js_1.RotConsts.units, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
+                processProperty(p, mesmer_js_1.Mesmer.frequencyUnits, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
             }
             else {
                 processProperty(p, undefined, molecule, xml_Ps[0], moleculeDiv, boundary1, level2);
@@ -774,14 +771,14 @@ function processMoleculeList(xml) {
                 extraDOSCMethod.setBondRef(bondRef);
                 // Create a HTMLSelectElement to select the bondRef.
                 let bondIds = molecule.getBonds().getBondIds();
-                let selectElement = (0, html_js_1.createSelectElement)(bondIds, bondRef.value, molecule.id + "_" + molecule_js_1.BondRef.tagName, boundary1);
-                selectElement.addEventListener('change', (event) => {
+                let select = (0, html_js_1.createSelectElement)(bondIds, molecule_js_1.BondRef.tagName, bondRef.value, molecule.id + "_" + molecule_js_1.BondRef.tagName, boundary1);
+                select.addEventListener('change', (event) => {
                     let target = event.target;
                     bondRef.value = target.value;
                     (0, html_js_1.resizeSelectElement)(target);
                 });
-                (0, html_js_1.resizeSelectElement)(selectElement);
-                container.appendChild(selectElement);
+                (0, html_js_1.resizeSelectElement)(select);
+                container.appendChild(select);
                 extraDOSCMethodDiv.appendChild(container);
             }
             // Read hinderedRotorPotential.
@@ -807,18 +804,17 @@ function processMoleculeList(xml) {
                 // Formats
                 let formatLabel = (0, html_js_1.createLabel)("Format:", level4);
                 hinderedRotorPotentialDiv.appendChild(formatLabel);
-                let selectElement = (0, html_js_1.createSelectElement)(molecule_js_1.HinderedRotorPotential.formats, hinderedRotorPotential.format, molecule.id + "_" + molecule_js_1.HinderedRotorPotential.tagName, boundary1);
-                selectElement.addEventListener('change', (event) => {
+                let select = (0, html_js_1.createSelectElement)(molecule_js_1.HinderedRotorPotential.formats, molecule_js_1.HinderedRotorPotential.tagName, hinderedRotorPotential.format, molecule.id + "_" + molecule_js_1.HinderedRotorPotential.tagName, boundary1);
+                select.addEventListener('change', (event) => {
                     let target = event.target;
                     hinderedRotorPotential.format = target.value;
                     (0, html_js_1.resizeSelectElement)(target);
                 });
-                (0, html_js_1.resizeSelectElement)(selectElement);
-                hinderedRotorPotentialDiv.appendChild(selectElement);
+                hinderedRotorPotentialDiv.appendChild(select);
                 // Add any units.
                 let unitsLabel = (0, html_js_1.createLabel)("Units:", boundary1);
                 hinderedRotorPotentialDiv.appendChild(unitsLabel);
-                addAnyUnits(molecule_js_1.HinderedRotorPotential.units, hinderedRotorPotentialAttributes, hinderedRotorPotentialDiv, molecule.id + "_" + molecule_js_1.DOSCMethod.tagName + "_" + molecule_js_1.HinderedRotorPotential.tagName, molecule_js_1.HinderedRotorPotential.tagName, boundary1);
+                addAnyUnits(mesmer_js_1.Mesmer.energyUnits, hinderedRotorPotentialAttributes, hinderedRotorPotentialDiv, molecule.id + "_" + molecule_js_1.DOSCMethod.tagName + "_" + molecule_js_1.HinderedRotorPotential.tagName, molecule_js_1.HinderedRotorPotential.tagName, boundary1);
                 // Add expansionSize.
                 let expansionSizeLabel = (0, html_js_1.createLabel)("Expansion size:", boundary1);
                 hinderedRotorPotentialDiv.appendChild(expansionSizeLabel);
@@ -1115,16 +1111,15 @@ function processProperty(p, units, molecule, element, moleculeDiv, boundary, lev
  */
 function addAnyUnits(units, attributes, inputDiv, id, tagOrDictRef, boundary) {
     if (units != undefined) {
-        let unitsSelectElement = getUnitsSelectElement(units, attributes, id, tagOrDictRef);
-        if (unitsSelectElement != undefined) {
-            Object.assign(unitsSelectElement.style, boundary);
-            inputDiv.appendChild(unitsSelectElement);
+        let unitsLabelWithSelect = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef);
+        if (unitsLabelWithSelect != undefined) {
+            inputDiv.appendChild(unitsLabelWithSelect);
         }
     }
     else {
         let attributesUnits = attributes.get("units");
         if (attributesUnits != undefined) {
-            let label = (0, html_js_1.createLabel)(attributesUnits, boundary);
+            let label = (0, html_js_1.createLabel)("units " + attributesUnits, boundary);
             inputDiv.appendChild(label);
         }
     }
@@ -1135,22 +1130,23 @@ function addAnyUnits(units, attributes, inputDiv, id, tagOrDictRef, boundary) {
  * @param tagOrDictRef The tag or dictionary reference.
  * @returns A select element for setting the units or undefined if there is not attribute for units.
  */
-function getUnitsSelectElement(units, attributes, id, tagOrDictRef) {
+function getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef) {
     let psUnits = attributes.get("units");
     if (psUnits != undefined) {
         // Get a select element for setting the units.
-        let selectElement = (0, html_js_1.createSelectElement)(units, "Units", id, boundary1);
+        let lws = (0, html_js_1.createLabelWithSelect)("Units", units, "Units", psUnits, id, boundary1, boundary1);
+        let select = lws.querySelector('select');
         // Set the initial value to the units.
-        selectElement.value = psUnits;
+        select.value = psUnits;
         // Add event listener to selectElement.
-        (0, html_js_1.resizeSelectElement)(selectElement);
-        selectElement.addEventListener('change', (event) => {
+        (0, html_js_1.resizeSelectElement)(select);
+        select.addEventListener('change', (event) => {
             let target = event.target;
             attributes.set("units", target.value);
             console.log("Set " + tagOrDictRef + " units to " + target.value);
-            (0, html_js_1.resizeSelectElement)(selectElement);
+            (0, html_js_1.resizeSelectElement)(target);
         });
-        return selectElement;
+        return lws;
     }
     return undefined;
 }
@@ -1168,17 +1164,18 @@ function processDOSCMethod(dOSCMethod, molecule, moleculeDiv) {
     container.appendChild(label);
     // Create a HTMLSelectElement to select the DOSCMethod.
     let options = ["ClassicalRotors", "me:QMRotors", "QMRotors"];
-    let selectElement = (0, html_js_1.createSelectElement)(options, "DOSCMethod", molecule.id + "_" + 'Select_DOSCMethod', boundary1);
+    let select = (0, html_js_1.createSelectElement)(options, molecule_js_1.DOSCMethod.tagName, dOSCMethod.tagName, molecule.id + "_" + 'Select_DOSCMethod', boundary1);
     // Set the initial value to the DOSCMethod.
-    selectElement.value = dOSCMethod.getXsiType();
+    select.value = dOSCMethod.getXsiType();
     // Add event listener to selectElement.
-    selectElement.addEventListener('change', (event) => {
+    select.addEventListener('change', (event) => {
         let target = event.target;
         dOSCMethod.setXsiType(target.value);
         console.log("Set DOSCMethod to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
     });
     molecule.setDOSCMethod(dOSCMethod);
-    container.appendChild(selectElement);
+    container.appendChild(select);
     Object.assign(container.style, level2);
     moleculeDiv.appendChild(container);
 }
@@ -1363,16 +1360,17 @@ function processReactionList(xml) {
                 container.appendChild(label);
                 // Create a HTMLSelectElement to select the Role.
                 let options = ["deficientReactant", "excessReactant", "modelled"];
-                let selectElement = (0, html_js_1.createSelectElement)(options, "Role", molecule.ref + "_" + 'Select_Role', boundary1);
+                let select = (0, html_js_1.createSelectElement)(options, "Role", reactant.getMolecule().role, molecule.ref + "_" + 'Select_Role', boundary1);
                 // Set the initial value.
-                selectElement.value = molecule.role;
+                select.value = molecule.role;
                 // Add event listener to selectElement.
-                selectElement.addEventListener('change', (event) => {
+                select.addEventListener('change', (event) => {
                     let target = event.target;
                     molecule.setRole(target.value);
                     console.log("Set Role to " + target.value);
+                    (0, html_js_1.resizeSelectElement)(target);
                 });
-                container.appendChild(selectElement);
+                container.appendChild(select);
                 Object.assign(container.style, level3);
                 reactantsDiv.appendChild(container);
             }
@@ -1402,7 +1400,7 @@ function processReactionList(xml) {
                 let product = new reaction_js_1.Product((0, xml_js_1.getAttributes)(xml_products[j]), molecule);
                 products.push(product);
                 let options = ["modelled", "sink"];
-                let container = (0, html_js_1.createLabelWithSelect)(molecule.ref + " role:", options, molecule.ref + "_" + 'Select_Role', "Role", boundary1, level3);
+                let container = (0, html_js_1.createLabelWithSelect)(molecule.ref + " role:", options, molecule.role, molecule.ref + "_" + 'Select_Role', "Role", boundary1, level3);
                 let selectElement = container.querySelector('select');
                 selectElement.value = molecule.role;
                 selectElement.addEventListener('change', (event) => {
@@ -1440,7 +1438,7 @@ function processReactionList(xml) {
             container.appendChild(label);
             // Create a HTMLSelectElement to select the Tunneling.
             let options = ["Eckart", "WKB"];
-            let selectElement = (0, html_js_1.createSelectElement)(options, "Tunneling", reaction.id + "_" + 'Select_Tunneling', boundary1);
+            let selectElement = (0, html_js_1.createSelectElement)(options, "Tunneling", tunneling.getName(), reaction.id + "_" + 'Select_Tunneling', boundary1);
             // Set the initial value.
             selectElement.value = tunneling.getName();
             // Add event listener to selectElement.
@@ -1448,6 +1446,7 @@ function processReactionList(xml) {
                 let target = event.target;
                 tunneling.setName(target.value);
                 console.log("Set Tunneling to " + target.value);
+                (0, html_js_1.resizeSelectElement)(target);
             });
             container.appendChild(selectElement);
             Object.assign(container.style, level2);
@@ -1714,22 +1713,8 @@ function processConditions(xml) {
         let containerDiv = (0, html_js_1.createFlexDiv)(level2);
         let bathGasLabel = (0, html_js_1.createLabel)(conditions_js_1.BathGas.tagName, boundary1);
         containerDiv.appendChild(bathGasLabel);
-        // Create a HTMLSelectInput for the BathGas.
-        // Get the ids of all the molecules.
-        let moleculeIDs = new Set(molecules.keys());
-        let selectElement = (0, html_js_1.createSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.Conditions.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
-        // Set the initial value.
-        selectElement.value = bathGas.value;
-        // Add event listener to selectElement.
-        selectElement.addEventListener('change', (event) => {
-            let target = event.target;
-            bathGas.value = target.value;
-            console.log("Added " + target.value + " as a " + conditions_js_1.BathGas.tagName);
-            (0, html_js_1.resizeSelectElement)(target);
-        });
-        selectElement.style.marginLeft = margin2;
-        (0, html_js_1.resizeSelectElement)(selectElement);
-        containerDiv.appendChild(selectElement);
+        // Add HTMLSelectInput for the BathGas.
+        containerDiv.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas));
         // Add a remove button.
         let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
         removeButton.addEventListener('click', () => {
@@ -1751,21 +1736,7 @@ function processConditions(xml) {
             let containerDiv = (0, html_js_1.createFlexDiv)(level2);
             let bathGasLabel = (0, html_js_1.createLabel)(conditions_js_1.BathGas.tagName, boundary1);
             containerDiv.appendChild(bathGasLabel);
-            // Create a HTMLSelectInput for the BathGas.
-            // Get the ids of all the molecules.
-            let moleculeIDs = new Set(molecules.keys());
-            let selectElement = (0, html_js_1.createSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.Conditions.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
-            // Set the initial value.
-            selectElement.value = bathGas.value;
-            // Add event listener to selectElement.
-            selectElement.addEventListener('change', (event) => {
-                let target = event.target;
-                bathGas.value = target.value;
-                console.log("Set " + conditions_js_1.PTpair.tagName + "_" + conditions_js_1.BathGas.tagName + " to " + target.value);
-                (0, html_js_1.resizeSelectElement)(target);
-            });
-            (0, html_js_1.resizeSelectElement)(selectElement);
-            containerDiv.appendChild(selectElement);
+            containerDiv.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas));
             // Add a remove button.
             let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
             removeButton.addEventListener('click', () => {
@@ -1930,21 +1901,7 @@ function processConditions(xml) {
                     let bathGasValue = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_bathGass[0]));
                     let bathGas = new conditions_js_1.BathGas((0, xml_js_1.getAttributes)(xml_bathGass[0]), bathGasValue);
                     pTPair.setBathGas(bathGas);
-                    // Create a HTMLSelectInput for the BathGas.
-                    // Get the ids of all the molecules.
-                    let moleculeIDs = new Set(molecules.keys());
-                    let selectElement = (0, html_js_1.createSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.PTpair.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
-                    // Set the initial value.
-                    selectElement.value = bathGas.value;
-                    // Add event listener to selectElement.
-                    selectElement.addEventListener('change', (event) => {
-                        let target = event.target;
-                        bathGas.value = target.value;
-                        console.log("Set " + conditions_js_1.PTpair.tagName + "_" + conditions_js_1.BathGas.tagName + " to " + target.value);
-                        (0, html_js_1.resizeSelectElement)(target);
-                    });
-                    (0, html_js_1.resizeSelectElement)(selectElement);
-                    pTPairDiv.appendChild(selectElement);
+                    pTPairDiv.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas));
                 }
                 // Add any optional ExperimentRate
                 let xml_experimentRates = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentRate.tagName);
@@ -2123,23 +2080,37 @@ function addBathGas(pTPairDiv, pTPair) {
         bathGasDiv.appendChild(bathGasLabel);
         pTPairDiv.insertBefore(bathGasDiv, button);
         // Create a HTMLSelectInput for the BathGas.
-        // Get the ids of all the molecules.
-        let moleculeIDs = new Set(molecules.keys());
-        let selectElement = (0, html_js_1.createSelectElement)(Array.from(moleculeIDs), conditions_js_1.BathGas.tagName, conditions_js_1.PTs.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
+        let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas);
         // Set the initial value.
-        selectElement.value = bathGas.value;
+        select.value = bathGas.value;
         // Add event listener to selectElement.
-        selectElement.addEventListener('change', (event) => {
+        select.addEventListener('change', (event) => {
             let target = event.target;
             bathGas.value = target.value;
             console.log("Added " + target.value + " as a " + conditions_js_1.BathGas.tagName);
             (0, html_js_1.resizeSelectElement)(target);
         });
-        (0, html_js_1.resizeSelectElement)(selectElement);
-        bathGasDiv.appendChild(selectElement);
+        bathGasDiv.appendChild(select);
         pTPairDiv.insertBefore(bathGasDiv, button);
         pTPairDiv.removeChild(button);
     });
+}
+/**
+ * @param options The options.
+ * @param bathGas The bath gas.
+ */
+function createSelectElementBathGas(options, bathGas) {
+    let select = (0, html_js_1.createSelectElement)(options, conditions_js_1.BathGas.tagName, bathGas.value, conditions_js_1.PTs.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
+    // Set the initial value.
+    select.value = bathGas.value;
+    // Add event listener to selectElement.
+    select.addEventListener('change', (event) => {
+        let target = event.target;
+        bathGas.value = target.value;
+        console.log("Added " + target.value + " as a " + conditions_js_1.BathGas.tagName);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    return select;
 }
 /**
  * @param pTPairDiv The PTpair div.
@@ -2197,28 +2168,30 @@ function processModelParameters(xml) {
 function processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
-    let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.GrainSize.tagName);
-    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.GrainSize.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = modelParameters_js_1.GrainSize.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let xml = xml_modelParameters.getElementsByTagName(tagName);
+    let button = (0, html_js_1.createButton)(tagName, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName + "_input";
-    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.GrainSize.tagName + "_select";
+    div.appendChild(button);
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_select";
     let gs;
     let valueString;
     if (xml.length == 1) {
         valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
         let value = parseFloat(valueString);
         gs = new modelParameters_js_1.GrainSize((0, xml_js_1.getAttributes)(xml[0]), value);
-        button.textContent = selected + selectedLoadedText1;
+        button.textContent = buttonTextContentSelected;
         createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         gs = new modelParameters_js_1.GrainSize(new Map(), NaN);
-        button.textContent = deselected + deselectedText1;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2226,19 +2199,16 @@ function processGrainSize(modelParameters, xml_modelParameters, modelParametersD
         // Check if the GrainSize already exists
         if (!modelParameters.index.has(modelParameters_js_1.GrainSize.tagName)) {
             createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
-            button.textContent = selected + selectedLoadedText1;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
         else {
             valueString = gs.value.toExponential();
             modelParameters.removeGrainSize();
-            // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
-            button.textContent = deselected + deselectedText1;
+            document.getElementById(id)?.remove();
+            document.getElementById(ids)?.remove();
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2264,7 +2234,7 @@ function createGrainSizeInput(modelParameters, div, gs, id, ids, valueString) {
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
-    addAnyUnits(molecule_js_1.ZPE.units, gs.attributes, div, ids, modelParameters_js_1.GrainSize.tagName, boundary1);
+    addAnyUnits(mesmer_js_1.Mesmer.energyUnits, gs.attributes, div, ids, modelParameters_js_1.GrainSize.tagName, boundary1);
 }
 /**
  * Process "me:automaticallySetMaxEne".
@@ -2275,28 +2245,30 @@ function createGrainSizeInput(modelParameters, div, gs, id, ids, valueString) {
 function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_modelParameters, modelParametersDiv) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
-    let xml = xml_modelParameters.getElementsByTagName(control_js_1.AutomaticallySetMaxEne.tagName);
-    let lwb = (0, html_js_1.createButtonWithLabel)(control_js_1.AutomaticallySetMaxEne.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = control_js_1.AutomaticallySetMaxEne.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let xml = xml_modelParameters.getElementsByTagName(tagName);
+    let button = (0, html_js_1.createButton)(tagName, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_input";
-    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + control_js_1.AutomaticallySetMaxEne.tagName + "_select";
+    div.appendChild(button);
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_select";
     let asme;
     let valueString;
     if (xml.length == 1) {
         valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
         let value = parseFloat(valueString);
         asme = new control_js_1.AutomaticallySetMaxEne((0, xml_js_1.getAttributes)(xml[0]), value);
-        button.textContent = selected + selectedLoadedText1;
+        button.textContent = buttonTextContentSelected;
         createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         asme = new control_js_1.AutomaticallySetMaxEne(new Map(), NaN);
-        button.textContent = deselected + deselectedText1;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2304,7 +2276,7 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
         // Check if the AutomaticallySetMaxEne already exists
         if (!modelParameters.index.has(control_js_1.AutomaticallySetMaxEne.tagName)) {
             createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
-            button.textContent = selected + selectedLoadedText1;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
@@ -2312,11 +2284,8 @@ function processAutomaticallySetMaxEneModelParameters(modelParameters, xml_model
             valueString = asme.value.toExponential();
             modelParameters.removeAutomaticallySetMaxEne();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
-            button.textContent = deselected + deselectedText1;
+            document.getElementById(id)?.remove();
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2341,7 +2310,7 @@ function createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, 
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
-    addAnyUnits(molecule_js_1.ZPE.units, asme.attributes, div, ids, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
+    addAnyUnits(mesmer_js_1.Mesmer.energyUnits, asme.attributes, div, ids, control_js_1.AutomaticallySetMaxEne.tagName, boundary1);
 }
 /**
  * Process "me:energyAboveTheTopHill".
@@ -2352,28 +2321,30 @@ function createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, 
 function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, modelParametersDiv) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
-    let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.EnergyAboveTheTopHill.tagName);
-    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.EnergyAboveTheTopHill.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = modelParameters_js_1.EnergyAboveTheTopHill.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let xml = xml_modelParameters.getElementsByTagName(tagName);
+    let button = (0, html_js_1.createButton)(tagName, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName + "_input";
-    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.EnergyAboveTheTopHill.tagName + "_select";
+    div.appendChild(button);
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_select";
     let eatth;
     let valueString;
     if (xml.length == 1) {
         valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
         let value = parseFloat(valueString);
         eatth = new modelParameters_js_1.EnergyAboveTheTopHill((0, xml_js_1.getAttributes)(xml[0]), value);
-        button.textContent = selected + selectedLoadedText1;
+        button.textContent = buttonTextContentSelected;
         createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         eatth = new modelParameters_js_1.EnergyAboveTheTopHill(new Map(), NaN);
-        button.textContent = deselected + deselectedText1;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2381,7 +2352,7 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
         // Check if the EnergyAboveTheTopHill already exists
         if (!modelParameters.index.has(modelParameters_js_1.EnergyAboveTheTopHill.tagName)) {
             createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
-            button.textContent = selected + selectedLoadedText1;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
@@ -2389,11 +2360,8 @@ function processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, mode
             valueString = eatth.value.toExponential();
             modelParameters.removeEnergyAboveTheTopHill();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
-            button.textContent = deselected + deselectedText1;
+            document.getElementById(id)?.remove();
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -2418,7 +2386,7 @@ function createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, 
     input.value = valueString;
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
-    addAnyUnits(molecule_js_1.ZPE.units, eatth.attributes, div, ids, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
+    addAnyUnits(mesmer_js_1.Mesmer.energyUnits, eatth.attributes, div, ids, modelParameters_js_1.EnergyAboveTheTopHill.tagName, boundary1);
 }
 /**
  * Process "me:maxTemperature".
@@ -2429,28 +2397,30 @@ function createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, 
 function processMaxTemperature(modelParameters, xml_modelParameters, modelParametersDiv) {
     let div = (0, html_js_1.createFlexDiv)(level1);
     modelParametersDiv.appendChild(div);
-    let xml = xml_modelParameters.getElementsByTagName(modelParameters_js_1.MaxTemperature.tagName);
-    let lwb = (0, html_js_1.createButtonWithLabel)(modelParameters_js_1.MaxTemperature.tagName, "", boundary1, boundary1);
-    let button = lwb.querySelector('button');
+    let tagName = modelParameters_js_1.MaxTemperature.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let xml = xml_modelParameters.getElementsByTagName(tagName);
+    let button = (0, html_js_1.createButton)(tagName, boundary1);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    div.appendChild(lwb);
-    let id = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName + "_input";
-    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + modelParameters_js_1.MaxTemperature.tagName + "_select";
+    div.appendChild(button);
+    let id = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_input";
+    let ids = modelParameters_js_1.ModelParameters.tagName + "_" + tagName + "_select";
     let mt;
     let valueString;
     if (xml.length == 1) {
         valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml[0]));
         let value = parseFloat(valueString);
         mt = new modelParameters_js_1.MaxTemperature((0, xml_js_1.getAttributes)(xml[0]), value);
-        button.textContent = selected + selectedLoadedText1;
+        button.textContent = buttonTextContentSelected;
         createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
         button.classList.toggle('optionOff');
     }
     else {
         valueString = "";
         mt = new modelParameters_js_1.MaxTemperature(new Map(), NaN);
-        button.textContent = deselected + deselectedText1;
+        button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
@@ -2458,7 +2428,7 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
         // Check if the MaxTemperature already exists
         if (!modelParameters.index.has(modelParameters_js_1.MaxTemperature.tagName)) {
             createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
-            button.textContent = selected + selectedLoadedText1;
+            button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
         }
@@ -2466,11 +2436,8 @@ function processMaxTemperature(modelParameters, xml_modelParameters, modelParame
             valueString = mt.value.toExponential();
             modelParameters.removeMaxTemperature();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
-            button.textContent = deselected + deselectedText1;
+            document.getElementById(id)?.remove();
+            button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
         }
@@ -3438,30 +3405,27 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
     let buttonTextContentDeselected = tagName + deselected;
-    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    let button = (0, html_js_1.createButton)(tagName, boundary1);
+    button.id = control_js_1.Control.tagName + "_" + tagName;
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    let id = control_js_1.Control.tagName + "_" + tagName + "_input";
     let idTmax = control_js_1.Control.tagName + "_" + tagName + "_Tmax";
     let idTmin = control_js_1.Control.tagName + "_" + tagName + "_Tmin";
     let idTstep = control_js_1.Control.tagName + "_" + tagName + "_Tstep";
-    let tmr;
     if (xml.length == 1) {
-        tmr = new control_js_1.TestMicroRates((0, xml_js_1.getAttributes)(xml[0]));
         button.textContent = buttonTextContentSelected;
         createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
         button.classList.toggle('optionOff');
     }
     else {
-        tmr = new control_js_1.TestMicroRates(new Map());
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         // Check if the TestMicroRates already exists
-        if (!control.index.has(control_js_1.Eigenvalues.tagName)) {
+        if (!control.index.has(tagName)) {
             createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
             button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
@@ -3469,27 +3433,12 @@ function processTestMicroRates(control, controlsDiv, xml_control) {
         }
         else {
             control.removeTestMicroRates();
-            // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
             // Remove any existing Tmax.
-            e: HTMLDivElement;
-            e = document.getElementById(idTmax);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(idTmax)?.remove();
             // Remove any existing Tmin.
-            e = document.getElementById(idTmin);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(idTmin)?.remove();
             // Remove any existing Tstep.
-            e = document.getElementById(idTstep);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(idTstep)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -3591,393 +3540,346 @@ function processCalcMethod(control, controlsDiv, xml_control) {
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    let cm;
-    //cm = loadCalcMethod(xml);
+    // Add the div for the CalcMethod.    
+    let divCm = (0, html_js_1.createFlexDiv)(boundary1);
+    divCm.id = divCmId;
+    div.appendChild(divCm);
     let options = control_js_1.CalcMethod.options;
-    let ids = control_js_1.Control.tagName + "_" + tagName + "_select";
-    let idcm = control_js_1.Control.tagName + "_" + tagName + "_cm";
+    let ids = divCmDetailsId + "_select";
+    let cm;
+    if (xml.length > 0) {
+        if (xml.length > 1) {
+            throw new Error("More than one CalcMethod element.");
+        }
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        let attributes = (0, xml_js_1.getAttributes)(xml[0]);
+        let xsi_type = attributes.get("xsi:type");
+        // Create the select element.
+        let select = createSelectElementCalcMethod(control, div, options, tagName, xsi_type, ids);
+        // Set the select element to the correct value.
+        select.value = xsi_type;
+        divCm.appendChild(select);
+        // Add the details div.
+        let divCmDetails = (0, html_js_1.createFlexDiv)(boundary1);
+        divCmDetails.id = divCmDetailsId;
+        divCm.appendChild(divCmDetails);
+        if (xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type || xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
+            cm = new control_js_1.CalcMethodSimpleCalc(attributes);
+        }
+        else if (xsi_type == control_js_1.CalcMethodGridSearch.xsi_type || xsi_type == control_js_1.CalcMethodGridSearch.xsi_type2) {
+            cm = new control_js_1.CalcMethodGridSearch(attributes);
+        }
+        else if (xsi_type == control_js_1.CalcMethodFitting.xsi_type || xsi_type == control_js_1.CalcMethodFitting.xsi_type2) {
+            let cmf = new control_js_1.CalcMethodFitting(attributes);
+            cm = cmf;
+            // FittingIterations.
+            let fi_xml = xml[0].getElementsByTagName(control_js_1.FittingIterations.tagName);
+            if (fi_xml.length > 0) {
+                if (fi_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(fi_xml[0])));
+                    let fittingIterations = new control_js_1.FittingIterations((0, xml_js_1.getAttributes)(fi_xml[0]), value);
+                    cmf.setFittingIterations(fittingIterations);
+                }
+                else {
+                    throw new Error("More than one FittingIterations element.");
+                }
+            }
+            processCalcMethodFitting(divCmDetails, cmf);
+        }
+        else if (xsi_type == control_js_1.CalcMethodMarquardt.xsi_type || xsi_type == control_js_1.CalcMethodMarquardt.xsi_type2) {
+            let cmm = new control_js_1.CalcMethodMarquardt(attributes);
+            cm = cmm;
+            // MarquardtIterations.
+            let mi_xml = xml[0].getElementsByTagName(control_js_1.MarquardtIterations.tagName);
+            if (mi_xml.length > 0) {
+                if (mi_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mi_xml[0])));
+                    let marquardtIterations = new control_js_1.MarquardtIterations((0, xml_js_1.getAttributes)(mi_xml[0]), value);
+                    cmm.setMarquardtIterations(marquardtIterations);
+                }
+                else {
+                    throw new Error("More than one MarquardtIterations element.");
+                }
+            }
+            // MarquardtTolerance.
+            let mt_xml = xml[0].getElementsByTagName(control_js_1.MarquardtTolerance.tagName);
+            if (mt_xml.length > 0) {
+                if (mt_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mt_xml[0])));
+                    let marquardtTolerance = new control_js_1.MarquardtTolerance((0, xml_js_1.getAttributes)(mt_xml[0]), value);
+                    cmm.setMarquardtTolerance(marquardtTolerance);
+                }
+                else {
+                    throw new Error("More than one MarquardtTolerance element.");
+                }
+            }
+            // MarquardtDerivDelta.
+            let mdd_xml = xml[0].getElementsByTagName(control_js_1.MarquardtDerivDelta.tagName);
+            if (mdd_xml.length > 0) {
+                if (mdd_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mdd_xml[0])));
+                    let marquardtDerivDelta = new control_js_1.MarquardtDerivDelta((0, xml_js_1.getAttributes)(mdd_xml[0]), value);
+                    cmm.setMarquardtDerivDelta(marquardtDerivDelta);
+                }
+                else {
+                    throw new Error("More than one MarquardtDerivDelta element.");
+                }
+            }
+            processCalcMethodMarquardt(divCmDetails, cmm);
+        }
+        else if (xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type || xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type2) {
+            let cmar = new control_js_1.CalcMethodAnalyticalRepresentation(attributes);
+            cm = cmar;
+            // Format.
+            let format_xml = xml[0].getElementsByTagName(control_js_1.Format.tagName);
+            if (format_xml.length > 0) {
+                if (format_xml.length == 1) {
+                    let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(format_xml[0]));
+                    let format = new control_js_1.Format((0, xml_js_1.getAttributes)(format_xml[0]), value);
+                    cmar.setFormat(format);
+                }
+                else {
+                    throw new Error("More than one Format element.");
+                }
+            }
+            // Precision.
+            let precision_xml = xml[0].getElementsByTagName(control_js_1.Precision.tagName);
+            if (precision_xml.length > 0) {
+                if (precision_xml.length == 1) {
+                    let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(precision_xml[0]));
+                    let precision = new control_js_1.Precision((0, xml_js_1.getAttributes)(precision_xml[0]), value);
+                    cmar.setPrecision(precision);
+                }
+                else {
+                    throw new Error("More than one Precision element.");
+                }
+            }
+            // ChebNumTemp.
+            let chebNumTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebNumTemp.tagName);
+            if (chebNumTemp_xml.length > 0) {
+                if (chebNumTemp_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumTemp_xml[0])));
+                    let chebNumTemp = new control_js_1.ChebNumTemp((0, xml_js_1.getAttributes)(chebNumTemp_xml[0]), value);
+                    cmar.setChebNumTemp(chebNumTemp);
+                }
+                else {
+                    throw new Error("More than one ChebNumTemp element.");
+                }
+            }
+            // ChebNumConc.
+            let chebNumConc_xml = xml[0].getElementsByTagName(control_js_1.ChebNumConc.tagName);
+            if (chebNumConc_xml.length > 0) {
+                if (chebNumConc_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumConc_xml[0])));
+                    let chebNumConc = new control_js_1.ChebNumConc((0, xml_js_1.getAttributes)(chebNumConc_xml[0]), value);
+                    cmar.setChebNumConc(chebNumConc);
+                }
+                else {
+                    throw new Error("More than one ChebNumConc element.");
+                }
+            }
+            // ChebMaxTemp.
+            let chebMaxTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxTemp.tagName);
+            if (chebMaxTemp_xml.length > 0) {
+                if (chebMaxTemp_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxTemp_xml[0])));
+                    let chebMaxTemp = new control_js_1.ChebMaxTemp((0, xml_js_1.getAttributes)(chebMaxTemp_xml[0]), value);
+                    cmar.setChebMaxTemp(chebMaxTemp);
+                }
+                else {
+                    throw new Error("More than one ChebMaxTemp element.");
+                }
+            }
+            // ChebMinTemp.
+            let chebMinTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMinTemp.tagName);
+            if (chebMinTemp_xml.length > 0) {
+                if (chebMinTemp_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinTemp_xml[0])));
+                    let chebMinTemp = new control_js_1.ChebMinTemp((0, xml_js_1.getAttributes)(chebMinTemp_xml[0]), value);
+                    cmar.setChebMinTemp(chebMinTemp);
+                }
+                else {
+                    throw new Error("More than one ChebMinTemp element.");
+                }
+            }
+            // ChebMaxConc.
+            let chebMaxConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxConc.tagName);
+            if (chebMaxConc_xml.length > 0) {
+                if (chebMaxConc_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxConc_xml[0])));
+                    let chebMaxConc = new control_js_1.ChebMaxConc((0, xml_js_1.getAttributes)(chebMaxConc_xml[0]), value);
+                    cmar.setChebMaxConc(chebMaxConc);
+                }
+                else {
+                    throw new Error("More than one ChebMaxConc element.");
+                }
+            }
+            // ChebMinConc.
+            let chebMinConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMinConc.tagName);
+            if (chebMinConc_xml.length > 0) {
+                if (chebMinConc_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinConc_xml[0])));
+                    let chebMinConc = new control_js_1.ChebMinConc((0, xml_js_1.getAttributes)(chebMinConc_xml[0]), value);
+                    cmar.setChebMinConc(chebMinConc);
+                }
+                else {
+                    throw new Error("More than one ChebMinConc element.");
+                }
+            }
+            // ChebTExSize.
+            let chebTExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebTExSize.tagName);
+            if (chebTExSize_xml.length > 0) {
+                if (chebTExSize_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebTExSize_xml[0])));
+                    let chebTExSize = new control_js_1.ChebTExSize((0, xml_js_1.getAttributes)(chebTExSize_xml[0]), value);
+                    cmar.setChebTExSize(chebTExSize);
+                }
+                else {
+                    throw new Error("More than one ChebTExSize element.");
+                }
+            }
+            // ChebPExSize.
+            let chebPExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebPExSize.tagName);
+            if (chebPExSize_xml.length > 0) {
+                if (chebPExSize_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebPExSize_xml[0])));
+                    let chebPExSize = new control_js_1.ChebPExSize((0, xml_js_1.getAttributes)(chebPExSize_xml[0]), value);
+                    cmar.setChebPExSize(chebPExSize);
+                }
+                else {
+                    throw new Error("More than one ChebPExSize element.");
+                }
+            }
+            processCalcMethodAnalyticalRepresentation(divCmDetails, cmar);
+        }
+        else if (xsi_type == control_js_1.CalcMethodThermodynamicTable.xsi_type || xsi_type == control_js_1.CalcMethodThermodynamicTable.xsi_type2) {
+            let cmtt = new control_js_1.CalcMethodThermodynamicTable(attributes);
+            cm = cmtt;
+            // Tmin.
+            let tmin_xml = xml[0].getElementsByTagName(control_js_1.Tmin.tagName);
+            if (tmin_xml.length > 0) {
+                if (tmin_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(tmin_xml[0])));
+                    let tmin = new control_js_1.Tmin((0, xml_js_1.getAttributes)(tmin_xml[0]), value);
+                    cmtt.setTmin(tmin);
+                }
+                else {
+                    throw new Error("More than one Tmin element.");
+                }
+            }
+            // Tmid.
+            let tmid_xml = xml[0].getElementsByTagName(control_js_1.Tmid.tagName);
+            if (tmid_xml.length > 0) {
+                if (tmid_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(tmid_xml[0])));
+                    let tmid = new control_js_1.Tmid((0, xml_js_1.getAttributes)(tmid_xml[0]), value);
+                    cmtt.setTmid(tmid);
+                }
+                else {
+                    throw new Error("More than one Tmid element.");
+                }
+            }
+            // Tmax.
+            let tmax_xml = xml[0].getElementsByTagName(control_js_1.Tmax.tagName);
+            if (tmax_xml.length > 0) {
+                if (tmax_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(tmax_xml[0])));
+                    let tmax = new control_js_1.Tmax((0, xml_js_1.getAttributes)(tmax_xml[0]), value);
+                    cmtt.setTmax(tmax);
+                }
+                else {
+                    throw new Error("More than one Tmax element.");
+                }
+            }
+            // Tstep.
+            let tstep_xml = xml[0].getElementsByTagName(control_js_1.Tstep.tagName);
+            if (tstep_xml.length > 0) {
+                if (tstep_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(tstep_xml[0])));
+                    let tstep = new control_js_1.Tstep((0, xml_js_1.getAttributes)(tstep_xml[0]), value);
+                    cmtt.setTstep(tstep);
+                }
+                else {
+                    throw new Error("More than one Tstep element.");
+                }
+            }
+            processCalcMethodThermodynamicTable(divCmDetails, cmtt);
+        }
+        else if (xsi_type == control_js_1.CalcMethodSensitivityAnalysis.xsi_type || xsi_type == control_js_1.CalcMethodSensitivityAnalysis.xsi_type2) {
+            let cmsa = new control_js_1.CalcMethodSensitivityAnalysis(attributes);
+            cm = cmsa;
+            // SensitivityAnalysisSamples.
+            let sas_xml = xml[0].getElementsByTagName(control_js_1.SensitivityAnalysisSamples.tagName);
+            if (sas_xml.length > 0) {
+                if (sas_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(sas_xml[0])));
+                    let sensitivityAnalysisSamples = new control_js_1.SensitivityAnalysisSamples((0, xml_js_1.getAttributes)(sas_xml[0]), value);
+                    cmsa.setSensitivityAnalysisSamples(sensitivityAnalysisSamples);
+                }
+                else {
+                    throw new Error("More than one SensitivityAnalysisSamples element.");
+                }
+            }
+            // SensitivityAnalysisOrder.
+            let sao_xml = xml[0].getElementsByTagName(control_js_1.SensitivityAnalysisOrder.tagName);
+            if (sao_xml.length > 0) {
+                if (sao_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(sao_xml[0])));
+                    let sensitivityAnalysisOrder = new control_js_1.SensitivityAnalysisOrder((0, xml_js_1.getAttributes)(sao_xml[0]), value);
+                    cmsa.setSensitivityAnalysisOrder(sensitivityAnalysisOrder);
+                }
+                else {
+                    throw new Error("More than one SensitivityAnalysisOrder element.");
+                }
+            }
+            // SensitivityNumVarRedIters.
+            let snvri_xml = xml[0].getElementsByTagName(control_js_1.SensitivityNumVarRedIters.tagName);
+            if (snvri_xml.length > 0) {
+                if (snvri_xml.length == 1) {
+                    let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(snvri_xml[0])));
+                    let sensitivityNumVarRedIters = new control_js_1.SensitivityNumVarRedIters((0, xml_js_1.getAttributes)(snvri_xml[0]), value);
+                    cmsa.setSensitivityNumVarRedIters(sensitivityNumVarRedIters);
+                }
+                else {
+                    throw new Error("More than one SensitivityNumVarRedIters element.");
+                }
+            }
+            // SensitivityVarRedMethod.
+            let svrm_xml = xml[0].getElementsByTagName(control_js_1.SensitivityVarRedMethod.tagName);
+            if (svrm_xml.length > 0) {
+                if (svrm_xml.length == 1) {
+                    let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(svrm_xml[0]));
+                    let sensitivityVarRedMethod = new control_js_1.SensitivityVarRedMethod((0, xml_js_1.getAttributes)(svrm_xml[0]), value);
+                    cmsa.setSensitivityVarRedMethod(sensitivityVarRedMethod);
+                }
+            }
+            processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
+        }
+        else {
+            throw new Error("Unknown xsi:type: " + xsi_type);
+        }
+        control.setCalcMethod(cm);
+        // The select element should have 
+    }
+    else {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
     let first = true;
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         // Check if the CalcMethod already exists
-        if (!control.index.has(control_js_1.CalcMethod.tagName)) {
+        if (!control.index.has(tagName)) {
             if (first) {
                 options.push(selectAnotherOption);
             }
-            let select = (0, html_js_1.createSelectElement)(options, tagName, ids, boundary1);
-            div.appendChild(select);
-            select.addEventListener('click', (event) => {
-                if (options[options.length - 1] == selectAnotherOption) {
-                    options.pop();
-                }
-                let lastIndex = select.options.length - 1;
-                if (select.options[lastIndex].value == selectAnotherOption) {
-                    select.remove(lastIndex);
-                }
-            });
-            select.addEventListener('change', (event) => {
-                // Remove any existing div.
-                let cmDiv = document.getElementById(idcm);
-                if (cmDiv != null) {
-                    cmDiv.remove();
-                }
-                cmDiv = (0, html_js_1.createFlexDiv)(boundary1);
-                div.appendChild(cmDiv);
-                cmDiv.id = idcm;
-                let target = event.target;
-                let value = target.value;
-                if (value == control_js_1.CalcMethodSimpleCalc.xsi_type || value == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
-                    // "me:simpleCalc", "simpleCalc".
-                    let cmsc = new control_js_1.CalcMethodSimpleCalc(new Map());
-                    cm = cmsc;
-                }
-                else if (value == control_js_1.CalcMethodGridSearch.xsi_type || value == control_js_1.CalcMethodGridSearch.xsi_type2) {
-                    // "me:gridSearch", "gridSearch".
-                    let cmgs = new control_js_1.CalcMethodGridSearch(new Map());
-                    // upper
-                    // lower
-                    cm = cmgs;
-                }
-                else if (value == control_js_1.CalcMethodFitting.xsi_type || value == control_js_1.CalcMethodFitting.xsi_type2) {
-                    // "me:fitting", "fitting".
-                    let cmf = new control_js_1.CalcMethodFitting(new Map());
-                    // "me:fittingIterations".
-                    let fiwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_FittingIterations_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmf.setFittingIterations(new control_js_1.FittingIterations(new Map(), parseFloat(target.value)));
-                            console.log("Set FittingIterations to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.FittingIterations.tagName);
-                    cmDiv.appendChild(fiwi);
-                }
-                else if (value == control_js_1.CalcMethodMarquardt.xsi_type || value == control_js_1.CalcMethodMarquardt.xsi_type2) {
-                    // "me:marquardt", "marquardt".
-                    let cmm = new control_js_1.CalcMethodMarquardt(new Map());
-                    // MarquardtIterations.
-                    let milwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_MarquardtIterations_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmm.setMarquardtIterations(new control_js_1.MarquardtIterations(new Map(), parseFloat(target.value)));
-                            console.log("Set MarquardtIterations to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.MarquardtIterations.tagName);
-                    cmDiv.appendChild(milwi);
-                    // MarquardtTolerance.
-                    let mtlwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_MarquardtTolerance_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmm.setMarquardtTolerance(new control_js_1.MarquardtTolerance(new Map(), parseFloat(target.value)));
-                            console.log("Set MarquardtTolerance to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.MarquardtTolerance.tagName);
-                    cmDiv.appendChild(mtlwi);
-                    // MarquardtDerivDelta.
-                    let mddlwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_MarquardtDerivDelta_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmm.setMarquardtDerivDelta(new control_js_1.MarquardtDerivDelta(new Map(), parseFloat(target.value)));
-                            console.log("Set MarquardtDerivDelta to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.MarquardtDerivDelta.tagName);
-                    cmDiv.appendChild(mddlwi);
-                    cm = cmm;
-                }
-                else if (value == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type || value == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type2) {
-                    // "me:analyticalRepresentation", "analyticalRepresentation".
-                    let cmar = new control_js_1.CalcMethodAnalyticalRepresentation(new Map());
-                    // "me:format".
-                    let formatlwi = (0, html_js_1.createLabelWithInput)("text", idcm + "_Format_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        cmar.setFormat(new control_js_1.Format(new Map(), target.value));
-                        console.log("Set Format to " + target.value);
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, "", control_js_1.Format.tagName);
-                    cmDiv.appendChild(formatlwi);
-                    // "me:precision".
-                    let precisionlwi = (0, html_js_1.createLabelWithInput)("text", idcm + "_Precision_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        cmar.setPrecision(new control_js_1.Precision(new Map(), target.value));
-                        console.log("Set Precision to " + target.value);
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, "", control_js_1.Precision.tagName);
-                    cmDiv.appendChild(precisionlwi);
-                    // "me:chebNumTemp".
-                    let chebNumTemplwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebNumTemp_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebNumTemp(new control_js_1.ChebNumTemp(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebNumTemp to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebNumTemp.tagName);
-                    cmDiv.appendChild(chebNumTemplwi);
-                    // "me:chebNumConc".
-                    let chebNumConclwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebNumConc_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebNumConc(new control_js_1.ChebNumConc(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebNumConc to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebNumConc.tagName);
-                    cmDiv.appendChild(chebNumConclwi);
-                    // "me:chebMaxTemp".
-                    let chebMaxTemplwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebMaxTemp_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebMaxTemp(new control_js_1.ChebMaxTemp(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebMaxTemp to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebMaxTemp.tagName);
-                    cmDiv.appendChild(chebMaxTemplwi);
-                    // "me:chebMinTemp".
-                    let chebMinTemplwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebMinTemp_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebMinTemp(new control_js_1.ChebMinTemp(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebMinTemp to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebMinTemp.tagName);
-                    cmDiv.appendChild(chebMinTemplwi);
-                    // "me:chebMaxConc".
-                    let chebMaxConclwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebMaxConc_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebMaxConc(new control_js_1.ChebMaxConc(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebMaxConc to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebMaxConc.tagName);
-                    cmDiv.appendChild(chebMaxConclwi);
-                    // "me:chebMinConc".
-                    let chebMinConclwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebMinConc_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebMinConc(new control_js_1.ChebMinConc(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebMinConc to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebMinConc.tagName);
-                    cmDiv.appendChild(chebMinConclwi);
-                    // "me:chebTExSize".
-                    let chebTExSizelwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebTExSize_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebTExSize(new control_js_1.ChebTExSize(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebTExSize to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebTExSize.tagName);
-                    cmDiv.appendChild(chebTExSizelwi);
-                    // "me:chebPExSize".
-                    let chebPExSizelwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_ChebPExSize_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmar.setChebPExSize(new control_js_1.ChebPExSize(new Map(), parseFloat(target.value)));
-                            console.log("Set ChebPExSize to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.ChebPExSize.tagName);
-                    cmDiv.appendChild(chebPExSizelwi);
-                    cm = cmar;
-                }
-                else if (value == control_js_1.CalcMethodThermodynamicTable.xsi_type || value == control_js_1.CalcMethodThermodynamicTable.xsi_type2) {
-                    // "me:ThermodynamicTable", "ThermodynamicTable".
-                    let cmtt = new control_js_1.CalcMethodThermodynamicTable(new Map());
-                    // "me:Tmin".
-                    let tminlwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_Tmin_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmtt.setTmin(new control_js_1.Tmin(new Map(), parseFloat(target.value)));
-                            console.log("Set Tmin to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.Tmin.tagName);
-                    cmDiv.appendChild(tminlwi);
-                    // "me:Tmid".
-                    let tmidlwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_Tmid_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmtt.setTmid(new control_js_1.Tmid(new Map(), parseFloat(target.value)));
-                            console.log("Set Tmid to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.Tmid.tagName);
-                    cmDiv.appendChild(tmidlwi);
-                    // "me:Tmax".
-                    let tmaxlwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_Tmax_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmtt.setTmax(new control_js_1.Tmax(new Map(), parseFloat(target.value)));
-                            console.log("Set Tmax to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.Tmax.tagName);
-                    cmDiv.appendChild(tmaxlwi);
-                    // "me:Tstep".
-                    let tsteplwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_Tstep_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmtt.setTstep(new control_js_1.Tstep(new Map(), parseFloat(target.value)));
-                            console.log("Set Tstep to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.Tstep.tagName);
-                    cmDiv.appendChild(tsteplwi);
-                    cm = cmtt;
-                }
-                else if (value == control_js_1.CalcMethodSensitivityAnalysis.xsi_type || value == control_js_1.CalcMethodSensitivityAnalysis.xsi_type2) {
-                    // "me:sensitivityAnalysis", "sensitivityAnalysis".
-                    let cmsa = new control_js_1.CalcMethodSensitivityAnalysis(new Map());
-                    // "me:sensitivityAnalysisSamples".
-                    let saslwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_SensitivityAnalysisSamples_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmsa.setSensitivityAnalysisSamples(new control_js_1.SensitivityAnalysisSamples(new Map(), parseFloat(target.value)));
-                            console.log("Set SensitivityAnalysisSamples to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.SensitivityAnalysisSamples.tagName);
-                    cmDiv.appendChild(saslwi);
-                    // "me:sensitivityAnalysisOrder".
-                    let saolwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_SensitivityAnalysisOrder_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmsa.setSensitivityAnalysisOrder(new control_js_1.SensitivityAnalysisOrder(new Map(), parseFloat(target.value)));
-                            console.log("Set SensitivityAnalysisOrder to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.SensitivityAnalysisOrder.tagName);
-                    cmDiv.appendChild(saolwi);
-                    // "me:sensitivityNumVarRedIters".
-                    let snvriwi = (0, html_js_1.createLabelWithInput)("number", idcm + "_SensitivityNumVarRedIters_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        // Check the value is a number.
-                        if ((0, util_js_1.isNumeric)(target.value)) {
-                            cmsa.setSensitivityNumVarRedIters(new control_js_1.SensitivityNumVarRedIters(new Map(), parseFloat(target.value)));
-                            console.log("Set SensitivityNumVarRedIters to " + target.value);
-                        }
-                        else {
-                            alert("Value is not numeric, resetting...");
-                            target.value = NaN.toString();
-                        }
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, NaN.toString(), control_js_1.SensitivityNumVarRedIters.tagName);
-                    cmDiv.appendChild(snvriwi);
-                    // "me:sensitivityVarRedMethod".
-                    let svrmiwi = (0, html_js_1.createLabelWithInput)("text", idcm + "_SensitivityVarRedMethod_input", boundary1, level0, (event) => {
-                        let target = event.target;
-                        cmsa.setSensitivityVarRedMethod(new control_js_1.SensitivityVarRedMethod(new Map(), target.value));
-                        console.log("Set SensitivityVarRedMethod to " + target.value);
-                        (0, html_js_1.resizeInputElement)(target);
-                    }, "", control_js_1.SensitivityVarRedMethod.tagName);
-                    cmDiv.appendChild(svrmiwi);
-                }
-                else {
-                    throw new Error("Unknown CalcMethod type.");
-                }
-                (0, html_js_1.resizeSelectElement)(target);
-            });
-            select.value = tagName;
-            console.log("Value: " + tagName);
-            (0, html_js_1.resizeSelectElement)(select);
+            // Remove any existing select.
+            document.getElementById(ids)?.remove();
+            document.getElementById(divCmDetailsId)?.remove();
+            // Create the select element.
+            let select = createSelectElementCalcMethod(control, div, options, tagName, selectAnotherOption, ids);
+            divCm.appendChild(select);
             button.textContent = buttonTextContentSelected;
             button.classList.toggle('optionOff');
             button.classList.toggle('optionOn');
@@ -3985,10 +3887,8 @@ function processCalcMethod(control, controlsDiv, xml_control) {
         else {
             control.removeCalcMethod();
             // Remove any existing div.
-            let e = document.getElementById(ids);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(ids)?.remove();
+            document.getElementById(divCmDetailsId)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -3996,182 +3896,462 @@ function processCalcMethod(control, controlsDiv, xml_control) {
     });
 }
 /**
- * @param xml The xml containing the CalcMethod.
- * @returns CalcMethod
+ * @param divCmDetails The details div.
+ * @param cm The CalcMethodFitting.
  */
-function loadCalcMethod(xml) {
-    let cm;
-    let attributes = (0, xml_js_1.getAttributes)(xml[0]);
-    let xsi_type = attributes.get("xsi:type");
-    if (xsi_type == control_js_1.CalcMethodMarquardt.xsi_type) {
-        let cmm = new control_js_1.CalcMethodMarquardt(attributes);
-        // MarquardtIterations.
-        let mi_xml = xml[0].getElementsByTagName(control_js_1.MarquardtIterations.tagName);
-        if (mi_xml.length > 0) {
-            if (mi_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mi_xml[0])));
-                let marquardtIterations = new control_js_1.MarquardtIterations((0, xml_js_1.getAttributes)(mi_xml[0]), value);
-                cmm.setMarquardtIterations(marquardtIterations);
-            }
-            else {
-                throw new Error("More than one MarquardtIterations element.");
-            }
+function processCalcMethodFitting(divCmDetails, cm) {
+    // FittingIterations.
+    let fittingIterations = cm.getFittingIterations() || new control_js_1.FittingIterations(new Map(), NaN);
+    cm.setFittingIterations(fittingIterations);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_FittingIterations_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            fittingIterations.value = parseInt(target.value);
+            console.log("Set FittingIterations to " + target.value);
         }
-        // MarquardtTolerance.
-        let mt_xml = xml[0].getElementsByTagName(control_js_1.MarquardtTolerance.tagName);
-        if (mt_xml.length > 0) {
-            if (mt_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mt_xml[0])));
-                let marquardtTolerance = new control_js_1.MarquardtTolerance((0, xml_js_1.getAttributes)(mt_xml[0]), value);
-                cmm.setMarquardtTolerance(marquardtTolerance);
-            }
-            else {
-                throw new Error("More than one MarquardtTolerance element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = fittingIterations.value.toString();
         }
-        // MarquardtDerivDelta.
-        let mdd_xml = xml[0].getElementsByTagName(control_js_1.MarquardtDerivDelta.tagName);
-        if (mdd_xml.length > 0) {
-            if (mdd_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(mdd_xml[0])));
-                let marquardtDerivDelta = new control_js_1.MarquardtDerivDelta((0, xml_js_1.getAttributes)(mdd_xml[0]), value);
-                cmm.setMarquardtDerivDelta(marquardtDerivDelta);
-            }
-            else {
-                throw new Error("More than one MarquardtDerivDelta element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, fittingIterations.value.toString(), control_js_1.FittingIterations.tagName));
+}
+/**
+ * @param divCmDetails The details div.
+ * @param cm The CalcMethodMarquardt.
+ */
+function processCalcMethodMarquardt(divCmDetails, cm) {
+    // MarquardtIterations.
+    let marquardtIterations = cm.getMarquardtIterations() || new control_js_1.MarquardtIterations(new Map(), NaN);
+    cm.setMarquardtIterations(marquardtIterations);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_MarquardtIterations_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            marquardtIterations.value = parseInt(target.value);
+            console.log("Set MarquardtIterations to " + target.value);
         }
-        cm = cmm;
-    }
-    else if (xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type) {
-        let cmar = new control_js_1.CalcMethodAnalyticalRepresentation(attributes);
-        cm = cmar;
-        // Format.
-        let format_xml = xml[0].getElementsByTagName(control_js_1.Format.tagName);
-        if (format_xml.length > 0) {
-            if (format_xml.length == 1) {
-                let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(format_xml[0]));
-                let format = new control_js_1.Format((0, xml_js_1.getAttributes)(format_xml[0]), value);
-                cmar.setFormat(format);
-            }
-            else {
-                throw new Error("More than one Format element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = marquardtIterations.value.toString();
         }
-        // Precision.
-        let precision_xml = xml[0].getElementsByTagName(control_js_1.Precision.tagName);
-        if (precision_xml.length > 0) {
-            if (precision_xml.length == 1) {
-                let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(precision_xml[0]));
-                let precision = new control_js_1.Precision((0, xml_js_1.getAttributes)(precision_xml[0]), value);
-                cmar.setPrecision(precision);
-            }
-            else {
-                throw new Error("More than one Precision element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, marquardtIterations.value.toString(), control_js_1.MarquardtIterations.tagName));
+    // MarquardtTolerance.
+    let marquardtTolerance = cm.getMarquardtTolerance() || new control_js_1.MarquardtTolerance(new Map(), NaN);
+    cm.setMarquardtTolerance(marquardtTolerance);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_MarquardtTolerance_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            marquardtTolerance.value = parseFloat(target.value);
+            console.log("Set MarquardtTolerance to " + target.value);
         }
-        // ChebNumTemp.
-        let chebNumTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebNumTemp.tagName);
-        if (chebNumTemp_xml.length > 0) {
-            if (chebNumTemp_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumTemp_xml[0])));
-                let chebNumTemp = new control_js_1.ChebNumTemp((0, xml_js_1.getAttributes)(chebNumTemp_xml[0]), value);
-                cmar.setChebNumTemp(chebNumTemp);
-            }
-            else {
-                throw new Error("More than one ChebNumTemp element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = marquardtTolerance.value.toString();
         }
-        // ChebNumConc.
-        let chebNumConc_xml = xml[0].getElementsByTagName(control_js_1.ChebNumConc.tagName);
-        if (chebNumConc_xml.length > 0) {
-            if (chebNumConc_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebNumConc_xml[0])));
-                let chebNumConc = new control_js_1.ChebNumConc((0, xml_js_1.getAttributes)(chebNumConc_xml[0]), value);
-                cmar.setChebNumConc(chebNumConc);
-            }
-            else {
-                throw new Error("More than one ChebNumConc element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, marquardtTolerance.value.toString(), control_js_1.MarquardtTolerance.tagName));
+    // MarquardtDerivDelta.
+    let marquardtDerivDelta = cm.getMarquardtDerivDelta() || new control_js_1.MarquardtDerivDelta(new Map(), NaN);
+    cm.setMarquardtDerivDelta(marquardtDerivDelta);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_MarquardtDerivDelta_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            marquardtDerivDelta.value = parseFloat(target.value);
+            console.log("Set MarquardtDerivDelta to " + target.value);
         }
-        // ChebMaxTemp.
-        let chebMaxTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxTemp.tagName);
-        if (chebMaxTemp_xml.length > 0) {
-            if (chebMaxTemp_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxTemp_xml[0])));
-                let chebMaxTemp = new control_js_1.ChebMaxTemp((0, xml_js_1.getAttributes)(chebMaxTemp_xml[0]), value);
-                cmar.setChebMaxTemp(chebMaxTemp);
-            }
-            else {
-                throw new Error("More than one ChebMaxTemp element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = marquardtDerivDelta.value.toString();
         }
-        // ChebMinTemp.
-        let chebMinTemp_xml = xml[0].getElementsByTagName(control_js_1.ChebMinTemp.tagName);
-        if (chebMinTemp_xml.length > 0) {
-            if (chebMinTemp_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinTemp_xml[0])));
-                let chebMinTemp = new control_js_1.ChebMinTemp((0, xml_js_1.getAttributes)(chebMinTemp_xml[0]), value);
-                cmar.setChebMinTemp(chebMinTemp);
-            }
-            else {
-                throw new Error("More than one ChebMinTemp element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, marquardtDerivDelta.value.toString(), control_js_1.MarquardtDerivDelta.tagName));
+}
+/**
+ * @param divCmDetails The details div.
+ * @param cm The CalcMethodAnalyticalRepresentation.
+ */
+function processCalcMethodAnalyticalRepresentation(divCmDetails, cm) {
+    // "me:format".
+    let format = cm.getFormat() || new control_js_1.Format(new Map(), control_js_1.Format.options[0]);
+    // Format value.
+    cm.setFormat(format);
+    let lwsFormat = (0, html_js_1.createLabelWithSelect)(control_js_1.Format.tagName, control_js_1.Format.options, control_js_1.Format.tagName, format.value, divCmDetailsId + control_js_1.Format.tagName + "_select", boundary1, boundary1);
+    lwsFormat.querySelector('select')?.addEventListener('change', (event) => {
+        let target = event.target;
+        format.value = target.value;
+        console.log("Set Format to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    divCmDetails.appendChild(lwsFormat);
+    // Format rateUnits.
+    let value = control_js_1.Format.rateUnitsOptions[0];
+    format.setRateUnits(value);
+    let lwsFormatRateUnits = (0, html_js_1.createLabelWithSelect)(control_js_1.Format.rateUnits, control_js_1.Format.rateUnitsOptions, control_js_1.Format.rateUnits, value, divCmDetailsId + control_js_1.Format.rateUnits + "_select", boundary1, boundary1);
+    lwsFormatRateUnits.querySelector('select')?.addEventListener('change', (event) => {
+        let target = event.target;
+        format.setRateUnits(target.value);
+        console.log("Set Format rateUnits to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    divCmDetails.appendChild(lwsFormatRateUnits);
+    // "me:precision".
+    let precision = cm.getPrecision() || new control_js_1.Precision(new Map(), control_js_1.Precision.options[0]);
+    cm.setPrecision(precision);
+    let lwsPrecision = (0, html_js_1.createLabelWithSelect)(control_js_1.Precision.tagName, control_js_1.Precision.options, control_js_1.Precision.tagName, precision.value, divCmDetailsId + control_js_1.Precision.tagName + "_select", boundary1, boundary1);
+    lwsPrecision.querySelector('select')?.addEventListener('change', (event) => {
+        let target = event.target;
+        precision.value = target.value;
+        console.log("Set Precision to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    divCmDetails.appendChild(lwsPrecision);
+    // "me:chebNumTemp".
+    let chebNumTemp = cm.getChebNumTemp() || new control_js_1.ChebNumTemp(new Map(), NaN);
+    cm.setChebNumTemp(chebNumTemp);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebNumTemp_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebNumTemp.value = parseFloat(target.value);
+            console.log("Set ChebNumTemp to " + target.value);
         }
-        // ChebMaxConc.
-        let chebMaxConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMaxConc.tagName);
-        if (chebMaxConc_xml.length > 0) {
-            if (chebMaxConc_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMaxConc_xml[0])));
-                let chebMaxConc = new control_js_1.ChebMaxConc((0, xml_js_1.getAttributes)(chebMaxConc_xml[0]), value);
-                cmar.setChebMaxConc(chebMaxConc);
-            }
-            else {
-                throw new Error("More than one ChebMaxConc element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
         }
-        // ChebMinConc.
-        let chebMinConc_xml = xml[0].getElementsByTagName(control_js_1.ChebMinConc.tagName);
-        if (chebMinConc_xml.length > 0) {
-            if (chebMinConc_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebMinConc_xml[0])));
-                let chebMinConc = new control_js_1.ChebMinConc((0, xml_js_1.getAttributes)(chebMinConc_xml[0]), value);
-                cmar.setChebMinConc(chebMinConc);
-            }
-            else {
-                throw new Error("More than one ChebMinConc element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebNumTemp.value.toString(), control_js_1.ChebNumTemp.tagName));
+    // "me:chebNumConc".
+    let chebNumConc = cm.getChebNumConc() || new control_js_1.ChebNumConc(new Map(), NaN);
+    cm.setChebNumConc(chebNumConc);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebNumConc_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebNumConc.value = parseFloat(target.value);
+            console.log("Set ChebNumConc to " + target.value);
         }
-        // ChebTExSize.
-        let chebTExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebTExSize.tagName);
-        if (chebTExSize_xml.length > 0) {
-            if (chebTExSize_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebTExSize_xml[0])));
-                let chebTExSize = new control_js_1.ChebTExSize((0, xml_js_1.getAttributes)(chebTExSize_xml[0]), value);
-                cmar.setChebTExSize(chebTExSize);
-            }
-            else {
-                throw new Error("More than one ChebTExSize element.");
-            }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
         }
-        // ChebPExSize.
-        let chebPExSize_xml = xml[0].getElementsByTagName(control_js_1.ChebPExSize.tagName);
-        if (chebPExSize_xml.length > 0) {
-            if (chebPExSize_xml.length == 1) {
-                let value = parseFloat((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(chebPExSize_xml[0])));
-                let chebPExSize = new control_js_1.ChebPExSize((0, xml_js_1.getAttributes)(chebPExSize_xml[0]), value);
-                cmar.setChebPExSize(chebPExSize);
-            }
-            else {
-                throw new Error("More than one ChebPExSize element.");
-            }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebNumConc.value.toString(), control_js_1.ChebNumConc.tagName));
+    // "me:chebMaxTemp".
+    let chebMaxTemp = cm.getChebMaxTemp() || new control_js_1.ChebMaxTemp(new Map(), NaN);
+    cm.setChebMaxTemp(chebMaxTemp);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebMaxTemp_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebMaxTemp.value = parseFloat(target.value);
+            console.log("Set ChebMaxTemp to " + target.value);
         }
-        cm = cmar;
-    }
-    else {
-        throw new Error("Unknown xsi:type: " + xsi_type);
-    }
-    return cm;
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebMaxTemp.value.toString(), control_js_1.ChebMaxTemp.tagName));
+    // "me:chebMinTemp".
+    let chebMinTemp = cm.getChebMinTemp() || new control_js_1.ChebMinTemp(new Map(), NaN);
+    cm.setChebMinTemp(chebMinTemp);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebMinTemp_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebMinTemp.value = parseFloat(target.value);
+            console.log("Set ChebMinTemp to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebMinTemp.value.toString(), control_js_1.ChebMinTemp.tagName));
+    // "me:chebMaxConc".
+    let chebMaxConc = cm.getChebMaxConc() || new control_js_1.ChebMaxConc(new Map(), NaN);
+    cm.setChebMaxConc(chebMaxConc);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebMaxConc_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebMaxConc.value = parseFloat(target.value);
+            console.log("Set ChebMaxConc to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebMaxConc.value.toString(), control_js_1.ChebMaxConc.tagName));
+    // "me:chebMinConc".
+    let chebMinConc = cm.getChebMinConc() || new control_js_1.ChebMinConc(new Map(), NaN);
+    cm.setChebMinConc(chebMinConc);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebMinConc_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebMinConc.value = parseFloat(target.value);
+            console.log("Set ChebMinConc to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebMinConc.value.toString(), control_js_1.ChebMinConc.tagName));
+    // "me:chebTExSize".
+    let chebTExSize = cm.getChebTExSize() || new control_js_1.ChebTExSize(new Map(), NaN);
+    cm.setChebTExSize(chebTExSize);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebTExSize_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebTExSize.value = parseFloat(target.value);
+            console.log("Set ChebTExSize to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebTExSize.value.toString(), control_js_1.ChebTExSize.tagName));
+    // "me:chebPExSize".
+    let chebPExSize = cm.getChebPExSize() || new control_js_1.ChebPExSize(new Map(), NaN);
+    cm.setChebPExSize(chebPExSize);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_ChebPExSize_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            chebPExSize.value = parseFloat(target.value);
+            console.log("Set ChebPExSize to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, chebPExSize.value.toString(), control_js_1.ChebPExSize.tagName));
+}
+/**
+ * @param divCmDetails The details div.
+ * @param cm The CalcMethodThermodynamicTable.
+ */
+function processCalcMethodThermodynamicTable(divCmDetails, cm) {
+    // "me:Tmin".
+    let tmin = cm.getTmin() || new control_js_1.Tmin(new Map(), NaN);
+    cm.setTmin(tmin);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_Tmin_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            tmin.value = parseFloat(target.value);
+            console.log("Set Tmin to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, tmin.value.toString(), control_js_1.Tmin.tagName));
+    // "me:Tmid".
+    let tmid = cm.getTmid() || new control_js_1.Tmid(new Map(), NaN);
+    cm.setTmid(tmid);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_Tmid_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            tmid.value = parseFloat(target.value);
+            console.log("Set Tmid to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, tmid.value.toString(), control_js_1.Tmid.tagName));
+    // "me:Tmax".
+    let tmax = cm.getTmax() || new control_js_1.Tmax(new Map(), NaN);
+    cm.setTmax(tmax);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_Tmax_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            tmax.value = parseFloat(target.value);
+            console.log("Set Tmax to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, tmax.value.toString(), control_js_1.Tmax.tagName));
+    // "me:Tstep".
+    let tstep = cm.getTstep() || new control_js_1.Tstep(new Map(), NaN);
+    cm.setTstep(tstep);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_Tstep_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            tstep.value = parseFloat(target.value);
+            console.log("Set Tstep to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, tstep.value.toString(), control_js_1.Tstep.tagName));
+}
+/**
+ * @param divCmDetails The details div.
+ * @param cm The CalcMethodSensitivityAnalysis.
+ */
+function processCalcMethodSensitivityAnalysis(divCmDetails, cm) {
+    // "me:sensitivityAnalysisSamples".
+    let sensitivityAnalysisSamples = cm.getSensitivityAnalysisSamples() || new control_js_1.SensitivityAnalysisSamples(new Map(), NaN);
+    cm.setSensitivityAnalysisSamples(sensitivityAnalysisSamples);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_SensitivityAnalysisSamples_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            sensitivityAnalysisSamples.value = parseFloat(target.value);
+            console.log("Set SensitivityAnalysisSamples to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, sensitivityAnalysisSamples.value.toString(), control_js_1.SensitivityAnalysisSamples.tagName));
+    // "me:sensitivityAnalysisOrder".
+    let sensitivityAnalysisOrder = cm.getSensitivityAnalysisOrder() || new control_js_1.SensitivityAnalysisOrder(new Map(), NaN);
+    cm.setSensitivityAnalysisOrder(sensitivityAnalysisOrder);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_SensitivityAnalysisOrder_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            sensitivityAnalysisOrder.value = parseFloat(target.value);
+            console.log("Set SensitivityAnalysisOrder to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, sensitivityAnalysisOrder.value.toString(), control_js_1.SensitivityAnalysisOrder.tagName));
+    // "me:sensitivityNumVarRedIters".
+    let sensitivityNumVarRedIters = cm.getSensitivityNumVarRedIters() || new control_js_1.SensitivityNumVarRedIters(new Map(), NaN);
+    cm.setSensitivityNumVarRedIters(sensitivityNumVarRedIters);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetailsId + "_SensitivityNumVarRedIters_input", boundary1, level0, (event) => {
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, util_js_1.isNumeric)(target.value)) {
+            sensitivityNumVarRedIters.value = parseFloat(target.value);
+            console.log("Set SensitivityNumVarRedIters to " + target.value);
+        }
+        else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, html_js_1.resizeInputElement)(target);
+    }, sensitivityNumVarRedIters.value.toString(), control_js_1.SensitivityNumVarRedIters.tagName));
+    // "me:sensitivityVarRedMethod".
+    let sensitivityVarRedMethod = cm.getSensitivityVarRedMethod() || new control_js_1.SensitivityVarRedMethod(new Map(), "");
+    cm.setSensitivityVarRedMethod(sensitivityVarRedMethod);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithSelect)(control_js_1.SensitivityVarRedMethod.tagName, control_js_1.SensitivityVarRedMethod.options, control_js_1.SensitivityVarRedMethod.tagName, control_js_1.SensitivityVarRedMethod.options[0], divCmDetailsId + control_js_1.SensitivityVarRedMethod.tagName + "_select", boundary1, boundary1));
+    // Add event listener for the select element.
+    let select = divCmDetails.querySelector('select');
+    select?.addEventListener('change', (event) => {
+        let target = event.target;
+        sensitivityVarRedMethod.value = target.value;
+        console.log("Set SensitivityVarRedMethod to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+}
+/**
+ * @param control The control.
+ * @param div The div.
+ * @param options The options.
+ * @param tagName The tag name.
+ * @param value The value.
+ * @param ids The idfor the HTMLSelectElement.
+ * @returns An HTMLSelectElement.
+ */
+function createSelectElementCalcMethod(control, div, options, tagName, value, ids) {
+    let select = (0, html_js_1.createSelectElement)(options, tagName, value, ids, boundary1);
+    div.appendChild(select);
+    select.addEventListener('click', (event) => {
+        if (options[options.length - 1] == selectAnotherOption) {
+            options.pop();
+        }
+        let lastIndex = select.options.length - 1;
+        if (select.options[lastIndex].value == selectAnotherOption) {
+            select.remove(lastIndex);
+        }
+    });
+    select.addEventListener('change', (event) => {
+        // Remove any existing div.
+        let divCmDetails = document.getElementById(divCmDetailsId);
+        if (divCmDetails != null) {
+            divCmDetails.remove();
+        }
+        divCmDetails = (0, html_js_1.createFlexDiv)(boundary1);
+        divCmDetails.id = divCmDetailsId;
+        div.appendChild(divCmDetails);
+        let target = event.target;
+        let value = target.value;
+        let attributes = new Map();
+        attributes.set("xsi:type", value);
+        if (value == control_js_1.CalcMethodSimpleCalc.xsi_type || value == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
+            // "me:simpleCalc", "simpleCalc".
+            control.setCalcMethod(new control_js_1.CalcMethodSimpleCalc(attributes));
+        }
+        else if (value == control_js_1.CalcMethodGridSearch.xsi_type || value == control_js_1.CalcMethodGridSearch.xsi_type2) {
+            // "me:gridSearch", "gridSearch".
+            control.setCalcMethod(new control_js_1.CalcMethodGridSearch(attributes));
+        }
+        else if (value == control_js_1.CalcMethodFitting.xsi_type || value == control_js_1.CalcMethodFitting.xsi_type2) {
+            let cm = new control_js_1.CalcMethodFitting(attributes);
+            control.setCalcMethod(cm);
+            processCalcMethodFitting(divCmDetails, cm);
+        }
+        else if (value == control_js_1.CalcMethodMarquardt.xsi_type || value == control_js_1.CalcMethodMarquardt.xsi_type2) {
+            // "me:marquardt", "marquardt".
+            let cm = new control_js_1.CalcMethodMarquardt(attributes);
+            control.setCalcMethod(cm);
+            processCalcMethodMarquardt(divCmDetails, cm);
+        }
+        else if (value == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type || value == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type2) {
+            // "me:analyticalRepresentation", "analyticalRepresentation".
+            let cm = new control_js_1.CalcMethodAnalyticalRepresentation(attributes);
+            control.setCalcMethod(cm);
+            processCalcMethodAnalyticalRepresentation(divCmDetails, cm);
+        }
+        else if (value == control_js_1.CalcMethodThermodynamicTable.xsi_type || value == control_js_1.CalcMethodThermodynamicTable.xsi_type2) {
+            // "me:ThermodynamicTable", "ThermodynamicTable".
+            let cm = new control_js_1.CalcMethodThermodynamicTable(attributes);
+            control.setCalcMethod(cm);
+            processCalcMethodThermodynamicTable(divCmDetails, cm);
+        }
+        else if (value == control_js_1.CalcMethodSensitivityAnalysis.xsi_type || value == control_js_1.CalcMethodSensitivityAnalysis.xsi_type2) {
+            // "me:sensitivityAnalysis", "sensitivityAnalysis".
+            let cm = new control_js_1.CalcMethodSensitivityAnalysis(new Map());
+            control.setCalcMethod(cm);
+            processCalcMethodSensitivityAnalysis(divCmDetails, cm);
+        }
+        else {
+            throw new Error("Unknown CalcMethod type.");
+        }
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    return select;
 }
 /**
  * Process "me:eigenvalues".
@@ -4220,10 +4400,7 @@ function processEigenvalues(control, controlsDiv, xml_control) {
             valueString = eigenvalues.value.toExponential();
             control.removeEigenvalues();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -4296,10 +4473,7 @@ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
             valueString = stoi.value.toExponential();
             control.removeShortestTimeOfInterest();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -4372,10 +4546,7 @@ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
             valueString = met.value.toExponential();
             control.removeMaximumEvolutionTime();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -4448,10 +4619,7 @@ function processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control)
             valueString = asme.value.toExponential();
             control.removeAutomaticallySetMaxEne();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');
@@ -4524,10 +4692,7 @@ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
             valueString = deo.value.toExponential();
             control.removeDiagramEnergyOffset();
             // Remove any existing div.
-            let e = document.getElementById(id);
-            if (e != null) {
-                e.remove();
-            }
+            document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle('optionOn');
             button.classList.toggle('optionOff');

@@ -55,11 +55,16 @@ export class ReactionMolecule extends TagWithAttributes {
  * In the XML, a "reactant" node is a child of the "reaction" node and has a child "molecule" node.
  */
 export class Reactant extends NodeWithNodes {
-
+    
     /**
      * The tag name.
      */
     static readonly tagName: string = "reactant";
+
+    /**
+     * The role options.
+     */
+    static readonly roleOptions: string[] = ["deficientReactant", "excessReactant", "modelled"];
 
     /**
      * @param attributes The attributes.
@@ -83,11 +88,16 @@ export class Reactant extends NodeWithNodes {
  * In the XML, a "product" node is a child of the "reaction" node and has a child "molecule" node.
  */
 export class Product extends NodeWithNodes {
-
+    
     /**
      * The tag name.
      */
     static readonly tagName: string = "product";
+
+    /**
+     * The role options.
+     */
+    static readonly roleOptions: string[] = ["modelled", "sink"];
 
     /**
      * @param attributes The attributes.
@@ -389,11 +399,16 @@ export class MesmerILT extends MCRCMethod {
  * The "name" attribute is one of: [Eckart, WKB].
  */
 export class Tunneling extends TagWithAttributes {
-
+    
     /**
      * The tag name.
      */
     static readonly tagName: string = "me:tunneling";
+
+    /**
+     * The options.
+     */
+    static readonly options: string[] = ["Eckart", "WKB"];
 
     /**
      * The key to the name attribute value.

@@ -157,6 +157,22 @@ exports.ReactionList = ReactionList;
 class Mesmer extends xml_js_1.NodeWithNodes {
     static tagName = "me:mesmer";
     /**
+     * Precision options.
+     */
+    static precisionOptions = ["d", "dd", "qd", "double", "double-double", "quad-double"];
+    /**
+     * Pressure units.
+     */
+    static pressureUnits = ["Torr", "PPCC", "atm", "mbar", "psi", "mols/cc"];
+    /**
+     * Energy units.
+     */
+    static energyUnits = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
+    /**
+     * Frequency units.
+     */
+    static frequencyUnits = ["cm-1", "GHz"];
+    /**
      * The header of the XML file.
      */
     static header = `<?xml version="1.0" encoding="utf-8" ?>

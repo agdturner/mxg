@@ -401,7 +401,7 @@ export class Property extends NodeWithNodes {
 
 /**
  * The Zero Potential Energy.
- * The child "scalar" node should have a "units" attribute (known units=[kJ/mol]).
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
  */
 export class ZPE extends Property {
 
@@ -409,11 +409,6 @@ export class ZPE extends Property {
      * The dictionary reference.
      */
     static readonly dictRef: string = "me:ZPE";
-
-    /**
-     * The possible units.
-     */
-    static readonly units: string[] = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
 
     /**
      * @param attributes The attributes.
@@ -425,7 +420,7 @@ export class ZPE extends Property {
 
     /**
      * @param units The units.
-     * Should be one of ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"].
+     * Should be one of Mesmer.energyUnits.
      */
     setUnits(units: string): void {
         this.getProperty().updateUnits(units);
@@ -481,11 +476,6 @@ export class RotConsts extends Property {
      * The dictionary reference.
      */
     static readonly dictRef: string = "me:rotConsts";
-
-    /**
-     * The possible units.
-     */
-    static readonly units: string[] = ["cm-1", "GHz"]
 
     /**
      * @param attributes The attributes.
@@ -800,14 +790,20 @@ export class EnergyTransferModel extends NodeWithNodes {
 
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
- * The attributes are expected to include either "xsi:type" or "name" - expected values are either "ClassicalRotors" or "QMRotors".
+ * The attributes are expected to include either "xsi:type" or "name" - expected values include ["ClassicalRotors", 
+ * "QMRotors", "me:ClassicalRotors", "me:QMRotors"].
  */
 export class DOSCMethod extends TagWithAttributes {
-
+    
     /**
      * The tag name.
      */
     static readonly tagName: string = "me:DOSCMethod";
+
+    /**
+     * The options for the "xsi:type" or "name" attribute value.
+     */
+    static readonly xsi_typeOptions: string[] = ["ClassicalRotors", "QMRotors", "me:ClassicalRotors", "me:QMRotors"];
 
     /**
      * The key for the "xsi:type" attribute value.
@@ -946,7 +942,7 @@ export class PotentialPoint extends TagWithAttributes {
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
  * It may have one or more "me:PotentialPoint" child nodes.
- * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (with a value from ["kJ/mol", "cm-1", "Hartree"]).
+ * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (Mesmer.energyUnits).
  */
 export class HinderedRotorPotential extends NodeWithNodes {
 
@@ -959,11 +955,6 @@ export class HinderedRotorPotential extends NodeWithNodes {
      * The permitted formats.
      */
     static readonly formats: string[] = ["numerical", "analytical"];
-
-    /**
-     * The permitted units.
-     */
-    static readonly units: string[] = ["kJ/mol", "cm-1", "Hartree"];
 
     /**
      * The key for the format attribute value.
@@ -1057,7 +1048,7 @@ export class HinderedRotorPotential extends NodeWithNodes {
 
     /**
      * @returns The units of the HinderedRotorPotential.
-     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     * Should be one of Mesmer.energyUnits.
      */
     getUnits(): string {
         return this.units;

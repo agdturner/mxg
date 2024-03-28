@@ -597,10 +597,11 @@ class UseTraceWeighting extends xml_1.Tag {
 exports.UseTraceWeighting = UseTraceWeighting;
 /**
  * A class for "me:format".
- * The attributes are expected to have the following keys:
- * "rateUnits" (with known values: "cm3mole-1s-1")
- * Known values include:
- * "cantera"
+ * The attributes may have the following keys:
+ * "representation" (with known value: "Plog")
+ * "rateUnits" (with known values: "cm3mole-1s-1", "cm3molecule-1s-1")
+ * Values include:
+ * "cantera", "chemkin"
  */
 class Format extends xml_1.StringNode {
     /**
@@ -608,11 +609,41 @@ class Format extends xml_1.StringNode {
     */
     static tagName = "me:format";
     /**
+     * The options.
+     */
+    static options = ["cantera", "chemkin"];
+    /**
+     * The rateUnits.
+     */
+    static rateUnits = "rateUnits";
+    /**
+     * The rateUnits options.
+     */
+    static rateUnitsOptions = ["cm3mole-1s-1", "cm3molecule-1s-1"];
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
     constructor(attributes, value) {
         super(attributes, Format.tagName, value);
+    }
+    /**
+     * @returns The value of the "rateUnits" attribute or undefined.
+     */
+    getRateUnits() {
+        return this.attributes.get(Format.rateUnits);
+    }
+    /**
+     * @param rateUnits The value of the "rateUnits" attribute.
+     */
+    setRateUnits(rateUnits) {
+        this.attributes.set(Format.rateUnits, rateUnits);
+    }
+    /**
+     * Remove the "rateUnits" attribute.
+     */
+    removeRateUnits() {
+        this.attributes.delete(Format.rateUnits);
     }
 }
 exports.Format = Format;
@@ -625,13 +656,17 @@ class Precision extends xml_1.StringNode {
     /**
     * The tag name.
     */
-    static tagName = "me:format";
+    static tagName = "me:precision";
+    /**
+     * The options.
+     */
+    static options = ["d", "dd", "qd", "double", "double-double", "quad-double"];
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, Precision.tagName, value);
     }
 }
 exports.Precision = Precision;
@@ -648,7 +683,7 @@ class ChebNumTemp extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumTemp.tagName, value);
     }
 }
 exports.ChebNumTemp = ChebNumTemp;
@@ -665,7 +700,7 @@ class ChebNumConc extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumConc.tagName, value);
     }
 }
 exports.ChebNumConc = ChebNumConc;
@@ -682,7 +717,7 @@ class ChebMaxTemp extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxTemp.tagName, value);
     }
 }
 exports.ChebMaxTemp = ChebMaxTemp;
@@ -699,7 +734,7 @@ class ChebMinTemp extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinTemp.tagName, value);
     }
 }
 exports.ChebMinTemp = ChebMinTemp;
@@ -718,7 +753,7 @@ class ChebMaxConc extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxConc.tagName, value);
     }
     /**
      * @returns The units.
@@ -747,7 +782,7 @@ class ChebMinConc extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinConc.tagName, value);
     }
 }
 exports.ChebMinConc = ChebMinConc;
@@ -764,7 +799,7 @@ class ChebTExSize extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebTExSize.tagName, value);
     }
 }
 exports.ChebTExSize = ChebTExSize;
@@ -781,7 +816,7 @@ class ChebPExSize extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebPExSize.tagName, value);
     }
 }
 exports.ChebPExSize = ChebPExSize;
@@ -790,8 +825,22 @@ exports.ChebPExSize = ChebPExSize;
  * Expected to have attributes:
  * "xsi_type" with the value "me:analyticalRepresentation".
  * Nodes:
- * "me:format", "me:precision", "me:chebNumTemp", "me:chebNumConc", "me:chebMaxTemp", "me:chebMinTemp",
- * "me:chebMaxConc", "me:chebMinConc", "me:chebTExSize", "me:chebPExSize".
+ * "me:format"
+ * If the "me:format" attribute "representation" is "Plog" then the following nodes are expected:
+ * "me:plogNumTemp"
+ * "me:plogMaxTemp"
+ * "me:plogMinTemp"
+ * "me:plogConcs" which may have multiple "me:plogConc" values.
+ * If the "me:format" attribute "representation" is not specified, then the following nodes are expected:
+ * "me:precision"
+ * "me:chebNumTemp"
+ * "me:chebNumConc"
+ * "me:chebMaxTemp"
+ * "me:chebMinTemp"
+ * "me:chebMaxConc"
+ * "me:chebMinConc"
+ * "me:chebTExSize"
+ * "me:chebPExSize"
  */
 class CalcMethodAnalyticalRepresentation extends CalcMethod {
     /**
@@ -1476,6 +1525,10 @@ class SensitivityVarRedMethod extends xml_1.StringNode {
      * The tag name.
      */
     static tagName = "me:sensitivityVarRedMethod";
+    /**
+     * The options.
+     */
+    static options = ["AdditiveControl", "RatioControl"];
     /**
      * @param attributes The attributes.
      * @param value The value.

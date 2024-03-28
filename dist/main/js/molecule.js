@@ -355,17 +355,13 @@ class Property extends xml_js_1.NodeWithNodes {
 exports.Property = Property;
 /**
  * The Zero Potential Energy.
- * The child "scalar" node should have a "units" attribute (known units=[kJ/mol]).
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
  */
 class ZPE extends Property {
     /**
      * The dictionary reference.
      */
     static dictRef = "me:ZPE";
-    /**
-     * The possible units.
-     */
-    static units = ["kJ/mol", "cm-1", "kcal/mol", "Hartree"];
     /**
      * @param attributes The attributes.
      * @param property The property.
@@ -375,7 +371,7 @@ class ZPE extends Property {
     }
     /**
      * @param units The units.
-     * Should be one of ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"].
+     * Should be one of Mesmer.energyUnits.
      */
     setUnits(units) {
         this.getProperty().updateUnits(units);
@@ -426,10 +422,6 @@ class RotConsts extends Property {
      * The dictionary reference.
      */
     static dictRef = "me:rotConsts";
-    /**
-     * The possible units.
-     */
-    static units = ["cm-1", "GHz"];
     /**
      * @param attributes The attributes.
      * @param property The property.
@@ -840,7 +832,7 @@ exports.PotentialPoint = PotentialPoint;
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
  * It may have one or more "me:PotentialPoint" child nodes.
- * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (with a value from ["kJ/mol", "cm-1", "Hartree"]).
+ * The attributes must include "format" (with a value from ["numerical", "analytical"]) and "units" (Mesmer.energyUnits).
  */
 class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
     /**
@@ -851,10 +843,6 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      * The permitted formats.
      */
     static formats = ["numerical", "analytical"];
-    /**
-     * The permitted units.
-     */
-    static units = ["kJ/mol", "cm-1", "Hartree"];
     /**
      * The key for the format attribute value.
      */
@@ -936,7 +924,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
     }
     /**
      * @returns The units of the HinderedRotorPotential.
-     * Should be one of ["kJ/mol", "cm-1", "Hartree"].
+     * Should be one of Mesmer.energyUnits.
      */
     getUnits() {
         return this.units;
