@@ -1688,6 +1688,11 @@ export class SensitivityVarRedMethod extends StringNode {
     static readonly tagName: string = "me:sensitivityVarRedMethod";
 
     /**
+     * The options.
+     */
+    static readonly options: string[] = ["AdditiveControl", "RatioControl"];
+    
+    /**
      * @param attributes The attributes.
      * @param value The value.
      */
