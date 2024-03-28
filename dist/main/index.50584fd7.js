@@ -4228,129 +4228,231 @@ window.set = setNumberNode;
         (0, _htmlJs.resizeInputElement)(target);
     }, marquardtDerivDelta.value.toString(), (0, _controlJs.MarquardtDerivDelta).tagName));
 }
-function processCalcMethodAnalyticalRepresentation(detailsDiv, cm, detailsDivId) {
+/**
+ * @param detailsDiv The details div.
+ * @param cm The CalcMethodAnalyticalRepresentation.
+ * @param detailsDivId The details div id.
+ */ function processCalcMethodAnalyticalRepresentation(detailsDiv, cm, detailsDivId) {
     // "me:format".
     let format = cm.getFormat() || new (0, _controlJs.Format)(new Map(), (0, _controlJs.Format).options[0]);
+    // Format value.
     cm.setFormat(format);
-    let select = (0, _htmlJs.createSelectElement)((0, _controlJs.Format).options, (0, _controlJs.Format).tagName, format.value, detailsDivId + (0, _controlJs.Format).tagName + "_select", boundary1);
-    select.addEventListener("change", (event)=>{
+    let lwsFormat = (0, _htmlJs.createLabelWithSelect)((0, _controlJs.Format).tagName, (0, _controlJs.Format).options, (0, _controlJs.Format).tagName, format.value, detailsDivId + (0, _controlJs.Format).tagName + "_select", boundary1, boundary1);
+    lwsFormat.querySelector("select")?.addEventListener("change", (event)=>{
         let target = event.target;
         format.value = target.value;
         console.log("Set Format to " + target.value);
         (0, _htmlJs.resizeSelectElement)(target);
     });
-    detailsDiv.appendChild(select);
-    // "me:precision".
-    detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("text", detailsDivId + "_Precision_input", boundary1, level0, (event)=>{
+    detailsDiv.appendChild(lwsFormat);
+    // Format rateUnits.
+    let value = (0, _controlJs.Format).rateUnitsOptions[0];
+    format.setRateUnits(value);
+    let lwsFormatRateUnits = (0, _htmlJs.createLabelWithSelect)((0, _controlJs.Format).rateUnits, (0, _controlJs.Format).rateUnitsOptions, (0, _controlJs.Format).rateUnits, value, detailsDivId + (0, _controlJs.Format).rateUnits + "_select", boundary1, boundary1);
+    lwsFormatRateUnits.querySelector("select")?.addEventListener("change", (event)=>{
         let target = event.target;
-        cm.setPrecision(new (0, _controlJs.Precision)(new Map(), target.value));
+        format.setRateUnits(target.value);
+        console.log("Set Format rateUnits to " + target.value);
+        (0, _htmlJs.resizeSelectElement)(target);
+    });
+    detailsDiv.appendChild(lwsFormatRateUnits);
+    // "me:precision".
+    let precision = cm.getPrecision() || new (0, _controlJs.Precision)(new Map(), (0, _controlJs.Precision).options[0]);
+    cm.setPrecision(precision);
+    let lwsPrecision = (0, _htmlJs.createLabelWithSelect)((0, _controlJs.Precision).tagName, (0, _controlJs.Precision).options, (0, _controlJs.Precision).tagName, precision.value, detailsDivId + (0, _controlJs.Precision).tagName + "_select", boundary1, boundary1);
+    lwsPrecision.querySelector("select")?.addEventListener("change", (event)=>{
+        let target = event.target;
+        precision.value = target.value;
         console.log("Set Precision to " + target.value);
-        (0, _htmlJs.resizeInputElement)(target);
-    }, "", (0, _controlJs.Precision).tagName));
+        (0, _htmlJs.resizeSelectElement)(target);
+    });
+    detailsDiv.appendChild(lwsPrecision);
     // "me:chebNumTemp".
+    let chebNumTemp = cm.getChebNumTemp() || new (0, _controlJs.ChebNumTemp)(new Map(), NaN);
+    cm.setChebNumTemp(chebNumTemp);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebNumTemp_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebNumTemp(new (0, _controlJs.ChebNumTemp)(new Map(), parseFloat(target.value)));
+            chebNumTemp.value = parseFloat(target.value);
             console.log("Set ChebNumTemp to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebNumTemp).tagName));
+    }, chebNumTemp.value.toString(), (0, _controlJs.ChebNumTemp).tagName));
     // "me:chebNumConc".
+    let chebNumConc = cm.getChebNumConc() || new (0, _controlJs.ChebNumConc)(new Map(), NaN);
+    cm.setChebNumConc(chebNumConc);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebNumConc_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebNumConc(new (0, _controlJs.ChebNumConc)(new Map(), parseFloat(target.value)));
+            chebNumConc.value = parseFloat(target.value);
             console.log("Set ChebNumConc to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebNumConc).tagName));
+    }, chebNumConc.value.toString(), (0, _controlJs.ChebNumConc).tagName));
     // "me:chebMaxTemp".
+    let chebMaxTemp = cm.getChebMaxTemp() || new (0, _controlJs.ChebMaxTemp)(new Map(), NaN);
+    cm.setChebMaxTemp(chebMaxTemp);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebMaxTemp_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebMaxTemp(new (0, _controlJs.ChebMaxTemp)(new Map(), parseFloat(target.value)));
+            chebMaxTemp.value = parseFloat(target.value);
             console.log("Set ChebMaxTemp to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebMaxTemp).tagName));
+    }, chebMaxTemp.value.toString(), (0, _controlJs.ChebMaxTemp).tagName));
     // "me:chebMinTemp".
+    let chebMinTemp = cm.getChebMinTemp() || new (0, _controlJs.ChebMinTemp)(new Map(), NaN);
+    cm.setChebMinTemp(chebMinTemp);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebMinTemp_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebMinTemp(new (0, _controlJs.ChebMinTemp)(new Map(), parseFloat(target.value)));
+            chebMinTemp.value = parseFloat(target.value);
             console.log("Set ChebMinTemp to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebMinTemp).tagName));
+    }, chebMinTemp.value.toString(), (0, _controlJs.ChebMinTemp).tagName));
     // "me:chebMaxConc".
+    let chebMaxConc = cm.getChebMaxConc() || new (0, _controlJs.ChebMaxConc)(new Map(), NaN);
+    cm.setChebMaxConc(chebMaxConc);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebMaxConc_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebMaxConc(new (0, _controlJs.ChebMaxConc)(new Map(), parseFloat(target.value)));
+            chebMaxConc.value = parseFloat(target.value);
             console.log("Set ChebMaxConc to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebMaxConc).tagName));
+    }, chebMaxConc.value.toString(), (0, _controlJs.ChebMaxConc).tagName));
     // "me:chebMinConc".
+    let chebMinConc = cm.getChebMinConc() || new (0, _controlJs.ChebMinConc)(new Map(), NaN);
+    cm.setChebMinConc(chebMinConc);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebMinConc_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebMinConc(new (0, _controlJs.ChebMinConc)(new Map(), parseFloat(target.value)));
+            chebMinConc.value = parseFloat(target.value);
             console.log("Set ChebMinConc to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebMinConc).tagName));
+    }, chebMinConc.value.toString(), (0, _controlJs.ChebMinConc).tagName));
     // "me:chebTExSize".
+    let chebTExSize = cm.getChebTExSize() || new (0, _controlJs.ChebTExSize)(new Map(), NaN);
+    cm.setChebTExSize(chebTExSize);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebTExSize_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebTExSize(new (0, _controlJs.ChebTExSize)(new Map(), parseFloat(target.value)));
+            chebTExSize.value = parseFloat(target.value);
             console.log("Set ChebTExSize to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebTExSize).tagName));
+    }, chebTExSize.value.toString(), (0, _controlJs.ChebTExSize).tagName));
     // "me:chebPExSize".
+    let chebPExSize = cm.getChebPExSize() || new (0, _controlJs.ChebPExSize)(new Map(), NaN);
+    cm.setChebPExSize(chebPExSize);
     detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_ChebPExSize_input", boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            cm.setChebPExSize(new (0, _controlJs.ChebPExSize)(new Map(), parseFloat(target.value)));
+            chebPExSize.value = parseFloat(target.value);
             console.log("Set ChebPExSize to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = NaN.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, NaN.toString(), (0, _controlJs.ChebPExSize).tagName));
+    }, chebPExSize.value.toString(), (0, _controlJs.ChebPExSize).tagName));
+}
+/**
+ * @param detailsDiv The details div.
+ * @param cm The CalcMethodThermodynamicTable.
+ * @param detailsDivId The details div id.
+ */ function processCalcMethodThermodynamicTable(detailsDiv, cm, detailsDivId) {
+    // "me:Tmin".
+    let tmin = cm.getTmin() || new (0, _controlJs.Tmin)(new Map(), NaN);
+    cm.setTmin(tmin);
+    detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmin_input", boundary1, level0, (event)=>{
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, _utilJs.isNumeric)(target.value)) {
+            tmin.value = parseFloat(target.value);
+            console.log("Set Tmin to " + target.value);
+        } else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, _htmlJs.resizeInputElement)(target);
+    }, tmin.value.toString(), (0, _controlJs.Tmin).tagName));
+    // "me:Tmid".
+    let tmid = cm.getTmid() || new (0, _controlJs.Tmid)(new Map(), NaN);
+    cm.setTmid(tmid);
+    detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmid_input", boundary1, level0, (event)=>{
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, _utilJs.isNumeric)(target.value)) {
+            tmid.value = parseFloat(target.value);
+            console.log("Set Tmid to " + target.value);
+        } else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, _htmlJs.resizeInputElement)(target);
+    }, tmid.value.toString(), (0, _controlJs.Tmid).tagName));
+    // "me:Tmax".
+    let tmax = cm.getTmax() || new (0, _controlJs.Tmax)(new Map(), NaN);
+    cm.setTmax(tmax);
+    detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmax_input", boundary1, level0, (event)=>{
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, _utilJs.isNumeric)(target.value)) {
+            tmax.value = parseFloat(target.value);
+            console.log("Set Tmax to " + target.value);
+        } else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, _htmlJs.resizeInputElement)(target);
+    }, tmax.value.toString(), (0, _controlJs.Tmax).tagName));
+    // "me:Tstep".
+    let tstep = cm.getTstep() || new (0, _controlJs.Tstep)(new Map(), NaN);
+    cm.setTstep(tstep);
+    detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tstep_input", boundary1, level0, (event)=>{
+        let target = event.target;
+        // Check the value is a number.
+        if ((0, _utilJs.isNumeric)(target.value)) {
+            tstep.value = parseFloat(target.value);
+            console.log("Set Tstep to " + target.value);
+        } else {
+            alert("Value is not numeric, resetting...");
+            target.value = NaN.toString();
+        }
+        (0, _htmlJs.resizeInputElement)(target);
+    }, tstep.value.toString(), (0, _controlJs.Tstep).tagName));
 }
 /**
  * 
@@ -4379,80 +4481,31 @@ function processCalcMethodAnalyticalRepresentation(detailsDiv, cm, detailsDivId)
         div.appendChild(detailsDiv);
         let target = event.target;
         let value = target.value;
+        let attributes = new Map();
+        attributes.set("xsi:type", value);
         if (value == (0, _controlJs.CalcMethodSimpleCalc).xsi_type || value == (0, _controlJs.CalcMethodSimpleCalc).xsi_type2) // "me:simpleCalc", "simpleCalc".
-        control.setCalcMethod(new (0, _controlJs.CalcMethodSimpleCalc)(new Map()));
+        control.setCalcMethod(new (0, _controlJs.CalcMethodSimpleCalc)(attributes));
         else if (value == (0, _controlJs.CalcMethodGridSearch).xsi_type || value == (0, _controlJs.CalcMethodGridSearch).xsi_type2) // "me:gridSearch", "gridSearch".
-        control.setCalcMethod(new (0, _controlJs.CalcMethodGridSearch)(new Map()));
+        control.setCalcMethod(new (0, _controlJs.CalcMethodGridSearch)(attributes));
         else if (value == (0, _controlJs.CalcMethodFitting).xsi_type || value == (0, _controlJs.CalcMethodFitting).xsi_type2) {
-            let cm = new (0, _controlJs.CalcMethodFitting)(new Map());
+            let cm = new (0, _controlJs.CalcMethodFitting)(attributes);
             control.setCalcMethod(cm);
             processCalcMethodFitting(detailsDiv, cm, detailsDivId);
         } else if (value == (0, _controlJs.CalcMethodMarquardt).xsi_type || value == (0, _controlJs.CalcMethodMarquardt).xsi_type2) {
             // "me:marquardt", "marquardt".
-            let cm = new (0, _controlJs.CalcMethodMarquardt)(new Map());
+            let cm = new (0, _controlJs.CalcMethodMarquardt)(attributes);
             control.setCalcMethod(cm);
             processCalcMethodMarquardt(detailsDiv, cm, detailsDivId);
         } else if (value == (0, _controlJs.CalcMethodAnalyticalRepresentation).xsi_type || value == (0, _controlJs.CalcMethodAnalyticalRepresentation).xsi_type2) {
             // "me:analyticalRepresentation", "analyticalRepresentation".
-            let cm = new (0, _controlJs.CalcMethodAnalyticalRepresentation)(new Map());
+            let cm = new (0, _controlJs.CalcMethodAnalyticalRepresentation)(attributes);
             control.setCalcMethod(cm);
             processCalcMethodAnalyticalRepresentation(detailsDiv, cm, detailsDivId);
         } else if (value == (0, _controlJs.CalcMethodThermodynamicTable).xsi_type || value == (0, _controlJs.CalcMethodThermodynamicTable).xsi_type2) {
             // "me:ThermodynamicTable", "ThermodynamicTable".
-            let cm = new (0, _controlJs.CalcMethodThermodynamicTable)(new Map());
+            let cm = new (0, _controlJs.CalcMethodThermodynamicTable)(attributes);
             control.setCalcMethod(cm);
-            // "me:Tmin".
-            detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmin_input", boundary1, level0, (event)=>{
-                let target = event.target;
-                // Check the value is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    cm.setTmin(new (0, _controlJs.Tmin)(new Map(), parseFloat(target.value)));
-                    console.log("Set Tmin to " + target.value);
-                } else {
-                    alert("Value is not numeric, resetting...");
-                    target.value = NaN.toString();
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, NaN.toString(), (0, _controlJs.Tmin).tagName));
-            // "me:Tmid".
-            detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmid_input", boundary1, level0, (event)=>{
-                let target = event.target;
-                // Check the value is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    cm.setTmid(new (0, _controlJs.Tmid)(new Map(), parseFloat(target.value)));
-                    console.log("Set Tmid to " + target.value);
-                } else {
-                    alert("Value is not numeric, resetting...");
-                    target.value = NaN.toString();
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, NaN.toString(), (0, _controlJs.Tmid).tagName));
-            // "me:Tmax".
-            detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tmax_input", boundary1, level0, (event)=>{
-                let target = event.target;
-                // Check the value is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    cm.setTmax(new (0, _controlJs.Tmax)(new Map(), parseFloat(target.value)));
-                    console.log("Set Tmax to " + target.value);
-                } else {
-                    alert("Value is not numeric, resetting...");
-                    target.value = NaN.toString();
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, NaN.toString(), (0, _controlJs.Tmax).tagName));
-            // "me:Tstep".
-            detailsDiv.appendChild((0, _htmlJs.createLabelWithInput)("number", detailsDivId + "_Tstep_input", boundary1, level0, (event)=>{
-                let target = event.target;
-                // Check the value is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    cm.setTstep(new (0, _controlJs.Tstep)(new Map(), parseFloat(target.value)));
-                    console.log("Set Tstep to " + target.value);
-                } else {
-                    alert("Value is not numeric, resetting...");
-                    target.value = NaN.toString();
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, NaN.toString(), (0, _controlJs.Tstep).tagName));
+            processCalcMethodThermodynamicTable(detailsDiv, cm, detailsDivId);
         } else if (value == (0, _controlJs.CalcMethodSensitivityAnalysis).xsi_type || value == (0, _controlJs.CalcMethodSensitivityAnalysis).xsi_type2) {
             // "me:sensitivityAnalysis", "sensitivityAnalysis".
             let cm = new (0, _controlJs.CalcMethodSensitivityAnalysis)(new Map());
@@ -5629,6 +5682,7 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  * @param textContent The text content of the label.
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
+ * @param value The value for the HTMLSelectElement.
  * @param id The id.
  * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
  * @param divMargin The margin for the HTMLDivElement.
@@ -5777,27 +5831,15 @@ function createSelectElement(options, name, value, id, margin) {
     select.style.fontSize = "1em"; // Set the font size with a relative unit.
     select.classList.add("auto-width");
     select.value = value;
-    console.log("value", value);
-    console.log("select.value", select.value);
-    console.log("options", options);
     resizeSelectElement(select);
     Object.assign(select.style, margin);
     return select;
 }
-function createLabelWithSelect(textContent, options, name, id, componentMargin, divMargin) {
+function createLabelWithSelect(textContent, options, name, value, id, componentMargin, divMargin) {
     let div = createDiv(divMargin);
     let label = createLabel(textContent, componentMargin);
     div.appendChild(label);
-    let selectElement = document.createElement("select");
-    div.appendChild(selectElement);
-    options.forEach((option)=>{
-        selectElement.name = name;
-        selectElement.id = id;
-        let optionElement = document.createElement("option");
-        optionElement.value = option;
-        optionElement.text = option;
-        selectElement.appendChild(optionElement);
-    });
+    div.appendChild(createSelectElement(options, name, value, id, componentMargin));
     return div;
 }
 function createButton(textContent, boundary) {
@@ -9383,6 +9425,11 @@ class Format extends (0, _xml.StringNode) {
     }
     static{
         /**
+     * The rateUnits.
+     */ this.rateUnits = "rateUnits";
+    }
+    static{
+        /**
      * The rateUnits options.
      */ this.rateUnitsOptions = [
             "cm3mole-1s-1",
@@ -9395,12 +9442,39 @@ class Format extends (0, _xml.StringNode) {
      */ constructor(attributes, value){
         super(attributes, Format.tagName, value);
     }
+    /**
+     * @returns The value of the "rateUnits" attribute or undefined.
+     */ getRateUnits() {
+        return this.attributes.get(Format.rateUnits);
+    }
+    /**
+     * @param rateUnits The value of the "rateUnits" attribute.
+     */ setRateUnits(rateUnits) {
+        this.attributes.set(Format.rateUnits, rateUnits);
+    }
+    /**
+     * Remove the "rateUnits" attribute.
+     */ removeRateUnits() {
+        this.attributes.delete(Format.rateUnits);
+    }
 }
 class Precision extends (0, _xml.StringNode) {
     static{
         /**
     * The tag name.
     */ this.tagName = "me:precision";
+    }
+    static{
+        /**
+     * The options.
+     */ this.options = [
+            "d",
+            "dd",
+            "qd",
+            "double",
+            "double-double",
+            "quad-double"
+        ];
     }
     /**
      * @param attributes The attributes.
@@ -9419,7 +9493,7 @@ class ChebNumTemp extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumTemp.tagName, value);
     }
 }
 class ChebNumConc extends (0, _xml.NumberNode) {
@@ -9432,7 +9506,7 @@ class ChebNumConc extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumConc.tagName, value);
     }
 }
 class ChebMaxTemp extends (0, _xml.NumberNode) {
@@ -9445,7 +9519,7 @@ class ChebMaxTemp extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxTemp.tagName, value);
     }
 }
 class ChebMinTemp extends (0, _xml.NumberNode) {
@@ -9458,7 +9532,7 @@ class ChebMinTemp extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinTemp.tagName, value);
     }
 }
 class ChebMaxConc extends (0, _xml.NumberNode) {
@@ -9471,7 +9545,7 @@ class ChebMaxConc extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxConc.tagName, value);
     }
     /**
      * @returns The units.
@@ -9494,7 +9568,7 @@ class ChebMinConc extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinConc.tagName, value);
     }
 }
 class ChebTExSize extends (0, _xml.NumberNode) {
@@ -9507,7 +9581,7 @@ class ChebTExSize extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebTExSize.tagName, value);
     }
 }
 class ChebPExSize extends (0, _xml.NumberNode) {
@@ -9520,7 +9594,7 @@ class ChebPExSize extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebPExSize.tagName, value);
     }
 }
 class CalcMethodAnalyticalRepresentation extends CalcMethod {

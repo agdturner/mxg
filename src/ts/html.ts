@@ -206,9 +206,6 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
     select.style.fontSize = '1em'; // Set the font size with a relative unit.
     select.classList.add('auto-width');
     select.value = value;
-    console.log('value', value);
-    console.log('select.value', select.value);
-    console.log('options', options);
     resizeSelectElement(select);
     Object.assign(select.style, margin);
     return select;
@@ -220,28 +217,20 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
  * @param textContent The text content of the label.
  * @param options The options for the HTMLSelectElement.
  * @param name The name for the HTMLSelectElement.
+ * @param value The value for the HTMLSelectElement.
  * @param id The id.
  * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
  * @param divMargin The margin for the HTMLDivElement.
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
 export function createLabelWithSelect(textContent: string, options: string[] | Set<string>,
-    name: string, id: string,
+    name: string, value: string, id: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createDiv(divMargin);
     let label: HTMLLabelElement = createLabel(textContent, componentMargin);
     div.appendChild(label);
-    let selectElement: HTMLSelectElement = document.createElement('select');
-    div.appendChild(selectElement);
-    options.forEach(option => {
-        selectElement.name = name;
-        selectElement.id = id;
-        let optionElement: HTMLOptionElement = document.createElement('option');
-        optionElement.value = option;
-        optionElement.text = option;
-        selectElement.appendChild(optionElement);
-    });
+    div.appendChild(createSelectElement(options, name, value, id, componentMargin));
     return div;
 }
 

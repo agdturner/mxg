@@ -4058,141 +4058,250 @@ function processCalcMethodMarquardt(detailsDiv: HTMLDivElement, cm: CalcMethodMa
         }, marquardtDerivDelta.value.toString(), MarquardtDerivDelta.tagName));
 }
 
+/**
+ * @param detailsDiv The details div.
+ * @param cm The CalcMethodAnalyticalRepresentation.
+ * @param detailsDivId The details div id.
+ */
 function processCalcMethodAnalyticalRepresentation(detailsDiv: HTMLDivElement, cm: CalcMethodAnalyticalRepresentation, detailsDivId: string) {
     // "me:format".
     let format: Format = cm.getFormat() || new Format(new Map(), Format.options[0]);
+    // Format value.
     cm.setFormat(format);
-    let select: HTMLSelectElement = createSelectElement(Format.options, Format.tagName, format.value, detailsDivId + Format.tagName + "_select",
-        boundary1);
-    select.addEventListener('change', (event: Event) => {
+    let lwsFormat: HTMLDivElement = createLabelWithSelect(Format.tagName, Format.options, Format.tagName, format.value,
+        detailsDivId + Format.tagName + "_select", boundary1, boundary1);
+    lwsFormat.querySelector('select')?.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLSelectElement;
         format.value = target.value;
         console.log("Set Format to " + target.value);
         resizeSelectElement(target);
     });
-    detailsDiv.appendChild(select);
+    detailsDiv.appendChild(lwsFormat);
+    // Format rateUnits.
+    let value = Format.rateUnitsOptions[0];
+    format.setRateUnits(value);
+    let lwsFormatRateUnits: HTMLDivElement = createLabelWithSelect(Format.rateUnits, Format.rateUnitsOptions, Format.rateUnits,
+        value, detailsDivId + Format.rateUnits + "_select", boundary1, boundary1);
+    lwsFormatRateUnits.querySelector('select')?.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLSelectElement;
+        format.setRateUnits(target.value);
+        console.log("Set Format rateUnits to " + target.value);
+        resizeSelectElement(target);
+    });
+    detailsDiv.appendChild(lwsFormatRateUnits);
     // "me:precision".
-    detailsDiv.appendChild(createLabelWithInput("text", detailsDivId + "_Precision_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            cm.setPrecision(new Precision(new Map(), target.value));
-            console.log("Set Precision to " + target.value);
-            resizeInputElement(target);
-        }, "", Precision.tagName));
+    let precision: Precision = cm.getPrecision() || new Precision(new Map(), Precision.options[0]);
+    cm.setPrecision(precision);
+    let lwsPrecision: HTMLDivElement = createLabelWithSelect(Precision.tagName, Precision.options, Precision.tagName, precision.value,
+        detailsDivId + Precision.tagName + "_select", boundary1, boundary1);
+    lwsPrecision.querySelector('select')?.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLSelectElement;
+        precision.value = target.value;
+        console.log("Set Precision to " + target.value);
+        resizeSelectElement(target);
+    });
+    detailsDiv.appendChild(lwsPrecision);
     // "me:chebNumTemp".
+    let chebNumTemp: ChebNumTemp = cm.getChebNumTemp() || new ChebNumTemp(new Map(), NaN);
+    cm.setChebNumTemp(chebNumTemp);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebNumTemp_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebNumTemp(new ChebNumTemp(new Map(), parseFloat(target.value)));
+                chebNumTemp.value = parseFloat(target.value);
                 console.log("Set ChebNumTemp to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebNumTemp.tagName));
+        }, chebNumTemp.value.toString(), ChebNumTemp.tagName));
     // "me:chebNumConc".
+    let chebNumConc: ChebNumConc = cm.getChebNumConc() || new ChebNumConc(new Map(), NaN);
+    cm.setChebNumConc(chebNumConc);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebNumConc_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebNumConc(new ChebNumConc(new Map(), parseFloat(target.value)));
+                chebNumConc.value = parseFloat(target.value);
                 console.log("Set ChebNumConc to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebNumConc.tagName));
+        }, chebNumConc.value.toString(), ChebNumConc.tagName));
     // "me:chebMaxTemp".
+    let chebMaxTemp: ChebMaxTemp = cm.getChebMaxTemp() || new ChebMaxTemp(new Map(), NaN);
+    cm.setChebMaxTemp(chebMaxTemp);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebMaxTemp_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebMaxTemp(new ChebMaxTemp(new Map(), parseFloat(target.value)));
+                chebMaxTemp.value = parseFloat(target.value);
                 console.log("Set ChebMaxTemp to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebMaxTemp.tagName));
+        }, chebMaxTemp.value.toString(), ChebMaxTemp.tagName));
     // "me:chebMinTemp".
+    let chebMinTemp: ChebMinTemp = cm.getChebMinTemp() || new ChebMinTemp(new Map(), NaN);
+    cm.setChebMinTemp(chebMinTemp);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebMinTemp_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebMinTemp(new ChebMinTemp(new Map(), parseFloat(target.value)));
+                chebMinTemp.value = parseFloat(target.value);
                 console.log("Set ChebMinTemp to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebMinTemp.tagName));
+        }, chebMinTemp.value.toString(), ChebMinTemp.tagName));
     // "me:chebMaxConc".
+    let chebMaxConc: ChebMaxConc = cm.getChebMaxConc() || new ChebMaxConc(new Map(), NaN);
+    cm.setChebMaxConc(chebMaxConc);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebMaxConc_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebMaxConc(new ChebMaxConc(new Map(), parseFloat(target.value)));
+                chebMaxConc.value = parseFloat(target.value);
                 console.log("Set ChebMaxConc to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebMaxConc.tagName));
+        }, chebMaxConc.value.toString(), ChebMaxConc.tagName));
     // "me:chebMinConc".
+    let chebMinConc: ChebMinConc = cm.getChebMinConc() || new ChebMinConc(new Map(), NaN);
+    cm.setChebMinConc(chebMinConc);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebMinConc_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebMinConc(new ChebMinConc(new Map(), parseFloat(target.value)));
+                chebMinConc.value = parseFloat(target.value);
                 console.log("Set ChebMinConc to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebMinConc.tagName));
+        }, chebMinConc.value.toString(), ChebMinConc.tagName));
     // "me:chebTExSize".
+    let chebTExSize: ChebTExSize = cm.getChebTExSize() || new ChebTExSize(new Map(), NaN);
+    cm.setChebTExSize(chebTExSize);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebTExSize_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebTExSize(new ChebTExSize(new Map(), parseFloat(target.value)));
+                chebTExSize.value = parseFloat(target.value);
                 console.log("Set ChebTExSize to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebTExSize.tagName));
+        }, chebTExSize.value.toString(), ChebTExSize.tagName));
     // "me:chebPExSize".
+    let chebPExSize: ChebPExSize = cm.getChebPExSize() || new ChebPExSize(new Map(), NaN);
+    cm.setChebPExSize(chebPExSize);
     detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_ChebPExSize_input", boundary1, level0,
         (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                cm.setChebPExSize(new ChebPExSize(new Map(), parseFloat(target.value)));
+                chebPExSize.value = parseFloat(target.value);
                 console.log("Set ChebPExSize to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
                 target.value = NaN.toString();
             }
             resizeInputElement(target);
-        }, NaN.toString(), ChebPExSize.tagName));
+        }, chebPExSize.value.toString(), ChebPExSize.tagName));
 }
 
+/**
+ * @param detailsDiv The details div.
+ * @param cm The CalcMethodThermodynamicTable.
+ * @param detailsDivId The details div id.
+ */
+function processCalcMethodThermodynamicTable(detailsDiv: HTMLDivElement, cm: CalcMethodThermodynamicTable, detailsDivId: string) {
+    // "me:Tmin".
+    let tmin: Tmin = cm.getTmin() || new Tmin(new Map(), NaN);
+    cm.setTmin(tmin);
+    detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmin_input", boundary1, level0,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the value is a number.
+            if (isNumeric(target.value)) {
+                tmin.value = parseFloat(target.value);
+                console.log("Set Tmin to " + target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                target.value = NaN.toString();
+            }
+            resizeInputElement(target);
+        }, tmin.value.toString(), Tmin.tagName));
+    // "me:Tmid".
+    let tmid: Tmid = cm.getTmid() || new Tmid(new Map(), NaN);
+    cm.setTmid(tmid);
+    detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmid_input", boundary1, level0,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the value is a number.
+            if (isNumeric(target.value)) {
+                tmid.value = parseFloat(target.value);
+                console.log("Set Tmid to " + target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                target.value = NaN.toString();
+            }
+            resizeInputElement(target);
+        }, tmid.value.toString(), Tmid.tagName));
+    // "me:Tmax".
+    let tmax: Tmax = cm.getTmax() || new Tmax(new Map(), NaN);
+    cm.setTmax(tmax);
+    detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmax_input", boundary1, level0,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the value is a number.
+            if (isNumeric(target.value)) {
+                tmax.value = parseFloat(target.value);
+                console.log("Set Tmax to " + target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                target.value = NaN.toString();
+            }
+            resizeInputElement(target);
+        }, tmax.value.toString(), Tmax.tagName));
+    // "me:Tstep".
+    let tstep: Tstep = cm.getTstep() || new Tstep(new Map(), NaN);
+    cm.setTstep(tstep);
+    detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tstep_input", boundary1, level0,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the value is a number.
+            if (isNumeric(target.value)) {
+                tstep.value = parseFloat(target.value);
+                console.log("Set Tstep to " + target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                target.value = NaN.toString();
+            }
+            resizeInputElement(target);
+        }, tstep.value.toString(), Tstep.tagName));
+}
 /**
  * 
  * @param control 
@@ -4228,87 +4337,34 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, de
         div.appendChild(detailsDiv);
         let target = event.target as HTMLSelectElement;
         let value: string = target.value;
+        let attributes: Map<string, string> = new Map();
+        attributes.set("xsi:type", value);
         if (value == CalcMethodSimpleCalc.xsi_type || value == CalcMethodSimpleCalc.xsi_type2) {
             // "me:simpleCalc", "simpleCalc".
-            control.setCalcMethod(new CalcMethodSimpleCalc(new Map()));
+            control.setCalcMethod(new CalcMethodSimpleCalc(attributes));
         } else if (value == CalcMethodGridSearch.xsi_type || value == CalcMethodGridSearch.xsi_type2) {
             // "me:gridSearch", "gridSearch".
-            control.setCalcMethod(new CalcMethodGridSearch(new Map()));
+            control.setCalcMethod(new CalcMethodGridSearch(attributes));
         } else if (value == CalcMethodFitting.xsi_type || value == CalcMethodFitting.xsi_type2) {
-            let cm: CalcMethodFitting = new CalcMethodFitting(new Map());
+            let cm: CalcMethodFitting = new CalcMethodFitting(attributes);
             control.setCalcMethod(cm);
             processCalcMethodFitting(detailsDiv, cm, detailsDivId);
         } else if (value == CalcMethodMarquardt.xsi_type || value == CalcMethodMarquardt.xsi_type2) {
             // "me:marquardt", "marquardt".
-            let cm: CalcMethodMarquardt = new CalcMethodMarquardt(new Map());
+            let cm: CalcMethodMarquardt = new CalcMethodMarquardt(attributes);
             control.setCalcMethod(cm);
             processCalcMethodMarquardt(detailsDiv, cm, detailsDivId);
         } else if (value == CalcMethodAnalyticalRepresentation.xsi_type || value == CalcMethodAnalyticalRepresentation.xsi_type2) {
             // "me:analyticalRepresentation", "analyticalRepresentation".
-            let cm: CalcMethodAnalyticalRepresentation = new CalcMethodAnalyticalRepresentation(new Map());
+            let cm: CalcMethodAnalyticalRepresentation = new CalcMethodAnalyticalRepresentation(attributes);
             control.setCalcMethod(cm);
             processCalcMethodAnalyticalRepresentation(detailsDiv, cm, detailsDivId);
-
         } else if (value == CalcMethodThermodynamicTable.xsi_type || value == CalcMethodThermodynamicTable.xsi_type2) {
             // "me:ThermodynamicTable", "ThermodynamicTable".
-            let cm: CalcMethodThermodynamicTable = new CalcMethodThermodynamicTable(new Map());
+            let cm: CalcMethodThermodynamicTable = new CalcMethodThermodynamicTable(attributes);
             control.setCalcMethod(cm);
-            // "me:Tmin".
-            detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmin_input", boundary1, level0,
-                (event: Event) => {
-                    let target = event.target as HTMLInputElement;
-                    // Check the value is a number.
-                    if (isNumeric(target.value)) {
-                        cm.setTmin(new Tmin(new Map(), parseFloat(target.value)));
-                        console.log("Set Tmin to " + target.value);
-                    } else {
-                        alert("Value is not numeric, resetting...");
-                        target.value = NaN.toString();
-                    }
-                    resizeInputElement(target);
-                }, NaN.toString(), Tmin.tagName));
-            // "me:Tmid".
-            detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmid_input", boundary1, level0,
-                (event: Event) => {
-                    let target = event.target as HTMLInputElement;
-                    // Check the value is a number.
-                    if (isNumeric(target.value)) {
-                        cm.setTmid(new Tmid(new Map(), parseFloat(target.value)));
-                        console.log("Set Tmid to " + target.value);
-                    } else {
-                        alert("Value is not numeric, resetting...");
-                        target.value = NaN.toString();
-                    }
-                    resizeInputElement(target);
-                }, NaN.toString(), Tmid.tagName));
-            // "me:Tmax".
-            detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tmax_input", boundary1, level0,
-                (event: Event) => {
-                    let target = event.target as HTMLInputElement;
-                    // Check the value is a number.
-                    if (isNumeric(target.value)) {
-                        cm.setTmax(new Tmax(new Map(), parseFloat(target.value)));
-                        console.log("Set Tmax to " + target.value);
-                    } else {
-                        alert("Value is not numeric, resetting...");
-                        target.value = NaN.toString();
-                    }
-                    resizeInputElement(target);
-                }, NaN.toString(), Tmax.tagName));
-            // "me:Tstep".
-            detailsDiv.appendChild(createLabelWithInput("number", detailsDivId + "_Tstep_input", boundary1, level0,
-                (event: Event) => {
-                    let target = event.target as HTMLInputElement;
-                    // Check the value is a number.
-                    if (isNumeric(target.value)) {
-                        cm.setTstep(new Tstep(new Map(), parseFloat(target.value)));
-                        console.log("Set Tstep to " + target.value);
-                    } else {
-                        alert("Value is not numeric, resetting...");
-                        target.value = NaN.toString();
-                    }
-                    resizeInputElement(target);
-                }, NaN.toString(), Tstep.tagName));
+            processCalcMethodThermodynamicTable(detailsDiv, cm, detailsDivId);
+
         } else if (value == CalcMethodSensitivityAnalysis.xsi_type || value == CalcMethodSensitivityAnalysis.xsi_type2) {
             // "me:sensitivityAnalysis", "sensitivityAnalysis".
             let cm: CalcMethodSensitivityAnalysis = new CalcMethodSensitivityAnalysis(new Map());

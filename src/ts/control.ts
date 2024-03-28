@@ -694,6 +694,11 @@ export class Format extends StringNode {
     static readonly options: string[] = ["cantera", "chemkin"];
 
     /**
+     * The rateUnits.
+     */
+    static readonly rateUnits: string = "rateUnits";
+
+    /**
      * The rateUnits options.
      */
     static readonly rateUnitsOptions: string[] = ["cm3mole-1s-1", "cm3molecule-1s-1"];
@@ -704,6 +709,27 @@ export class Format extends StringNode {
      */
     constructor(attributes: Map<string, string>, value: string) {
         super(attributes, Format.tagName, value);
+    }
+
+    /**
+     * @returns The value of the "rateUnits" attribute or undefined.
+     */
+    getRateUnits(): string | undefined {
+        return this.attributes.get(Format.rateUnits);
+    }
+
+    /**
+     * @param rateUnits The value of the "rateUnits" attribute.
+     */
+    setRateUnits(rateUnits: string) {
+        this.attributes.set(Format.rateUnits, rateUnits);
+    }
+
+    /**
+     * Remove the "rateUnits" attribute.
+     */
+    removeRateUnits() {
+        this.attributes.delete(Format.rateUnits);
     }
 }
 
@@ -718,6 +744,11 @@ export class Precision extends StringNode {
     * The tag name.
     */
     static readonly tagName: string = "me:precision";
+
+    /**
+     * The options.
+     */
+    static readonly options: string[] = ["d", "dd", "qd", "double", "double-double", "quad-double"];
 
     /**
      * @param attributes The attributes.
@@ -743,7 +774,7 @@ export class ChebNumTemp extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumTemp.tagName, value);
     }
 }
 
@@ -762,7 +793,7 @@ export class ChebNumConc extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebNumConc.tagName, value);
     }
 }
 
@@ -781,7 +812,7 @@ export class ChebMaxTemp extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxTemp.tagName, value);
     }
 }
 
@@ -800,7 +831,7 @@ export class ChebMinTemp extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinTemp.tagName, value);
     }
 }
 
@@ -821,7 +852,7 @@ export class ChebMaxConc extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMaxConc.tagName, value);
     }
 
     /**
@@ -854,7 +885,7 @@ export class ChebMinConc extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebMinConc.tagName, value);
     }
 }
 
@@ -873,7 +904,7 @@ export class ChebTExSize extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebTExSize.tagName, value);
     }
 }
 
@@ -892,7 +923,7 @@ export class ChebPExSize extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: number) {
-        super(attributes, Format.tagName, value);
+        super(attributes, ChebPExSize.tagName, value);
     }
 }
 
