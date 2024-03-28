@@ -191,22 +191,27 @@ export function resizeSelectElement(input: HTMLSelectElement, minSize?: number) 
  * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */
-export function createSelectElement(options: string[] | Set<string>, name: string, id: string,
+export function createSelectElement(options: string[] | Set<string>, name: string, value: string, id: string,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }):
     HTMLSelectElement {
-    let selectElement: HTMLSelectElement = document.createElement('select');
+    let select: HTMLSelectElement = document.createElement('select');
     options.forEach(option => {
-        selectElement.name = name;
-        selectElement.id = id;
+        select.name = name;
+        select.id = id;
         let optionElement: HTMLOptionElement = document.createElement('option');
         optionElement.value = option;
         optionElement.text = option;
-        selectElement.appendChild(optionElement);
+        select.appendChild(optionElement);
     });
-    selectElement.style.fontSize = '1em'; // Set the font size with a relative unit.
-    selectElement.classList.add('auto-width');
-    Object.assign(selectElement.style, margin);
-    return selectElement;
+    select.style.fontSize = '1em'; // Set the font size with a relative unit.
+    select.classList.add('auto-width');
+    select.value = value;
+    console.log('value', value);
+    console.log('select.value', select.value);
+    console.log('options', options);
+    resizeSelectElement(select);
+    Object.assign(select.style, margin);
+    return select;
 }
 
 /**

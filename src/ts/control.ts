@@ -675,10 +675,11 @@ export class UseTraceWeighting extends Tag {
 
 /**
  * A class for "me:format".
- * The attributes are expected to have the following keys:
- * "rateUnits" (with known values: "cm3mole-1s-1")
- * Known values include:
- * "cantera"
+ * The attributes may have the following keys:
+ * "representation" (with known value: "Plog")
+ * "rateUnits" (with known values: "cm3mole-1s-1", "cm3molecule-1s-1")
+ * Values include:
+ * "cantera", "chemkin"
  */
 export class Format extends StringNode {
 
@@ -686,6 +687,16 @@ export class Format extends StringNode {
     * The tag name.
     */
     static readonly tagName: string = "me:format";
+
+    /**
+     * The options.
+     */
+    static readonly options: string[] = ["cantera", "chemkin"];
+
+    /**
+     * The rateUnits options.
+     */
+    static readonly rateUnitsOptions: string[] = ["cm3mole-1s-1", "cm3molecule-1s-1"];
 
     /**
      * @param attributes The attributes.
@@ -706,14 +717,14 @@ export class Precision extends StringNode {
     /**
     * The tag name.
     */
-    static readonly tagName: string = "me:format";
+    static readonly tagName: string = "me:precision";
 
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: string) {
-        super(attributes, Format.tagName, value);
+        super(attributes, Precision.tagName, value);
     }
 }
 
@@ -890,8 +901,22 @@ export class ChebPExSize extends NumberNode {
  * Expected to have attributes:
  * "xsi_type" with the value "me:analyticalRepresentation".
  * Nodes:
- * "me:format", "me:precision", "me:chebNumTemp", "me:chebNumConc", "me:chebMaxTemp", "me:chebMinTemp", 
- * "me:chebMaxConc", "me:chebMinConc", "me:chebTExSize", "me:chebPExSize".
+ * "me:format"
+ * If the "me:format" attribute "representation" is "Plog" then the following nodes are expected:
+ * "me:plogNumTemp"
+ * "me:plogMaxTemp"
+ * "me:plogMinTemp"
+ * "me:plogConcs" which may have multiple "me:plogConc" values.
+ * If the "me:format" attribute "representation" is not specified, then the following nodes are expected:
+ * "me:precision"
+ * "me:chebNumTemp"
+ * "me:chebNumConc"
+ * "me:chebMaxTemp"
+ * "me:chebMinTemp"
+ * "me:chebMaxConc"
+ * "me:chebMinConc"
+ * "me:chebTExSize"
+ * "me:chebPExSize"
  */
 export class CalcMethodAnalyticalRepresentation extends CalcMethod {
 

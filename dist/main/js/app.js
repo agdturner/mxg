@@ -109,11 +109,10 @@ let reactions = new Map();
 /**
  * The reactions diagram ids.
  */
-let reactionsDiagramId = "reactionsDiagram";
-let rd_canvas_Id = "reactionsDiagramCanvas";
-let rd_canvas;
+let rdDivId = "reactionsDiagram";
+let rdCanvasId = "reactionsDiagramCanvas";
 //let rd_canvas_width: number = 800;
-let rd_canvas_height = 400;
+let rdCanvasHeight = 400;
 let rd_lw = 4;
 let rd_lwc = 2;
 let rd_font = "1em SensSerif";
@@ -275,10 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function redrawReactionsDiagram() {
     if (popWindow == null) {
-        drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
+        drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     }
     else {
-        let c = popWindow.document.getElementById(rd_canvas_Id);
+        let c = popWindow.document.getElementById(rdCanvasId);
         drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
     }
 }
@@ -423,16 +422,28 @@ function parse(xml) {
     }));
     mesmer.setReactionList(new mesmer_js_1.ReactionList((0, xml_js_1.getAttributes)(reactionsDiv), Array.from(reactions.values())));
     // Add the reactions diagram canvas.
-    let reactionsDiagramDiv = (0, html_js_1.createDiv)(boundary1);
-    reactionsDiagramDiv.id = reactionsDiagramId;
-    reactionsDiv.append(reactionsDiagramDiv);
+    // Destroy any existing reactions diagram.
+    // Check for popWindow.
+    if (popWindow != null) {
+        popWindow.close();
+        popWindow = null;
+    }
+    // If rdDiv already exists, remove it.
+    let rdDiv = document.getElementById(rdDivId);
+    if (rdDiv != null) {
+        rdDiv.parentNode?.removeChild(rdDiv);
+    }
+    // Create a new rdDiv and append it.
+    rdDiv = (0, html_js_1.createDiv)(boundary1);
+    rdDiv.id = rdDivId;
+    reactionsDiv.append(rdDiv);
     // Create a pop diagram button in its own div.
     let popButtonDivId = 'popButtonDivId';
     // If the popButtonDiv already exists, remove it.
     (0, html_js_1.remove)(popButtonDivId);
     let popButtonDiv = (0, html_js_1.createDiv)(boundary1);
     popButtonDiv.id = popButtonDivId;
-    reactionsDiagramDiv.appendChild(popButtonDiv);
+    rdDiv.appendChild(popButtonDiv);
     let popButtonID = "popButtonId";
     // If the popButton already exists, remove it.
     (0, html_js_1.remove)(popButtonID);
@@ -440,39 +451,46 @@ function parse(xml) {
     popButton.id = popButtonID;
     popButtonDiv.appendChild(popButton);
     // If the canvas already exists, remove it.
-    (0, html_js_1.remove)(rd_canvas_Id);
-    // Create a new canvas.
-    rd_canvas = document.createElement('canvas');
-    rd_canvas.id = rd_canvas_Id;
-    reactionsDiagramDiv.appendChild(rd_canvas);
+    if (rdCanvas != null) {
+        // Set the height to 0 to remove the canvas.
+        rdCanvas.height = 0;
+        rdCanvas.remove();
+    }
+    rdCanvas = document.createElement('canvas');
+    rdCanvas.id = rdCanvasId;
+    rdDiv.appendChild(rdCanvas);
     //rd_canvas.width = rd_canvas_width;
-    rd_canvas.height = rd_canvas_height;
-    rd_canvas.style.border = "1px solid black";
-    drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
+    rdCanvas.height = rdCanvasHeight;
+    rdCanvas.style.border = "1px solid black";
+    drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     // Add action listener to the pop diagram button.
     popButton.addEventListener('click', () => {
         if (popWindow == null) {
-            let c = rd_canvas;
-            c.id = rd_canvas_Id;
+            /**
+             * Cloning is necessary for Chrome.
+             */
+            let c = rdCanvas.cloneNode(true);
+            c.id = rdCanvasId;
             popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height);
             popWindow.document.body.appendChild(c);
             drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+            // If the canvas already exists, remove it.
+            (0, html_js_1.remove)(rdCanvasId);
             popButton.textContent = "Pop back reaction diagram";
         }
         else {
-            let c = popWindow.document.getElementById(rd_canvas_Id);
-            rd_canvas = c;
             /**
-             * Clone the canvas before appending it to the main document.
-             * This is necessary as although Firefox allows the canvas to be moved between windows, Chrome does not.
+             * Cloning is necessary for Chrome.
              */
-            let clonedCanvas = c.cloneNode(true);
-            reactionsDiagramDiv.appendChild(clonedCanvas);
-            popWindow.close();
+            let c = popWindow.document.getElementById(rdCanvasId);
+            let rd_canvas = c.cloneNode(true);
+            if (rdDiv != null) {
+                rdDiv.appendChild(rd_canvas);
+            }
+            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
             popButton.textContent = "Pop out reaction diagram to a new window";
-            drawReactionDiagram(rd_canvas, dark, rd_font, rd_lw, rd_lwc);
         }
     });
     // Conditions
@@ -4691,7 +4709,7 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
             //console.log("value=" + value + ".");
             //console.log("energies=" + mapToString(energies));
             let energy = (0, util_js_1.get)(energies, value);
-            let energyRescaled = (0, util_js_1.rescale)(energyMin, energyRange, 0, rd_canvas_height, energy);
+            let energyRescaled = (0, util_js_1.rescale)(energyMin, energyRange, 0, rdCanvasHeight, energy);
             // Get text width.
             tw = Math.max((0, canvas_js_1.getTextWidth)(ctx, energy.toString(), font), (0, canvas_js_1.getTextWidth)(ctx, value, font));
             x1 = x0 + tw + textSpacing;
@@ -4718,9 +4736,9 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
         canvas.width = xmax;
         //console.log("canvas.width=" + canvas.width);
         // Set canvas height to maximum energy plus the label.
-        let canvasHeightWithBorder = rd_canvas_height + (4 * th) + (2 * lw);
+        let canvasHeightWithBorder = rdCanvasHeight + (4 * th) + (2 * lw);
         //console.log("canvasHeightWithBorder=" + canvasHeightWithBorder);
-        let originalCanvasHeight = rd_canvas_height;
+        let originalCanvasHeight = rdCanvasHeight;
         // Update the canvas height.
         canvas.height = canvasHeightWithBorder;
         // Set the transformation matrix.
