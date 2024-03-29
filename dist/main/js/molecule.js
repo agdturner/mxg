@@ -703,13 +703,18 @@ class EnergyTransferModel extends xml_js_1.NodeWithNodes {
 exports.EnergyTransferModel = EnergyTransferModel;
 /**
  * In the XML, a "me:DOSCMethod" node is a child node of a "molecule" node.
- * The attributes are expected to include either "xsi:type" or "name" - expected values are either "ClassicalRotors" or "QMRotors".
+ * The attributes are expected to include either "xsi:type" or "name" - expected values include ["ClassicalRotors",
+ * "QMRotors", "me:ClassicalRotors", "me:QMRotors"].
  */
 class DOSCMethod extends xml_js_1.TagWithAttributes {
     /**
      * The tag name.
      */
     static tagName = "me:DOSCMethod";
+    /**
+     * The options for the "xsi:type" or "name" attribute value.
+     */
+    static xsi_typeOptions = ["ClassicalRotors", "QMRotors", "me:ClassicalRotors", "me:QMRotors"];
     /**
      * The key for the "xsi:type" attribute value.
      */

@@ -152,7 +152,7 @@ let minMoleculeEnergy: number = Infinity;
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
-let reactions: Map<string, Reaction> = new Map();
+let reactions: Map<string, Reaction>;
 
 /**
  * The reactions diagram ids.
@@ -493,12 +493,9 @@ function parse(xml: XMLDocument) {
         popWindow = null;
     }
     // If rdDiv already exists, remove it.
-    let rdDiv: HTMLElement | null = document.getElementById(rdDivId);
-    if (rdDiv != null) {
-        rdDiv.parentNode?.removeChild(rdDiv);
-    }
+    remove(rdDivId);
     // Create a new rdDiv and append it.
-    rdDiv = createDiv(boundary1);
+    let rdDiv: HTMLDivElement = createDiv(boundary1);
     rdDiv.id = rdDivId;
     reactionsDiv.append(rdDiv);
     // Create a pop diagram button in its own div.
@@ -514,10 +511,8 @@ function parse(xml: XMLDocument) {
     let popButton: HTMLButtonElement = createButton("Pop out diagram into a new window", boundary1);
     popButton.id = popButtonID;
     popButtonDiv.appendChild(popButton);
-    let existingCanvas: HTMLElement | null = document.getElementById(rdCanvasId);
-    if (existingCanvas) {
-        existingCanvas.remove();
-    }
+    // If the canvas already exists, remove it.
+    remove(rdCanvasId);
     let rdCanvas: HTMLCanvasElement = document.createElement('canvas');
     rdCanvas.id = rdCanvasId;
     rdDiv.appendChild(rdCanvas);
@@ -529,26 +524,17 @@ function parse(xml: XMLDocument) {
     popButton.addEventListener('click', () => {
         let cid = rdCanvasId + "clone";
         if (popWindow == null) {
-            /**
-             * Cloning is necessary for Chrome.
-             */
-            let c: HTMLCanvasElement = (rdCanvas as HTMLCanvasElement).cloneNode(true) as HTMLCanvasElement;
-            c.id = cid;
-            popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height) as Window;
-            popWindow.document.body.appendChild(c);
-            drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+            let popWindowRDCanvas: HTMLCanvasElement = document.createElement('canvas');
+            popWindowRDCanvas.id = rdCanvasId;
+            popWindow = window.open("", "Reactions Diagram", "width=" + rdCanvas.width + ", height=" + rdCanvas.height) as Window;
+            popWindow.document.body.appendChild(popWindowRDCanvas);
+            drawReactionDiagram(popWindowRDCanvas, dark, rd_font, rd_lw, rd_lwc);
             remove(rdCanvasId);
             popButton.textContent = "Pop back reaction diagram";
         } else {
-            /**
-             * Cloning is necessary for Chrome.
-             */
-            let c: HTMLCanvasElement = popWindow.document.getElementById(rdCanvasId) as HTMLCanvasElement;
-            rdCanvas = c.cloneNode(true) as HTMLCanvasElement;
+            rdCanvas = document.createElement('canvas');
             rdCanvas.id = rdCanvasId;
-            if (rdDiv != null) {
-                rdDiv.appendChild(rdCanvas);
-            }
+            rdDiv.appendChild(rdCanvas);
             drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
@@ -1373,6 +1359,8 @@ export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
  * @param {XMLDocument} xml The XML document.
  */
 function processReactionList(xml: XMLDocument): HTMLDivElement {
+    // initialise reactions
+    reactions = new Map();
     // Create div to contain the reaction list.
     let reactionListDiv: HTMLDivElement = createDiv(boundary1);
     // Get the XML "reactionList" element.

@@ -713,7 +713,7 @@ console.log("dark=" + dark);
  */ let minMoleculeEnergy = Infinity;
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
- */ let reactions = new Map();
+ */ let reactions;
 /**
  * The reactions diagram ids.
  */ let rdDivId = "reactionsDiagram";
@@ -989,10 +989,9 @@ let popWindow;
         popWindow = null;
     }
     // If rdDiv already exists, remove it.
-    let rdDiv = document.getElementById(rdDivId);
-    if (rdDiv != null) rdDiv.parentNode?.removeChild(rdDiv);
+    (0, _htmlJs.remove)(rdDivId);
     // Create a new rdDiv and append it.
-    rdDiv = (0, _htmlJs.createDiv)(boundary1);
+    let rdDiv = (0, _htmlJs.createDiv)(boundary1);
     rdDiv.id = rdDivId;
     reactionsDiv.append(rdDiv);
     // Create a pop diagram button in its own div.
@@ -1008,8 +1007,8 @@ let popWindow;
     let popButton = (0, _htmlJs.createButton)("Pop out diagram into a new window", boundary1);
     popButton.id = popButtonID;
     popButtonDiv.appendChild(popButton);
-    let existingCanvas = document.getElementById(rdCanvasId);
-    if (existingCanvas) existingCanvas.remove();
+    // If the canvas already exists, remove it.
+    (0, _htmlJs.remove)(rdCanvasId);
     let rdCanvas = document.createElement("canvas");
     rdCanvas.id = rdCanvasId;
     rdDiv.appendChild(rdCanvas);
@@ -1021,22 +1020,17 @@ let popWindow;
     popButton.addEventListener("click", ()=>{
         let cid = rdCanvasId + "clone";
         if (popWindow == null) {
-            /**
-             * Cloning is necessary for Chrome.
-             */ let c = rdCanvas.cloneNode(true);
-            c.id = cid;
-            popWindow = window.open("", "Reactions Diagram", "width=" + c.width + ", height=" + c.height);
-            popWindow.document.body.appendChild(c);
-            drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+            let popWindowRDCanvas = document.createElement("canvas");
+            popWindowRDCanvas.id = rdCanvasId;
+            popWindow = window.open("", "Reactions Diagram", "width=" + rdCanvas.width + ", height=" + rdCanvas.height);
+            popWindow.document.body.appendChild(popWindowRDCanvas);
+            drawReactionDiagram(popWindowRDCanvas, dark, rd_font, rd_lw, rd_lwc);
             (0, _htmlJs.remove)(rdCanvasId);
             popButton.textContent = "Pop back reaction diagram";
         } else {
-            /**
-             * Cloning is necessary for Chrome.
-             */ let c = popWindow.document.getElementById(rdCanvasId);
-            rdCanvas = c.cloneNode(true);
+            rdCanvas = document.createElement("canvas");
             rdCanvas.id = rdCanvasId;
-            if (rdDiv != null) rdDiv.appendChild(rdCanvas);
+            rdDiv.appendChild(rdCanvas);
             drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
             popWindow.close();
             popWindow = null;
@@ -1736,6 +1730,8 @@ window.set = setNumberNode;
  * Parse XML and create HTMLDivElement for reactions.
  * @param {XMLDocument} xml The XML document.
  */ function processReactionList(xml) {
+    // initialise reactions
+    reactions = new Map();
     // Create div to contain the reaction list.
     let reactionListDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "reactionList" element.
@@ -5657,7 +5653,7 @@ parcelHelpers.export(exports, "remove", ()=>remove);
  */ parcelHelpers.export(exports, "createLabel", ()=>createLabel);
 function remove(id) {
     let e = document.getElementById(id);
-    if (e != null) e.parentNode?.removeChild(e);
+    if (e != null) e.remove();
 }
 function getCollapsibleDiv({ content, buttonLabel, buttonFontSize = "", boundary = {
     marginLeft: "",

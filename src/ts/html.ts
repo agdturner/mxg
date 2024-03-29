@@ -5,9 +5,7 @@
 export function remove(id: string) {
     let e: HTMLElement | null = document.getElementById(id);
     if (e != null) {
-        e.parentNode?.removeChild(e);
-        //} else {
-        //    console.warn("remove: id=" + id + " not found.");
+        e.remove();
     }
 }
 

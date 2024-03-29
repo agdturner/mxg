@@ -50,6 +50,10 @@ class Reactant extends xml_js_1.NodeWithNodes {
      */
     static tagName = "reactant";
     /**
+     * The role options.
+     */
+    static roleOptions = ["deficientReactant", "excessReactant", "modelled"];
+    /**
      * @param attributes The attributes.
      * @param molecule The reaction molecule.
      */
@@ -74,6 +78,10 @@ class Product extends xml_js_1.NodeWithNodes {
      * The tag name.
      */
     static tagName = "product";
+    /**
+     * The role options.
+     */
+    static roleOptions = ["modelled", "sink"];
     /**
      * @param attributes The attributes.
      * @param molecule The reaction molecule.
@@ -354,6 +362,10 @@ class Tunneling extends xml_js_1.TagWithAttributes {
      * The tag name.
      */
     static tagName = "me:tunneling";
+    /**
+     * The options.
+     */
+    static options = ["Eckart", "WKB"];
     /**
      * The key to the name attribute value.
      */
