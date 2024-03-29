@@ -378,7 +378,7 @@ export class PTpair extends NodeWithNodes {
      * @param experimentRate The experiment rate.
      */
     constructor(attributes: Map<string, string>, bathGas?: BathGas, experimentRate?: ExperimentRate,
-        excessReactantConc?: ExperimentalYield, experimentalEigenvalue?: ExperimentalEigenvalue) {
+        experimentalYield?: ExperimentalYield, experimentalEigenvalue?: ExperimentalEigenvalue) {
         super(attributes, PTpair.tagName);
         this.index = new Map();
         if (bathGas != undefined) {
@@ -389,9 +389,9 @@ export class PTpair extends NodeWithNodes {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
             this.addNode(experimentRate);
         }
-        if (excessReactantConc != undefined) {
+        if (experimentalYield != undefined) {
             this.index.set(ExperimentalYield.tagName, this.nodes.size);
-            this.addNode(excessReactantConc);
+            this.addNode(experimentalYield);
         }
         if (experimentalEigenvalue != undefined) {
             this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
@@ -523,6 +523,78 @@ export class PTpair extends NodeWithNodes {
     }
 
     /**
+     * @returns The experimental yield.
+     */
+    getExperimentalYield(): ExperimentalYield | undefined {
+        let i: number | undefined = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ExperimentalYield;
+        } else {
+            return undefined;
+        }
+    }
+
+    /**
+     * @param experimentalYield The experimental yield.
+     */
+    setExperimentalYield(experimentalYield: ExperimentalYield) {
+        let i: number | undefined = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, experimentalYield);
+        } else {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(experimentalYield);
+        }
+    }
+
+    /**
+     * Remove the experimental yield.
+     */
+    removeExperimentalYield() {
+        let i: number | undefined = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalYield.tagName);
+        }
+    }
+
+    /**
+     * @returns The experimental eigenvalue.
+     */
+    getExperimentalEigenvalue(): ExperimentalEigenvalue | undefined {
+        let i: number | undefined = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as ExperimentalEigenvalue;
+        } else {
+            return undefined;
+        }
+    }
+
+    /**
+     * @param experimentalEigenvalue The experimental eigenvalue.
+     */
+    setExperimentalEigenvalue(experimentalEigenvalue: ExperimentalEigenvalue) {
+        let i: number | undefined = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, experimentalEigenvalue);
+        } else {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
+        }
+    }
+
+    /**
+     * Remove the experimental eigenvalue.
+     */
+    removeExperimentalEigenvalue() {
+        let i: number | undefined = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalEigenvalue.tagName);
+        }
+    }
+
+    /**
      * @returns this.attributes.get("excessReactantConc").
      */
     getExcessReactantConc(): string | undefined {
@@ -613,6 +685,15 @@ export class PTs extends NodeWithNodes {
     }
 
     /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */
+    removePTpair(i: number): void {
+        this.nodes.delete(i);
+        this.pTpairs.splice(i, 1);
+    }
+
+    /**
      * Add a PT.
      * @param pTPair The PT to add.
      */
@@ -623,14 +704,13 @@ export class PTs extends NodeWithNodes {
             this.pTpairs.push(pTpair);
         });
     }
-
+    
     /**
-     * Remove the PT at the given index.
-     * @param i The index.
+     * Remove all PT pairs.
      */
-    removePTpair(i: number): void {
-        this.nodes.delete(i);
-        this.pTpairs.splice(i, 1);
+    removePTpairs(): void {
+        this.nodes.clear();
+        this.pTpairs = [];
     }
 }
 

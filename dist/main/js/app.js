@@ -1712,6 +1712,7 @@ function processConditions(xml) {
         }
     }
     // PTs
+    let moleculeKeys = new Set(molecules.keys());
     let pTsDiv = (0, html_js_1.createDiv)(boundary1);
     conditionsDiv.appendChild(pTsDiv);
     let pTs;
@@ -1728,17 +1729,17 @@ function processConditions(xml) {
         else {
             pTs = new conditions_js_1.PTs(attributes);
             for (let i = 0; i < xml_PTPairs.length; i++) {
-                let pTPair = new conditions_js_1.PTpair((0, xml_js_1.getAttributes)(xml_PTPairs[i]));
-                pTs.addPTpair(pTPair);
+                let pTpair = new conditions_js_1.PTpair((0, xml_js_1.getAttributes)(xml_PTPairs[i]));
+                pTs.addPTpair(pTpair);
                 // Create a container div for P, T and units.
-                let pTPairDiv = (0, html_js_1.createFlexDiv)(level2);
-                pTsDiv.appendChild(pTPairDiv);
-                addP(pTPairDiv, pTPair);
-                addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, (0, xml_js_1.getAttributes)(xml_PTPairs[i]), pTPairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
-                addT(pTPairDiv, pTPair);
-                addExcessReactantConc(pTPairDiv, pTPair);
-                addPercentExcessReactantConc(pTPairDiv, pTPair);
-                addPrecision(pTPairDiv, pTPair);
+                let pTpairDiv = (0, html_js_1.createFlexDiv)(level2);
+                pTsDiv.appendChild(pTpairDiv);
+                addP(pTpairDiv, pTpair);
+                addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, (0, xml_js_1.getAttributes)(xml_PTPairs[i]), pTpairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
+                addT(pTpairDiv, pTpair);
+                addExcessReactantConc(pTpairDiv, pTpair, i);
+                addPercentExcessReactantConc(pTpairDiv, pTpair);
+                addPrecision(pTpairDiv, pTpair, i);
                 // Add any optional BathGas
                 let xml_bathGass = xml_PTPairs[i].getElementsByTagName(conditions_js_1.BathGas.tagName);
                 if (xml_bathGass.length > 0) {
@@ -1747,9 +1748,9 @@ function processConditions(xml) {
                     }
                     let bathGasValue = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_bathGass[0]));
                     let bathGas = new conditions_js_1.BathGas((0, xml_js_1.getAttributes)(xml_bathGass[0]), bathGasValue);
-                    pTPair.setBathGas(bathGas);
+                    pTpair.setBathGas(bathGas);
                 }
-                addBathGas(pTPairDiv, pTPair, i);
+                addBathGas(pTpairDiv, pTpair, i, moleculeKeys);
                 // Add any optional ExperimentRate
                 let xml_experimentRates = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentRate.tagName);
                 if (xml_experimentRates.length > 0) {
@@ -1758,23 +1759,23 @@ function processConditions(xml) {
                     }
                     let valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_experimentRates[0]));
                     let experimentRate = new conditions_js_1.ExperimentRate((0, xml_js_1.getAttributes)(xml_experimentRates[0]), parseFloat(valueString));
-                    pTPair.setExperimentRate(experimentRate);
+                    pTpair.setExperimentRate(experimentRate);
                     // Create a new div for the ExperimentRate.
                     let id = conditions_js_1.PTpair.tagName + "_" + conditions_js_1.ExperimentRate.tagName;
                     let lwi = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level0, (event) => {
                         let target = event.target;
                         setNumberNode(experimentRate, target);
                     }, experimentRate.value.toExponential(), conditions_js_1.ExperimentRate.tagName);
-                    pTPairDiv.appendChild(lwi);
+                    pTpairDiv.appendChild(lwi);
                 }
                 // Add a remove button.
                 let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
                 removeButton.addEventListener('click', () => {
-                    pTsDiv.removeChild(pTPairDiv);
+                    pTsDiv.removeChild(pTpairDiv);
                     pTs.removePTpair(i);
-                    pTPair.removeBathGas();
+                    pTpair.removeBathGas();
                 });
-                pTPairDiv.appendChild(removeButton);
+                pTpairDiv.appendChild(removeButton);
             }
         }
     }
@@ -1797,28 +1798,28 @@ function processConditions(xml) {
     // Add event listener to the addButton.
     addButton.addEventListener('click', () => {
         // Create a new PTpair.
-        let pTPairAttributes = new Map();
-        pTPairAttributes.set("units", "Torr");
-        let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
-        let pTPairIndex = pTs.addPTpair(pTPair);
-        console.log("Added new pTPair pTPairIndex=" + pTPairIndex);
-        let pTPairDiv = (0, html_js_1.createFlexDiv)(level2);
-        pTsDiv.appendChild(pTPairDiv);
-        addP(pTPairDiv, pTPair);
-        addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, pTPairAttributes, pTPairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
-        addT(pTPairDiv, pTPair);
-        addExcessReactantConc(pTPairDiv, pTPair);
-        addPercentExcessReactantConc(pTPairDiv, pTPair);
-        addPrecision(pTPairDiv, pTPair);
-        addBathGas(pTPairDiv, pTPair, pTPairIndex);
-        addExperimentRateButton(pTPairDiv, pTPair);
+        let pTpairAttributes = new Map();
+        pTpairAttributes.set("units", "Torr");
+        let pTpair = new conditions_js_1.PTpair(pTpairAttributes);
+        let pTpairIndex = pTs.addPTpair(pTpair);
+        console.log("Added new pTpair pTpairIndex=" + pTpairIndex);
+        let pTpairDiv = (0, html_js_1.createFlexDiv)(level2);
+        pTsDiv.insertBefore(pTpairDiv, addButton);
+        addP(pTpairDiv, pTpair);
+        addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, pTpairAttributes, pTpairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
+        addT(pTpairDiv, pTpair);
+        addExcessReactantConc(pTpairDiv, pTpair, pTpairIndex);
+        addPercentExcessReactantConc(pTpairDiv, pTpair);
+        addPrecision(pTpairDiv, pTpair, pTpairIndex);
+        addBathGas(pTpairDiv, pTpair, pTpairIndex, moleculeKeys);
+        addExperimentRateButton(pTpairDiv, pTpair);
         // Add a remove button.
         let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
         removeButton.addEventListener('click', () => {
-            pTsDiv.removeChild(pTPairDiv);
-            pTs.removePTpair(pTPairIndex);
+            pTsDiv.removeChild(pTpairDiv);
+            pTs.removePTpair(pTpairIndex);
         });
-        pTPairDiv.appendChild(removeButton);
+        pTpairDiv.appendChild(removeButton);
     });
     // Create an add from spreadsheet button to add multiple PTPairs.
     let addMultipleButton = (0, html_js_1.createButton)(s_Add_from_spreadsheet, boundary1);
@@ -1836,229 +1837,313 @@ function processConditions(xml) {
             console.log("inputElement.value=" + inputElement.value);
             console.log("inputElement.value.length=" + inputElement.value.length);
             if (inputElement.value.length > 0) {
-                let pTPairsArray = inputElement.value.split(" ");
+                let pTpairsArray = inputElement.value.split(" ");
                 // Is there a header?
                 let index = new Map();
-                pTPairsArray[0].split("\t").forEach((value, i) => {
+                pTpairsArray[0].split("\t").forEach((value, i) => {
                     index.set(value, i);
                 });
-                console.log("pTPairsArray.length=" + pTPairsArray.length);
-                for (let i = 1; i < pTPairsArray.length; i++) {
-                    let pTPairArray = pTPairsArray[i].split("\t");
+                console.log("pTpairsArray.length=" + pTpairsArray.length);
+                for (let i = 1; i < pTpairsArray.length; i++) {
+                    let pTpairArray = pTpairsArray[i].split("\t");
                     let pIndex = index.get("P");
-                    let p = parseFloat(pTPairArray[pIndex]);
+                    let p = parseFloat(pTpairArray[pIndex]);
                     let unitsIndex = index.get("units");
-                    let pTPairAttributes = new Map();
+                    let pTpairAttributes = new Map();
                     if (index.has("units")) {
-                        let units = pTPairArray[unitsIndex];
-                        pTPairAttributes.set("units", units);
+                        let units = pTpairArray[unitsIndex];
+                        pTpairAttributes.set("units", units);
                     }
-                    let pTPair = new conditions_js_1.PTpair(pTPairAttributes);
-                    pTs.addPTpair(pTPair);
-                    let bathGasIndex = index.get("me:bathGas");
+                    let pTpair = new conditions_js_1.PTpair(pTpairAttributes);
+                    pTs.addPTpair(pTpair);
                     let tIndex = index.get("T");
-                    let t = parseFloat(pTPairArray[tIndex]);
-                    pTPair.setP(p);
-                    pTPair.setT(t);
-                    let precisionIndex = index.get("precision");
-                    if (index.has("precision")) {
-                        let precision = pTPairArray[precisionIndex];
-                        pTPairAttributes.set("precision", precision);
+                    let t = parseFloat(pTpairArray[tIndex]);
+                    pTpair.setP(p);
+                    pTpair.setT(t);
+                    let excessReactantConIndex = index.get(conditions_js_1.PTpair.s_excessReactantConc);
+                    if (index.has(conditions_js_1.PTpair.s_excessReactantConc)) {
+                        let excessReactantConc = pTpairArray[excessReactantConIndex];
+                        pTpairAttributes.set(conditions_js_1.PTpair.s_excessReactantConc, excessReactantConc);
                     }
-                    if (index.has("me:bathGas")) {
-                        let bathGas = pTPairArray[bathGasIndex];
-                        pTPair.setBathGas(new conditions_js_1.BathGas(new Map(), bathGas));
+                    let percentExcessReactantConIndex = index.get(conditions_js_1.PTpair.s_percentExcessReactantConc);
+                    if (index.has(conditions_js_1.PTpair.s_percentExcessReactantConc)) {
+                        let percentExcessReactantConc = pTpairArray[percentExcessReactantConIndex];
+                        pTpairAttributes.set(conditions_js_1.PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
                     }
-                    console.log("pTPair=" + pTPair);
-                    let pTPairDiv = (0, html_js_1.createFlexDiv)(level2);
-                    pTsDiv.appendChild(pTPairDiv);
-                    addP(pTPairDiv, pTPair);
-                    addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, pTPairAttributes, pTPairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
-                    addT(pTPairDiv, pTPair);
-                    addPercentExcessReactantConc(pTPairDiv, pTPair);
-                    addExcessReactantConc(pTPairDiv, pTPair);
-                    addPrecision(pTPairDiv, pTPair);
-                    addBathGas(pTPairDiv, pTPair, i);
+                    let precisionIndex = index.get(conditions_js_1.PTpair.s_precision);
+                    if (index.has(conditions_js_1.PTpair.s_precision)) {
+                        let precision = pTpairArray[precisionIndex];
+                        pTpairAttributes.set(conditions_js_1.PTpair.s_precision, precision);
+                        //console.log("precision=" + precision);
+                    }
+                    let bathGasIndex = index.get(conditions_js_1.BathGas.tagName);
+                    if (index.has(conditions_js_1.BathGas.tagName)) {
+                        let bathGas = pTpairArray[bathGasIndex];
+                        pTpair.setBathGas(new conditions_js_1.BathGas(new Map(), bathGas));
+                    }
+                    //console.log("pTpair=" + pTpair);
+                    let pTpairDiv = (0, html_js_1.createFlexDiv)(level2);
+                    pTsDiv.insertBefore(pTpairDiv, addButton);
+                    addP(pTpairDiv, pTpair);
+                    addAnyUnits(mesmer_js_1.Mesmer.pressureUnits, pTpairAttributes, pTpairDiv, conditions_js_1.PTpair.tagName, conditions_js_1.PTpair.tagName, boundary1);
+                    addT(pTpairDiv, pTpair);
+                    let ptIndex = pTs.pTpairs.length - 1;
+                    addExcessReactantConc(pTpairDiv, pTpair, ptIndex);
+                    addPercentExcessReactantConc(pTpairDiv, pTpair);
+                    addPrecision(pTpairDiv, pTpair, ptIndex);
+                    addBathGas(pTpairDiv, pTpair, ptIndex, moleculeKeys);
                     console.log(addButton); // Check the value of addButton
                     console.log(pTsDiv); // Check the value of pTsDiv
-                    pTsDiv.insertBefore(pTPairDiv, addButton);
                     // Add a remove button.
                     let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
                     removeButton.addEventListener('click', () => {
-                        pTsDiv.removeChild(pTPairDiv);
+                        pTsDiv.removeChild(pTpairDiv);
                         pTs.removePTpair(i);
-                        pTPair.removeBathGas();
+                        pTpair.removeBathGas();
                     });
-                    pTPairDiv.appendChild(removeButton);
+                    pTpairDiv.appendChild(removeButton);
                 }
                 pTsDiv.removeChild(div);
             }
         });
     });
+    // Add a remove all button.
+    let removeAllButton = (0, html_js_1.createButton)("Remove All", boundary1);
+    pTsDiv.appendChild(removeAllButton);
+    removeAllButton.addEventListener('click', () => {
+        pTs.removePTpairs();
+        // Remove all elements before the add button.
+        let child = pTsDiv.firstChild;
+        while (child != null && child != addButton) {
+            let nextSibling = child.nextSibling;
+            pTsDiv.removeChild(child);
+            child = nextSibling;
+        }
+    });
     return conditionsDiv;
 }
 /**
- * @param pTPairDiv The container div.
- * @param pTPair The PTpair.
+ * @param pTpairDiv The container div.
+ * @param pTpair The PTpair.
  */
-function addP(pTPairDiv, pTPair) {
+function addP(pTpairDiv, pTpair) {
     let lwi = (0, html_js_1.createLabelWithInput)("number", conditions_js_1.PTpair.tagName + "_" + "P", boundary1, level0, (event) => {
         let target = event.target;
         if ((0, util_js_1.isNumeric)(target.value)) {
-            pTPair.setP(parseFloat(target.value));
+            pTpair.setP(parseFloat(target.value));
             console.log("Set P to " + target.value);
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getP().toString();
+            target.value = pTpair.getP().toString();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, pTPair.getP().toExponential(), "P");
+    }, pTpair.getP().toExponential(), "P");
     let input = lwi.querySelector('input');
-    input.value = pTPair.getP().toString();
+    input.value = pTpair.getP().toString();
     (0, html_js_1.resizeInputElement)(input);
-    pTPairDiv.appendChild(lwi);
+    pTpairDiv.appendChild(lwi);
 }
 /**
- * @param pTPairDiv The container div.
- * @param pTPair The PTpair.
+ * @param pTpairDiv The container div.
+ * @param pTpair The PTpair.
  */
-function addT(pTPairDiv, pTPair) {
+function addT(pTpairDiv, pTpair) {
     let lwi = (0, html_js_1.createLabelWithInput)("number", conditions_js_1.PTpair.tagName + "_" + "T", boundary1, level0, (event) => {
         let target = event.target;
         if ((0, util_js_1.isNumeric)(target.value)) {
-            pTPair.setT(parseFloat(target.value));
+            pTpair.setT(parseFloat(target.value));
             console.log("Set T to " + target.value);
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = pTPair.getT().toString();
+            target.value = pTpair.getT().toString();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, pTPair.getT().toExponential(), "T");
+    }, pTpair.getT().toExponential(), "T");
     let input = lwi.querySelector('input');
-    input.value = pTPair.getT().toString();
+    input.value = pTpair.getT().toString();
     (0, html_js_1.resizeInputElement)(input);
-    pTPairDiv.appendChild(lwi);
+    pTpairDiv.appendChild(lwi);
 }
 /**
- * @param pTPairDiv The PTpair div.
- * @param pTPair The PTpair.
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
  */
-function addPercentExcessReactantConc(pTPairDiv, pTPair) {
+function addPercentExcessReactantConc(pTpairDiv, pTpair) {
     let div = (0, html_js_1.createDiv)(boundary1);
-    pTPairDiv.append(div);
-    let attribute = "percentExcessReactantConc";
+    pTpairDiv.append(div);
+    let attribute = conditions_js_1.PTpair.s_percentExcessReactantConc;
     let buttonTextContentSelected = attribute + selected;
     let buttonTextContentDeselected = attribute + deselected;
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    button.classList.toggle('optionOn');
-    let id = conditions_js_1.PTpair.tagName + "_" + attribute + "_input";
+    if (pTpair.attributes.get(attribute)?.toLowerCase() == "true") {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+    }
+    else {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         button.classList.toggle('optionOn');
         button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
-            pTPair.attributes.set(attribute, "true");
+            pTpair.attributes.set(attribute, "true");
         }
         else {
             button.textContent = buttonTextContentDeselected;
-            pTPair.attributes.delete(attribute);
+            pTpair.attributes.delete(attribute);
         }
     });
 }
 /**
- * @param pTPairDiv The PTpair div.
- * @param pTPair The PTpair.
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
  */
-function addExcessReactantConc(pTPairDiv, pTPair) {
+function addExcessReactantConc(pTpairDiv, pTpair, i) {
     let div = (0, html_js_1.createDiv)(boundary1);
-    pTPairDiv.append(div);
-    let attribute = "excessReactantConc";
+    pTpairDiv.append(div);
+    let attribute = conditions_js_1.PTpair.s_excessReactantConc;
     let buttonTextContentSelected = attribute + selected;
     let buttonTextContentDeselected = attribute + deselected;
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    button.classList.toggle('optionOn');
-    let id = conditions_js_1.PTpair.tagName + "_" + attribute + "_input";
+    let id = conditions_js_1.PTpair.tagName + "_" + attribute + "_input" + "_" + i;
+    if (pTpair.attributes.has(attribute)) {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        let input = getExcessReactantConcInputElement(pTpair, id);
+        div.insertBefore(input, button.nextSibling);
+        //console.log("Added input for " + attribute);
+    }
+    else {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         button.classList.toggle('optionOn');
         button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
-            let input = (0, html_js_1.createInput)("number", id, boundary1);
-            input.value = NaN.toString();
-            input.addEventListener('change', (event) => {
-                let target = event.target;
-                pTPair.setExcessReactantConc(target.value);
-                console.log("Set excessReactantConc to " + target.value);
-                (0, html_js_1.resizeInputElement)(target);
-            });
-            (0, html_js_1.resizeInputElement)(input);
+            let input = getExcessReactantConcInputElement(pTpair, id);
             div.insertBefore(input, button.nextSibling);
         }
         else {
             button.textContent = buttonTextContentDeselected;
             // Remove the input element.
-            document.getElementById(id)?.remove();
+            (0, html_js_1.remove)(id);
         }
     });
 }
 /**
- * @param pTPairDiv The PTpair div.
- * @param pTPair The PTpair.
+ * @param pTpair The PTpair.
+ * @param id The id.
+ * @returns An HTMLInputElement.
  */
-function addPrecision(pTPairDiv, pTPair) {
+function getExcessReactantConcInputElement(pTpair, id) {
+    let input = (0, html_js_1.createInput)("number", id, boundary1);
+    let value;
+    if (pTpair.attributes.has(conditions_js_1.PTpair.s_excessReactantConc)) {
+        value = pTpair.attributes.get(conditions_js_1.PTpair.s_excessReactantConc);
+    }
+    else {
+        value = NaN.toString();
+    }
+    console.log(conditions_js_1.PTpair.s_excessReactantConc + "=" + value);
+    input.value = value;
+    input.addEventListener('change', (event) => {
+        let target = event.target;
+        pTpair.setExcessReactantConc(target.value);
+        console.log("Set " + conditions_js_1.PTpair.s_excessReactantConc + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    });
+    (0, html_js_1.resizeInputElement)(input);
+    return input;
+}
+/**
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
+ */
+function addPrecision(pTpairDiv, pTpair, i) {
     let div = (0, html_js_1.createDiv)(boundary1);
-    pTPairDiv.append(div);
-    let tagName = "precision";
-    let buttonTextContentSelected = tagName + selected;
-    let buttonTextContentDeselected = tagName + deselected;
+    pTpairDiv.append(div);
+    let attribute = conditions_js_1.PTpair.s_precision;
+    let buttonTextContentSelected = attribute + selected;
+    let buttonTextContentDeselected = attribute + deselected;
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    button.classList.toggle('optionOn');
-    let id = conditions_js_1.PTpair.tagName + "_" + tagName + "_select";
+    let id = conditions_js_1.PTpair.tagName + "_" + attribute + "_select" + "_" + i;
+    if (pTpair.attributes.has(attribute)) {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        let select = getPrecisionSelectElement(pTpair, id);
+        div.insertBefore(select, button.nextSibling);
+    }
+    else {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         button.classList.toggle('optionOn');
         button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
-            let lws = (0, html_js_1.createLabelWithSelect)("precision", mesmer_js_1.Mesmer.precisionOptions, "precision", mesmer_js_1.Mesmer.precisionOptions[0], id, boundary1, boundary1);
-            let select = lws.querySelector('select');
-            select.addEventListener('change', (event) => {
-                let target = event.target;
-                pTPair.setPrecision(target.value);
-                console.log("Set precision to " + target.value);
-                (0, html_js_1.resizeSelectElement)(target);
-            });
-            (0, html_js_1.resizeSelectElement)(select);
+            let select = getPrecisionSelectElement(pTpair, id);
             div.insertBefore(select, button.nextSibling);
         }
         else {
             button.textContent = buttonTextContentDeselected;
-            // Remove the input element.
-            document.getElementById(id)?.remove();
+            // Remove the select element.
+            (0, html_js_1.remove)(id);
         }
     });
 }
 /**
- * @param pTPairDiv The PTpair div.
- * @param pTPair The PTpair.
- * @param i The index.
+ * @param pTpair The PTpair.
+ * @param id The id.
+ * @returns A select element.
  */
-function addBathGas(pTPairDiv, pTPair, i) {
+function getPrecisionSelectElement(pTpair, id) {
+    let value;
+    if (pTpair.attributes.has(conditions_js_1.PTpair.s_precision)) {
+        value = pTpair.attributes.get(conditions_js_1.PTpair.s_precision);
+    }
+    else {
+        value = mesmer_js_1.Mesmer.precisionOptions[0];
+    }
+    let select = (0, html_js_1.createSelectElement)(mesmer_js_1.Mesmer.precisionOptions, conditions_js_1.PTpair.s_precision, value, id, boundary1);
+    select.addEventListener('change', (event) => {
+        let target = event.target;
+        pTpair.setPrecision(target.value);
+        console.log("Set " + conditions_js_1.PTpair.s_precision + " to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    (0, html_js_1.resizeSelectElement)(select);
+    return select;
+}
+/**
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
+ * @param moleculeKeys The molecule keys.
+ */
+function addBathGas(pTpairDiv, pTpair, i, moleculeKeys) {
     let div = (0, html_js_1.createDiv)(boundary1);
-    pTPairDiv.append(div);
+    pTpairDiv.append(div);
     let tagName = conditions_js_1.BathGas.tagName;
     let buttonTextContentSelected = tagName + selected;
     let buttonTextContentDeselected = tagName + deselected;
@@ -2066,7 +2151,7 @@ function addBathGas(pTPairDiv, pTPair, i) {
     div.appendChild(button);
     button.classList.add('optionOn');
     button.classList.add('optionOff');
-    let bathGas = pTPair.getBathGas();
+    let bathGas = pTpair.getBathGas();
     let id = conditions_js_1.PTpair.tagName + "_" + tagName + "_select" + "_" + i;
     if (bathGas == undefined) {
         button.classList.toggle('optionOn');
@@ -2075,16 +2160,10 @@ function addBathGas(pTPairDiv, pTPair, i) {
     else {
         button.classList.toggle('optionOff');
         button.textContent = buttonTextContentSelected;
-        let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas);
-        select.id = id;
-        select.addEventListener('change', (event) => {
-            let target = event.target;
-            pTPair.setBathGas(new conditions_js_1.BathGas(new Map(), target.value));
-            console.log("Set bathGas to " + target.value);
-            (0, html_js_1.resizeSelectElement)(target);
-        });
-        (0, html_js_1.resizeSelectElement)(select);
-        div.appendChild(select);
+        if (moleculeKeys.has(bathGas.value) == false) {
+            console.warn("moleculeKeys does not contain " + bathGas.value);
+        }
+        div.appendChild(getBathGasSelectElement(pTpair, id, bathGas));
     }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
@@ -2092,25 +2171,32 @@ function addBathGas(pTPairDiv, pTPair, i) {
         button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
-            // Remove the select element.
-            (0, html_js_1.remove)(id);
-            let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas);
-            select.id = id;
-            select.addEventListener('change', (event) => {
-                let target = event.target;
-                pTPair.setBathGas(new conditions_js_1.BathGas(new Map(), target.value));
-                console.log("Set bathGas to " + target.value);
-                (0, html_js_1.resizeSelectElement)(target);
-            });
-            (0, html_js_1.resizeSelectElement)(select);
-            div.appendChild(select);
+            div.appendChild(getBathGasSelectElement(pTpair, id, bathGas));
         }
         else {
             button.textContent = buttonTextContentDeselected;
             // Remove the select element.
-            document.getElementById(id)?.remove();
+            (0, html_js_1.remove)(id);
         }
     });
+}
+/**
+ * @param pTpair The PTpair.
+ * @param id The id.
+ * @param bathGas The bath gas.
+ * @returns A select element.
+ */
+function getBathGasSelectElement(pTpair, id, bathGas) {
+    let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas);
+    select.id = id;
+    select.addEventListener('change', (event) => {
+        let target = event.target;
+        pTpair.setBathGas(new conditions_js_1.BathGas(new Map(), target.value));
+        console.log("Set bathGas to " + target.value);
+        (0, html_js_1.resizeSelectElement)(target);
+    });
+    (0, html_js_1.resizeSelectElement)(select);
+    return select;
 }
 /**
  * @param options The options.
@@ -2133,10 +2219,10 @@ function createSelectElementBathGas(options, bathGas) {
     return select;
 }
 /**
- * @param pTPairDiv The PTpair div.
- * @param pTPair The PTpair.
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
  */
-function addExperimentRateButton(pTPairDiv, pTPair) {
+function addExperimentRateButton(pTpairDiv, pTpair) {
     let button = (0, html_js_1.createButton)(addString + " " + conditions_js_1.ExperimentRate.tagName, boundary1);
     //let addExperimentRateDiv: HTMLDivElement = document.createElement("div");
     //addExperimentRateDiv.appendChild(addExperimentRateButton);
@@ -2145,7 +2231,7 @@ function addExperimentRateButton(pTPairDiv, pTPair) {
         let experimentRateDiv = document.createElement("div");
         experimentRateDiv.style.marginLeft = margin5;
         let experimentRate = new conditions_js_1.ExperimentRate(new Map(), NaN);
-        pTPair.setExperimentRate(experimentRate);
+        pTpair.setExperimentRate(experimentRate);
         // Create a new div element for the input.
         let id = conditions_js_1.PTpair.tagName + "_" + conditions_js_1.ExperimentRate.tagName;
         let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level3, (event) => {
@@ -2154,8 +2240,8 @@ function addExperimentRateButton(pTPairDiv, pTPair) {
             (0, html_js_1.resizeInputElement)(target);
         }, "", conditions_js_1.ExperimentRate.tagName);
         experimentRateDiv.appendChild(inputDiv);
-        pTPairDiv.insertBefore(experimentRateDiv, button);
-        pTPairDiv.removeChild(button);
+        pTpairDiv.insertBefore(experimentRateDiv, button);
+        pTpairDiv.removeChild(button);
     });
 }
 /**

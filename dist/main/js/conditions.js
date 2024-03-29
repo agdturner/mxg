@@ -328,7 +328,7 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @param bathGas The bath gas.
      * @param experimentRate The experiment rate.
      */
-    constructor(attributes, bathGas, experimentRate, excessReactantConc, experimentalEigenvalue) {
+    constructor(attributes, bathGas, experimentRate, experimentalYield, experimentalEigenvalue) {
         super(attributes, PTpair.tagName);
         this.index = new Map();
         if (bathGas != undefined) {
@@ -339,9 +339,9 @@ class PTpair extends xml_js_1.NodeWithNodes {
             this.index.set(ExperimentRate.tagName, this.nodes.size);
             this.addNode(experimentRate);
         }
-        if (excessReactantConc != undefined) {
+        if (experimentalYield != undefined) {
             this.index.set(ExperimentalYield.tagName, this.nodes.size);
-            this.addNode(excessReactantConc);
+            this.addNode(experimentalYield);
         }
         if (experimentalEigenvalue != undefined) {
             this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
@@ -464,6 +464,76 @@ class PTpair extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * @returns The experimental yield.
+     */
+    getExperimentalYield() {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+        else {
+            return undefined;
+        }
+    }
+    /**
+     * @param experimentalYield The experimental yield.
+     */
+    setExperimentalYield(experimentalYield) {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, experimentalYield);
+        }
+        else {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(experimentalYield);
+        }
+    }
+    /**
+     * Remove the experimental yield.
+     */
+    removeExperimentalYield() {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalYield.tagName);
+        }
+    }
+    /**
+     * @returns The experimental eigenvalue.
+     */
+    getExperimentalEigenvalue() {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+        else {
+            return undefined;
+        }
+    }
+    /**
+     * @param experimentalEigenvalue The experimental eigenvalue.
+     */
+    setExperimentalEigenvalue(experimentalEigenvalue) {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, experimentalEigenvalue);
+        }
+        else {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
+        }
+    }
+    /**
+     * Remove the experimental eigenvalue.
+     */
+    removeExperimentalEigenvalue() {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalEigenvalue.tagName);
+        }
+    }
+    /**
      * @returns this.attributes.get("excessReactantConc").
      */
     getExcessReactantConc() {
@@ -544,6 +614,14 @@ class PTs extends xml_js_1.NodeWithNodes {
         return this.nodes.size - 1;
     }
     /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */
+    removePTpair(i) {
+        this.nodes.delete(i);
+        this.pTpairs.splice(i, 1);
+    }
+    /**
      * Add a PT.
      * @param pTPair The PT to add.
      */
@@ -555,12 +633,11 @@ class PTs extends xml_js_1.NodeWithNodes {
         });
     }
     /**
-     * Remove the PT at the given index.
-     * @param i The index.
+     * Remove all PT pairs.
      */
-    removePTpair(i) {
-        this.nodes.delete(i);
-        this.pTpairs.splice(i, 1);
+    removePTpairs() {
+        this.nodes.clear();
+        this.pTpairs = [];
     }
 }
 exports.PTs = PTs;
