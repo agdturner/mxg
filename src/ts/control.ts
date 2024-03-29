@@ -746,11 +746,6 @@ export class Precision extends StringNode {
     static readonly tagName: string = "me:precision";
 
     /**
-     * The options.
-     */
-    static readonly options: string[] = ["d", "dd", "qd", "double", "double-double", "quad-double"];
-
-    /**
      * @param attributes The attributes.
      * @param value The value.
      */
@@ -1691,7 +1686,7 @@ export class SensitivityVarRedMethod extends StringNode {
      * The options.
      */
     static readonly options: string[] = ["AdditiveControl", "RatioControl"];
-    
+
     /**
      * @param attributes The attributes.
      * @param value The value.

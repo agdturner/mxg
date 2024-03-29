@@ -526,31 +526,29 @@ export class PTpair extends NodeWithNodes {
      * @returns this.attributes.get("excessReactantConc").
      */
     getExcessReactantConc(): string | undefined {
-            return this.attributes.get(PTpair.s_excessReactantConc);
+        return this.attributes.get(PTpair.s_excessReactantConc);
     }
 
     /**
      * this.attributes.set("excessReactantConc", excessReactantConc).
      */
     setExcessReactantConc(excessReactantConc: string) {
-            this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
+        this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
     }
 
     /**
      * @returns this.attributes.get("percentExcessReactantConc").
      */
     getPercentExcessReactantConc(): string | undefined {
-            return this.attributes.get(PTpair.s_percentExcessReactantConc);
+        return this.attributes.get(PTpair.s_percentExcessReactantConc);
     }
 
     /**
      * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
      */
     setPercentExcessReactantConc(percentExcessReactantConc: string) {
-            this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
+        this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
     }
-
-
 
 }
 

@@ -658,10 +658,6 @@ class Precision extends xml_1.StringNode {
     */
     static tagName = "me:precision";
     /**
-     * The options.
-     */
-    static options = ["d", "dd", "qd", "double", "double-double", "quad-double"];
-    /**
      * @param attributes The attributes.
      * @param value The value.
      */

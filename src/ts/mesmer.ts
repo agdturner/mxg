@@ -192,9 +192,6 @@ export class Mesmer extends NodeWithNodes {
      */
     static readonly frequencyUnits: string[] = ["cm-1", "GHz"]
 
-    
-    
-
     /**
      * The header of the XML file.
      */
