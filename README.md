@@ -2,15 +2,11 @@
 
 ## Introduction
 
-MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development began in January 2024. A first phase of development is being funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) and is ongoing until the end of April 2024. The aim is to have a community supported release and development cadence from then on...
+MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) began in January 2024 and is ongoing until the end of April 2024. The aim is to release a community supported version at the end of April.
 
-Various alpha versions of MXG can be used online. MXG can also be installed onto devices as Progressive Web Application (PWA). The following online versions are served from GitHub Pages from where the respective PWA can be installed:
+MXG can be used online and installed onto devices as a Progressive Web Application (PWA). The latest unstable release and alpha version are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
- - [Version 0.5](https://agdturner.github.io/mxg-pwa/dist/0.5)
- - [Version 0.4](https://agdturner.github.io/mxg-pwa/dist/0.4)
- - [Version 0.3](https://agdturner.github.io/mxg-pwa/dist/0.3)
- - [Version 0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
- - [Version 0.1](https://agdturner.github.io/mxg-pwa/dist/0.1)
+ - [Version 0.9](https://agdturner.github.io/mxg-pwa/dist/0.9)
 
 For details on use please see the [MXG User Guide Section](#User-Guide) 
 
