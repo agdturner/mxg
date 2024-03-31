@@ -1762,7 +1762,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
     // Add collapsible div.
     conditionsDiv.appendChild(getCollapsibleDiv({
         content: bathGasesDiv,
-        buttonLabel: BathGas.name,
+        buttonLabel: BathGas.tagName,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,
@@ -1903,7 +1903,7 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
     // Add collapsible div.
     conditionsDiv.appendChild(getCollapsibleDiv({
         content: pTsDiv,
-        buttonLabel: PTs.name,
+        buttonLabel: PTs.tagName,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,

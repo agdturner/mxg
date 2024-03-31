@@ -2097,7 +2097,7 @@ window.set = setNumberNode;
     // Add collapsible div.
     conditionsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
         content: bathGasesDiv,
-        buttonLabel: (0, _conditionsJs.BathGas).name,
+        buttonLabel: (0, _conditionsJs.BathGas).tagName,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,
@@ -2220,7 +2220,7 @@ window.set = setNumberNode;
     // Add collapsible div.
     conditionsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
         content: pTsDiv,
-        buttonLabel: (0, _conditionsJs.PTs).name,
+        buttonLabel: (0, _conditionsJs.PTs).tagName,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,
