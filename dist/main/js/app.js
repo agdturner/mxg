@@ -1672,13 +1672,13 @@ function processConditions(xml) {
     let addBathGasButton = (0, html_js_1.createButton)(addString, level2);
     bathGasesDiv.appendChild(addBathGasButton);
     addBathGasButton.addEventListener('click', () => {
-        let bathGas = new conditions_js_1.BathGas(new Map(), "");
+        let bathGas = new conditions_js_1.BathGas(new Map(), selectAnotherOption);
         conditions.addBathGas(bathGas);
         let containerDiv = (0, html_js_1.createFlexDiv)(level2);
         let bathGasLabel = (0, html_js_1.createLabel)(conditions_js_1.BathGas.tagName, boundary1);
         containerDiv.appendChild(bathGasLabel);
         // Add HTMLSelectInput for the BathGas.
-        containerDiv.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas));
+        containerDiv.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
         // Add a remove button.
         let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
         removeButton.addEventListener('click', () => {
@@ -1700,7 +1700,7 @@ function processConditions(xml) {
             let div = (0, html_js_1.createFlexDiv)(level2);
             let bathGasLabel = (0, html_js_1.createLabel)(conditions_js_1.BathGas.tagName, boundary1);
             div.appendChild(bathGasLabel);
-            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas));
+            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
             // Add a remove button.
             let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
             removeButton.addEventListener('click', () => {
@@ -1752,22 +1752,38 @@ function processConditions(xml) {
                 }
                 addBathGas(pTpairDiv, pTpair, i, moleculeKeys);
                 // Add any optional ExperimentRate
-                let xml_experimentRates = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentRate.tagName);
+                let xml_experimentRates = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentalRate.tagName);
                 if (xml_experimentRates.length > 0) {
                     if (xml_experimentRates.length > 1) {
                         console.warn("xml_experimentRates.length=" + xml_experimentRates.length);
                     }
                     let valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_experimentRates[0]));
-                    let experimentRate = new conditions_js_1.ExperimentRate((0, xml_js_1.getAttributes)(xml_experimentRates[0]), parseFloat(valueString));
-                    pTpair.setExperimentRate(experimentRate);
-                    // Create a new div for the ExperimentRate.
-                    let id = conditions_js_1.PTpair.tagName + "_" + conditions_js_1.ExperimentRate.tagName;
-                    let lwi = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level0, (event) => {
-                        let target = event.target;
-                        setNumberNode(experimentRate, target);
-                    }, experimentRate.value.toExponential(), conditions_js_1.ExperimentRate.tagName);
-                    pTpairDiv.appendChild(lwi);
+                    let experimentRate = new conditions_js_1.ExperimentalRate((0, xml_js_1.getAttributes)(xml_experimentRates[0]), parseFloat(valueString));
+                    pTpair.setExperimentalRate(experimentRate);
                 }
+                addExperimentalRate(pTpairDiv, pTpair, i);
+                // Add any optional ExperimentalYield
+                let xml_experimentalYields = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentalYield.tagName);
+                if (xml_experimentalYields.length > 0) {
+                    if (xml_experimentalYields.length > 1) {
+                        console.warn("xml_experimentalYields.length=" + xml_experimentalYields.length);
+                    }
+                    let valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_experimentalYields[0]));
+                    let experimentalYield = new conditions_js_1.ExperimentalYield((0, xml_js_1.getAttributes)(xml_experimentalYields[0]), parseFloat(valueString));
+                    pTpair.setExperimentalYield(experimentalYield);
+                }
+                addExperimentalYield(pTpairDiv, pTpair, i);
+                // Add any optional ExperimentalEigenvalue
+                let xml_experimentalEigenvalues = xml_PTPairs[i].getElementsByTagName(conditions_js_1.ExperimentalEigenvalue.tagName);
+                if (xml_experimentalEigenvalues.length > 0) {
+                    if (xml_experimentalEigenvalues.length > 1) {
+                        console.warn("xml_experimentalEigenvalues.length=" + xml_experimentalEigenvalues.length);
+                    }
+                    let valueString = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_experimentalEigenvalues[0]));
+                    let experimentalEigenvalue = new conditions_js_1.ExperimentalEigenvalue((0, xml_js_1.getAttributes)(xml_experimentalEigenvalues[0]), parseFloat(valueString));
+                    pTpair.setExperimentalEigenvalue(experimentalEigenvalue);
+                }
+                addExperimentalEigenvalue(pTpairDiv, pTpair, i);
                 // Add a remove button.
                 let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
                 removeButton.addEventListener('click', () => {
@@ -1812,7 +1828,9 @@ function processConditions(xml) {
         addPercentExcessReactantConc(pTpairDiv, pTpair);
         addPrecision(pTpairDiv, pTpair, pTpairIndex);
         addBathGas(pTpairDiv, pTpair, pTpairIndex, moleculeKeys);
-        addExperimentRateButton(pTpairDiv, pTpair);
+        addExperimentalRate(pTpairDiv, pTpair, pTpairIndex);
+        addExperimentalYield(pTpairDiv, pTpair, pTpairIndex);
+        addExperimentalEigenvalue(pTpairDiv, pTpair, pTpairIndex);
         // Add a remove button.
         let removeButton = (0, html_js_1.createButton)(removeString, boundary1);
         removeButton.addEventListener('click', () => {
@@ -1860,26 +1878,81 @@ function processConditions(xml) {
                     let t = parseFloat(pTpairArray[tIndex]);
                     pTpair.setP(p);
                     pTpair.setT(t);
-                    let excessReactantConIndex = index.get(conditions_js_1.PTpair.s_excessReactantConc);
                     if (index.has(conditions_js_1.PTpair.s_excessReactantConc)) {
+                        let excessReactantConIndex = index.get(conditions_js_1.PTpair.s_excessReactantConc);
                         let excessReactantConc = pTpairArray[excessReactantConIndex];
                         pTpairAttributes.set(conditions_js_1.PTpair.s_excessReactantConc, excessReactantConc);
                     }
-                    let percentExcessReactantConIndex = index.get(conditions_js_1.PTpair.s_percentExcessReactantConc);
                     if (index.has(conditions_js_1.PTpair.s_percentExcessReactantConc)) {
+                        let percentExcessReactantConIndex = index.get(conditions_js_1.PTpair.s_percentExcessReactantConc);
                         let percentExcessReactantConc = pTpairArray[percentExcessReactantConIndex];
                         pTpairAttributes.set(conditions_js_1.PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
                     }
-                    let precisionIndex = index.get(conditions_js_1.PTpair.s_precision);
                     if (index.has(conditions_js_1.PTpair.s_precision)) {
+                        let precisionIndex = index.get(conditions_js_1.PTpair.s_precision);
                         let precision = pTpairArray[precisionIndex];
                         pTpairAttributes.set(conditions_js_1.PTpair.s_precision, precision);
                         //console.log("precision=" + precision);
                     }
-                    let bathGasIndex = index.get(conditions_js_1.BathGas.tagName);
                     if (index.has(conditions_js_1.BathGas.tagName)) {
+                        let bathGasIndex = index.get(conditions_js_1.BathGas.tagName);
                         let bathGas = pTpairArray[bathGasIndex];
                         pTpair.setBathGas(new conditions_js_1.BathGas(new Map(), bathGas));
+                    }
+                    if (index.has(conditions_js_1.ExperimentalRate.tagName)) {
+                        let experimentalRateIndex = index.get(conditions_js_1.ExperimentalRate.tagName);
+                        let experimentalRate = pTpairArray[experimentalRateIndex];
+                        pTpairAttributes.set(conditions_js_1.ExperimentalRate.tagName, experimentalRate);
+                        pTpair.setExperimentalRate(new conditions_js_1.ExperimentalRate(new Map(), parseFloat(experimentalRate)));
+                        // Set the attributes of the experimentalRate.
+                        // ref1.
+                        let experimentalRateRef1Index = index.get(conditions_js_1.ExperimentalRate.tagName + "_" + conditions_js_1.ExperimentalRate.s_ref1);
+                        let experimentalRateRef1 = pTpairArray[experimentalRateRef1Index];
+                        pTpair.getExperimentalRate()?.setRef1(experimentalRateRef1);
+                        // ref2.
+                        let experimentalRateRef2Index = index.get(conditions_js_1.ExperimentalRate.tagName + "_" + conditions_js_1.ExperimentalRate.s_ref2);
+                        let experimentalRateRef2 = pTpairArray[experimentalRateRef2Index];
+                        pTpair.getExperimentalRate()?.setRef2(experimentalRateRef2);
+                        // refReaction.
+                        let experimentalRateRefReactionIndex = index.get(conditions_js_1.ExperimentalRate.tagName + "_" + conditions_js_1.ExperimentalRate.s_refReaction);
+                        let experimentalRateRefReaction = pTpairArray[experimentalRateRefReactionIndex];
+                        pTpair.getExperimentalRate()?.setRefReaction(experimentalRateRefReaction);
+                        // error.
+                        let experimentalRateErrorIndex = index.get(conditions_js_1.ExperimentalRate.tagName + "_" + conditions_js_1.ExperimentalRate.s_error);
+                        let experimentalRateError = pTpairArray[experimentalRateErrorIndex];
+                        pTpair.getExperimentalRate()?.setError(parseFloat(experimentalRateError));
+                    }
+                    if (index.has(conditions_js_1.ExperimentalYield.tagName)) {
+                        let experimentalYieldIndex = index.get(conditions_js_1.ExperimentalYield.tagName);
+                        let experimentalYield = pTpairArray[experimentalYieldIndex];
+                        pTpair.setExperimentalYield(new conditions_js_1.ExperimentalYield(new Map(), parseFloat(experimentalYield)));
+                        // Set the attributes of the experimentalYield.
+                        // ref.
+                        let experimentalYieldRefIndex = index.get(conditions_js_1.ExperimentalYield.tagName + "_" + conditions_js_1.ExperimentalYield.s_ref);
+                        let experimentalYieldRef = pTpairArray[experimentalYieldRefIndex];
+                        pTpair.getExperimentalYield()?.setRef(experimentalYieldRef);
+                        // yieldTime.
+                        let experimentalYieldYieldTimeIndex = index.get(conditions_js_1.ExperimentalYield.tagName + "_" + conditions_js_1.ExperimentalYield.s_yieldTime);
+                        let experimentalYieldYieldTime = pTpairArray[experimentalYieldYieldTimeIndex];
+                        pTpair.getExperimentalYield()?.setYieldTime(parseFloat(experimentalYieldYieldTime));
+                        // error.
+                        let experimentalYieldErrorIndex = index.get(conditions_js_1.ExperimentalYield.tagName + "_" + conditions_js_1.ExperimentalYield.s_error);
+                        let experimentalYieldError = pTpairArray[experimentalYieldErrorIndex];
+                        pTpair.getExperimentalYield()?.setError(parseFloat(experimentalYieldError));
+                    }
+                    if (index.has(conditions_js_1.ExperimentalEigenvalue.tagName)) {
+                        let experimentalEigenvalueIndex = index.get(conditions_js_1.ExperimentalEigenvalue.tagName);
+                        let experimentalEigenvalue = pTpairArray[experimentalEigenvalueIndex];
+                        pTpair.setExperimentalEigenvalue(new conditions_js_1.ExperimentalEigenvalue(new Map(), parseFloat(experimentalEigenvalue)));
+                        // Set the attributes of the experimentalEigenvalue.
+                        // EigenvalueID.
+                        let experimentalEigenvalueEigenvalueIDIndex = index.get(conditions_js_1.ExperimentalEigenvalue.tagName + "_" + conditions_js_1.ExperimentalEigenvalue.s_EigenvalueID);
+                        let experimentalEigenvalueEigenvalueID = pTpairArray[experimentalEigenvalueEigenvalueIDIndex];
+                        pTpair.getExperimentalEigenvalue()?.setEigenvalueID(experimentalEigenvalueEigenvalueID);
+                        // error.
+                        let experimentalEigenvalueErrorIndex = index.get(conditions_js_1.ExperimentalEigenvalue.tagName + "_" + conditions_js_1.ExperimentalEigenvalue.s_error);
+                        let experimentalEigenvalueError = pTpairArray[experimentalEigenvalueErrorIndex];
+                        pTpair.getExperimentalEigenvalue()?.setError(parseFloat(experimentalEigenvalueError));
                     }
                     //console.log("pTpair=" + pTpair);
                     let pTpairDiv = (0, html_js_1.createFlexDiv)(level2);
@@ -1892,6 +1965,9 @@ function processConditions(xml) {
                     addPercentExcessReactantConc(pTpairDiv, pTpair);
                     addPrecision(pTpairDiv, pTpair, ptIndex);
                     addBathGas(pTpairDiv, pTpair, ptIndex, moleculeKeys);
+                    addExperimentalRate(pTpairDiv, pTpair, ptIndex);
+                    addExperimentalYield(pTpairDiv, pTpair, ptIndex);
+                    addExperimentalEigenvalue(pTpairDiv, pTpair, ptIndex);
                     console.log(addButton); // Check the value of addButton
                     console.log(pTsDiv); // Check the value of pTsDiv
                     // Add a remove button.
@@ -2163,7 +2239,7 @@ function addBathGas(pTpairDiv, pTpair, i, moleculeKeys) {
         if (moleculeKeys.has(bathGas.value) == false) {
             console.warn("moleculeKeys does not contain " + bathGas.value);
         }
-        div.appendChild(getBathGasSelectElement(pTpair, id, bathGas));
+        div.appendChild(getBathGasSelectElement(pTpair, id, bathGas, true));
     }
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
@@ -2171,7 +2247,7 @@ function addBathGas(pTpairDiv, pTpair, i, moleculeKeys) {
         button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
-            div.appendChild(getBathGasSelectElement(pTpair, id, bathGas));
+            div.appendChild(getBathGasSelectElement(pTpair, id, bathGas, true));
         }
         else {
             button.textContent = buttonTextContentDeselected;
@@ -2186,8 +2262,8 @@ function addBathGas(pTpairDiv, pTpair, i, moleculeKeys) {
  * @param bathGas The bath gas.
  * @returns A select element.
  */
-function getBathGasSelectElement(pTpair, id, bathGas) {
-    let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas);
+function getBathGasSelectElement(pTpair, id, bathGas, first) {
+    let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, first);
     select.id = id;
     select.addEventListener('change', (event) => {
         let target = event.target;
@@ -2202,12 +2278,27 @@ function getBathGasSelectElement(pTpair, id, bathGas) {
  * @param options The options.
  * @param bathGas The bath gas.
  */
-function createSelectElementBathGas(options, bathGas) {
-    if (bathGas == undefined) {
-        bathGas = new conditions_js_1.BathGas(new Map(), "");
+function createSelectElementBathGas(options, bathGas, first) {
+    let value;
+    if (first) {
+        options.push(selectAnotherOption);
     }
-    let value = bathGas == undefined ? selectAnotherOption : bathGas.value;
+    else {
+        // remove selectAnotherOption if it is present.
+        let index = options.indexOf(selectAnotherOption);
+        if (index > -1) {
+            options.splice(index, 1);
+        }
+    }
+    if (bathGas == undefined) {
+        bathGas = new conditions_js_1.BathGas(new Map(), selectAnotherOption);
+        value = selectAnotherOption;
+    }
+    else {
+        value = bathGas.value;
+    }
     let select = (0, html_js_1.createSelectElement)(options, conditions_js_1.BathGas.tagName, value, conditions_js_1.PTs.tagName + "_" + conditions_js_1.BathGas.tagName, boundary1);
+    selectAnotherOptionEventListener(options, select);
     // Add event listener to selectElement.
     select.addEventListener('change', (event) => {
         let target = event.target;
@@ -2215,34 +2306,281 @@ function createSelectElementBathGas(options, bathGas) {
         console.log("Added " + target.value + " as a " + conditions_js_1.BathGas.tagName);
         (0, html_js_1.resizeSelectElement)(target);
     });
+    select.value = value;
     (0, html_js_1.resizeSelectElement)(select);
     return select;
 }
 /**
  * @param pTpairDiv The PTpair div.
  * @param pTpair The PTpair.
+ * @param i The index.
  */
-function addExperimentRateButton(pTpairDiv, pTpair) {
-    let button = (0, html_js_1.createButton)(addString + " " + conditions_js_1.ExperimentRate.tagName, boundary1);
-    //let addExperimentRateDiv: HTMLDivElement = document.createElement("div");
-    //addExperimentRateDiv.appendChild(addExperimentRateButton);
-    // Add event listener to the addExperimentRateButton.
-    button.addEventListener('click', () => {
-        let experimentRateDiv = document.createElement("div");
-        experimentRateDiv.style.marginLeft = margin5;
-        let experimentRate = new conditions_js_1.ExperimentRate(new Map(), NaN);
-        pTpair.setExperimentRate(experimentRate);
-        // Create a new div element for the input.
-        let id = conditions_js_1.PTpair.tagName + "_" + conditions_js_1.ExperimentRate.tagName;
-        let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level3, (event) => {
-            let target = event.target;
-            setNumberNode(experimentRate, target);
-            (0, html_js_1.resizeInputElement)(target);
-        }, "", conditions_js_1.ExperimentRate.tagName);
-        experimentRateDiv.appendChild(inputDiv);
-        pTpairDiv.insertBefore(experimentRateDiv, button);
-        pTpairDiv.removeChild(button);
+function addExperimentalRate(pTpairDiv, pTpair, i) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    pTpairDiv.append(div);
+    let tagName = conditions_js_1.ExperimentalRate.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    let id = conditions_js_1.PTpair.tagName + "_" + tagName + "_" + i;
+    if (pTpair.getExperimentalRate() == undefined) {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
+    else {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        div.appendChild(addExperimentalRateDetails(pTpair, id));
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        button.classList.toggle('optionOn');
+        button.classList.toggle('optionOff');
+        if (button.textContent === buttonTextContentDeselected) {
+            button.textContent = buttonTextContentSelected;
+            div.appendChild(addExperimentalRateDetails(pTpair, id));
+        }
+        else {
+            button.textContent = buttonTextContentDeselected;
+            // Remove the element.
+            (0, html_js_1.remove)(id);
+        }
     });
+}
+/**
+ * @param pTpair The PTpair.
+ * @param id The id.
+ */
+function addExperimentalRateDetails(pTpair, id) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    div.id = id;
+    let experimentalRate = pTpair.getExperimentalRate();
+    if (experimentalRate == undefined) {
+        experimentalRate = new conditions_js_1.ExperimentalRate(new Map(), NaN);
+        pTpair.setExperimentalRate(experimentalRate);
+    }
+    // value.
+    let rateId = id + "_" + conditions_js_1.ExperimentalRate.tagName;
+    let ratelwi = (0, html_js_1.createLabelWithInput)("number", rateId, boundary1, level0, (event) => {
+        let target = event.target;
+        setNumberNode(experimentalRate, target);
+        console.log("Set " + conditions_js_1.ExperimentalRate.tagName + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalRate.value.toString(), "");
+    div.appendChild(ratelwi);
+    // ref1.
+    let ref1Id = id + conditions_js_1.ExperimentalRate.s_ref1;
+    let ref1lwi = (0, html_js_1.createLabelWithInput)("string", ref1Id, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalRate()?.setRef1(target.value);
+        console.log("Set " + conditions_js_1.ExperimentalRate.s_ref1 + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalRate.getRef1(), conditions_js_1.ExperimentalRate.s_ref1);
+    div.appendChild(ref1lwi);
+    // ref2.
+    let ref2Id = id + conditions_js_1.ExperimentalRate.s_ref2;
+    let ref2lwi = (0, html_js_1.createLabelWithInput)("string", ref2Id, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalRate()?.setRef2(target.value);
+        console.log("Set " + conditions_js_1.ExperimentalRate.s_ref2 + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalRate.getRef2(), conditions_js_1.ExperimentalRate.s_ref2);
+    div.appendChild(ref2lwi);
+    // refReaction.
+    let refReactionId = id + conditions_js_1.ExperimentalRate.s_refReaction;
+    let refReactionlwi = (0, html_js_1.createLabelWithInput)("string", refReactionId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalRate()?.setRefReaction(target.value);
+        console.log("Set " + conditions_js_1.ExperimentalRate.s_refReaction + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalRate.getRefReaction(), conditions_js_1.ExperimentalRate.s_refReaction);
+    div.appendChild(refReactionlwi);
+    // Error.
+    let errorId = id + conditions_js_1.ExperimentalRate.s_error;
+    let errorlwi = (0, html_js_1.createLabelWithInput)("number", errorId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalRate()?.setError(parseFloat(target.value));
+        console.log("Set " + conditions_js_1.ExperimentalRate.s_error + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalRate.getError().toExponential(), conditions_js_1.ExperimentalRate.s_error);
+    div.appendChild(errorlwi);
+    return div;
+}
+/**
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
+ */
+function addExperimentalYield(pTpairDiv, pTpair, i) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    pTpairDiv.append(div);
+    let tagName = conditions_js_1.ExperimentalYield.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    let id = conditions_js_1.PTpair.tagName + "_" + tagName + "_" + i;
+    if (pTpair.getExperimentalYield() == undefined) {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
+    else {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        div.appendChild(addExperimentalYieldDetails(pTpair, id));
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        button.classList.toggle('optionOn');
+        button.classList.toggle('optionOff');
+        if (button.textContent === buttonTextContentDeselected) {
+            button.textContent = buttonTextContentSelected;
+            div.appendChild(addExperimentalYieldDetails(pTpair, id));
+        }
+        else {
+            button.textContent = buttonTextContentDeselected;
+            // Remove the element.
+            (0, html_js_1.remove)(id);
+        }
+    });
+}
+/**
+ * @param pTpair The PTpair.
+ * @param id The id.
+ */
+function addExperimentalYieldDetails(pTpair, id) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    div.id = id;
+    let experimentalYield = pTpair.getExperimentalYield();
+    if (experimentalYield == undefined) {
+        experimentalYield = new conditions_js_1.ExperimentalYield(new Map(), NaN);
+        pTpair.setExperimentalYield(experimentalYield);
+    }
+    // value.
+    let yieldId = id + "_" + conditions_js_1.ExperimentalYield.tagName;
+    let yieldlwi = (0, html_js_1.createLabelWithInput)("number", yieldId, boundary1, level0, (event) => {
+        let target = event.target;
+        setNumberNode(experimentalYield, target);
+        console.log("Set " + conditions_js_1.ExperimentalYield.tagName + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalYield.value.toString(), "");
+    div.appendChild(yieldlwi);
+    // ref.
+    let refId = id + conditions_js_1.ExperimentalYield.s_ref;
+    let reflwi = (0, html_js_1.createLabelWithInput)("string", refId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalYield()?.setRef(target.value);
+        console.log("Set " + conditions_js_1.ExperimentalYield.s_ref + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalYield.getRef(), conditions_js_1.ExperimentalYield.s_ref);
+    div.appendChild(reflwi);
+    // yieldTime.
+    let yieldTimeId = id + conditions_js_1.ExperimentalYield.s_yieldTime;
+    let yieldTimelwi = (0, html_js_1.createLabelWithInput)("number", yieldTimeId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalYield()?.setYieldTime(parseFloat(target.value));
+        console.log("Set " + conditions_js_1.ExperimentalYield.s_yieldTime + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalYield.getYieldTime().toString(), conditions_js_1.ExperimentalYield.s_yieldTime);
+    div.appendChild(yieldTimelwi);
+    // Error.
+    let errorId = id + conditions_js_1.ExperimentalYield.s_error;
+    let errorlwi = (0, html_js_1.createLabelWithInput)("number", errorId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalYield()?.setError(parseFloat(target.value));
+        console.log("Set " + conditions_js_1.ExperimentalYield.s_error + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalYield.getError().toExponential(), conditions_js_1.ExperimentalYield.s_error);
+    div.appendChild(errorlwi);
+    return div;
+}
+/**
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
+ * @param moleculeKeys The molecule keys.
+ */
+function addExperimentalEigenvalue(pTpairDiv, pTpair, i) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    pTpairDiv.append(div);
+    let tagName = conditions_js_1.ExperimentalEigenvalue.tagName;
+    let buttonTextContentSelected = tagName + selected;
+    let buttonTextContentDeselected = tagName + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    let id = conditions_js_1.PTpair.tagName + "_" + tagName + "_" + i;
+    if (pTpair.getExperimentalEigenvalue() == undefined) {
+        button.classList.toggle('optionOn');
+        button.textContent = buttonTextContentDeselected;
+    }
+    else {
+        button.classList.toggle('optionOff');
+        button.textContent = buttonTextContentSelected;
+        div.appendChild(addExperimentalEigenvalueDetails(pTpair, id));
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        button.classList.toggle('optionOn');
+        button.classList.toggle('optionOff');
+        if (button.textContent === buttonTextContentDeselected) {
+            button.textContent = buttonTextContentSelected;
+            div.appendChild(addExperimentalEigenvalueDetails(pTpair, id));
+        }
+        else {
+            button.textContent = buttonTextContentDeselected;
+            // Remove the element.
+            (0, html_js_1.remove)(id);
+        }
+    });
+}
+/**
+ * @param pTpairDiv The PTpair div.
+ * @param pTpair The PTpair.
+ * @param i The index.
+ */
+function addExperimentalEigenvalueDetails(pTpair, id) {
+    let div = (0, html_js_1.createDiv)(boundary1);
+    div.id = id;
+    let experimentalEigenvalue = pTpair.getExperimentalEigenvalue();
+    if (experimentalEigenvalue == undefined) {
+        experimentalEigenvalue = new conditions_js_1.ExperimentalEigenvalue(new Map(), NaN);
+        pTpair.setExperimentalEigenvalue(experimentalEigenvalue);
+    }
+    // value.
+    let eigenvalueId = id + "_" + conditions_js_1.ExperimentalEigenvalue.tagName;
+    let eigenvaluelwi = (0, html_js_1.createLabelWithInput)("number", eigenvalueId, boundary1, level0, (event) => {
+        let target = event.target;
+        setNumberNode(experimentalEigenvalue, target);
+        console.log("Set " + conditions_js_1.ExperimentalEigenvalue.tagName + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalEigenvalue.value.toString(), "");
+    div.appendChild(eigenvaluelwi);
+    // EigenvalueID.
+    let eigenvalueIDId = id + "_" + conditions_js_1.ExperimentalEigenvalue.s_EigenvalueID;
+    let eigenvalueIDlwi = (0, html_js_1.createLabelWithInput)("string", eigenvalueIDId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalEigenvalue()?.setEigenvalueID(target.value);
+        console.log("Set " + conditions_js_1.ExperimentalEigenvalue.s_EigenvalueID + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalEigenvalue.getEigenvalueID(), conditions_js_1.ExperimentalEigenvalue.s_EigenvalueID);
+    div.appendChild(eigenvalueIDlwi);
+    // Error.
+    let errorId = id + conditions_js_1.ExperimentalEigenvalue.s_error;
+    let errorlwi = (0, html_js_1.createLabelWithInput)("number", errorId, boundary1, level0, (event) => {
+        let target = event.target;
+        pTpair.getExperimentalEigenvalue()?.setError(parseFloat(target.value));
+        console.log("Set " + conditions_js_1.ExperimentalEigenvalue.s_error + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    }, experimentalEigenvalue.getError().toExponential(), conditions_js_1.ExperimentalEigenvalue.s_error);
+    div.appendChild(errorlwi);
+    return div;
 }
 /**
  * Parses xml to initialise modelParameters.
@@ -4376,6 +4714,21 @@ function processCalcMethodSensitivityAnalysis(divCmDetails, cm) {
     });
 }
 /**
+ * @param options The options.
+ * @param select The select element.
+ */
+function selectAnotherOptionEventListener(options, select) {
+    select.addEventListener('click', (event) => {
+        if (options[options.length - 1] == selectAnotherOption) {
+            options.pop();
+        }
+        let lastIndex = select.options.length - 1;
+        if (select.options[lastIndex].value == selectAnotherOption) {
+            select.remove(lastIndex);
+        }
+    });
+}
+/**
  * @param control The control.
  * @param div The div.
  * @param options The options.
@@ -4387,15 +4740,7 @@ function processCalcMethodSensitivityAnalysis(divCmDetails, cm) {
 function createSelectElementCalcMethod(control, div, options, tagName, value, ids) {
     let select = (0, html_js_1.createSelectElement)(options, tagName, value, ids, boundary1);
     div.appendChild(select);
-    select.addEventListener('click', (event) => {
-        if (options[options.length - 1] == selectAnotherOption) {
-            options.pop();
-        }
-        let lastIndex = select.options.length - 1;
-        if (select.options[lastIndex].value == selectAnotherOption) {
-            select.remove(lastIndex);
-        }
-    });
+    selectAnotherOptionEventListener(options, select);
     select.addEventListener('change', (event) => {
         // Remove any existing div.
         let divCmDetails = document.getElementById(divCmDetailsId);

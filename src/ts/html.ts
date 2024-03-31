@@ -81,7 +81,7 @@ function toggleCollapsible(this: HTMLElement): void {
  * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
- * @param labelText The label text.
+ * @param labelTextContent The label text.
  * @param inputFontsize The font size of the input.
  * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
@@ -89,10 +89,10 @@ function toggleCollapsible(this: HTMLElement): void {
 export function createLabelWithInput(type: string, id: string,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    func: (event: Event) => any, value: string, labelContent: string, inputFontsize?: string): HTMLDivElement {
+    func: (event: Event) => any, value: string, labelTextContent: string, inputFontsize?: string): HTMLDivElement {
     let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
     Object.assign(input.style, boundary);
-    let label: HTMLLabelElement = createLabel(labelContent, boundary);
+    let label: HTMLLabelElement = createLabel(labelTextContent, boundary);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
     let container: HTMLDivElement = createFlexDiv(level);

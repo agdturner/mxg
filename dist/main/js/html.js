@@ -70,15 +70,15 @@ function toggleCollapsible() {
  * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
- * @param labelText The label text.
+ * @param labelTextContent The label text.
  * @param inputFontsize The font size of the input.
  * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-function createLabelWithInput(type, id, boundary, level, func, value, labelContent, inputFontsize) {
+function createLabelWithInput(type, id, boundary, level, func, value, labelTextContent, inputFontsize) {
     let input = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
     Object.assign(input.style, boundary);
-    let label = createLabel(labelContent, boundary);
+    let label = createLabel(labelTextContent, boundary);
     label.htmlFor = id;
     Object.assign(label.style, boundary);
     let container = createFlexDiv(level);
