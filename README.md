@@ -2,15 +2,13 @@
 
 ## Introduction
 
-MESMER XML GUI (MXG) is to provide a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) input/output [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). Development funded and supported by [EPSRC](https://www.ukri.org/councils/epsrc/) and the [University of Leeds](https://www.leeds.ac.uk) began in January 2024 and is ongoing until the end of April 2024. The aim is to release a community supported version at the end of April.
+MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). [EPSRC](https://www.ukri.org/councils/epsrc/) funded development from January 2024 until April 2024. The aim is to release a community supported version at the end of April.
 
 MXG can be used online and installed onto devices as a Progressive Web Application (PWA). The latest unstable release and alpha version are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
  - [Version 0.9](https://agdturner.github.io/mxg-pwa/dist/0.9)
 
-For details on use please see the [MXG User Guide Section](#User-Guide) 
-
-A PWA is a type of application software delivered via the Web, built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It is intended to work on any platform with a standards-compliant browser, including desktop and mobile devices. For more details about what a PWA is please see:
+A PWA is a type of application software delivered via the Web and built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It should work on any platform with a standards-compliant browser. For more details about what a PWA is please see:
 - [Wikipedia Progressive Web App Article](https://en.wikipedia.org/wiki/Progressive_web_app)
 - [https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
@@ -22,11 +20,11 @@ MXG is built, packaged and deployed using [Node](https://nodejs.org/) and [Parce
 
 
 ## Contributing
-- Community contribution will be facilitated in future, but for the time being developing and testing is being done by a closed group...
+- Community contribution will be facilitated in future, but for the time being, development is being done by a closed group...
 
 
 ## User Guide
-The only users currently supported are those involved in alpha testing. A community release with ongoing support from the MESMER community is tentatively scheduled for the end of April 2024. The alpha versions are not recommended for general use, but please feel free to have a play.
+Currently supported are those involved in alpha testing. A community release with ongoing support from the MESMER community is tentatively scheduled for the end of April 2024. The alpha versions are not recommended for general use, but please feel free to have a play.
 
 ### User Testing
 - Please ensure you are testing the right version.
