@@ -34,38 +34,146 @@ export class Atom extends TagWithAttributes {
     static readonly tagName: string = "atom";
 
     /**
-     * The id if specified, or the elementType.
+     * The key for the id attribute.
      */
-    id: string;
+    static readonly s_id: string = "id";
 
     /**
-     * The element type.
+     * The key for the elementType attribute.
      */
-    elementType: string;
+    static readonly s_elementType: string = "elementType";
+
+    /**
+     * The key for the x3 attribute.
+     */
+    static readonly s_x3: string = "x3";
+
+    /**
+     * The key for the y3 attribute.
+     */
+    static readonly s_y3: string = "y3";
+
+    /**
+     * The key for the z3 attribute.
+     */
+    static readonly s_z3: string = "z3";
 
     /**
      * @param attributes The attributes. If there is no "elementType" key an error will be thrown.
-     * If there is no "id" then "this.id" is set to the "elementType".
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, Atom.tagName);
-        let elementType: string | undefined = attributes.get("elementType");
+        let elementType: string | undefined = attributes.get(Atom.s_elementType);
         if (elementType == undefined) {
-            throw new Error('elementType is undefined');
+            throw new Error(Atom.s_elementType + ' is undefined');
         }
-        this.elementType = elementType;
-        let id: string | undefined = attributes.get("id");
-        if (id == undefined) {
-            id = this.elementType;
+    }
+
+    /**
+     * @returns The id.
+     */
+    getId(): string | undefined {
+        return this.attributes.get(Atom.s_id);
+    }
+
+    /**
+     * @param id The id.
+     */
+    setId(id: string): void {
+        this.attributes.set(Atom.s_id, id);
+    }
+
+    /**
+     * @returns The element type.
+     */
+    getElementType(): string {
+        return this.attributes.get(Atom.s_elementType) as string;
+    }
+
+    /**
+     * @param elementType The element type.
+     */
+    setElementType(elementType: string): void {
+        this.attributes.set(Atom.s_elementType, elementType);
+    }
+
+    /**
+     * @returns The x3 attribute value as a number or undefined.
+     */
+    getX3(): number | undefined {
+        let x3: string | undefined = this.attributes.get(Atom.s_x3);
+        if (x3 != undefined) {
+            return parseFloat(x3);
         }
-        this.id = id;
+    }
+
+    /**
+     * @param x3 The x3 attribute value.
+     */
+    setX3(x3: number): void {
+        this.attributes.set(Atom.s_x3, x3.toString());
+    }
+
+    /**
+     * Removes the x3 attribute.
+     */
+    removeX3(): void {
+        this.attributes.delete(Atom.s_x3);
+    }
+
+    /**
+     * @returns The y3 attribute value as a number or undefined.
+     */
+    getY3(): number | undefined {
+        let y3: string | undefined = this.attributes.get(Atom.s_y3);
+        if (y3 != undefined) {
+            return parseFloat(y3);
+        }
+    }
+
+    /**
+     * @param y3 The y3 attribute value.
+     */
+    setY3(y3: number): void {
+        this.attributes.set(Atom.s_y3, y3.toString());
+    }
+
+    /**
+     * Removes the y3 attribute.
+     */
+    removeY3(): void {
+        this.attributes.delete(Atom.s_y3);
+    }
+
+    /**
+     * @returns The z3 attribute value as a number or undefined.
+     */
+    getZ3(): number | undefined {
+        let z3: string | undefined = this.attributes.get(Atom.s_z3);
+        if (z3 != undefined) {
+            return parseFloat(z3);
+        }
+    }
+
+    /**
+     * @param z3 The z3 attribute value.
+     */
+    setZ3(z3: number): void {
+        this.attributes.set("z3", z3.toString());
+    }
+
+    /**
+     * Removes the x3 attribute.
+     */
+    removeZ3(): void {
+        this.attributes.delete("z3");
     }
 }
 
 /**
  * A class for representing an atomArray.
- * There can be no attributes.
- * In the XML, a "atomArray" node is typically a child of a "molecule" parent node and has "atom" node children.
+ * There are no attributes.
+ * In the XML, an "atomArray" node is a child of a "molecule" parent node and has "atom" node children.
  */
 export class AtomArray extends NodeWithNodes {
 
@@ -75,14 +183,88 @@ export class AtomArray extends NodeWithNodes {
     static readonly tagName: string = "atomArray";
 
     /**
+     * The atoms stored in a lookup from id to atom.
+     */
+    atoms: Map<string, Atom>;
+
+    /**
+     * The index. The keys are the atom ids and the values are the index of the atom in the nodes.
+     */
+    index: Map<string, number>;
+
+    /**
      * @param attributes The attributes.
      * @param atoms The atoms.
      */
-    constructor(attributes: Map<string, string>, atoms: Atom[]) {
+    constructor(attributes: Map<string, string>, atoms?: Map<string, Atom>) {
         super(attributes, AtomArray.tagName);
-        atoms.forEach(atom => {
-            this.nodes.set(this.nodes.size, atom);
-        });
+        this.index = new Map();
+        if (atoms == undefined) {
+            this.atoms = new Map();
+        } else {
+            this.atoms = atoms;
+            atoms.forEach((atom, id) => {
+                this.index.set(id, this.nodes.size);
+                this.nodes.set(this.nodes.size, atom);
+            });
+        }
+    }
+
+    /**
+     * @param id The id of the atom to get.
+     * @returns The atom with the given id.
+     */
+    getAtom(id: string): Atom | undefined {
+        return this.atoms.get(id);
+    }
+
+    /**
+     * @param atom The atom to add.
+     * @returns The id of the atom.
+     */
+    addAtom(atom: Atom): string {
+        let id: string | undefined = atom.getId();
+        if (id == undefined) {
+            id = this.getNextAtomID();
+            atom.setId(id);
+        } else {
+            if (this.atoms.has(id)) {
+                let newID: string = this.getNextAtomID();
+                console.log('Atom with id ' + id + ' already exists, adding with id ' + newID);
+                atom.setId(newID);
+                id = newID;
+            }
+        }
+        this.index.set(id, this.nodes.size);
+        this.atoms.set(id, atom);
+        this.nodes.set(this.nodes.size, atom);
+        return id;
+    }
+
+    /**
+     * @returns The atomId.
+     */
+    getNextAtomID(): string {
+        let i: number = 1;
+        let id: string = "a" + i.toString();
+        while (this.atoms.has(id)) {
+            i++;
+            id = "a" + i.toString();
+        }
+        return id;
+    }
+
+    /**
+     * @param id The id of the atom to remove.
+     */
+    removeAtom(id: string): void {
+        let i: number | undefined = this.index.get(id);
+        if (i == undefined) {
+            throw new Error('Atom with id ' + id + ' does not exist!');
+        }
+        this.atoms.delete(id);
+        this.index.delete(id);
+        this.nodes.delete(i);
     }
 }
 
@@ -194,12 +376,16 @@ export class BondArray extends NodeWithNodes {
      * @param attributes The attributes.
      * @param bonds A Map of bonds with keys as ids.
      */
-    constructor(attributes: Map<string, string>, bonds: Bond[]) {
+    constructor(attributes: Map<string, string>, bonds?: Bond[]) {
         super(attributes, BondArray.tagName);
-        this.bonds = bonds;
-        bonds.forEach(bond => {
-            this.nodes.set(this.nodes.size, bond);
-        });
+        if (bonds != undefined) {
+            this.bonds = bonds;
+            bonds.forEach(bond => {
+                this.nodes.set(this.nodes.size, bond);
+            });
+        } else {
+            this.bonds = [];
+        }
     }
 
     /**
@@ -468,7 +654,7 @@ export class VibFreqs extends Property {
 
 /**
  * The rotation constants.
- * The child "array" node should have a "units" attribute (known units=[cm-1]).
+ * The child "array" node should have a "units" attribute with options ["cm-1", "GHz", "amuA^2"]
  */
 export class RotConsts extends Property {
 
@@ -476,6 +662,11 @@ export class RotConsts extends Property {
      * The dictionary reference.
      */
     static readonly dictRef: string = "me:rotConsts";
+
+    /**
+     * The units.
+     */
+    static readonly unitOptions: string[] = ["cm-1", "GHz", "amuA^2"];
 
     /**
      * @param attributes The attributes.
@@ -794,7 +985,7 @@ export class EnergyTransferModel extends NodeWithNodes {
  * "QMRotors", "me:ClassicalRotors", "me:QMRotors"].
  */
 export class DOSCMethod extends TagWithAttributes {
-    
+
     /**
      * The tag name.
      */
@@ -1325,8 +1516,8 @@ export class Molecule extends NodeWithNodes {
 
     /**
      * Create a molecule.
-     * @param attributes The attributes. If there is no "id" key an error will be thrown.
-     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
+     * @param attributes The attributes. This will also include an "id".
+     * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
      * @param atoms The atom or atoms.
      * @param bonds The bonds.
      * @param properties The properties.
@@ -1337,6 +1528,7 @@ export class Molecule extends NodeWithNodes {
      */
     constructor(
         attributes: Map<string, string>,
+        id: string,
         atoms?: Atom | AtomArray,
         bonds?: Bond | BondArray,
         properties?: PropertyList | Property,
@@ -1346,10 +1538,6 @@ export class Molecule extends NodeWithNodes {
         reservoirSize?: ReservoirSize) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        let id: string | undefined = attributes.get(Molecule.s_id);
-        if (id == undefined) {
-            throw new Error(Molecule.s_id + ' is undefined');
-        }
         this.id = id;
         let i: number = 0;
         // Atoms
@@ -1527,20 +1715,27 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
+     * @param atomId The id of the atom.
+     * @returns The atoms for the given atomId.
+     */
+    getAtom(atomId: string): Atom | undefined {
+        return this.getAtoms().getAtom(atomId);
+    }
+
+    /**
      * @returns The atoms of the molecule.
      */
-    getAtoms(): Atom | AtomArray | undefined {
-        let i: number | undefined = this.index.get(Atom.tagName);
-        if (i == undefined) {
-            i = this.index.get(AtomArray.tagName);
-            if (i == undefined) {
-                return undefined;
-            } else {
-                return this.nodes.get(i) as AtomArray;
-            }
-        } else {
-            return this.nodes.get(i) as Atom;
-        }
+    getAtoms(): AtomArray {
+        let i: number = this.index.get(AtomArray.tagName) as number;
+        return this.nodes.get(i) as AtomArray;
+    }
+
+    /**
+     * @param atoms The atoms.
+     */
+    setAtoms(atoms: AtomArray) {
+        this.index.set(AtomArray.tagName, this.nodes.size);
+            this.nodes.set(this.nodes.size, atoms);
     }
 
     /**
@@ -1550,6 +1745,42 @@ export class Molecule extends NodeWithNodes {
         let i: number | undefined = this.index.get(BondArray.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as BondArray;
+        }
+    }
+
+    /**
+     * @param bonds The bonds.
+     */
+    setBonds(bonds: BondArray) {
+        let i: number | undefined = this.index.get(BondArray.tagName);
+        if (i == undefined) {
+            this.index.set(BondArray.tagName, this.nodes.size);
+            this.addNode(bonds);
+        } else {
+            this.nodes.set(i, bonds);
+        }
+    }
+
+    /**
+     * @param bond The bond to add.
+     */
+    addBond(bond: Bond) {
+        let bonds: BondArray | undefined = this.getBonds();
+        if (bonds == undefined) {
+            bonds = new BondArray(new Map());
+            this.nodes.set(this.nodes.size, bonds);
+            this.index.set(BondArray.tagName, this.nodes.size - 1);
+        }
+        bonds.addNode(bond);
+    }
+
+    /**
+     * @param i The index of the bond to remove.
+     */
+    removeBond(i: number) {
+        let bonds: BondArray | undefined = this.getBonds();
+        if (bonds != undefined) {
+            bonds.removeBond(i);
         }
     }
 

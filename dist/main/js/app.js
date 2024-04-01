@@ -212,38 +212,36 @@ document.addEventListener('DOMContentLoaded', () => {
     p1.style.alignContent = 'center';
     let p2 = document.createElement('p');
     welcomeDiv.appendChild(p2);
-    p2.textContent = 'MXG development is being funded by the UK Engineering and Physical Sciences Research Council (EPSRC).';
+    p2.textContent = 'MXG development was funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January 2024.';
     let p3 = document.createElement('p');
     welcomeDiv.appendChild(p3);
-    p3.textContent = 'There is a menu above containing buttons. Use the Load button to select a MESMER file to load (the file \
+    p3.textContent = 'The menu above contains buttons. The Load button is tyo be used to select a MESMER file to load (the file \
         will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use \
         the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it \
-        will contain no comments, values will be trimmed of white space, and number formats will be in a standard \
+        will contain no comments, values will be trimmed of white space, and some numbers may be output in a standard \
         scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.';
     let p4 = document.createElement('p');
     welcomeDiv.appendChild(p4);
-    p4.textContent = 'MXG is designed to be user-friendly and accessible. Between the Load and Save buttons are buttons to \
+    p4.textContent = 'MXG aims to be user-friendly and accessible. Between the Load and Save buttons are buttons to \
         increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to \
-        support users without normal colour vision.The development is in an alpha release phase, is undergoing testing, and \
-        is not recommended for general use. A community release with ongoing support from MESMER developers is scheduled for \
-        the end of April 2024. MXG is free and open source software based and free and open source software. The main \
-        development GitHub repository is: ';
-    p4.appendChild(mxg_a);
+        support users without normal colour vision.';
     let p5 = document.createElement('p');
-    p5.textContent += 'Please feel free to explore the code and have a play with MXG.';
+    p5.textContent += 'The development is in an alpha release phase and is not recommended for general use. A community release with \
+        ongoing support from MESMER developers is scheduled for the end of April 2024. MXG is free and open source software based on \
+        free and open source software. The main development GitHub repository is:';
+    p5.appendChild(mxg_a);
     welcomeDiv.appendChild(p5);
     let p6 = document.createElement('p');
     welcomeDiv.appendChild(p6);
-    p6.textContent = 'MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software \
-    that works on any platform with a standards-compliant Web browser. PWA installation varies by Web browser/device. \
-    Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer to that \
-    README for further details. Below the menu is a section for instructions on how to use MXG.';
+    p6.textContent = 'MXG can be used online or installed locally as a Progressive Web App (PWA). A PWA is a type of application \
+    software that should work on platforms with a standard-compliant Web browser. PWA installation varies by Web browser/device. \
+    Some details to help with installation of the MXG PWA are in the GitHub Repository README.';
     let p7 = document.createElement('p');
     welcomeDiv.appendChild(p7);
     p7.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer" \
     element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a \
-    child element is missing or there are multiple of the same, an Error is currently thrown. MXG should support files \
-    loaded with multiple "me:contol" sections soon...';
+    child element is missing or there are multiple of the same, an Error is currently thrown. In the future, the loading and creation \
+    of files with multiple "me:conditions" and "me:contol" sections will be supported...';
     document.body.appendChild(welcomeDiv);
     // Create div for instructions.
     let instructionsDiv = (0, html_js_1.createDiv)(boundary1);
@@ -558,6 +556,11 @@ function processMoleculeList(xml) {
         let moleculeDiv = document.createElement("div");
         // Set attributes.
         let attributes = (0, xml_js_1.getAttributes)(xml_molecules[i]);
+        // Get the molecule id.
+        let moleculeId = attributes.get(molecule_js_1.Molecule.s_id);
+        if (moleculeId == undefined) {
+            throw new Error(molecule_js_1.Molecule.s_id + ' is undefined');
+        }
         let moleculeTagNames = new Set();
         let cns = xml_molecules[i].childNodes;
         //console.log("cns.length=" + cns.length);
@@ -577,9 +580,9 @@ function processMoleculeList(xml) {
             }
             //console.log(cn.nodeName);
         }
-        //});
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
+        // Create molecule.
+        let molecule = new molecule_js_1.Molecule(attributes, moleculeId);
+        molecules.set(moleculeId, molecule);
         // Init atomsNode.
         let atomsNode;
         // There can be an individual atom not in an atom array, or an attom array.
@@ -587,28 +590,127 @@ function processMoleculeList(xml) {
         if (xml_atomArrays.length > 1) {
             throw new Error("Expecting 1 or 0 " + molecule_js_1.AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
         }
+        // Create a new collapsible div for the AtomArray.
+        let atomArrayDiv = document.createElement("div");
+        let contentDivId = moleculeId + "_" + molecule_js_1.AtomArray.tagName;
+        let atomArrayCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: atomArrayDiv,
+            buttonLabel: molecule_js_1.AtomArray.tagName,
+            buttonFontSize: fontSize3,
+            boundary: boundary1,
+            level: level2,
+            contentDivId: contentDivId
+        });
+        moleculeDiv.appendChild(atomArrayCollapsibleDiv);
+        let atoms = new Map();
         if (xml_atomArrays.length == 1) {
             let xml_atomArray = xml_atomArrays[0];
             let xml_atoms = xml_atomArray.getElementsByTagName(molecule_js_1.Atom.tagName);
             if (xml_atoms.length < 2) {
                 throw new Error("Expecting 2 or more atoms in " + molecule_js_1.AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
             }
-            let atoms = [];
             for (let j = 0; j < xml_atoms.length; j++) {
-                atoms.push(new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j])));
+                atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray));
+                // Create a new Atom.
+                let atom = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j]));
+                let atomId = atom.getId();
+                atoms.set(atomId, atom);
+                // Add the atom to the atomArrayDiv.
+                let atomDiv = (0, html_js_1.createFlexDiv)(level3);
+                atomArrayDiv.appendChild(atomDiv);
+                let inputId = moleculeId + "_" + atomId;
+                let atomIdlwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_id, boundary1, boundary1, (event) => {
+                    let target = event.target;
+                    atom.setId(target.value);
+                    console.log("The id has changed from " + atomId + " to " + target.value);
+                    (0, html_js_1.resizeInputElement)(target);
+                }, atomId, molecule_js_1.Atom.s_id, fontSize3);
+                atomDiv.appendChild(atomIdlwi);
+                // elementType.
+                let elementType = atom.getElementType();
+                let elementTypelwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_elementType, boundary1, boundary1, (event) => {
+                    let target = event.target;
+                    atom.setElementType(target.value);
+                    console.log("The elementType has changed from " + elementType + " to " + target.value);
+                    (0, html_js_1.resizeInputElement)(target);
+                }, elementType, molecule_js_1.Atom.s_elementType, fontSize3);
+                atomDiv.appendChild(elementTypelwi);
+                // Coordinates.
+                let x3id = inputId + "_" + molecule_js_1.Atom.s_x3;
+                processCoordinate(atom, atomDiv, x3id, molecule_js_1.Atom.s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), molecule_js_1.Atom.s_x3);
+                let y3id = inputId + "_" + molecule_js_1.Atom.s_y3;
+                processCoordinate(atom, atomDiv, y3id, molecule_js_1.Atom.s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), molecule_js_1.Atom.s_y3);
+                let z3id = inputId + "_" + molecule_js_1.Atom.s_z3;
+                processCoordinate(atom, atomDiv, z3id, molecule_js_1.Atom.s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), molecule_js_1.Atom.s_z3);
+                atomsNode.addAtom(atom);
+                // Add a remove atom button.
+                let removeAtomButton = (0, html_js_1.createButton)(removeString, boundary1);
+                atomDiv.appendChild(removeAtomButton);
+                removeAtomButton.style.fontSize = fontSize4;
+                removeAtomButton.addEventListener('click', () => {
+                    atoms.delete(atom.getId());
+                    atomDiv.remove();
+                });
             }
-            atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray), atoms);
             moleculeTagNames.delete(molecule_js_1.AtomArray.tagName);
         }
         else {
             let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
             if (xml_atoms.length == 1) {
                 atomsNode = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0]));
+                molecule.setAtoms(atomsNode);
             }
             else if (xml_atoms.length > 1) {
                 throw new Error("Expecting 1 " + molecule_js_1.Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + molecule_js_1.AtomArray.tagName + "?");
             }
         }
+        // Create an add atom button.
+        let addAtomButton = (0, html_js_1.createButton)(addString, level3);
+        addAtomButton.style.fontSize = fontSize4;
+        addAtomButton.addEventListener('click', () => {
+            let attributes = new Map();
+            attributes.set(molecule_js_1.Atom.s_id, "a" + (atoms.size + 1));
+            attributes.set(molecule_js_1.Atom.s_elementType, "Please specify an " + molecule_js_1.Atom.s_elementType);
+            let atom = new molecule_js_1.Atom(attributes);
+            let atomArray = atomsNode;
+            atomArray.addAtom(atom);
+            let atomDiv = (0, html_js_1.createFlexDiv)(level3);
+            let atomId = atom.getId() || "a" + (atoms.size + 1);
+            //let atomId: string = atom.getId() || "a7";
+            let inputId = moleculeId + "_" + atomId;
+            let atomIdlwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_id, boundary1, boundary1, (event) => {
+                let target = event.target;
+                atom.setId(target.value);
+                console.log("The id has changed to " + target.value);
+                (0, html_js_1.resizeInputElement)(target);
+            }, atomId, molecule_js_1.Atom.s_id, fontSize3);
+            atomDiv.appendChild(atomIdlwi);
+            let elementType = atom.getElementType();
+            let elementTypelwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_elementType, boundary1, boundary1, (event) => {
+                let target = event.target;
+                atom.setElementType(target.value);
+                console.log("The elementType has changed to " + target.value);
+                (0, html_js_1.resizeInputElement)(target);
+            }, elementType, molecule_js_1.Atom.s_elementType, fontSize3);
+            atomDiv.appendChild(elementTypelwi);
+            let x3id = inputId + "_" + molecule_js_1.Atom.s_x3;
+            processCoordinate(atom, atomDiv, x3id, molecule_js_1.Atom.s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), molecule_js_1.Atom.s_x3);
+            let y3id = inputId + "_" + molecule_js_1.Atom.s_y3;
+            processCoordinate(atom, atomDiv, y3id, molecule_js_1.Atom.s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), molecule_js_1.Atom.s_y3);
+            let z3id = inputId + "_" + molecule_js_1.Atom.s_z3;
+            processCoordinate(atom, atomDiv, z3id, molecule_js_1.Atom.s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), molecule_js_1.Atom.s_z3);
+            // Add a remove atom button.
+            let removeAtomButton = (0, html_js_1.createButton)(removeString, boundary1);
+            atomDiv.appendChild(removeAtomButton);
+            removeAtomButton.style.fontSize = fontSize4;
+            removeAtomButton.addEventListener('click', () => {
+                atomArray.removeAtom(atom.getId());
+                atomDiv.remove();
+            });
+            atomArrayDiv.insertBefore(atomDiv, addAtomButton);
+            //atomArrayDiv.appendChild(atomDiv);
+        });
+        atomArrayDiv.appendChild(addAtomButton);
         //console.log("atomsNode=" + atomsNode);
         moleculeTagNames.delete(molecule_js_1.Atom.tagName);
         // Init bondsNode.
@@ -639,9 +741,6 @@ function processMoleculeList(xml) {
             }
         }
         moleculeTagNames.delete(molecule_js_1.Bond.tagName);
-        // Create molecule.
-        let molecule = new molecule_js_1.Molecule(attributes, atomsNode, bondsNode);
-        molecules.set(molecule.id, molecule);
         // Organise PropertyList or individual Property.
         // (There can be an individual property not in a propertyList?)
         // If there is a PropertyList, then create a property list.
@@ -977,6 +1076,126 @@ function processMoleculeList(xml) {
     }
     return moleculeListDiv;
 }
+/**
+ * Process a coordinate.
+ * @param atom The atom.
+ * @param atomDiv The atom div.
+ * @param id The id.
+ * @param coordinate The coordinate (x3 or y3).
+ * @param getter The getter function to call on the atom.
+ * @param setter The setter function to call on the atom.
+ * @param logMessage The message to log when the value changes.
+ */
+function processCoordinate(atom, atomDiv, id, coordinate, getter, setter, logMessage) {
+    let div = (0, html_js_1.createFlexDiv)(boundary1);
+    atomDiv.appendChild(div);
+    let buttonTextContentSelected = logMessage + selected;
+    let buttonTextContentDeselected = logMessage + deselected;
+    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    let value = getter();
+    if (value == undefined) {
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle('optionOn');
+    }
+    else {
+        addCoordinate(div, atom, id, value, setter, logMessage, boundary1);
+        button.textContent = buttonTextContentSelected;
+        button.classList.toggle('optionOff');
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event) => {
+        // Check if the AtomArray already exists
+        if (document.getElementById(id) == null) {
+            addCoordinate(div, atom, id, NaN, setter, logMessage, boundary1);
+            button.textContent = buttonTextContentSelected;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        }
+        else {
+            // Remove any existing div.
+            document.getElementById(id)?.remove();
+            console.log("Removed " + id);
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle('optionOn');
+            button.classList.toggle('optionOff');
+        }
+    });
+}
+/**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param value The value (x3 or y3).
+ * @param setter The setter function to call on the atom.
+ * @param logMessage The message to log when the value changes.
+ * @param boundary The boundary.
+ * @param level The level.
+ */
+function addCoordinate(div, atom, id, value, setter, logMessage, boundary) {
+    let valueString = (value || NaN).toExponential();
+    let input = (0, html_js_1.createInput)("text", id + "_input", boundary);
+    input.addEventListener('change', (event) => {
+        let target = event.target;
+        setter(parseFloat(target.value));
+        console.log(logMessage + " has changed from " + value + " to " + target.value);
+        (0, html_js_1.resizeInputElement)(target);
+    });
+    input.value = valueString;
+    (0, html_js_1.resizeInputElement)(input);
+    input.id = id;
+    div.appendChild(input);
+}
+/**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param x3 The x3 value.
+ * @param boundary The boundary.
+ * @param level The level.
+ */
+/*
+function addX3(div: HTMLDivElement, atom: Atom, id: string, x3: number,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let x3String: string = (x3 || NaN).toExponential();
+    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            atom.setX3(parseFloat(target.value));
+            console.log("The " + Atom.s_x3 + " has changed from " + x3 + " to " + target.value);
+            resizeInputElement(target);
+        }, x3String, Atom.s_x3, fontSize3);
+    lwi.id = id;
+    div.appendChild(lwi);
+}
+*/
+/**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param x3 The x3 value.
+ * @param boundary The boundary.
+ * @param level The level.
+ */
+/*
+function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let y3String: string = (y3 || NaN).toExponential();
+    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            atom.setY3(parseFloat(target.value));
+            console.log("The " + Atom.s_y3 + " has changed from " + y3 + " to " + target.value);
+            resizeInputElement(target);
+        }, y3String, Atom.s_y3, fontSize3);
+    lwi.id = id;
+    div.appendChild(lwi);
+}
+*/
 /**
  * Display the XML.
  * @param {string} xml The XML to display.
@@ -1662,7 +1881,7 @@ function processConditions(xml) {
     // Add collapsible div.
     conditionsDiv.appendChild((0, html_js_1.getCollapsibleDiv)({
         content: bathGasesDiv,
-        buttonLabel: conditions_js_1.BathGas.name,
+        buttonLabel: conditions_js_1.BathGas.tagName,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,
@@ -1698,8 +1917,8 @@ function processConditions(xml) {
             console.log("bathGas" + bathGas.toString());
             conditions.addBathGas(bathGas);
             let div = (0, html_js_1.createFlexDiv)(level2);
-            let bathGasLabel = (0, html_js_1.createLabel)(conditions_js_1.BathGas.tagName, boundary1);
-            div.appendChild(bathGasLabel);
+            //let bathGasLabel: HTMLLabelElement = createLabel(BathGas.tagName, boundary1);
+            //div.appendChild(bathGasLabel);
             div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
             // Add a remove button.
             let removeButton = (0, html_js_1.createButton)(removeString, boundary1);

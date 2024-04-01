@@ -171,7 +171,7 @@ class Mesmer extends xml_js_1.NodeWithNodes {
     /**
      * Frequency units.
      */
-    static frequencyUnits = ["cm-1", "GHz"];
+    static frequencyUnits = ["cm-1", "GHz", "amuA^2"];
     /**
      * The header of the XML file.
      */

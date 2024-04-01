@@ -809,23 +809,23 @@ let popWindow;
     p1.style.alignContent = "center";
     let p2 = document.createElement("p");
     welcomeDiv.appendChild(p2);
-    p2.textContent = "MXG development is being funded by the UK Engineering and Physical Sciences Research Council (EPSRC).";
+    p2.textContent = "MXG development was funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January 2024.";
     let p3 = document.createElement("p");
     welcomeDiv.appendChild(p3);
-    p3.textContent = "There is a menu above containing buttons. Use the Load button to select a MESMER file to load (the file         will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use         the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it         will contain no comments, values will be trimmed of white space, and number formats will be in a standard         scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.";
+    p3.textContent = "The menu above contains buttons. The Load button is tyo be used to select a MESMER file to load (the file         will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use         the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it         will contain no comments, values will be trimmed of white space, and some numbers may be output in a standard         scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.";
     let p4 = document.createElement("p");
     welcomeDiv.appendChild(p4);
-    p4.textContent = "MXG is designed to be user-friendly and accessible. Between the Load and Save buttons are buttons to         increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to         support users without normal colour vision.The development is in an alpha release phase, is undergoing testing, and         is not recommended for general use. A community release with ongoing support from MESMER developers is scheduled for         the end of April 2024. MXG is free and open source software based and free and open source software. The main         development GitHub repository is: ";
-    p4.appendChild(mxg_a);
+    p4.textContent = "MXG aims to be user-friendly and accessible. Between the Load and Save buttons are buttons to         increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to         support users without normal colour vision.";
     let p5 = document.createElement("p");
-    p5.textContent += "Please feel free to explore the code and have a play with MXG.";
+    p5.textContent += "The development is in an alpha release phase and is not recommended for general use. A community release with         ongoing support from MESMER developers is scheduled for the end of April 2024. MXG is free and open source software based on         free and open source software. The main development GitHub repository is:";
+    p5.appendChild(mxg_a);
     welcomeDiv.appendChild(p5);
     let p6 = document.createElement("p");
     welcomeDiv.appendChild(p6);
-    p6.textContent = "MXG can be installed locally as a Progressive Web App (PWA). A PWA is a type of application software     that works on any platform with a standards-compliant Web browser. PWA installation varies by Web browser/device.     Some details to help with installation of the MXG PWA are in the GitHub Repository README. Please refer to that     README for further details. Below the menu is a section for instructions on how to use MXG.";
+    p6.textContent = "MXG can be used online or installed locally as a Progressive Web App (PWA). A PWA is a type of application     software that should work on platforms with a standard-compliant Web browser. PWA installation varies by Web browser/device.     Some details to help with installation of the MXG PWA are in the GitHub Repository README.";
     let p7 = document.createElement("p");
     welcomeDiv.appendChild(p7);
-    p7.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer"     element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a     child element is missing or there are multiple of the same, an Error is currently thrown. MXG should support files     loaded with multiple "me:contol" sections soon...';
+    p7.textContent = 'The MESMER file loaded is expected to contain the following child elements of the parent "me:mesmer"     element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a     child element is missing or there are multiple of the same, an Error is currently thrown. In the future, the loading and creation     of files with multiple "me:conditions" and "me:contol" sections will be supported...';
     document.body.appendChild(welcomeDiv);
     // Create div for instructions.
     let instructionsDiv = (0, _htmlJs.createDiv)(boundary1);
@@ -1116,6 +1116,9 @@ let popWindow;
         let moleculeDiv = document.createElement("div");
         // Set attributes.
         let attributes = (0, _xmlJs.getAttributes)(xml_molecules[i]);
+        // Get the molecule id.
+        let moleculeId = attributes.get((0, _moleculeJs.Molecule).s_id);
+        if (moleculeId == undefined) throw new Error((0, _moleculeJs.Molecule).s_id + " is undefined");
         let moleculeTagNames = new Set();
         let cns = xml_molecules[i].childNodes;
         //console.log("cns.length=" + cns.length);
@@ -1128,27 +1131,128 @@ let popWindow;
             if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
         //console.log(cn.nodeName);
         }
-        //});
-        //console.log("moleculeTagNames:");
-        //moleculeTagNames.forEach(x => console.log(x));
-        // Init atomsNode.
-        let atomsNode;
-        // There can be an individual atom not in an atom array, or an attom array.
+        // Create molecule.
+        let molecule = new (0, _moleculeJs.Molecule)(attributes, moleculeId);
+        molecules.set(moleculeId, molecule);
+        // Init atoms.
+        let atoms;
+        // There can be an individual atom not in an atom array, or an atom array.
         let xml_atomArrays = xml_molecules[i].getElementsByTagName((0, _moleculeJs.AtomArray).tagName);
         if (xml_atomArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.AtomArray).tagName + " but finding " + xml_atomArrays.length + "!");
+        // Create a new collapsible div for the AtomArray.
+        let atomArrayDiv = document.createElement("div");
+        let contentDivId = moleculeId + "_" + (0, _moleculeJs.AtomArray).tagName;
+        let atomArrayCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: atomArrayDiv,
+            buttonLabel: (0, _moleculeJs.AtomArray).tagName,
+            buttonFontSize: fontSize3,
+            boundary: boundary1,
+            level: level2,
+            contentDivId: contentDivId
+        });
+        moleculeDiv.appendChild(atomArrayCollapsibleDiv);
         if (xml_atomArrays.length == 1) {
             let xml_atomArray = xml_atomArrays[0];
             let xml_atoms = xml_atomArray.getElementsByTagName((0, _moleculeJs.Atom).tagName);
             if (xml_atoms.length < 2) throw new Error("Expecting 2 or more atoms in " + (0, _moleculeJs.AtomArray).tagName + ", but finding " + xml_atoms.length + "!");
-            let atoms = [];
-            for(let j = 0; j < xml_atoms.length; j++)atoms.push(new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[j])));
-            atomsNode = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_atomArray), atoms);
+            atoms = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_atomArray));
+            molecule.setAtoms(atoms);
+            for(let j = 0; j < xml_atoms.length; j++){
+                // Create a new Atom.
+                let atom = new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[j]));
+                let atomId = atoms.addAtom(atom);
+                console.log("atomId=" + atomId);
+                // Add the atomDiv to the atomArrayDiv.
+                let atomDiv = (0, _htmlJs.createFlexDiv)(level3);
+                atomArrayDiv.appendChild(atomDiv);
+                let inputId = moleculeId + "_" + atomId;
+                let atomIdlwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_id, boundary1, boundary1, (event)=>{
+                    let target = event.target;
+                    //atom.setId(target.value);
+                    //atoms.set(atomId, atom);
+                    console.log("The id has changed from " + atomId + " to " + target.value);
+                    (0, _htmlJs.resizeInputElement)(target);
+                }, atomId, (0, _moleculeJs.Atom).s_id, fontSize3);
+                atomDiv.appendChild(atomIdlwi);
+                // elementType.
+                let elementType = atom.getElementType();
+                let elementTypelwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_elementType, boundary1, boundary1, (event)=>{
+                    let target = event.target;
+                    atom.setElementType(target.value);
+                    console.log("The elementType has changed from " + elementType + " to " + target.value);
+                    (0, _htmlJs.resizeInputElement)(target);
+                }, elementType, (0, _moleculeJs.Atom).s_elementType, fontSize3);
+                atomDiv.appendChild(elementTypelwi);
+                // Coordinates.
+                let x3id = inputId + "_" + (0, _moleculeJs.Atom).s_x3;
+                processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), (0, _moleculeJs.Atom).s_x3);
+                let y3id = inputId + "_" + (0, _moleculeJs.Atom).s_y3;
+                processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), (0, _moleculeJs.Atom).s_y3);
+                let z3id = inputId + "_" + (0, _moleculeJs.Atom).s_z3;
+                processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), (0, _moleculeJs.Atom).s_z3);
+                //atomsNode.addAtom(atom);
+                // Add a remove atom button.
+                let removeAtomButton = (0, _htmlJs.createButton)(removeString, boundary1);
+                atomDiv.appendChild(removeAtomButton);
+                removeAtomButton.style.fontSize = fontSize4;
+                removeAtomButton.addEventListener("click", ()=>{
+                    atoms.removeAtom(atomId);
+                    atomDiv.remove();
+                });
+            }
             moleculeTagNames.delete((0, _moleculeJs.AtomArray).tagName);
         } else {
             let xml_atoms = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
-            if (xml_atoms.length == 1) atomsNode = new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[0]));
-            else if (xml_atoms.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Atom).tagName + " but finding " + xml_atoms.length + ". Should these be in an " + (0, _moleculeJs.AtomArray).tagName + "?");
+            if (xml_atoms.length == 1) {
+                atoms = new (0, _moleculeJs.AtomArray)(new Map());
+                atoms.addAtom(new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[0])));
+                molecule.setAtoms(atoms);
+            } else if (xml_atoms.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Atom).tagName + " but finding " + xml_atoms.length + ". Should these be in an " + (0, _moleculeJs.AtomArray).tagName + "?");
         }
+        // Create an add atom button.
+        let addAtomButton = (0, _htmlJs.createButton)(addString, level3);
+        addAtomButton.style.fontSize = fontSize4;
+        addAtomButton.addEventListener("click", ()=>{
+            let attributes = new Map();
+            attributes.set((0, _moleculeJs.Atom).s_elementType, "Please specify an " + (0, _moleculeJs.Atom).s_elementType);
+            let atom = new (0, _moleculeJs.Atom)(attributes);
+            let atomId = atoms.addAtom(atom);
+            let atomDiv = (0, _htmlJs.createFlexDiv)(level3);
+            let inputId = moleculeId + "_" + atomId;
+            let atomIdlwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_id, boundary1, boundary1, (event)=>{
+                let target = event.target;
+                atom.setId(target.value);
+                console.log("The id has changed to " + target.value);
+                (0, _htmlJs.resizeInputElement)(target);
+            }, atomId, (0, _moleculeJs.Atom).s_id, fontSize3);
+            atomDiv.appendChild(atomIdlwi);
+            let elementType = atom.getElementType();
+            let elementTypelwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_elementType, boundary1, boundary1, (event)=>{
+                let target = event.target;
+                atom.setElementType(target.value);
+                console.log("The elementType has changed to " + target.value);
+                (0, _htmlJs.resizeInputElement)(target);
+            }, elementType, (0, _moleculeJs.Atom).s_elementType, fontSize3);
+            atomDiv.appendChild(elementTypelwi);
+            let x3id = inputId + "_" + (0, _moleculeJs.Atom).s_x3;
+            processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), (0, _moleculeJs.Atom).s_x3);
+            let y3id = inputId + "_" + (0, _moleculeJs.Atom).s_y3;
+            processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), (0, _moleculeJs.Atom).s_y3);
+            let z3id = inputId + "_" + (0, _moleculeJs.Atom).s_z3;
+            processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), (0, _moleculeJs.Atom).s_z3);
+            // Add a remove atom button.
+            let removeAtomButton = (0, _htmlJs.createButton)(removeString, boundary1);
+            atomDiv.appendChild(removeAtomButton);
+            removeAtomButton.style.fontSize = fontSize4;
+            removeAtomButton.addEventListener("click", ()=>{
+                atoms.removeAtom(atomId);
+                //atomArray.removeAtom(atom.getId());
+                atomDiv.remove();
+            });
+            atomArrayDiv.insertBefore(atomDiv, addAtomButton);
+        //atomArrayDiv.appendChild(atomDiv);
+        });
+        atomArrayDiv.appendChild(addAtomButton);
         //console.log("atomsNode=" + atomsNode);
         moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
         // Init bondsNode.
@@ -1170,9 +1274,6 @@ let popWindow;
             else if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _moleculeJs.BondArray).tagName + "?");
         }
         moleculeTagNames.delete((0, _moleculeJs.Bond).tagName);
-        // Create molecule.
-        let molecule = new (0, _moleculeJs.Molecule)(attributes, atomsNode, bondsNode);
-        molecules.set(molecule.id, molecule);
         // Organise PropertyList or individual Property.
         // (There can be an individual property not in a propertyList?)
         // If there is a PropertyList, then create a property list.
@@ -1473,6 +1574,118 @@ let popWindow;
     return moleculeListDiv;
 }
 /**
+ * Process a coordinate.
+ * @param atom The atom.
+ * @param atomDiv The atom div.
+ * @param id The id.
+ * @param coordinate The coordinate (x3 or y3).
+ * @param getter The getter function to call on the atom.
+ * @param setter The setter function to call on the atom.
+ * @param logMessage The message to log when the value changes.
+ */ function processCoordinate(atom, atomDiv, id, coordinate, getter, setter, logMessage) {
+    let div = (0, _htmlJs.createFlexDiv)(boundary1);
+    atomDiv.appendChild(div);
+    let buttonTextContentSelected = logMessage + selected;
+    let buttonTextContentDeselected = logMessage + deselected;
+    let button = (0, _htmlJs.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    let value = getter();
+    if (value == undefined) {
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle("optionOn");
+    } else {
+        addCoordinate(div, atom, id, value, setter, logMessage, boundary1);
+        button.textContent = buttonTextContentSelected;
+        button.classList.toggle("optionOff");
+    }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the AtomArray already exists
+        if (document.getElementById(id) == null) {
+            addCoordinate(div, atom, id, NaN, setter, logMessage, boundary1);
+            button.textContent = buttonTextContentSelected;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            // Remove any existing div.
+            document.getElementById(id)?.remove();
+            console.log("Removed " + id);
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
+        }
+    });
+}
+/**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param value The value (x3 or y3).
+ * @param setter The setter function to call on the atom.
+ * @param logMessage The message to log when the value changes.
+ * @param boundary The boundary.
+ * @param level The level.
+ */ function addCoordinate(div, atom, id, value, setter, logMessage, boundary) {
+    let valueString = (value || NaN).toExponential();
+    let input = (0, _htmlJs.createInput)("text", id + "_input", boundary);
+    input.addEventListener("change", (event)=>{
+        let target = event.target;
+        setter(parseFloat(target.value));
+        console.log(logMessage + " has changed from " + value + " to " + target.value);
+        (0, _htmlJs.resizeInputElement)(target);
+    });
+    input.value = valueString;
+    (0, _htmlJs.resizeInputElement)(input);
+    input.id = id;
+    div.appendChild(input);
+}
+/**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param x3 The x3 value.
+ * @param boundary The boundary.
+ * @param level The level.
+ */ /*
+function addX3(div: HTMLDivElement, atom: Atom, id: string, x3: number,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let x3String: string = (x3 || NaN).toExponential();
+    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            atom.setX3(parseFloat(target.value));
+            console.log("The " + Atom.s_x3 + " has changed from " + x3 + " to " + target.value);
+            resizeInputElement(target);
+        }, x3String, Atom.s_x3, fontSize3);
+    lwi.id = id;
+    div.appendChild(lwi);
+}
+*/ /**
+ * @param div The div to add the input to.
+ * @param atom The atom.
+ * @param id The id.
+ * @param x3 The x3 value.
+ * @param boundary The boundary.
+ * @param level The level.
+ */ /*
+function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let y3String: string = (y3 || NaN).toExponential();
+    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            atom.setY3(parseFloat(target.value));
+            console.log("The " + Atom.s_y3 + " has changed from " + y3 + " to " + target.value);
+            resizeInputElement(target);
+        }, y3String, Atom.s_y3, fontSize3);
+    lwi.id = id;
+    div.appendChild(lwi);
+}
+*/ /**
  * Display the XML.
  * @param {string} xml The XML to display.
  */ function displayXML(xmlFilename, xml) {
@@ -2132,8 +2345,8 @@ window.set = setNumberNode;
         console.log("bathGas" + bathGas.toString());
         conditions.addBathGas(bathGas);
         let div = (0, _htmlJs.createFlexDiv)(level2);
-        let bathGasLabel = (0, _htmlJs.createLabel)((0, _conditionsJs.BathGas).tagName, boundary1);
-        div.appendChild(bathGasLabel);
+        //let bathGasLabel: HTMLLabelElement = createLabel(BathGas.tagName, boundary1);
+        //div.appendChild(bathGasLabel);
         div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
         // Add a remove button.
         let removeButton = (0, _htmlJs.createButton)(removeString, boundary1);
@@ -2220,7 +2433,7 @@ window.set = setNumberNode;
     // Add collapsible div.
     conditionsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
         content: pTsDiv,
-        buttonLabel: (0, _conditionsJs.PTs).tagName,
+        buttonLabel: (0, _conditionsJs.PTs).name,
         buttonFontSize: fontSize2,
         boundary: boundary1,
         level: level1,
@@ -6305,8 +6518,8 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "Atom", ()=>Atom);
 /**
  * A class for representing an atomArray.
- * There can be no attributes.
- * In the XML, a "atomArray" node is typically a child of a "molecule" parent node and has "atom" node children.
+ * There are no attributes.
+ * In the XML, an "atomArray" node is a child of a "molecule" parent node and has "atom" node children.
  */ parcelHelpers.export(exports, "AtomArray", ()=>AtomArray);
 /**
  * An atomic bond between two atoms in a molecule.
@@ -6344,7 +6557,7 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "VibFreqs", ()=>VibFreqs);
 /**
  * The rotation constants.
- * The child "array" node should have a "units" attribute (known units=[cm-1]).
+ * The child "array" node should have a "units" attribute with options ["cm-1", "GHz", "amuA^2"]
  */ parcelHelpers.export(exports, "RotConsts", ()=>RotConsts);
 /**
  * The Molecular Weight.
@@ -6406,17 +6619,105 @@ class Atom extends (0, _xmlJs.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "atom";
     }
+    static{
+        /**
+     * The key for the id attribute.
+     */ this.s_id = "id";
+    }
+    static{
+        /**
+     * The key for the elementType attribute.
+     */ this.s_elementType = "elementType";
+    }
+    static{
+        /**
+     * The key for the x3 attribute.
+     */ this.s_x3 = "x3";
+    }
+    static{
+        /**
+     * The key for the y3 attribute.
+     */ this.s_y3 = "y3";
+    }
+    static{
+        /**
+     * The key for the z3 attribute.
+     */ this.s_z3 = "z3";
+    }
     /**
      * @param attributes The attributes. If there is no "elementType" key an error will be thrown.
-     * If there is no "id" then "this.id" is set to the "elementType".
      */ constructor(attributes){
         super(attributes, Atom.tagName);
-        let elementType = attributes.get("elementType");
-        if (elementType == undefined) throw new Error("elementType is undefined");
-        this.elementType = elementType;
-        let id = attributes.get("id");
-        if (id == undefined) id = this.elementType;
-        this.id = id;
+        let elementType = attributes.get(Atom.s_elementType);
+        if (elementType == undefined) throw new Error(Atom.s_elementType + " is undefined");
+    }
+    /**
+     * @returns The id.
+     */ getId() {
+        return this.attributes.get(Atom.s_id);
+    }
+    /**
+     * @param id The id.
+     */ setId(id) {
+        this.attributes.set(Atom.s_id, id);
+    }
+    /**
+     * @returns The element type.
+     */ getElementType() {
+        return this.attributes.get(Atom.s_elementType);
+    }
+    /**
+     * @param elementType The element type.
+     */ setElementType(elementType) {
+        this.attributes.set(Atom.s_elementType, elementType);
+    }
+    /**
+     * @returns The x3 attribute value as a number or undefined.
+     */ getX3() {
+        let x3 = this.attributes.get(Atom.s_x3);
+        if (x3 != undefined) return parseFloat(x3);
+    }
+    /**
+     * @param x3 The x3 attribute value.
+     */ setX3(x3) {
+        this.attributes.set(Atom.s_x3, x3.toString());
+    }
+    /**
+     * Removes the x3 attribute.
+     */ removeX3() {
+        this.attributes.delete(Atom.s_x3);
+    }
+    /**
+     * @returns The y3 attribute value as a number or undefined.
+     */ getY3() {
+        let y3 = this.attributes.get(Atom.s_y3);
+        if (y3 != undefined) return parseFloat(y3);
+    }
+    /**
+     * @param y3 The y3 attribute value.
+     */ setY3(y3) {
+        this.attributes.set(Atom.s_y3, y3.toString());
+    }
+    /**
+     * Removes the y3 attribute.
+     */ removeY3() {
+        this.attributes.delete(Atom.s_y3);
+    }
+    /**
+     * @returns The z3 attribute value as a number or undefined.
+     */ getZ3() {
+        let z3 = this.attributes.get(Atom.s_z3);
+        if (z3 != undefined) return parseFloat(z3);
+    }
+    /**
+     * @param z3 The z3 attribute value.
+     */ setZ3(z3) {
+        this.attributes.set("z3", z3.toString());
+    }
+    /**
+     * Removes the x3 attribute.
+     */ removeZ3() {
+        this.attributes.delete("z3");
     }
 }
 class AtomArray extends (0, _xmlJs.NodeWithNodes) {
@@ -6430,9 +6731,60 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
      * @param atoms The atoms.
      */ constructor(attributes, atoms){
         super(attributes, AtomArray.tagName);
-        atoms.forEach((atom)=>{
-            this.nodes.set(this.nodes.size, atom);
-        });
+        this.index = new Map();
+        if (atoms == undefined) this.atoms = new Map();
+        else {
+            this.atoms = atoms;
+            atoms.forEach((atom, id)=>{
+                this.index.set(id, this.nodes.size);
+                this.nodes.set(this.nodes.size, atom);
+            });
+        }
+    }
+    /**
+     * @param id The id of the atom to get.
+     * @returns The atom with the given id.
+     */ getAtom(id) {
+        return this.atoms.get(id);
+    }
+    /**
+     * @param atom The atom to add.
+     * @returns The id of the atom.
+     */ addAtom(atom) {
+        let id = atom.getId();
+        if (id == undefined) {
+            id = this.getNextAtomID();
+            atom.setId(id);
+        } else if (this.atoms.has(id)) {
+            let newID = this.getNextAtomID();
+            console.log("Atom with id " + id + " already exists, adding with id " + newID);
+            atom.setId(newID);
+            id = newID;
+        }
+        this.index.set(id, this.nodes.size);
+        this.atoms.set(id, atom);
+        this.nodes.set(this.nodes.size, atom);
+        return id;
+    }
+    /**
+     * @returns The atomId.
+     */ getNextAtomID() {
+        let i = 1;
+        let id = "a" + i.toString();
+        while(this.atoms.has(id)){
+            i++;
+            id = "a" + i.toString();
+        }
+        return id;
+    }
+    /**
+     * @param id The id of the atom to remove.
+     */ removeAtom(id) {
+        let i = this.index.get(id);
+        if (i == undefined) throw new Error("Atom with id " + id + " does not exist!");
+        this.atoms.delete(id);
+        this.index.delete(id);
+        this.nodes.delete(i);
     }
 }
 class Bond extends (0, _xmlJs.TagWithAttributes) {
@@ -6503,10 +6855,12 @@ class BondArray extends (0, _xmlJs.NodeWithNodes) {
      * @param bonds A Map of bonds with keys as ids.
      */ constructor(attributes, bonds){
         super(attributes, BondArray.tagName);
-        this.bonds = bonds;
-        bonds.forEach((bond)=>{
-            this.nodes.set(this.nodes.size, bond);
-        });
+        if (bonds != undefined) {
+            this.bonds = bonds;
+            bonds.forEach((bond)=>{
+                this.nodes.set(this.nodes.size, bond);
+            });
+        } else this.bonds = [];
     }
     /**
      * @param i The index of the bond.
@@ -6702,6 +7056,15 @@ class RotConsts extends Property {
         /**
      * The dictionary reference.
      */ this.dictRef = "me:rotConsts";
+    }
+    static{
+        /**
+     * The units.
+     */ this.unitOptions = [
+            "cm-1",
+            "GHz",
+            "amuA^2"
+        ];
     }
     /**
      * @param attributes The attributes.
@@ -7293,8 +7656,8 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * Create a molecule.
-     * @param attributes The attributes. If there is no "id" key an error will be thrown.
-     * Additional attributes may include "description" and "active" (and posibly others), but these do not exist for all molecules.
+     * @param attributes The attributes. This will also include an "id".
+     * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
      * @param atoms The atom or atoms.
      * @param bonds The bonds.
      * @param properties The properties.
@@ -7302,11 +7665,9 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param dOSCMethod The method for calculating density of states.
      * @param extraDOSCMethod The extra method for calculating density of states.
      * @param reservoirSize The reservoir size.
-     */ constructor(attributes, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
+     */ constructor(attributes, id, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize){
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        let id = attributes.get(Molecule.s_id);
-        if (id == undefined) throw new Error(Molecule.s_id + " is undefined");
         this.id = id;
         let i = 0;
         // Atoms
@@ -7438,20 +7799,54 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         } else this.setProperties(property);
     }
     /**
+     * @param atomId The id of the atom.
+     * @returns The atoms for the given atomId.
+     */ getAtom(atomId) {
+        return this.getAtoms().getAtom(atomId);
+    }
+    /**
      * @returns The atoms of the molecule.
      */ getAtoms() {
-        let i = this.index.get(Atom.tagName);
-        if (i == undefined) {
-            i = this.index.get(AtomArray.tagName);
-            if (i == undefined) return undefined;
-            else return this.nodes.get(i);
-        } else return this.nodes.get(i);
+        let i = this.index.get(AtomArray.tagName);
+        return this.nodes.get(i);
+    }
+    /**
+     * @param atoms The atoms.
+     */ setAtoms(atoms) {
+        this.index.set(AtomArray.tagName, this.nodes.size);
+        this.nodes.set(this.nodes.size, atoms);
     }
     /**
      * @returns The bonds of the molecule.
      */ getBonds() {
         let i = this.index.get(BondArray.tagName);
         if (i != undefined) return this.nodes.get(i);
+    }
+    /**
+     * @param bonds The bonds.
+     */ setBonds(bonds) {
+        let i = this.index.get(BondArray.tagName);
+        if (i == undefined) {
+            this.index.set(BondArray.tagName, this.nodes.size);
+            this.addNode(bonds);
+        } else this.nodes.set(i, bonds);
+    }
+    /**
+     * @param bond The bond to add.
+     */ addBond(bond) {
+        let bonds = this.getBonds();
+        if (bonds == undefined) {
+            bonds = new BondArray(new Map());
+            this.nodes.set(this.nodes.size, bonds);
+            this.index.set(BondArray.tagName, this.nodes.size - 1);
+        }
+        bonds.addNode(bond);
+    }
+    /**
+     * @param i The index of the bond to remove.
+     */ removeBond(i) {
+        let bonds = this.getBonds();
+        if (bonds != undefined) bonds.removeBond(i);
     }
     /**
      * @returns The energy transfer model of the molecule.
@@ -11747,7 +12142,8 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
      * Frequency units.
      */ this.frequencyUnits = [
             "cm-1",
-            "GHz"
+            "GHz",
+            "amuA^2"
         ];
     }
     static{
