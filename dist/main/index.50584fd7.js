@@ -603,6 +603,7 @@ var _conditionsJs = require("./conditions.js");
 var _modelParametersJs = require("./modelParameters.js");
 var _controlJs = require("./control.js");
 var _mesmerJs = require("./mesmer.js");
+//import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 /**
  * MXG.
  */ let mxg_url = "https://github.com/agdturner/mxg-pwa";
@@ -1067,20 +1068,20 @@ let popWindow;
         level: level0,
         contentDivId: modelParametersListDiv.id
     }));
-    // Control.
-    let controlDivId = "control";
-    let controlDiv = document.getElementById(controlDivId);
-    let controlListDiv = processControl(xml);
-    controlListDiv.id = "controlList";
+    // Controls.
+    let controlsDivId1 = "controls";
+    let controlsDiv = document.getElementById(controlsDivId1);
+    let controlsListDiv = processControl(xml);
+    controlsListDiv.id = "controlList";
     // If the controlListDiv already exists, remove it.
-    (0, _htmlJs.remove)(controlListDiv.id);
-    controlDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
-        content: controlListDiv,
-        buttonLabel: "Control",
+    (0, _htmlJs.remove)(controlsListDiv.id);
+    controlsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+        content: controlsListDiv,
+        buttonLabel: "Controls",
         buttonFontSize: fontSize1,
         boundary: boundary1,
         level: level0,
-        contentDivId: controlListDiv.id
+        contentDivId: controlsListDiv.id
     }));
     // Initiate action listeners for collapsible content.
     (0, _htmlJs.makeCollapsible)();
@@ -1134,8 +1135,10 @@ let popWindow;
         // Create molecule.
         let molecule = new (0, _moleculeJs.Molecule)(attributes, moleculeId);
         molecules.set(moleculeId, molecule);
+        // Molecule characteristics.
+        let moleculeHasCoordinates = false;
         // Init atoms.
-        let atoms;
+        let atomArray = new (0, _moleculeJs.AtomArray)(new Map()); // This will be replaced if there is an AtomArray.
         // There can be an individual atom not in an atom array, or an atom array.
         let xml_atomArrays = xml_molecules[i].getElementsByTagName((0, _moleculeJs.AtomArray).tagName);
         if (xml_atomArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.AtomArray).tagName + " but finding " + xml_atomArrays.length + "!");
@@ -1155,25 +1158,35 @@ let popWindow;
             let xml_atomArray = xml_atomArrays[0];
             let xml_atoms = xml_atomArray.getElementsByTagName((0, _moleculeJs.Atom).tagName);
             if (xml_atoms.length < 2) throw new Error("Expecting 2 or more atoms in " + (0, _moleculeJs.AtomArray).tagName + ", but finding " + xml_atoms.length + "!");
-            atoms = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_atomArray));
-            molecule.setAtoms(atoms);
+            atomArray = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_atomArray));
+            molecule.setAtoms(atomArray);
             for(let j = 0; j < xml_atoms.length; j++){
                 // Create a new Atom.
                 let atom = new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[j]));
-                let atomId = atoms.addAtom(atom);
+                let atomId = atomArray.addAtom(atom);
                 console.log("atomId=" + atomId);
                 // Add the atomDiv to the atomArrayDiv.
                 let atomDiv = (0, _htmlJs.createFlexDiv)(level3);
                 atomArrayDiv.appendChild(atomDiv);
                 let inputId = moleculeId + "_" + atomId;
-                let atomIdlwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_id, boundary1, boundary1, (event)=>{
-                    let target = event.target;
-                    //atom.setId(target.value);
-                    //atoms.set(atomId, atom);
-                    console.log("The id has changed from " + atomId + " to " + target.value);
-                    (0, _htmlJs.resizeInputElement)(target);
-                }, atomId, (0, _moleculeJs.Atom).s_id, fontSize3);
+                /**
+                let atomIdlwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_id, boundary1, boundary1,
+                    (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        let newAtomId: string = target.value;
+                        if (atomArray.atoms.has(target.value)) {
+                            console.warn("Atom with id " + target.value + " already exists!");
+                            newAtomId = atomArray.getNextAtomID();
+                        }
+                        atom.setId(newAtomId);
+                        atomArray.atoms.set(newAtomId, atom);
+                        atomArray.index.set(newAtomId, atomArray.index.get(atomId) as number);
+                        atomArray.index.delete(atomId);
+                        console.log("The id has changed from " + atomId + " to " + newAtomId);
+                        resizeInputElement(target);
+                    }, atomId, Atom.s_id, fontSize3);
                 atomDiv.appendChild(atomIdlwi);
+                **/ atomDiv.appendChild((0, _htmlJs.createLabel)((0, _moleculeJs.Atom).s_id + " " + atomId, boundary1));
                 // elementType.
                 let elementType = atom.getElementType();
                 let elementTypelwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_elementType, boundary1, boundary1, (event)=>{
@@ -1185,18 +1198,21 @@ let popWindow;
                 atomDiv.appendChild(elementTypelwi);
                 // Coordinates.
                 let x3id = inputId + "_" + (0, _moleculeJs.Atom).s_x3;
-                processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), (0, _moleculeJs.Atom).s_x3);
+                processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom));
                 let y3id = inputId + "_" + (0, _moleculeJs.Atom).s_y3;
-                processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), (0, _moleculeJs.Atom).s_y3);
+                processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom));
                 let z3id = inputId + "_" + (0, _moleculeJs.Atom).s_z3;
-                processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), (0, _moleculeJs.Atom).s_z3);
+                processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom));
+                // If the atom has coordinates, set moleculeHasCoordinates to true.
+                if (atom.hasCoordinates()) moleculeHasCoordinates = true;
                 //atomsNode.addAtom(atom);
                 // Add a remove atom button.
                 let removeAtomButton = (0, _htmlJs.createButton)(removeString, boundary1);
                 atomDiv.appendChild(removeAtomButton);
                 removeAtomButton.style.fontSize = fontSize4;
                 removeAtomButton.addEventListener("click", ()=>{
-                    atoms.removeAtom(atomId);
+                    //atomArray.removeAtom(atomId);
+                    molecule.getAtoms().removeAtom(atomId);
                     atomDiv.remove();
                 });
             }
@@ -1204,9 +1220,9 @@ let popWindow;
         } else {
             let xml_atoms = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
             if (xml_atoms.length == 1) {
-                atoms = new (0, _moleculeJs.AtomArray)(new Map());
-                atoms.addAtom(new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[0])));
-                molecule.setAtoms(atoms);
+                atomArray = new (0, _moleculeJs.AtomArray)(new Map());
+                atomArray.addAtom(new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[0])));
+                molecule.setAtoms(atomArray);
             } else if (xml_atoms.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Atom).tagName + " but finding " + xml_atoms.length + ". Should these be in an " + (0, _moleculeJs.AtomArray).tagName + "?");
         }
         // Create an add atom button.
@@ -1216,17 +1232,21 @@ let popWindow;
             let attributes = new Map();
             attributes.set((0, _moleculeJs.Atom).s_elementType, "Please specify an " + (0, _moleculeJs.Atom).s_elementType);
             let atom = new (0, _moleculeJs.Atom)(attributes);
-            let atomId = atoms.addAtom(atom);
+            //let atomId: string = atomArray.addAtom(atom);
+            let atomId = molecule.getAtoms().addAtom(atom);
             let atomDiv = (0, _htmlJs.createFlexDiv)(level3);
             let inputId = moleculeId + "_" + atomId;
-            let atomIdlwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_id, boundary1, boundary1, (event)=>{
-                let target = event.target;
-                atom.setId(target.value);
-                console.log("The id has changed to " + target.value);
-                (0, _htmlJs.resizeInputElement)(target);
-            }, atomId, (0, _moleculeJs.Atom).s_id, fontSize3);
+            atomDiv.appendChild((0, _htmlJs.createLabel)((0, _moleculeJs.Atom).s_id + " " + atomId, boundary1));
+            /*
+            let atomIdlwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_id, boundary1, boundary1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    atom.setId(target.value);
+                    console.log("The id has changed to " + target.value);
+                    resizeInputElement(target);
+                }, atomId, Atom.s_id, fontSize3);
             atomDiv.appendChild(atomIdlwi);
-            let elementType = atom.getElementType();
+            */ let elementType = atom.getElementType();
             let elementTypelwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Atom).s_elementType, boundary1, boundary1, (event)=>{
                 let target = event.target;
                 atom.setElementType(target.value);
@@ -1235,17 +1255,18 @@ let popWindow;
             }, elementType, (0, _moleculeJs.Atom).s_elementType, fontSize3);
             atomDiv.appendChild(elementTypelwi);
             let x3id = inputId + "_" + (0, _moleculeJs.Atom).s_x3;
-            processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), (0, _moleculeJs.Atom).s_x3);
+            processCoordinate(atom, atomDiv, x3id, (0, _moleculeJs.Atom).s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom));
             let y3id = inputId + "_" + (0, _moleculeJs.Atom).s_y3;
-            processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), (0, _moleculeJs.Atom).s_y3);
+            processCoordinate(atom, atomDiv, y3id, (0, _moleculeJs.Atom).s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom));
             let z3id = inputId + "_" + (0, _moleculeJs.Atom).s_z3;
-            processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), (0, _moleculeJs.Atom).s_z3);
+            processCoordinate(atom, atomDiv, z3id, (0, _moleculeJs.Atom).s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom));
             // Add a remove atom button.
             let removeAtomButton = (0, _htmlJs.createButton)(removeString, boundary1);
             atomDiv.appendChild(removeAtomButton);
             removeAtomButton.style.fontSize = fontSize4;
             removeAtomButton.addEventListener("click", ()=>{
-                atoms.removeAtom(atomId);
+                // Remove the atom from the atomArray.
+                molecule.getAtoms().removeAtom(atomId);
                 //atomArray.removeAtom(atom.getId());
                 atomDiv.remove();
             });
@@ -1256,24 +1277,109 @@ let popWindow;
         //console.log("atomsNode=" + atomsNode);
         moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
         // Init bondsNode.
-        let bondsNode;
+        let bondArray = new (0, _moleculeJs.BondArray)(new Map()); // This will be replaced if there is an BondArray.
         // There can be an individual bond not in a bond array, or a bond array.
+        // There may be only 1 bond in a BondArray.
         let xml_bondArrays = xml_molecules[i].getElementsByTagName((0, _moleculeJs.BondArray).tagName);
-        if (xml_bondArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.BondArray).tagName + " but finding " + xml_bondArrays.length + "!");
-        if (xml_bondArrays.length == 1) {
-            let xml_bondArray = xml_bondArrays[0];
-            let xml_bonds = xml_bondArray.getElementsByTagName((0, _moleculeJs.Bond).tagName);
-            // There may be only 1 bond in a BondArray.
+        // Create a new collapsible div for the BondArray.
+        let bondArrayDiv = document.createElement("div");
+        let bondArrayContentDivId = moleculeId + "_" + (0, _moleculeJs.BondArray).tagName;
+        let bondArrayCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+            content: bondArrayDiv,
+            buttonLabel: (0, _moleculeJs.BondArray).tagName,
+            buttonFontSize: fontSize3,
+            boundary: boundary1,
+            level: level2,
+            contentDivId: bondArrayContentDivId
+        });
+        moleculeDiv.appendChild(bondArrayCollapsibleDiv);
+        if (xml_bondArrays.length > 0) {
+            if (xml_bondArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.BondArray).tagName + " but finding " + xml_bondArrays.length + "!");
+            let xml_bonds = xml_bondArrays[0].getElementsByTagName((0, _moleculeJs.Bond).tagName);
             let bonds = [];
             for(let j = 0; j < xml_bonds.length; j++)bonds.push(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[j])));
-            bondsNode = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArray), bonds);
+            bondArray = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArrays[0]), bonds);
+            molecule.setBonds(bondArray);
             moleculeTagNames.delete((0, _moleculeJs.BondArray).tagName);
         } else {
             let xml_bonds = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Bond).tagName);
-            if (xml_bonds.length == 1) bondsNode = new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[0]));
-            else if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _moleculeJs.BondArray).tagName + "?");
+            if (xml_bonds.length > 0) {
+                if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _moleculeJs.BondArray).tagName + "?");
+                let bonds = [];
+                bonds.push(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[0])));
+                bondArray = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArrays[0]), bonds);
+                molecule.setBonds(bondArray);
+            }
         }
         moleculeTagNames.delete((0, _moleculeJs.Bond).tagName);
+        // Add a 3Dmol.js viewer.
+        // Create a new div for the viewer.
+        if (moleculeHasCoordinates) {
+            let viewerDiv = (0, _htmlJs.createDiv)(level2);
+            let viewerDivId = moleculeId + "_viewer";
+            viewerDiv.id = viewerDivId;
+            viewerDiv.className = "mol-container";
+            moleculeDiv.appendChild(viewerDiv);
+            let config = {
+                backgroundColor: "grey"
+            };
+            let viewer = $3Dmol.createViewer(viewerDiv, config);
+            // Set the viewer style to stick and ball.
+            viewer.setStyle({
+                stick: {}
+            });
+            atomArray.atoms.forEach(function(atom) {
+                if (atom.getElementType() == "C") viewer.addSphere({
+                    center: {
+                        x: atom.getX3(),
+                        y: atom.getY3(),
+                        z: atom.getZ3()
+                    },
+                    radius: 0.3,
+                    color: "orange"
+                });
+                else if (atom.getElementType() == "H") viewer.addSphere({
+                    center: {
+                        x: atom.getX3(),
+                        y: atom.getY3(),
+                        z: atom.getZ3()
+                    },
+                    radius: 0.2,
+                    color: "blue"
+                });
+                else viewer.addSphere({
+                    center: {
+                        x: atom.getX3(),
+                        y: atom.getY3(),
+                        z: atom.getZ3()
+                    },
+                    radius: 0.3,
+                    color: "red"
+                });
+            });
+            bondArray.bonds.forEach(function(bond) {
+                let atomIds = bond.atomRefs2.split(" ");
+                let atom1 = atomArray.getAtom(atomIds[0]);
+                let atom2 = atomArray.getAtom(atomIds[1]);
+                viewer.addCylinder({
+                    start: {
+                        x: atom1.getX3(),
+                        y: atom1.getY3(),
+                        z: atom1.getZ3()
+                    },
+                    end: {
+                        x: atom2.getX3(),
+                        y: atom2.getY3(),
+                        z: atom2.getZ3()
+                    },
+                    radius: 0.1,
+                    color: "grey"
+                });
+            });
+            viewer.zoomTo();
+            viewer.render();
+            viewer.zoom(0.8, 2000);
+        }
         // Organise PropertyList or individual Property.
         // (There can be an individual property not in a propertyList?)
         // If there is a PropertyList, then create a property list.
@@ -1578,15 +1684,15 @@ let popWindow;
  * @param atom The atom.
  * @param atomDiv The atom div.
  * @param id The id.
- * @param coordinate The coordinate (x3 or y3).
+ * @param coordinate The coordinate name.
  * @param getter The getter function to call on the atom.
  * @param setter The setter function to call on the atom.
  * @param logMessage The message to log when the value changes.
- */ function processCoordinate(atom, atomDiv, id, coordinate, getter, setter, logMessage) {
+ */ function processCoordinate(atom, atomDiv, id, coordinate, getter, setter) {
     let div = (0, _htmlJs.createFlexDiv)(boundary1);
     atomDiv.appendChild(div);
-    let buttonTextContentSelected = logMessage + selected;
-    let buttonTextContentDeselected = logMessage + deselected;
+    let buttonTextContentSelected = coordinate + selected;
+    let buttonTextContentDeselected = coordinate + deselected;
     let button = (0, _htmlJs.createButton)(buttonTextContentDeselected, boundary1);
     div.appendChild(button);
     button.classList.add("optionOn");
@@ -1596,7 +1702,7 @@ let popWindow;
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle("optionOn");
     } else {
-        addCoordinate(div, atom, id, value, setter, logMessage, boundary1);
+        addCoordinate(div, atom, id, value, setter, coordinate, boundary1);
         button.textContent = buttonTextContentSelected;
         button.classList.toggle("optionOff");
     }
@@ -1604,7 +1710,7 @@ let popWindow;
     button.addEventListener("click", (event)=>{
         // Check if the AtomArray already exists
         if (document.getElementById(id) == null) {
-            addCoordinate(div, atom, id, NaN, setter, logMessage, boundary1);
+            addCoordinate(div, atom, id, NaN, setter, coordinate, boundary1);
             button.textContent = buttonTextContentSelected;
             button.classList.toggle("optionOff");
             button.classList.toggle("optionOn");
@@ -1622,18 +1728,18 @@ let popWindow;
  * @param div The div to add the input to.
  * @param atom The atom.
  * @param id The id.
- * @param value The value (x3 or y3).
+ * @param value The coordinate value.
  * @param setter The setter function to call on the atom.
- * @param logMessage The message to log when the value changes.
+ * @param coordinate The coordinate name.
  * @param boundary The boundary.
  * @param level The level.
- */ function addCoordinate(div, atom, id, value, setter, logMessage, boundary) {
+ */ function addCoordinate(div, atom, id, value, setter, coordinate, boundary) {
     let valueString = (value || NaN).toExponential();
     let input = (0, _htmlJs.createInput)("text", id + "_input", boundary);
     input.addEventListener("change", (event)=>{
         let target = event.target;
         setter(parseFloat(target.value));
-        console.log(logMessage + " has changed from " + value + " to " + target.value);
+        console.log(coordinate + " has changed from " + value + " to " + target.value);
         (0, _htmlJs.resizeInputElement)(target);
     });
     input.value = valueString;
@@ -1713,7 +1819,7 @@ function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
  * @param boundary The boundary to go around components.
  * @param level The level of the component.
  */ function processProperty(p, units, molecule, element, moleculeDiv, boundary, level) {
-    // Handle scalar or array property
+    // PropertyScalar.
     let scalarNodes = element.getElementsByTagName((0, _moleculeJs.PropertyScalar).tagName);
     if (scalarNodes.length > 0) {
         if (scalarNodes.length != 1) throw new Error("Expecting 1 " + (0, _moleculeJs.PropertyScalar).tagName + " but finding " + scalarNodes.length + "!");
@@ -1749,6 +1855,7 @@ function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
         addAnyUnits(units, psAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
         moleculeDiv.appendChild(inputDiv);
     } else {
+        // PropertyArray.
         let arrayNodes = element.getElementsByTagName((0, _moleculeJs.PropertyArray).tagName);
         if (arrayNodes.length > 0) {
             if (arrayNodes.length != 1) throw new Error("Expecting 1 " + (0, _moleculeJs.PropertyArray).tagName + " but finding " + arrayNodes.length + "!");
@@ -1777,7 +1884,38 @@ function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
             });
             addAnyUnits(units, paAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
             moleculeDiv.appendChild(inputDiv);
-        } else throw new Error("Expecting " + (0, _moleculeJs.PropertyScalar).tagName + " or " + (0, _moleculeJs.PropertyArray).tagName);
+        } else {
+            // PropertyMatrix.
+            let matrixNodes = element.getElementsByTagName((0, _moleculeJs.PropertyMatrix).tagName);
+            if (matrixNodes.length > 0) {
+                if (matrixNodes.length != 1) throw new Error("Expecting 1 " + (0, _moleculeJs.PropertyMatrix).tagName + " but finding " + matrixNodes.length + "!");
+                let inputString = (0, _xmlJs.getInputString)(matrixNodes[0]);
+                let values = (0, _utilJs.toNumberArray)(inputString.split(/\s+/));
+                let pmAttributes = (0, _xmlJs.getAttributes)(matrixNodes[0]);
+                let pm = new (0, _moleculeJs.PropertyMatrix)(pmAttributes, values);
+                p.setProperty(pm);
+                let label = p.dictRef;
+                // Create a new div element for the input.
+                let inputDiv = (0, _htmlJs.createLabelWithInput)("text", molecule.id + "_" + p.dictRef, boundary, level, (event)=>{
+                    let target = event.target;
+                    setNumberArrayNode(pm, target);
+                }, inputString, label);
+                let inputElement = inputDiv.querySelector("input");
+                inputElement.value = inputString;
+                (0, _htmlJs.resizeInputElement)(inputElement);
+                inputElement.addEventListener("change", (event)=>{
+                    let target = event.target;
+                    inputString = target.value;
+                    pm = p.getProperty();
+                    values = (0, _utilJs.toNumberArray)(inputString.split(/\s+/));
+                    pm.values = values;
+                    console.log("Set " + p.dictRef + " of " + molecule.id + " to " + inputString);
+                    (0, _htmlJs.resizeInputElement)(inputElement);
+                });
+                addAnyUnits(units, pmAttributes, inputDiv, molecule.id + "_" + p.dictRef + "_Select_Units", p.dictRef, boundary);
+                moleculeDiv.appendChild(inputDiv);
+            } else throw new Error("Expecting " + (0, _moleculeJs.PropertyScalar).tagName + ", " + (0, _moleculeJs.PropertyArray).tagName + " or " + (0, _moleculeJs.PropertyMatrix).tagName + " but finding none!");
+        }
     }
 }
 /**
@@ -3509,51 +3647,58 @@ window.set = setNumberNode;
  * me:diagramEnergyOffset
  */ function processControl(xml) {
     console.log((0, _controlJs.Control).tagName);
-    // Create div to contain the controls.
-    let controlsDiv = (0, _htmlJs.createDiv)(boundary1);
     // Get the XML "me:control" element.
-    let xml_control = (0, _xmlJs.getSingularElement)(xml, (0, _controlJs.Control).tagName);
-    let control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
-    mesmer.setControl(control);
-    // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
-    let onOffControls = new Map();
-    processCalculateRateCoefficientsOnly(control, onOffControls, xml_control);
-    processPrintCellDOS(control, onOffControls, xml_control);
-    processPrintCellTransitionStateFlux(control, onOffControls, xml_control);
-    processPrintReactionOperatorColumnSums(control, onOffControls, xml_control);
-    processPrintGrainBoltzmann(control, onOffControls, xml_control);
-    processPrintGrainDOS(control, onOffControls, xml_control);
-    processPrintGrainkbE(control, onOffControls, xml_control);
-    processPrintGrainkfE(control, onOffControls, xml_control);
-    processPrintTSsos(control, onOffControls, xml_control);
-    processPrintGrainedSpeciesProfile(control, onOffControls, xml_control);
-    processPrintGrainTransitionStateFlux(control, onOffControls, xml_control);
-    processPrintReactionOperatorSize(control, onOffControls, xml_control);
-    processPrintSpeciesProfile(control, onOffControls, xml_control);
-    processPrintPhenomenologicalEvolution(control, onOffControls, xml_control);
-    processPrintTunnelingCoefficients(control, onOffControls, xml_control);
-    processPrintCrossingCoefficients(control, onOffControls, xml_control);
-    processTestDOS(control, onOffControls, xml_control);
-    processTestRateConstants(control, onOffControls, xml_control);
-    processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control);
-    processForceMacroDetailedBalance(control, onOffControls, xml_control);
-    // Create a div for the on/off controls.
-    let onOffControlsDiv = (0, _htmlJs.createFlexDiv)(level1);
-    let orderedOnOffControls = new Map([
-        ...onOffControls.entries()
-    ].sort());
-    orderedOnOffControls.forEach((button)=>{
-        onOffControlsDiv.appendChild(button);
-    });
-    controlsDiv.appendChild(onOffControlsDiv);
-    // Controls with additional things to set.
-    processTestMicroRates(control, controlsDiv, xml_control);
-    processCalcMethod(control, controlsDiv, xml_control);
-    processEigenvalues(control, controlsDiv, xml_control);
-    processShortestTimeOfInterest(control, controlsDiv, xml_control);
-    processMaximumEvolutionTime(control, controlsDiv, xml_control);
-    processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control);
-    processDiagramEnergyOffset(control, controlsDiv, xml_control);
+    let xml_controls = xml.getElementsByTagName((0, _controlJs.Control).tagName);
+    // Create a collapsible div for controls.
+    let controlsDiv = (0, _htmlJs.createDiv)(boundary1);
+    controlsDiv.id = controlsDivId;
+    for(let i = 0; i < xml_controls.length; i++){
+        let xml_control = xml_controls[i];
+        // Create div to contain the controls.
+        let controlDiv = (0, _htmlJs.createDiv)(boundary1);
+        let control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
+        mesmer.addControl(control);
+        // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
+        let onOffControls = new Map();
+        processCalculateRateCoefficientsOnly(control, onOffControls, xml_control);
+        processPrintCellDOS(control, onOffControls, xml_control);
+        processPrintCellTransitionStateFlux(control, onOffControls, xml_control);
+        processPrintReactionOperatorColumnSums(control, onOffControls, xml_control);
+        processPrintGrainBoltzmann(control, onOffControls, xml_control);
+        processPrintGrainDOS(control, onOffControls, xml_control);
+        processPrintGrainkbE(control, onOffControls, xml_control);
+        processPrintGrainkfE(control, onOffControls, xml_control);
+        processPrintTSsos(control, onOffControls, xml_control);
+        processPrintGrainedSpeciesProfile(control, onOffControls, xml_control);
+        processPrintGrainTransitionStateFlux(control, onOffControls, xml_control);
+        processPrintReactionOperatorSize(control, onOffControls, xml_control);
+        processPrintSpeciesProfile(control, onOffControls, xml_control);
+        processPrintPhenomenologicalEvolution(control, onOffControls, xml_control);
+        processPrintTunnelingCoefficients(control, onOffControls, xml_control);
+        processPrintCrossingCoefficients(control, onOffControls, xml_control);
+        processTestDOS(control, onOffControls, xml_control);
+        processTestRateConstants(control, onOffControls, xml_control);
+        processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control);
+        processForceMacroDetailedBalance(control, onOffControls, xml_control);
+        // Create a div for the on/off controls.
+        let onOffControlsDiv = (0, _htmlJs.createFlexDiv)(level1);
+        let orderedOnOffControls = new Map([
+            ...onOffControls.entries()
+        ].sort());
+        orderedOnOffControls.forEach((button)=>{
+            onOffControlsDiv.appendChild(button);
+        });
+        controlDiv.appendChild(onOffControlsDiv);
+        // Controls with additional things to set.
+        processTestMicroRates(control, controlDiv, xml_control);
+        processCalcMethod(control, controlDiv, xml_control);
+        processEigenvalues(control, controlDiv, xml_control);
+        processShortestTimeOfInterest(control, controlDiv, xml_control);
+        processMaximumEvolutionTime(control, controlDiv, xml_control);
+        processAutomaticallySetMaxEneControl(control, controlDiv, xml_control);
+        processDiagramEnergyOffset(control, controlDiv, xml_control);
+        controlsDiv.appendChild(controlDiv);
+    }
     return controlsDiv;
 }
 /**
@@ -5772,28 +5917,33 @@ window.set = setNumberNode;
 /**
  * Save to XML file.
  */ function saveXML() {
-    console.log("saveXML");
-    const pad = "  ";
-    // Create a Blob object from the data
-    let blob = new Blob([
-        (0, _mesmerJs.Mesmer).header,
-        mesmer.toXML(pad, pad)
-    ], {
-        type: "text/plain"
-    });
-    // Create a new object URL for the blob
-    let url = URL.createObjectURL(blob);
-    // Create a new 'a' element
-    let a = document.createElement("a");
-    // Set the href and download attributes for the 'a' element
-    a.href = url;
-    let title = mesmer.getTitle()?.value;
-    a.download = title.replace(/[^a-z0-9]/gi, "_") + ".xml";
-    // Append the 'a' element to the body and click it to start the download
-    document.body.appendChild(a);
-    a.click();
-    // Remove the 'a' element after the download starts
-    document.body.removeChild(a);
+    if (mesmer == null) {
+        alert("No Mesmer object to save.");
+        return;
+    } else {
+        console.log("saveXML");
+        const pad = "  ";
+        // Create a Blob object from the data
+        let blob = new Blob([
+            (0, _mesmerJs.Mesmer).header,
+            mesmer.toXML(pad, "")
+        ], {
+            type: "text/plain"
+        });
+        // Create a new object URL for the blob
+        let url = URL.createObjectURL(blob);
+        // Create a new 'a' element
+        let a = document.createElement("a");
+        // Set the href and download attributes for the 'a' element
+        a.href = url;
+        let title = mesmer.getTitle()?.value;
+        a.download = title.replace(/[^a-z0-9]/gi, "_") + ".xml";
+        // Append the 'a' element to the body and click it to start the download
+        document.body.appendChild(a);
+        a.click();
+        // Remove the 'a' element after the download starts
+        document.body.removeChild(a);
+    }
 }
 
 },{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
@@ -6541,6 +6691,13 @@ parcelHelpers.defineInteropFlag(exports);
  * In the XML, an "array" node is a child of a "property" node.
  */ parcelHelpers.export(exports, "PropertyArray", ()=>PropertyArray);
 /**
+ * The attributes may contain:
+ * "rows"
+ * "matrixType" with known values [quareSymmetricLT].
+ * "units" with known values [Hartree/Bohr2].
+ * In the XML, an "array" node is a child of a "property" node.
+ */ parcelHelpers.export(exports, "PropertyMatrix", ()=>PropertyMatrix);
+/**
  * The attributes must contain "dictRef" which is a dictionary reference for a type of property.
  * In the XML, a "property" node has a "propertyList" parent and either a "scalar" or "array" or another type of child not yet implemented (there could be a "matrix" type).
  */ parcelHelpers.export(exports, "Property", ()=>Property);
@@ -6652,6 +6809,12 @@ class Atom extends (0, _xmlJs.TagWithAttributes) {
         if (elementType == undefined) throw new Error(Atom.s_elementType + " is undefined");
     }
     /**
+     * @returns True if the atom has coordinates.
+     */ hasCoordinates() {
+        if (this.attributes.get(Atom.s_x3) != undefined && this.attributes.get(Atom.s_y3) != undefined && this.attributes.get(Atom.s_z3) != undefined) return true;
+        return false;
+    }
+    /**
      * @returns The id.
      */ getId() {
         return this.attributes.get(Atom.s_id);
@@ -6732,11 +6895,13 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, atoms){
         super(attributes, AtomArray.tagName);
         this.index = new Map();
+        this.reverseIndex = new Map();
         if (atoms == undefined) this.atoms = new Map();
         else {
             this.atoms = atoms;
             atoms.forEach((atom, id)=>{
                 this.index.set(id, this.nodes.size);
+                this.reverseIndex.set(this.nodes.size, id);
                 this.nodes.set(this.nodes.size, atom);
             });
         }
@@ -6751,6 +6916,7 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
      * @param atom The atom to add.
      * @returns The id of the atom.
      */ addAtom(atom) {
+        console.log("Adding atom...");
         let id = atom.getId();
         if (id == undefined) {
             id = this.getNextAtomID();
@@ -6761,9 +6927,20 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
             atom.setId(newID);
             id = newID;
         }
+        console.log("Atom id: " + id);
         this.index.set(id, this.nodes.size);
-        this.atoms.set(id, atom);
+        this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, atom);
+        this.atoms.set(id, atom);
+        console.log("this.index.size " + this.index.size);
+        console.log("this.nodes.size " + this.nodes.size);
+        console.log("this.atoms.size " + this.atoms.size);
+        console.log("this.index.keys() " + Array.from(this.index.keys()));
+        console.log("this.index.values() " + Array.from(this.index.values()));
+        console.log("this.reverseIndex.keys() " + Array.from(this.reverseIndex.keys()));
+        console.log("this.reverseIndex.values() " + Array.from(this.reverseIndex.values()));
+        console.log("this.nodes.keys() " + Array.from(this.nodes.keys()));
+        console.log("this.atoms.keys() " + Array.from(this.atoms.keys()));
         return id;
     }
     /**
@@ -6782,9 +6959,41 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
      */ removeAtom(id) {
         let i = this.index.get(id);
         if (i == undefined) throw new Error("Atom with id " + id + " does not exist!");
+        console.log("Removing atom with id " + id);
         this.atoms.delete(id);
-        this.index.delete(id);
+        //this.index.delete(id);
+        //this.nodes.delete(i);
+        this.deleteNodeAndReindex(i, id);
+        console.log("i " + i);
+        console.log("this.index.size " + this.index.size);
+        console.log("this.nodes.size " + this.nodes.size);
+        console.log("this.atoms.size " + this.atoms.size);
+        console.log("this.index.keys() " + Array.from(this.index.keys()));
+        console.log("this.index.values() " + Array.from(this.index.values()));
+        console.log("this.nodes.keys() " + Array.from(this.nodes.keys()));
+        console.log("this.atoms.keys() " + Array.from(this.atoms.keys()));
+    }
+    deleteNodeAndReindex(i, id) {
         this.nodes.delete(i);
+        this.index.delete(id);
+        this.reverseIndex.delete(i);
+        let newNodes = new Map();
+        let newIndex = new Map();
+        let newReverseIndex = new Map();
+        this.index.forEach((value, key)=>{
+            if (value > i) {
+                newNodes.set(value - 1, this.nodes.get(value));
+                newIndex.set(key, value - 1);
+                newReverseIndex.set(value - 1, key);
+            } else {
+                newNodes.set(value, this.nodes.get(value));
+                newIndex.set(key, value);
+                newReverseIndex.set(value, key);
+            }
+        });
+        this.nodes = newNodes;
+        this.index = newIndex;
+        this.reverseIndex = newReverseIndex;
     }
 }
 class Bond extends (0, _xmlJs.TagWithAttributes) {
@@ -6943,6 +7152,51 @@ class PropertyArray extends (0, _xmlJs.NumberArrayNode) {
         /**
      * The tag name.
      */ this.tagName = "array";
+    }
+    static{
+        /**
+     * The key for the units attribute.
+     */ this.s_units = "units";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param values The values.
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
+     */ constructor(attributes, values, delimiter){
+        super(attributes, PropertyArray.tagName, values, delimiter);
+    }
+    /**
+     * This updates the units of the property. It does not do any unit conversion.
+     * It simply updates the specified units of a property
+     * @param units Updates the units of the property.
+     */ updateUnits(units) {
+        // Check the units are the same and if not replace the units...
+        if (units) {
+            let existingUnits = this.attributes.get(PropertyArray.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) {
+                    this.attributes.set(PropertyArray.s_units, units);
+                    console.log("Units changed from " + existingUnits + " to " + units);
+                }
+            }
+        }
+    }
+}
+class PropertyMatrix extends (0, _xmlJs.NumberArrayNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "matrix";
+    }
+    static{
+        /**
+     * The key for the rows attribute.
+     */ this.s_rows = "rows";
+    }
+    static{
+        /**
+     * The key for the matrixType attribute.
+     */ this.s_matrixType = "matrixType";
     }
     static{
         /**
@@ -7444,8 +7698,9 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
         if (expansionSize == undefined) throw new Error(HinderedRotorPotential.s_expansionSize + " is undefined!");
         this.expansionSize = parseFloat(expansionSize);
         let useSineTerms = attributes.get(HinderedRotorPotential.s_useSineTerms);
-        if (useSineTerms == undefined) throw new Error(HinderedRotorPotential.s_useSineTerms + " is undefined!");
-        this.useSineTerms = useSineTerms == "yes";
+        if (useSineTerms == undefined) this.useSineTerms = false;
+        else this.useSineTerms = true;
+    //this.useSineTerms = (useSineTerms == "yes");
     }
     /**
      * @returns The format of the HinderedRotorPotential.
@@ -12160,7 +12415,7 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
      * @param conditions The conditions.
      * @param modelParameters The model parameters.
      * @param control The control.
-     */ constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, control){
+     */ constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, controls){
         super(attributes, Mesmer.tagName);
         this.index = new Map();
         if (title != undefined) {
@@ -12183,9 +12438,11 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
             this.index.set((0, _modelParametersJs.ModelParameters).tagName, this.nodes.size);
             this.addNode(modelParameters);
         }
-        if (control != undefined) {
+        if (controls != undefined) {
             this.index.set((0, _controlJs.Control).tagName, this.nodes.size);
-            this.addNode(control);
+            controls.forEach((control)=>{
+                this.addNode(control);
+            });
         }
     }
     /**
@@ -12279,16 +12536,9 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
-     * @returns The control.
-     */ getControl() {
-        let i = this.index.get((0, _controlJs.Control).tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * Set the control.
+     * Add a control.
      * @param control The control.
-     */ setControl(control) {
+     */ addControl(control) {
         let i = this.index.get((0, _controlJs.Control).tagName);
         if (i != undefined) this.nodes.set(i, control);
         else {

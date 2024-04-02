@@ -213,7 +213,7 @@ export class Mesmer extends NodeWithNodes {
      * @param control The control.
      */
     constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
-        conditions?: Conditions, modelParameters?: ModelParameters, control?: Control) {
+        conditions?: Conditions, modelParameters?: ModelParameters, controls?: Control[]) {
         super(attributes, Mesmer.tagName);
         this.index = new Map();
         if (title != undefined) {
@@ -236,9 +236,11 @@ export class Mesmer extends NodeWithNodes {
             this.index.set(ModelParameters.tagName, this.nodes.size);
             this.addNode(modelParameters);
         }
-        if (control != undefined) {
+        if (controls != undefined) {
             this.index.set(Control.tagName, this.nodes.size);
-            this.addNode(control);
+            controls.forEach(control => {
+                this.addNode(control);
+            });
         }
     }
 
@@ -368,21 +370,10 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
-     * @returns The control.
-     */
-    getControl() {
-        let i: number | undefined = this.index.get(Control.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        return this.nodes.get(i) as Control;
-    }
-
-    /**
-     * Set the control.
+     * Add a control.
      * @param control The control.
      */
-    setControl(control: Control) {
+    addControl(control: Control) {
         let i: number | undefined = this.index.get(Control.tagName);
         if (i != undefined) {
             this.nodes.set(i, control);

@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
+        "moduleResolution": "node",
         "target": "ESNext",
         "module": "CommonJS",
+        "esModuleInterop": true,
         "lib": [
             "ES2021",
             "dom"
@@ -9,5 +11,9 @@
         "outDir": "./dist/main/js",
         "strict": true,
         "sourceMap": true
-    }
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/ts/3dmol.d.ts"
+    ],
 }

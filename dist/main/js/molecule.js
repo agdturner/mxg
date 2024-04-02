@@ -149,8 +149,8 @@ class Atom extends xml_js_1.TagWithAttributes {
 exports.Atom = Atom;
 /**
  * A class for representing an atomArray.
- * There can be no attributes.
- * In the XML, a "atomArray" node is typically a child of a "molecule" parent node and has "atom" node children.
+ * There are no attributes.
+ * In the XML, an "atomArray" node is a child of a "molecule" parent node and has "atom" node children.
  */
 class AtomArray extends xml_js_1.NodeWithNodes {
     /**
@@ -162,9 +162,13 @@ class AtomArray extends xml_js_1.NodeWithNodes {
      */
     atoms;
     /**
-     * The index.
+     * The index. The keys are the atom ids and the values are the index of the atom in the nodes.
      */
     index;
+    /**
+     * The index. The keys are the index of the atom in the nodes and the values are the atom ids.
+     */
+    reverseIndex;
     /**
      * @param attributes The attributes.
      * @param atoms The atoms.
@@ -172,11 +176,17 @@ class AtomArray extends xml_js_1.NodeWithNodes {
     constructor(attributes, atoms) {
         super(attributes, AtomArray.tagName);
         this.index = new Map();
+        this.reverseIndex = new Map();
         if (atoms == undefined) {
             this.atoms = new Map();
         }
         else {
             this.atoms = atoms;
+            atoms.forEach((atom, id) => {
+                this.index.set(id, this.nodes.size);
+                this.reverseIndex.set(this.nodes.size, id);
+                this.nodes.set(this.nodes.size, atom);
+            });
         }
     }
     /**
@@ -187,26 +197,51 @@ class AtomArray extends xml_js_1.NodeWithNodes {
         return this.atoms.get(id);
     }
     /**
-     * @returns The atoms.
+     * @param atom The atom to add.
+     * @returns The id of the atom.
      */
     addAtom(atom) {
+        console.log('Adding atom...');
         let id = atom.getId();
-        if (id != undefined) {
-            let i = 1;
-            let id = "a" + i.toString();
-            while (this.atoms.has(id)) {
-                i++;
-                id = "a" + i.toString();
-            }
+        if (id == undefined) {
+            id = this.getNextAtomID();
             atom.setId(id);
-            this.atoms.set(id, atom);
-            this.index.set(id, this.nodes.size);
-            this.nodes.set(this.nodes.size, atom);
         }
         else {
-            throw new Error('Atom has no id!');
+            if (this.atoms.has(id)) {
+                let newID = this.getNextAtomID();
+                console.log('Atom with id ' + id + ' already exists, adding with id ' + newID);
+                atom.setId(newID);
+                id = newID;
+            }
         }
+        console.log('Atom id: ' + id);
+        this.index.set(id, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, atom);
+        this.atoms.set(id, atom);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.reverseIndex.keys() ' + Array.from(this.reverseIndex.keys()));
+        console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        return id;
+    }
+    /**
+     * @returns The atomId.
+     */
+    getNextAtomID() {
+        let i = 1;
+        let id = "a" + i.toString();
+        while (this.atoms.has(id)) {
+            i++;
+            id = "a" + i.toString();
+        }
+        return id;
     }
     /**
      * @param id The id of the atom to remove.
@@ -216,7 +251,42 @@ class AtomArray extends xml_js_1.NodeWithNodes {
         if (i == undefined) {
             throw new Error('Atom with id ' + id + ' does not exist!');
         }
+        console.log('Removing atom with id ' + id);
         this.atoms.delete(id);
+        //this.index.delete(id);
+        //this.nodes.delete(i);
+        this.deleteNodeAndReindex(i, id);
+        console.log('i ' + i);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+    }
+    deleteNodeAndReindex(i, id) {
+        this.nodes.delete(i);
+        this.index.delete(id);
+        this.reverseIndex.delete(i);
+        let newNodes = new Map();
+        let newIndex = new Map();
+        let newReverseIndex = new Map();
+        this.index.forEach((value, key) => {
+            if (value > i) {
+                newNodes.set(value - 1, this.nodes.get(value));
+                newIndex.set(key, value - 1);
+                newReverseIndex.set(value - 1, key);
+            }
+            else {
+                newNodes.set(value, this.nodes.get(value));
+                newIndex.set(key, value);
+                newReverseIndex.set(value, key);
+            }
+        });
+        this.nodes = newNodes;
+        this.index = newIndex;
+        this.reverseIndex = newReverseIndex;
     }
 }
 exports.AtomArray = AtomArray;
@@ -1514,68 +1584,25 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * @param atomId The id of the atom.
+     * @returns The atoms for the given atomId.
+     */
+    getAtom(atomId) {
+        return this.getAtoms().getAtom(atomId);
+    }
+    /**
      * @returns The atoms of the molecule.
      */
     getAtoms() {
-        let i = this.index.get(Atom.tagName);
-        if (i == undefined) {
-            i = this.index.get(AtomArray.tagName);
-            if (i != undefined) {
-                return this.nodes.get(i);
-            }
-        }
-        else {
-            return this.nodes.get(i);
-        }
+        let i = this.index.get(AtomArray.tagName);
+        return this.nodes.get(i);
     }
     /**
      * @param atoms The atoms.
      */
     setAtoms(atoms) {
-        let i = this.index.get(Atom.tagName);
-        if (i == undefined) {
-            this.index.set(Atom.tagName, this.nodes.size);
-            this.addNode(atoms);
-        }
-        else {
-            this.nodes.set(i, atoms);
-        }
-    }
-    /**
-     * @param atom The atom to add.
-     */
-    addAtom(atom) {
-        let atoms = this.getAtoms();
-        if (atoms instanceof Atom) {
-            let atomArray = new AtomArray(new Map());
-            atomArray.addNode(atoms);
-            atomArray.addNode(atom);
-            this.nodes.set(this.nodes.size, atomArray);
-            this.index.set(AtomArray.tagName, this.nodes.size - 1);
-            this.index.delete(Atom.tagName);
-        }
-        else if (atoms instanceof AtomArray) {
-            atoms.addNode(atom);
-        }
-        else {
-            this.nodes.set(this.nodes.size, atom);
-            this.index.set(Atom.tagName, this.nodes.size - 1);
-        }
-    }
-    /**
-     * @param id The id of the atom to remove.
-     */
-    removeAtom(id) {
-        let atoms = this.getAtoms();
-        if (atoms instanceof Atom) {
-            if (atoms.getId() == id) {
-                this.nodes.delete(this.index.get(id));
-                this.index.delete(Atom.tagName);
-            }
-        }
-        else if (atoms instanceof AtomArray) {
-            atoms.removeAtom(id);
-        }
+        this.index.set(AtomArray.tagName, this.nodes.size);
+        this.nodes.set(this.nodes.size, atoms);
     }
     /**
      * @returns The bonds of the molecule.

@@ -67,7 +67,21 @@ export class Atom extends TagWithAttributes {
         if (elementType == undefined) {
             throw new Error(Atom.s_elementType + ' is undefined');
         }
+
     }
+
+    /**
+     * @returns True if the atom has coordinates.
+     */
+    hasCoordinates(): boolean {
+        if (this.attributes.get(Atom.s_x3) != undefined &&
+            this.attributes.get(Atom.s_y3) != undefined &&
+            this.attributes.get(Atom.s_z3) != undefined) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * @returns The id.
@@ -193,18 +207,25 @@ export class AtomArray extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
+     * The index. The keys are the index of the atom in the nodes and the values are the atom ids.
+     */
+    reverseIndex: Map<number, string>;
+
+    /**
      * @param attributes The attributes.
      * @param atoms The atoms.
      */
     constructor(attributes: Map<string, string>, atoms?: Map<string, Atom>) {
         super(attributes, AtomArray.tagName);
         this.index = new Map();
+        this.reverseIndex = new Map();
         if (atoms == undefined) {
             this.atoms = new Map();
         } else {
             this.atoms = atoms;
             atoms.forEach((atom, id) => {
                 this.index.set(id, this.nodes.size);
+                this.reverseIndex.set(this.nodes.size, id);
                 this.nodes.set(this.nodes.size, atom);
             });
         }
@@ -223,6 +244,7 @@ export class AtomArray extends NodeWithNodes {
      * @returns The id of the atom.
      */
     addAtom(atom: Atom): string {
+        console.log('Adding atom...');
         let id: string | undefined = atom.getId();
         if (id == undefined) {
             id = this.getNextAtomID();
@@ -235,9 +257,20 @@ export class AtomArray extends NodeWithNodes {
                 id = newID;
             }
         }
+        console.log('Atom id: ' + id);
         this.index.set(id, this.nodes.size);
-        this.atoms.set(id, atom);
+        this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, atom);
+        this.atoms.set(id, atom);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.reverseIndex.keys() ' + Array.from(this.reverseIndex.keys()));
+        console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
         return id;
     }
 
@@ -262,9 +295,45 @@ export class AtomArray extends NodeWithNodes {
         if (i == undefined) {
             throw new Error('Atom with id ' + id + ' does not exist!');
         }
+        console.log('Removing atom with id ' + id);
         this.atoms.delete(id);
-        this.index.delete(id);
+        //this.index.delete(id);
+        //this.nodes.delete(i);
+        this.deleteNodeAndReindex(i, id);
+        console.log('i ' + i);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+    }
+
+    deleteNodeAndReindex(i: number, id: string): void {
         this.nodes.delete(i);
+        this.index.delete(id);
+        this.reverseIndex.delete(i);
+
+        let newNodes = new Map<number, Atom>();
+        let newIndex = new Map<string, number>();
+        let newReverseIndex = new Map<number, string>();
+
+        this.index.forEach((value, key) => {
+            if (value > i) {
+                newNodes.set(value - 1, this.nodes.get(value) as Atom);
+                newIndex.set(key, value - 1);
+                newReverseIndex.set(value - 1, key);
+            } else {
+                newNodes.set(value, this.nodes.get(value) as Atom);
+                newIndex.set(key, value);
+                newReverseIndex.set(value, key);
+            }
+        });
+
+        this.nodes = newNodes;
+        this.index = newIndex;
+        this.reverseIndex = newReverseIndex;
     }
 }
 
@@ -532,6 +601,63 @@ export class PropertyArray extends NumberArrayNode {
 }
 
 /**
+ * The attributes may contain:
+ * "rows"
+ * "matrixType" with known values [quareSymmetricLT].
+ * "units" with known values [Hartree/Bohr2].
+ * In the XML, an "array" node is a child of a "property" node.
+ */
+export class PropertyMatrix extends NumberArrayNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "matrix";
+
+    /**
+     * The key for the rows attribute.
+     */
+    static readonly s_rows: string = "rows";
+
+    /**
+     * The key for the matrixType attribute.
+     */
+    static readonly s_matrixType: string = "matrixType";
+
+    /**
+     * The key for the units attribute.
+     */
+    static readonly s_units: string = "units";
+
+    /**
+     * @param attributes The attributes.
+     * @param values The values.
+     * @param delimiter The delimiter of the values (Optional - default will be ",").
+     */
+    constructor(attributes: Map<string, string>, values: number[], delimiter?: string) {
+        super(attributes, PropertyArray.tagName, values, delimiter);
+    }
+
+    /**
+     * This updates the units of the property. It does not do any unit conversion.
+     * It simply updates the specified units of a property
+     * @param units Updates the units of the property.
+     */
+    updateUnits(units: string | undefined): void {
+        // Check the units are the same and if not replace the units...
+        if (units) {
+            let existingUnits: string | undefined = this.attributes.get(PropertyArray.s_units);
+            if (existingUnits != undefined) {
+                if (existingUnits != units) {
+                    this.attributes.set(PropertyArray.s_units, units);
+                    console.log('Units changed from ' + existingUnits + ' to ' + units);
+                }
+            }
+        }
+    }
+}
+
+/**
  * The attributes must contain "dictRef" which is a dictionary reference for a type of property.
  * In the XML, a "property" node has a "propertyList" parent and either a "scalar" or "array" or another type of child not yet implemented (there could be a "matrix" type).
  */
@@ -556,7 +682,7 @@ export class Property extends NodeWithNodes {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property?: PropertyScalar | PropertyArray) {
+    constructor(attributes: Map<string, string>, property?: PropertyScalar | PropertyArray | PropertyMatrix) {
         super(attributes, Property.tagName);
         let dictRef: string | undefined = attributes.get(Property.s_dictRef);
         if (dictRef == undefined) {
@@ -571,15 +697,15 @@ export class Property extends NodeWithNodes {
     /**
      * @returns The property.
      */
-    getProperty(): PropertyScalar | PropertyArray {
-        return this.nodes.get(0) as PropertyScalar | PropertyArray;
+    getProperty(): PropertyScalar | PropertyArray| PropertyMatrix {
+        return this.nodes.get(0) as PropertyScalar | PropertyArray | PropertyMatrix;
     }
 
     /**
      * Set the property.
      * @param property The property.
      */
-    setProperty(property: PropertyScalar | PropertyArray): void {
+    setProperty(property: PropertyScalar | PropertyArray | PropertyMatrix): void {
         this.nodes.set(0, property);
     }
 
@@ -1215,9 +1341,12 @@ export class HinderedRotorPotential extends NodeWithNodes {
         this.expansionSize = parseFloat(expansionSize);
         let useSineTerms: string | undefined = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
-            throw new Error(HinderedRotorPotential.s_useSineTerms + ' is undefined!');
+            this.useSineTerms = false;
+            //throw new Error(HinderedRotorPotential.s_useSineTerms + ' is undefined!');
+        } else {
+            this.useSineTerms = true;
         }
-        this.useSineTerms = (useSineTerms == "yes");
+        //this.useSineTerms = (useSineTerms == "yes");
     }
 
     /**
@@ -1735,7 +1864,7 @@ export class Molecule extends NodeWithNodes {
      */
     setAtoms(atoms: AtomArray) {
         this.index.set(AtomArray.tagName, this.nodes.size);
-            this.nodes.set(this.nodes.size, atoms);
+        this.nodes.set(this.nodes.size, atoms);
     }
 
     /**

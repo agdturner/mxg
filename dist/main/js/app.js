@@ -14,6 +14,7 @@ const conditions_js_1 = require("./conditions.js");
 const modelParameters_js_1 = require("./modelParameters.js");
 const control_js_1 = require("./control.js");
 const mesmer_js_1 = require("./mesmer.js");
+//import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 /**
  * MXG.
  */
@@ -135,6 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
     menuDiv.style.padding = '5px';
     menuDiv.style.border = '1px solid black';
     menuDiv.style.backgroundColor = 'lightgrey';
+    let element = document.querySelector('#container-01');
+    let config = { backgroundColor: 'orange' };
+    let viewer = $3Dmol.createViewer(element, config);
+    viewer.addSphere({ center: { x: 0, y: 0, z: 0 }, radius: 10.0, color: 'green' });
+    viewer.zoomTo();
+    viewer.render();
+    viewer.zoom(0.8, 2000);
     // Create Load button.
     let loadButton = (0, html_js_1.createButton)('Load', boundary1);
     loadButton.addEventListener('click', (event) => {
@@ -583,9 +591,9 @@ function processMoleculeList(xml) {
         // Create molecule.
         let molecule = new molecule_js_1.Molecule(attributes, moleculeId);
         molecules.set(moleculeId, molecule);
-        // Init atomsNode.
-        let atomsNode;
-        // There can be an individual atom not in an atom array, or an attom array.
+        // Init atoms.
+        let atomArray;
+        // There can be an individual atom not in an atom array, or an atom array.
         let xml_atomArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.AtomArray.tagName);
         if (xml_atomArrays.length > 1) {
             throw new Error("Expecting 1 or 0 " + molecule_js_1.AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
@@ -602,30 +610,42 @@ function processMoleculeList(xml) {
             contentDivId: contentDivId
         });
         moleculeDiv.appendChild(atomArrayCollapsibleDiv);
-        let atoms = new Map();
         if (xml_atomArrays.length == 1) {
             let xml_atomArray = xml_atomArrays[0];
             let xml_atoms = xml_atomArray.getElementsByTagName(molecule_js_1.Atom.tagName);
             if (xml_atoms.length < 2) {
                 throw new Error("Expecting 2 or more atoms in " + molecule_js_1.AtomArray.tagName + ", but finding " + xml_atoms.length + "!");
             }
+            atomArray = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray));
+            molecule.setAtoms(atomArray);
             for (let j = 0; j < xml_atoms.length; j++) {
-                atomsNode = new molecule_js_1.AtomArray((0, xml_js_1.getAttributes)(xml_atomArray));
                 // Create a new Atom.
                 let atom = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[j]));
-                let atomId = atom.getId();
-                atoms.set(atomId, atom);
-                // Add the atom to the atomArrayDiv.
+                let atomId = atomArray.addAtom(atom);
+                console.log("atomId=" + atomId);
+                // Add the atomDiv to the atomArrayDiv.
                 let atomDiv = (0, html_js_1.createFlexDiv)(level3);
                 atomArrayDiv.appendChild(atomDiv);
                 let inputId = moleculeId + "_" + atomId;
-                let atomIdlwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_id, boundary1, boundary1, (event) => {
-                    let target = event.target;
-                    atom.setId(target.value);
-                    console.log("The id has changed from " + atomId + " to " + target.value);
-                    (0, html_js_1.resizeInputElement)(target);
-                }, atomId, molecule_js_1.Atom.s_id, fontSize3);
+                /**
+                let atomIdlwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_id, boundary1, boundary1,
+                    (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        let newAtomId: string = target.value;
+                        if (atomArray.atoms.has(target.value)) {
+                            console.warn("Atom with id " + target.value + " already exists!");
+                            newAtomId = atomArray.getNextAtomID();
+                        }
+                        atom.setId(newAtomId);
+                        atomArray.atoms.set(newAtomId, atom);
+                        atomArray.index.set(newAtomId, atomArray.index.get(atomId) as number);
+                        atomArray.index.delete(atomId);
+                        console.log("The id has changed from " + atomId + " to " + newAtomId);
+                        resizeInputElement(target);
+                    }, atomId, Atom.s_id, fontSize3);
                 atomDiv.appendChild(atomIdlwi);
+                **/
+                atomDiv.appendChild((0, html_js_1.createLabel)(molecule_js_1.Atom.s_id + " " + atomId, boundary1));
                 // elementType.
                 let elementType = atom.getElementType();
                 let elementTypelwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_elementType, boundary1, boundary1, (event) => {
@@ -642,13 +662,14 @@ function processMoleculeList(xml) {
                 processCoordinate(atom, atomDiv, y3id, molecule_js_1.Atom.s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), molecule_js_1.Atom.s_y3);
                 let z3id = inputId + "_" + molecule_js_1.Atom.s_z3;
                 processCoordinate(atom, atomDiv, z3id, molecule_js_1.Atom.s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), molecule_js_1.Atom.s_z3);
-                atomsNode.addAtom(atom);
+                //atomsNode.addAtom(atom);
                 // Add a remove atom button.
                 let removeAtomButton = (0, html_js_1.createButton)(removeString, boundary1);
                 atomDiv.appendChild(removeAtomButton);
                 removeAtomButton.style.fontSize = fontSize4;
                 removeAtomButton.addEventListener('click', () => {
-                    atoms.delete(atom.getId());
+                    //atomArray.removeAtom(atomId);
+                    molecule.getAtoms().removeAtom(atomId);
                     atomDiv.remove();
                 });
             }
@@ -657,8 +678,9 @@ function processMoleculeList(xml) {
         else {
             let xml_atoms = xml_molecules[i].getElementsByTagName(molecule_js_1.Atom.tagName);
             if (xml_atoms.length == 1) {
-                atomsNode = new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0]));
-                molecule.setAtoms(atomsNode);
+                atomArray = new molecule_js_1.AtomArray(new Map());
+                atomArray.addAtom(new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_atoms[0])));
+                molecule.setAtoms(atomArray);
             }
             else if (xml_atoms.length > 1) {
                 throw new Error("Expecting 1 " + molecule_js_1.Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + molecule_js_1.AtomArray.tagName + "?");
@@ -669,22 +691,23 @@ function processMoleculeList(xml) {
         addAtomButton.style.fontSize = fontSize4;
         addAtomButton.addEventListener('click', () => {
             let attributes = new Map();
-            attributes.set(molecule_js_1.Atom.s_id, "a" + (atoms.size + 1));
             attributes.set(molecule_js_1.Atom.s_elementType, "Please specify an " + molecule_js_1.Atom.s_elementType);
             let atom = new molecule_js_1.Atom(attributes);
-            let atomArray = atomsNode;
-            atomArray.addAtom(atom);
+            //let atomId: string = atomArray.addAtom(atom);
+            let atomId = molecule.getAtoms().addAtom(atom);
             let atomDiv = (0, html_js_1.createFlexDiv)(level3);
-            let atomId = atom.getId() || "a" + (atoms.size + 1);
-            //let atomId: string = atom.getId() || "a7";
             let inputId = moleculeId + "_" + atomId;
-            let atomIdlwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_id, boundary1, boundary1, (event) => {
-                let target = event.target;
-                atom.setId(target.value);
-                console.log("The id has changed to " + target.value);
-                (0, html_js_1.resizeInputElement)(target);
-            }, atomId, molecule_js_1.Atom.s_id, fontSize3);
+            atomDiv.appendChild((0, html_js_1.createLabel)(molecule_js_1.Atom.s_id + " " + atomId, boundary1));
+            /*
+            let atomIdlwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_id, boundary1, boundary1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    atom.setId(target.value);
+                    console.log("The id has changed to " + target.value);
+                    resizeInputElement(target);
+                }, atomId, Atom.s_id, fontSize3);
             atomDiv.appendChild(atomIdlwi);
+            */
             let elementType = atom.getElementType();
             let elementTypelwi = (0, html_js_1.createLabelWithInput)("text", inputId + "_" + molecule_js_1.Atom.s_elementType, boundary1, boundary1, (event) => {
                 let target = event.target;
@@ -704,7 +727,9 @@ function processMoleculeList(xml) {
             atomDiv.appendChild(removeAtomButton);
             removeAtomButton.style.fontSize = fontSize4;
             removeAtomButton.addEventListener('click', () => {
-                atomArray.removeAtom(atom.getId());
+                // Remove the atom from the atomArray.
+                molecule.getAtoms().removeAtom(atomId);
+                //atomArray.removeAtom(atom.getId());
                 atomDiv.remove();
             });
             atomArrayDiv.insertBefore(atomDiv, addAtomButton);
@@ -716,28 +741,43 @@ function processMoleculeList(xml) {
         // Init bondsNode.
         let bondsNode;
         // There can be an individual bond not in a bond array, or a bond array.
+        // There may be only 1 bond in a BondArray.
         let xml_bondArrays = xml_molecules[i].getElementsByTagName(molecule_js_1.BondArray.tagName);
-        if (xml_bondArrays.length > 1) {
-            throw new Error("Expecting 1 or 0 " + molecule_js_1.BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
-        }
-        if (xml_bondArrays.length == 1) {
-            let xml_bondArray = xml_bondArrays[0];
-            let xml_bonds = xml_bondArray.getElementsByTagName(molecule_js_1.Bond.tagName);
-            // There may be only 1 bond in a BondArray.
+        // Create a new collapsible div for the BondArray.
+        let bondArrayDiv = document.createElement("div");
+        let bondArrayContentDivId = moleculeId + "_" + molecule_js_1.BondArray.tagName;
+        let bondArrayCollapsibleDiv = (0, html_js_1.getCollapsibleDiv)({
+            content: bondArrayDiv,
+            buttonLabel: molecule_js_1.BondArray.tagName,
+            buttonFontSize: fontSize3,
+            boundary: boundary1,
+            level: level2,
+            contentDivId: bondArrayContentDivId
+        });
+        moleculeDiv.appendChild(bondArrayCollapsibleDiv);
+        if (xml_bondArrays.length > 0) {
+            if (xml_bondArrays.length > 1) {
+                throw new Error("Expecting 1 or 0 " + molecule_js_1.BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
+            }
+            let xml_bonds = xml_bondArrays[0].getElementsByTagName(molecule_js_1.Bond.tagName);
             let bonds = [];
             for (let j = 0; j < xml_bonds.length; j++) {
                 bonds.push(new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[j])));
             }
-            bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArray), bonds);
+            bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArrays[0]), bonds);
+            molecule.setBonds(bondsNode);
             moleculeTagNames.delete(molecule_js_1.BondArray.tagName);
         }
         else {
             let xml_bonds = xml_molecules[i].getElementsByTagName(molecule_js_1.Bond.tagName);
-            if (xml_bonds.length == 1) {
-                bondsNode = new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[0]));
-            }
-            else if (xml_bonds.length > 1) {
-                throw new Error("Expecting 1 " + molecule_js_1.Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + molecule_js_1.BondArray.tagName + "?");
+            if (xml_bonds.length > 0) {
+                if (xml_bonds.length > 1) {
+                    throw new Error("Expecting 1 " + molecule_js_1.Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + molecule_js_1.BondArray.tagName + "?");
+                }
+                let bonds = [];
+                bonds.push(new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bonds[0])));
+                bondsNode = new molecule_js_1.BondArray((0, xml_js_1.getAttributes)(xml_bondArrays[0]), bonds);
+                molecule.setBonds(bondsNode);
             }
         }
         moleculeTagNames.delete(molecule_js_1.Bond.tagName);
@@ -5637,22 +5677,28 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
  * Save to XML file.
  */
 function saveXML() {
-    console.log("saveXML");
-    const pad = "  ";
-    // Create a Blob object from the data
-    let blob = new Blob([mesmer_js_1.Mesmer.header, mesmer.toXML(pad, pad)], { type: "text/plain" });
-    // Create a new object URL for the blob
-    let url = URL.createObjectURL(blob);
-    // Create a new 'a' element
-    let a = document.createElement("a");
-    // Set the href and download attributes for the 'a' element
-    a.href = url;
-    let title = mesmer.getTitle()?.value;
-    a.download = title.replace(/[^a-z0-9]/gi, '_') + ".xml";
-    // Append the 'a' element to the body and click it to start the download
-    document.body.appendChild(a);
-    a.click();
-    // Remove the 'a' element after the download starts
-    document.body.removeChild(a);
+    if (mesmer == null) {
+        alert("No Mesmer object to save.");
+        return;
+    }
+    else {
+        console.log("saveXML");
+        const pad = "  ";
+        // Create a Blob object from the data
+        let blob = new Blob([mesmer_js_1.Mesmer.header, mesmer.toXML(pad, "")], { type: "text/plain" });
+        // Create a new object URL for the blob
+        let url = URL.createObjectURL(blob);
+        // Create a new 'a' element
+        let a = document.createElement("a");
+        // Set the href and download attributes for the 'a' element
+        a.href = url;
+        let title = mesmer.getTitle()?.value;
+        a.download = title.replace(/[^a-z0-9]/gi, '_') + ".xml";
+        // Append the 'a' element to the body and click it to start the download
+        document.body.appendChild(a);
+        a.click();
+        // Remove the 'a' element after the download starts
+        document.body.removeChild(a);
+    }
 }
 //# sourceMappingURL=app.js.map
