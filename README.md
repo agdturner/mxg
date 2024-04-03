@@ -18,6 +18,7 @@ PWA installation varies by Web browser/device:
 
 MXG is built, packaged and deployed using [Node](https://nodejs.org/) and [Parcel](https://parceljs.org/). The main source code is [TypeScript](https://www.typescriptlang.org/). There are also [JSON](https://www.json.org/json-en.html) configuration files and a [Web Worker](https://en.wikipedia.org/wiki/Web_worker) [JavaScript](https://en.wikipedia.org/wiki/JavaScript) file.
 
+The 3D rendering of any molecules with coordinates is provded by 3DMol.js which incorporates code from GLmol, Three.js, and jQuery and is licensed under a BSD-3-Clause license. For more details on 3DMol.js please visit the GitHub repository: [https://github.com/3dmol/3Dmol.js](https://github.com/3dmol/3Dmol.js)
 
 ## Contributing
 - Community contribution will be facilitated in future, but for the time being, development is being done by a closed group...
@@ -32,25 +33,29 @@ Currently supported are those involved in alpha testing. A community release wit
     -  Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
 - Please report issues with documentation/installation/use to help develop something better...
 
-### Version 0.6
-- This builds on Version 0.5
-- Buttons text is used to provide information to users about how to use the GUI rather than leaving it for users to be guided by intuition. It is hoped that this makes the program more user friendly and accessible.
+### Version 0.9
+- Changes since 0.5:
+  - 3DMol.js is used to visualise molecules with 3D coordinates.
+  - Multiple Control elements are handled.
+  - Atom and Bond arrays are shown and editable.
+  - Rather than using labels and checkboxes, buttons with appropriate text are used.
+  - More detail has been added to Control, ModelParameter and Condition sections of the GUI.
+  - There is a menu and welcome text rather than just a load button.
+  - Various bugs were fixes.
+  - More numerical values are now output in exponent format.
+  - The reaction well diagram can be popped out and popped back. 
 
 ### Version 0.5
-- This builds on Version 0.4
-- For the example [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) file:
-  - There were no major new features in this release. There was a major refactoring underway and the release was used to discuss user interface design.
+- This is a refactoring of Version 0.4.
 
 ### Version 0.4
-- This builds on Version 0.3
-- For the example [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) file:
-  - This was supposed to present all control options, but tere are issues.
-  - If the users edits a me:ZPE property, the reaction well diagram should update.
+- Changes since 0.3:
+  - More control options added.
+  - If the users edits a me:ZPE property, the reaction well diagram updates.
 
 ### Version 0.3
-- This builds on Version 0.2
-- For the example [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) file:
-  - This is supposed to reveal all details and make these editable.
+- Changes sine 0.2.
+  - More details are revealed and made these editable.
 
 ### Version 0.2
 - This builds on Version 0.1
@@ -58,10 +63,6 @@ Currently supported are those involved in alpha testing. A community release wit
   - The rotation constants and vibration frequencies can now also be edited.
   - Rather than present the data for molecules in a single table, the details are collapsible and editable via buttons.
   - Additional tables present data for: Conditions, Model Parameters, and Control.
-- It had been the intention to:
-1. Ensure additional details are exposed and made editable for molecules.
-2. Make all details editable for all tables.
-- Progress has been made workign towards these additional features, but this is not included in this version...
 
 ### Version 0.1
 - A single `load` button should appear on the interface.
@@ -84,23 +85,11 @@ Currently supported are those involved in alpha testing. A community release wit
 ## Development RoadMap
 - Development is currently in an alpha phase...
 - Beta testing will follow...
-- Version 0.3 Sprint (focussing on priorities to 2024-03-21)
-  - Make all details of [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) editable
-  - Test loading of other XML files.
-  - Allow users to add molecules and reactions from scratch and use an existing XML file as a template.
-- Version 0.2 Sprint (focussing on priorities to 2024-03-07)
-  - Version 0.2 builds on Version 0.1
-  - Prioritised enhancements:
-1. Display all [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) details in HTML
-  - Include details not exposed already in Molecules and Reactions tables.
-    - No need to include atoms or bonds for molecules.
-  - Create tables for: Conditions, Model Parameters, and Control.
-2. Make all details editable.
 
  
 ## Developer Guide
 - This section contains instructions for setting up a development environment, and compiling and deploying new versions. There are also some trouble shooting hints.
-- [Microsoft Visual Studio Code](https://code.visualstudio.com/) with the [Copilot Extension](https://code.visualstudio.com/docs/copilot/overview) provides a helpful code development environment, but the choice is up to you.
+- [Microsoft Visual Studio Code](https://code.visualstudio.com/) with the [Copilot Extension](https://code.visualstudio.com/docs/copilot/overview) has been used by the main developer.
 
 
 ### Set Up
@@ -185,9 +174,5 @@ After adding, committing and pushing `dist/0.2`, the online version and PWA were
 [https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
 
 ### Trouble Shooting Guide
-- Try deleting the `node_modules` directory and the `.parcel-cache` and building and launching again.
-  - This will recreate these things which are built and puposefully not contained in the repository.
-    - They should be built/installed for your particular set up... 
-- A machine reboot may help...
-- If issues persist, please do not struggle and communicate with the main developer...
-  - The set up for users and developers is intended to be a simple process with a minimal set of steps...
+1. Try deleting the `.parcel-cache` and launching again.
+2. Try deleting the `node_modules` directory and building again, then try launching and if this fails repeat 1.
