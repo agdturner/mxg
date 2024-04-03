@@ -207,7 +207,7 @@ export class AtomArray extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
-     * The index. The keys are the index of the atom in the nodes and the values are the atom ids.
+     * The reverse index. The keys are the index of the atom in the nodes and the values are the atom ids.
      */
     reverseIndex: Map<number, string>;
 
@@ -244,7 +244,7 @@ export class AtomArray extends NodeWithNodes {
      * @returns The id of the atom.
      */
     addAtom(atom: Atom): string {
-        console.log('Adding atom...');
+        //console.log('Adding atom...');
         let id: string | undefined = atom.getId();
         if (id == undefined) {
             id = this.getNextAtomID();
@@ -252,16 +252,17 @@ export class AtomArray extends NodeWithNodes {
         } else {
             if (this.atoms.has(id)) {
                 let newID: string = this.getNextAtomID();
-                console.log('Atom with id ' + id + ' already exists, adding with id ' + newID);
+                console.warn('Atom with id ' + id + ' already exists, adding with id ' + newID);
                 atom.setId(newID);
                 id = newID;
             }
         }
-        console.log('Atom id: ' + id);
+        //console.log('Atom id: ' + id);
         this.index.set(id, this.nodes.size);
         this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, atom);
         this.atoms.set(id, atom);
+        /*
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
         console.log('this.atoms.size ' + this.atoms.size);
@@ -271,6 +272,7 @@ export class AtomArray extends NodeWithNodes {
         console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */
         return id;
     }
 
@@ -300,6 +302,7 @@ export class AtomArray extends NodeWithNodes {
         //this.index.delete(id);
         //this.nodes.delete(i);
         this.deleteNodeAndReindex(i, id);
+        /*
         console.log('i ' + i);
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
@@ -308,17 +311,20 @@ export class AtomArray extends NodeWithNodes {
         console.log('this.index.values() ' + Array.from(this.index.values()));
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */
     }
 
+    /**
+     * @param i The index of the atom to remove.
+     * @param id The id of the atom to remove.
+     */
     deleteNodeAndReindex(i: number, id: string): void {
         this.nodes.delete(i);
         this.index.delete(id);
         this.reverseIndex.delete(i);
-
         let newNodes = new Map<number, Atom>();
         let newIndex = new Map<string, number>();
         let newReverseIndex = new Map<number, string>();
-
         this.index.forEach((value, key) => {
             if (value > i) {
                 newNodes.set(value - 1, this.nodes.get(value) as Atom);
@@ -330,7 +336,6 @@ export class AtomArray extends NodeWithNodes {
                 newReverseIndex.set(value, key);
             }
         });
-
         this.nodes = newNodes;
         this.index = newIndex;
         this.reverseIndex = newReverseIndex;
@@ -339,9 +344,11 @@ export class AtomArray extends NodeWithNodes {
 
 /**
  * An atomic bond between two atoms in a molecule.
- * Instances must have a "atomRefs2" attribute - a space separated list of two atom ids.
- * The attributes may include "order" - presumed to be the order of the bond. Generally:
- *  order = (the number of bonding electrons) - ((the number of non-bonding electrons) / 2).
+ * Instances must have the following attributes:
+ * "atomRefs2" - a space separated list of two atom ids.
+ * The attributes may include:
+ * "id" - a unique identifier for the bond.
+ * "order" - the order of the bond. Generally: order = (the number of bonding electrons) - ((the number of non-bonding electrons) / 2).
  * In the XML, a "bond" node is typically a child of a "bondArray" parent node.
  */
 export class Bond extends TagWithAttributes {
@@ -392,7 +399,7 @@ export class Bond extends TagWithAttributes {
     }
 
     /**
-     * @returns The attribute value referred to by "id" or undefined.
+     * @returns The id.
      */
     getId(): string | undefined {
         return this.attributes.get(Bond.s_id);
@@ -435,81 +442,156 @@ export class BondArray extends NodeWithNodes {
      */
     static readonly tagName: string = "bondArray";
 
+    /**
+     * The bonds stored in a lookup from id to bond.
+     */
+    bonds: Map<string, Bond>;
 
     /**
-     * The bonds stored for convenience.
+     * The index. The keys are the bond ids and the values are the index of the bond in the nodes.
      */
-    bonds: Bond[];
+    index: Map<string, number>;
+
+    /**
+     * The reverse index. The keys are the index of the bond in the nodes and the values are the bond ids.
+     */
+    reverseIndex: Map<number, string>;
 
     /**
      * @param attributes The attributes.
-     * @param bonds A Map of bonds with keys as ids.
+     * @param bonds The bonds.
      */
-    constructor(attributes: Map<string, string>, bonds?: Bond[]) {
+    constructor(attributes: Map<string, string>, bonds?: Map<string, Bond>) {
         super(attributes, BondArray.tagName);
-        if (bonds != undefined) {
+        this.index = new Map();
+        this.reverseIndex = new Map();
+        if (bonds == undefined) {
+            this.bonds = new Map();
+        } else {
             this.bonds = bonds;
-            bonds.forEach(bond => {
+            bonds.forEach((bond, id) => {
+                this.index.set(id, this.nodes.size);
+                this.reverseIndex.set(this.nodes.size, id);
                 this.nodes.set(this.nodes.size, bond);
             });
-        } else {
-            this.bonds = [];
         }
     }
 
     /**
-     * @param i The index of the bond.
-     * @returns The bond at the given index.
-     * @throws Error if this.bonds has no such index.
+     * @returns The bond ids.
      */
-    getBond(i: number): Bond | undefined {
-        return this.bonds[i];
+    getBondIds(): string[] {
+        return Array.from(this.bonds.keys());
     }
 
     /**
-     * @returns The bonds.
+     * @param id The id of the bond to get.
+     * @returns The bond with the given id.
      */
-    getBonds(): Bond[] {
-        return this.bonds;
-    }
-
-    /**
-     * Set the bond at the given index.
-     * @param i The index.
-     * @param bond The bond.
-     * @throws Error if this.bonds has no such index.
-     */
-    setBond(i: number, bond: Bond): void {
-        this.bonds[i] = bond;
-        this.nodes.set(i, bond);
+    getBond(id: string): Bond | undefined {
+        return this.bonds.get(id);
     }
 
     /**
      * Adds a bond to the array.
      * @param bond The bond to add.
      */
-    addBond(bond: Bond): void {
-        this.bonds.push(bond);
+    addBond(bond: Bond): string {
+        //console.log('Add ' + bond.tagName + '...');
+        let id: string | undefined = bond.getId();
+        if (id == undefined) {
+            id = this.getNextBondID();
+            bond.setId(id);
+        } else {
+            if (this.bonds.has(id)) {
+                let newID: string = this.getNextBondID();
+                console.log('Bond with id ' + id + ' already exists, adding with id ' + newID);
+                bond.setId(newID);
+                id = newID;
+            }
+        }
+        //console.log('Bond id: ' + id);
+        this.index.set(id, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, bond);
+        this.bonds.set(id, bond);
+        /*
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.reverseIndex.keys() ' + Array.from(this.reverseIndex.keys()));
+        console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */
+        return id;
+    }
+
+    /**
+     * @returns The atomId.
+     */
+    getNextBondID(): string {
+        let i: number = 1;
+        let id: string = "b" + i.toString();
+        while (this.bonds.has(id)) {
+            i++;
+            id = "b" + i.toString();
+        }
+        return id;
+    }
+
+    /**
+     * @param id The id of the atom to remove.
+     */
+    removeBond(id: string): void {
+        let i: number | undefined = this.index.get(id);
+        if (i == undefined) {
+            throw new Error('Bond with id ' + id + ' does not exist!');
+        }
+        console.log('Removing bond with id ' + id);
+        this.bonds.delete(id);
+        //this.index.delete(id);
+        //this.nodes.delete(i);
+        this.deleteNodeAndReindex(i, id);
+        /*
+        console.log('i ' + i);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */
     }
 
     /**
      * @param i The index of the bond to remove.
+     * @param id The id of the bond to remove.
      */
-    removeBond(i: number): void {
-        this.bonds.splice(i, 1);
+    deleteNodeAndReindex(i: number, id: string): void {
         this.nodes.delete(i);
-    }
-
-    /**
-     * Get a set of all the bond ids.
-     */
-    getBondIds(): Set<string> {
-        let bondIds: Set<string> = new Set();
-        this.bonds.forEach((bond) => {
-            bondIds.add(bond.getId() as string);
+        this.index.delete(id);
+        this.reverseIndex.delete(i);
+        let newNodes = new Map<number, Bond>();
+        let newIndex = new Map<string, number>();
+        let newReverseIndex = new Map<number, string>();
+        this.index.forEach((value, key) => {
+            if (value > i) {
+                newNodes.set(value - 1, this.nodes.get(value) as Bond);
+                newIndex.set(key, value - 1);
+                newReverseIndex.set(value - 1, key);
+            } else {
+                newNodes.set(value, this.nodes.get(value) as Bond);
+                newIndex.set(key, value);
+                newReverseIndex.set(value, key);
+            }
         });
-        return bondIds;
+        this.nodes = newNodes;
+        this.index = newIndex;
+        this.reverseIndex = newReverseIndex;
     }
 }
 
@@ -697,7 +779,7 @@ export class Property extends NodeWithNodes {
     /**
      * @returns The property.
      */
-    getProperty(): PropertyScalar | PropertyArray| PropertyMatrix {
+    getProperty(): PropertyScalar | PropertyArray | PropertyMatrix {
         return this.nodes.get(0) as PropertyScalar | PropertyArray | PropertyMatrix;
     }
 
@@ -1271,7 +1353,7 @@ export class HinderedRotorPotential extends NodeWithNodes {
     /**
      * The permitted formats.
      */
-    static readonly formats: string[] = ["numerical", "analytical"];
+    static readonly formats: Set<string> = new Set(["numerical", "analytical"]);
 
     /**
      * The key for the format attribute value.
@@ -1845,7 +1927,7 @@ export class Molecule extends NodeWithNodes {
 
     /**
      * @param atomId The id of the atom.
-     * @returns The atoms for the given atomId.
+     * @returns The atom for the given atomId.
      */
     getAtom(atomId: string): Atom | undefined {
         return this.getAtoms().getAtom(atomId);
@@ -1868,49 +1950,27 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
+     * @param bondId The id of the bond.
+     * @returns The bond for the given bondId.
+     */
+    getBond(bondId: string): Bond | undefined {
+        return this.getBonds().getBond(bondId);
+    }
+
+    /**
      * @returns The bonds of the molecule.
      */
-    getBonds(): BondArray | undefined {
-        let i: number | undefined = this.index.get(BondArray.tagName);
-        if (i != undefined) {
-            return this.nodes.get(i) as BondArray;
-        }
+    getBonds(): BondArray {
+        let i: number = this.index.get(BondArray.tagName) as number;
+        return this.nodes.get(i) as BondArray;
     }
 
     /**
      * @param bonds The bonds.
      */
     setBonds(bonds: BondArray) {
-        let i: number | undefined = this.index.get(BondArray.tagName);
-        if (i == undefined) {
-            this.index.set(BondArray.tagName, this.nodes.size);
-            this.addNode(bonds);
-        } else {
-            this.nodes.set(i, bonds);
-        }
-    }
-
-    /**
-     * @param bond The bond to add.
-     */
-    addBond(bond: Bond) {
-        let bonds: BondArray | undefined = this.getBonds();
-        if (bonds == undefined) {
-            bonds = new BondArray(new Map());
-            this.nodes.set(this.nodes.size, bonds);
-            this.index.set(BondArray.tagName, this.nodes.size - 1);
-        }
-        bonds.addNode(bond);
-    }
-
-    /**
-     * @param i The index of the bond to remove.
-     */
-    removeBond(i: number) {
-        let bonds: BondArray | undefined = this.getBonds();
-        if (bonds != undefined) {
-            bonds.removeBond(i);
-        }
+        this.index.set(BondArray.tagName, this.nodes.size);
+        this.nodes.set(this.nodes.size, bonds);
     }
 
     /**

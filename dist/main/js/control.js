@@ -1866,14 +1866,19 @@ class Control extends xml_1.NodeWithNodes {
      */
     static tagName = "me:control";
     /**
+     * The id.
+     */
+    id;
+    /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
     index;
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes) {
+    constructor(attributes, id) {
         super(attributes, Control.tagName);
+        this.id = id;
         this.index = new Map();
     }
     /**

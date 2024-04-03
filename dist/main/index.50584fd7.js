@@ -810,15 +810,15 @@ let popWindow;
     p1.style.alignContent = "center";
     let p2 = document.createElement("p");
     welcomeDiv.appendChild(p2);
-    p2.textContent = "MXG development was funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January 2024.";
+    p2.textContent = "MXG development is funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January     to April 2024.";
     let p3 = document.createElement("p");
     welcomeDiv.appendChild(p3);
-    p3.textContent = "The menu above contains buttons. The Load button is tyo be used to select a MESMER file to load (the file         will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use         the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it         will contain no comments, values will be trimmed of white space, and some numbers may be output in a standard         scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.";
+    p3.textContent = "The menu Load button is to be used to select a MESMER file to load (the file loaded will not be modified).         MXG reads the file and presents the data it contains so that the user can make changes and use the Save button to generate         a new MESMER file. The saved file should have the same content as was loaded except it will contain no comments or blank         lines, values will be trimmed of white space, and some numbers may be output in a standard scientific notation if they were         not already. The saved file will also reflect any changes specified using the GUI.";
     let p4 = document.createElement("p");
     welcomeDiv.appendChild(p4);
-    p4.textContent = "MXG aims to be user-friendly and accessible. Between the Load and Save buttons are buttons to         increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to         support users without normal colour vision.";
+    p4.textContent = "Between the Load and Save buttons are buttons to increase or decrease the font size. In addition to changing the         text size of any text components, this will also redraw the reaction diagram so that the text rendered onto the canvas reflects         this change. It is planned to have themes selectable to provide a dark mode rendering and to support users that struggle to         distinguish between certain colours.";
     let p5 = document.createElement("p");
-    p5.textContent += "The development is in an alpha release phase and is not recommended for general use. A community release with         ongoing support from MESMER developers is scheduled for the end of April 2024. MXG is free and open source software based on         free and open source software. The main development GitHub repository is:";
+    p5.textContent += "The development is in an alpha release phase and is not recommended for general use. A community release that         is to be supported by the MESMER community is scheduled for the end of April 2024. MXG is free and open source software based on         free and open source software. The main development GitHub repository is:";
     p5.appendChild(mxg_a);
     welcomeDiv.appendChild(p5);
     let p6 = document.createElement("p");
@@ -840,6 +840,9 @@ let popWindow;
     let p10 = document.createElement("p");
     instructionsDiv.appendChild(p10);
     p10.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain         a triangular symbol which indicate a collapsed (triangle orientated with a point down: \u25BC) or expanded (triangle with a point         up: \u25B2) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
+    let p11 = document.createElement("p");
+    instructionsDiv.appendChild(p11);
+    p10.textContent = 'The 3D rendering of any molecules with coordinates is provded by <a href="https://github.com/3dmol/3Dmol.js">3DMol.js</a> which incorporates code from GLmol,     Three.js, and jQuery and is licensed under a BSD-3-Clause license.';
 });
 /**
  *  Redraw the reactions diagram.
@@ -1068,20 +1071,20 @@ let popWindow;
         level: level0,
         contentDivId: modelParametersListDiv.id
     }));
-    // Controls.
-    let controlsDivId1 = "controls";
-    let controlsDiv = document.getElementById(controlsDivId1);
-    let controlsListDiv = processControl(xml);
-    controlsListDiv.id = "controlList";
-    // If the controlListDiv already exists, remove it.
-    (0, _htmlJs.remove)(controlsListDiv.id);
-    controlsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
-        content: controlsListDiv,
+    // Control.
+    let controlDivId = "control";
+    let controlDiv = document.getElementById(controlDivId);
+    let controlsDiv = processControl(xml);
+    controlsDiv.id = "controls";
+    // If the controlsDiv already exists, remove it.
+    (0, _htmlJs.remove)(controlsDiv.id);
+    controlDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+        content: controlsDiv,
         buttonLabel: "Controls",
         buttonFontSize: fontSize1,
         boundary: boundary1,
         level: level0,
-        contentDivId: controlsListDiv.id
+        contentDivId: controlsDiv.id
     }));
     // Initiate action listeners for collapsible content.
     (0, _htmlJs.makeCollapsible)();
@@ -1164,7 +1167,7 @@ let popWindow;
                 // Create a new Atom.
                 let atom = new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_atoms[j]));
                 let atomId = atomArray.addAtom(atom);
-                console.log("atomId=" + atomId);
+                //console.log("atomId=" + atomId);
                 // Add the atomDiv to the atomArrayDiv.
                 let atomDiv = (0, _htmlJs.createFlexDiv)(level3);
                 atomArrayDiv.appendChild(atomDiv);
@@ -1296,18 +1299,45 @@ let popWindow;
         if (xml_bondArrays.length > 0) {
             if (xml_bondArrays.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.BondArray).tagName + " but finding " + xml_bondArrays.length + "!");
             let xml_bonds = xml_bondArrays[0].getElementsByTagName((0, _moleculeJs.Bond).tagName);
-            let bonds = [];
-            for(let j = 0; j < xml_bonds.length; j++)bonds.push(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[j])));
-            bondArray = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArrays[0]), bonds);
+            bondArray = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArrays[0]));
+            for(let j = 0; j < xml_bonds.length; j++){
+                // Create a new Bond.
+                let bond = new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[j]));
+                let bondId = bondArray.addBond(bond);
+                // Add the bondDiv to the bondArrayDiv.
+                let bondDiv = (0, _htmlJs.createFlexDiv)(level3);
+                bondArrayDiv.appendChild(bondDiv);
+                let inputId = moleculeId + "_" + bondId;
+                bondDiv.appendChild((0, _htmlJs.createLabel)((0, _moleculeJs.Bond).s_id + " " + bondId, boundary1));
+                // atomRefs2.
+                let atomRefs2 = bond.atomRefs2;
+                let atomRefs2lwi = (0, _htmlJs.createLabelWithInput)("text", inputId + "_" + (0, _moleculeJs.Bond).s_atomRefs2, boundary1, boundary1, (event)=>{
+                    let target = event.target;
+                    bond.setAtomRefs2(target.value);
+                    console.log("The " + (0, _moleculeJs.Bond).s_atomRefs2 + " has changed from " + atomRefs2 + " to " + target.value);
+                    (0, _htmlJs.resizeInputElement)(target);
+                }, atomRefs2, (0, _moleculeJs.Bond).s_atomRefs2, fontSize3);
+                bondDiv.appendChild(atomRefs2lwi);
+                // order.
+                let orderId = inputId + "_" + (0, _moleculeJs.Bond).s_order;
+                processOrder(bond, bondDiv, orderId, (0, _moleculeJs.Bond).s_order);
+                // Add a remove bond button.
+                let removeBondButton = (0, _htmlJs.createButton)(removeString, boundary1);
+                bondDiv.appendChild(removeBondButton);
+                removeBondButton.style.fontSize = fontSize4;
+                removeBondButton.addEventListener("click", ()=>{
+                    molecule.getBonds().removeBond(bondId);
+                    bondDiv.remove();
+                });
+            }
             molecule.setBonds(bondArray);
             moleculeTagNames.delete((0, _moleculeJs.BondArray).tagName);
         } else {
             let xml_bonds = xml_molecules[i].getElementsByTagName((0, _moleculeJs.Bond).tagName);
             if (xml_bonds.length > 0) {
                 if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _moleculeJs.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _moleculeJs.BondArray).tagName + "?");
-                let bonds = [];
-                bonds.push(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[0])));
-                bondArray = new (0, _moleculeJs.BondArray)((0, _xmlJs.getAttributes)(xml_bondArrays[0]), bonds);
+                bondArray = new (0, _moleculeJs.BondArray)(new Map());
+                bondArray.addBond(new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bonds[0])));
                 molecule.setBonds(bondArray);
             }
         }
@@ -1328,39 +1358,28 @@ let popWindow;
             viewer.setStyle({
                 stick: {}
             });
+            // Create a 3Dmol viewer control to turn labels on and off.
+            //viewer.addControl();
             atomArray.atoms.forEach(function(atom) {
-                if (atom.getElementType() == "C") viewer.addSphere({
+                let color = (0, _mesmerJs.Mesmer).atomColors.get(atom.getElementType()) || "Purple";
+                let am = (0, _mesmerJs.Mesmer).atomMasses.get(atom.getElementType()) || 1;
+                viewer.addSphere({
                     center: {
                         x: atom.getX3(),
                         y: atom.getY3(),
                         z: atom.getZ3()
                     },
-                    radius: 0.3,
-                    color: "orange"
+                    radius: 0.3 * am / 10.0,
+                    color: color
                 });
-                else if (atom.getElementType() == "H") viewer.addSphere({
-                    center: {
-                        x: atom.getX3(),
-                        y: atom.getY3(),
-                        z: atom.getZ3()
-                    },
-                    radius: 0.2,
-                    color: "blue"
-                });
-                else viewer.addSphere({
-                    center: {
-                        x: atom.getX3(),
-                        y: atom.getY3(),
-                        z: atom.getZ3()
-                    },
-                    radius: 0.3,
-                    color: "red"
-                });
+            //viewer.addLabel(atom.getElementType(), { position: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() } });
             });
             bondArray.bonds.forEach(function(bond) {
                 let atomIds = bond.atomRefs2.split(" ");
                 let atom1 = atomArray.getAtom(atomIds[0]);
                 let atom2 = atomArray.getAtom(atomIds[1]);
+                let order = bond.getOrder() || 1;
+                let color = (0, _mesmerJs.Mesmer).bondColors.get(order) || "Purple";
                 viewer.addCylinder({
                     start: {
                         x: atom1.getX3(),
@@ -1372,8 +1391,8 @@ let popWindow;
                         y: atom2.getY3(),
                         z: atom2.getZ3()
                     },
-                    radius: 0.1,
-                    color: "grey"
+                    radius: 0.02 * order,
+                    color: color
                 });
             });
             viewer.zoomTo();
@@ -1748,50 +1767,68 @@ let popWindow;
     div.appendChild(input);
 }
 /**
- * @param div The div to add the input to.
- * @param atom The atom.
- * @param id The id.
- * @param x3 The x3 value.
- * @param boundary The boundary.
- * @param level The level.
- */ /*
-function addX3(div: HTMLDivElement, atom: Atom, id: string, x3: number,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let x3String: string = (x3 || NaN).toExponential();
-    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            atom.setX3(parseFloat(target.value));
-            console.log("The " + Atom.s_x3 + " has changed from " + x3 + " to " + target.value);
-            resizeInputElement(target);
-        }, x3String, Atom.s_x3, fontSize3);
-    lwi.id = id;
-    div.appendChild(lwi);
+ * Process an order.
+ * @param bond The bond.
+ * @param bondDiv The bond div.
+ * @param orderId The order id.
+ * @param order The order name.
+ */ function processOrder(bond, bondDiv, orderId, order) {
+    let div = (0, _htmlJs.createFlexDiv)(boundary1);
+    bondDiv.appendChild(div);
+    let buttonTextContentSelected = order + selected;
+    let buttonTextContentDeselected = order + deselected;
+    let button = (0, _htmlJs.createButton)(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add("optionOn");
+    button.classList.add("optionOff");
+    let value = bond.getOrder();
+    if (value == undefined) {
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle("optionOn");
+    } else {
+        addOrder(div, bond, orderId, value, boundary1);
+        button.textContent = buttonTextContentSelected;
+        button.classList.toggle("optionOff");
+    }
+    // Add event listener for the button.
+    button.addEventListener("click", (event)=>{
+        // Check if the AtomArray already exists
+        if (document.getElementById(orderId) == null) {
+            addOrder(div, bond, orderId, NaN, boundary1);
+            button.textContent = buttonTextContentSelected;
+            button.classList.toggle("optionOff");
+            button.classList.toggle("optionOn");
+        } else {
+            // Remove any existing div.
+            document.getElementById(orderId)?.remove();
+            console.log("Removed " + orderId);
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle("optionOn");
+            button.classList.toggle("optionOff");
+        }
+    });
 }
-*/ /**
+/**
  * @param div The div to add the input to.
- * @param atom The atom.
+ * @param bond The bond.
  * @param id The id.
- * @param x3 The x3 value.
+ * @param value The order value.
  * @param boundary The boundary.
- * @param level The level.
- */ /*
-function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let y3String: string = (y3 || NaN).toExponential();
-    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            atom.setY3(parseFloat(target.value));
-            console.log("The " + Atom.s_y3 + " has changed from " + y3 + " to " + target.value);
-            resizeInputElement(target);
-        }, y3String, Atom.s_y3, fontSize3);
-    lwi.id = id;
-    div.appendChild(lwi);
+ */ function addOrder(div, bond, id, value, boundary) {
+    let valueString = (value || NaN).toExponential();
+    let input = (0, _htmlJs.createInput)("text", id + "_input", boundary);
+    input.addEventListener("change", (event)=>{
+        let target = event.target;
+        bond.setOrder(parseFloat(target.value));
+        console.log("Bond order changed from " + value + " to " + target.value);
+        (0, _htmlJs.resizeInputElement)(target);
+    });
+    input.value = valueString;
+    (0, _htmlJs.resizeInputElement)(input);
+    input.id = id;
+    div.appendChild(input);
 }
-*/ /**
+/**
  * Display the XML.
  * @param {string} xml The XML to display.
  */ function displayXML(xmlFilename, xml) {
@@ -2416,17 +2453,15 @@ window.set = setNumberNode;
             }, value.toExponential(), (0, _reactionJs.ExcessReactantConc).tagName);
             reactionDiv.appendChild(inputDiv);
         }
-        // Create a new collapsible div for the reaction.
-        let reactionCollapsibleDiv = (0, _htmlJs.getCollapsibleDiv)({
+        // Create a new collapsible div for the reaction and append to the reactionListDiv.
+        reactionListDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
             content: reactionDiv,
             buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
             buttonFontSize: fontSize2,
             boundary: boundary1,
             level: level1,
             contentDivId: reaction.tagName + "_" + reaction.id
-        });
-        // Append the collapsibleDiv to the reactionListDiv.
-        reactionListDiv.appendChild(reactionCollapsibleDiv);
+        }));
     }
     return reactionListDiv;
 }
@@ -3649,15 +3684,24 @@ window.set = setNumberNode;
     console.log((0, _controlJs.Control).tagName);
     // Get the XML "me:control" element.
     let xml_controls = xml.getElementsByTagName((0, _controlJs.Control).tagName);
-    // Create a collapsible div for controls.
     let controlsDiv = (0, _htmlJs.createDiv)(boundary1);
-    controlsDiv.id = controlsDivId;
     for(let i = 0; i < xml_controls.length; i++){
         let xml_control = xml_controls[i];
-        // Create div to contain the controls.
+        // Create div to contain the control.
         let controlDiv = (0, _htmlJs.createDiv)(boundary1);
-        let control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control));
+        controlDiv.id = "control" + i.toString();
+        let control = new (0, _controlJs.Control)((0, _xmlJs.getAttributes)(xml_control), i);
         mesmer.addControl(control);
+        // Create a collapsible div for control.
+        controlsDiv.appendChild((0, _htmlJs.getCollapsibleDiv)({
+            content: controlDiv,
+            buttonLabel: "Control " + i.toString(),
+            buttonFontSize: fontSize2,
+            boundary: boundary1,
+            level: level1,
+            contentDivId: controlDiv.id
+        }));
+        let level = level2;
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls = new Map();
         processCalculateRateCoefficientsOnly(control, onOffControls, xml_control);
@@ -3681,7 +3725,7 @@ window.set = setNumberNode;
         processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control);
         processForceMacroDetailedBalance(control, onOffControls, xml_control);
         // Create a div for the on/off controls.
-        let onOffControlsDiv = (0, _htmlJs.createFlexDiv)(level1);
+        let onOffControlsDiv = (0, _htmlJs.createFlexDiv)(level);
         let orderedOnOffControls = new Map([
             ...onOffControls.entries()
         ].sort());
@@ -3690,14 +3734,13 @@ window.set = setNumberNode;
         });
         controlDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        processTestMicroRates(control, controlDiv, xml_control);
-        processCalcMethod(control, controlDiv, xml_control);
-        processEigenvalues(control, controlDiv, xml_control);
-        processShortestTimeOfInterest(control, controlDiv, xml_control);
-        processMaximumEvolutionTime(control, controlDiv, xml_control);
-        processAutomaticallySetMaxEneControl(control, controlDiv, xml_control);
-        processDiagramEnergyOffset(control, controlDiv, xml_control);
-        controlsDiv.appendChild(controlDiv);
+        processTestMicroRates(control, controlDiv, xml_control, level);
+        processCalcMethod(control, controlDiv, xml_control, level);
+        processEigenvalues(control, controlDiv, xml_control, level);
+        processShortestTimeOfInterest(control, controlDiv, xml_control, level);
+        processMaximumEvolutionTime(control, controlDiv, xml_control, level);
+        processAutomaticallySetMaxEneControl(control, controlDiv, xml_control, level);
+        processDiagramEnergyOffset(control, controlDiv, xml_control, level);
     }
     return controlsDiv;
 }
@@ -4484,11 +4527,12 @@ window.set = setNumberNode;
 /**
  * Process "me:testMicroRates".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The control div.
  * @param xml_control The xml control.
- */ function processTestMicroRates(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processTestMicroRates(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.TestMicroRates).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -4607,11 +4651,12 @@ window.set = setNumberNode;
 /**
  * Process "me:calcMethod".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processCalcMethod(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processCalcMethod(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.CalcMethod).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5320,11 +5365,12 @@ window.set = setNumberNode;
 /**
  * Process "me:eigenvalues".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processEigenvalues(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processEigenvalues(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.Eigenvalues).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5389,11 +5435,12 @@ window.set = setNumberNode;
 /**
  * Process "me:shortestTimeOfInterest".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processShortestTimeOfInterest(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processShortestTimeOfInterest(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.ShortestTimeOfInterest).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5458,11 +5505,12 @@ window.set = setNumberNode;
 /**
  * Process "me:MaximumEvolutionTime".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processMaximumEvolutionTime(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processMaximumEvolutionTime(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.MaximumEvolutionTime).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5527,11 +5575,12 @@ window.set = setNumberNode;
 /**
  * Process "me:automaticallySetMaxEne".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processAutomaticallySetMaxEneControl(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processAutomaticallySetMaxEneControl(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.AutomaticallySetMaxEne).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5596,11 +5645,12 @@ window.set = setNumberNode;
 /**
  * Process me:diagramEnergyOffset.
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
- */ function processDiagramEnergyOffset(control, controlsDiv, xml_control) {
-    let div = (0, _htmlJs.createFlexDiv)(level1);
-    controlsDiv.appendChild(div);
+ * @param level The level.
+ */ function processDiagramEnergyOffset(control, controlDiv, xml_control, level) {
+    let div = (0, _htmlJs.createFlexDiv)(level);
+    controlDiv.appendChild(div);
     let tagName = (0, _controlJs.DiagramEnergyOffset).tagName;
     let xml = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected = tagName + selected;
@@ -5946,7 +5996,7 @@ window.set = setNumberNode;
     }
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./html.js":"aLPSL","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","./reaction.js":"8grVN","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
 /**
  * Thow an error if the key is not in the map otherwise return the value mapped to the key.
  * @param map The map to search in. 
@@ -6673,9 +6723,11 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "AtomArray", ()=>AtomArray);
 /**
  * An atomic bond between two atoms in a molecule.
- * Instances must have a "atomRefs2" attribute - a space separated list of two atom ids.
- * The attributes may include "order" - presumed to be the order of the bond. Generally:
- *  order = (the number of bonding electrons) - ((the number of non-bonding electrons) / 2).
+ * Instances must have the following attributes:
+ * "atomRefs2" - a space separated list of two atom ids.
+ * The attributes may include:
+ * "id" - a unique identifier for the bond.
+ * "order" - the order of the bond. Generally: order = (the number of bonding electrons) - ((the number of non-bonding electrons) / 2).
  * In the XML, a "bond" node is typically a child of a "bondArray" parent node.
  */ parcelHelpers.export(exports, "Bond", ()=>Bond);
 /**
@@ -6916,32 +6968,33 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
      * @param atom The atom to add.
      * @returns The id of the atom.
      */ addAtom(atom) {
-        console.log("Adding atom...");
+        //console.log('Adding atom...');
         let id = atom.getId();
         if (id == undefined) {
             id = this.getNextAtomID();
             atom.setId(id);
         } else if (this.atoms.has(id)) {
             let newID = this.getNextAtomID();
-            console.log("Atom with id " + id + " already exists, adding with id " + newID);
+            console.warn("Atom with id " + id + " already exists, adding with id " + newID);
             atom.setId(newID);
             id = newID;
         }
-        console.log("Atom id: " + id);
+        //console.log('Atom id: ' + id);
         this.index.set(id, this.nodes.size);
         this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, atom);
         this.atoms.set(id, atom);
-        console.log("this.index.size " + this.index.size);
-        console.log("this.nodes.size " + this.nodes.size);
-        console.log("this.atoms.size " + this.atoms.size);
-        console.log("this.index.keys() " + Array.from(this.index.keys()));
-        console.log("this.index.values() " + Array.from(this.index.values()));
-        console.log("this.reverseIndex.keys() " + Array.from(this.reverseIndex.keys()));
-        console.log("this.reverseIndex.values() " + Array.from(this.reverseIndex.values()));
-        console.log("this.nodes.keys() " + Array.from(this.nodes.keys()));
-        console.log("this.atoms.keys() " + Array.from(this.atoms.keys()));
-        return id;
+        /*
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.reverseIndex.keys() ' + Array.from(this.reverseIndex.keys()));
+        console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */ return id;
     }
     /**
      * @returns The atomId.
@@ -6964,16 +7017,20 @@ class AtomArray extends (0, _xmlJs.NodeWithNodes) {
         //this.index.delete(id);
         //this.nodes.delete(i);
         this.deleteNodeAndReindex(i, id);
-        console.log("i " + i);
-        console.log("this.index.size " + this.index.size);
-        console.log("this.nodes.size " + this.nodes.size);
-        console.log("this.atoms.size " + this.atoms.size);
-        console.log("this.index.keys() " + Array.from(this.index.keys()));
-        console.log("this.index.values() " + Array.from(this.index.values()));
-        console.log("this.nodes.keys() " + Array.from(this.nodes.keys()));
-        console.log("this.atoms.keys() " + Array.from(this.atoms.keys()));
-    }
-    deleteNodeAndReindex(i, id) {
+    /*
+        console.log('i ' + i);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */ }
+    /**
+     * @param i The index of the atom to remove.
+     * @param id The id of the atom to remove.
+     */ deleteNodeAndReindex(i, id) {
         this.nodes.delete(i);
         this.index.delete(id);
         this.reverseIndex.delete(i);
@@ -7032,7 +7089,7 @@ class Bond extends (0, _xmlJs.TagWithAttributes) {
         this.attributes.set(Bond.s_atomRefs2, atomRefs2);
     }
     /**
-     * @returns The attribute value referred to by "id" or undefined.
+     * @returns The id.
      */ getId() {
         return this.attributes.get(Bond.s_id);
     }
@@ -7061,58 +7118,119 @@ class BondArray extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     * @param bonds A Map of bonds with keys as ids.
+     * @param bonds The bonds.
      */ constructor(attributes, bonds){
         super(attributes, BondArray.tagName);
-        if (bonds != undefined) {
+        this.index = new Map();
+        this.reverseIndex = new Map();
+        if (bonds == undefined) this.bonds = new Map();
+        else {
             this.bonds = bonds;
-            bonds.forEach((bond)=>{
+            bonds.forEach((bond, id)=>{
+                this.index.set(id, this.nodes.size);
+                this.reverseIndex.set(this.nodes.size, id);
                 this.nodes.set(this.nodes.size, bond);
             });
-        } else this.bonds = [];
+        }
     }
     /**
-     * @param i The index of the bond.
-     * @returns The bond at the given index.
-     * @throws Error if this.bonds has no such index.
-     */ getBond(i) {
-        return this.bonds[i];
+     * @returns The bond ids.
+     */ getBondIds() {
+        return Array.from(this.bonds.keys());
     }
     /**
-     * @returns The bonds.
-     */ getBonds() {
-        return this.bonds;
-    }
-    /**
-     * Set the bond at the given index.
-     * @param i The index.
-     * @param bond The bond.
-     * @throws Error if this.bonds has no such index.
-     */ setBond(i, bond) {
-        this.bonds[i] = bond;
-        this.nodes.set(i, bond);
+     * @param id The id of the bond to get.
+     * @returns The bond with the given id.
+     */ getBond(id) {
+        return this.bonds.get(id);
     }
     /**
      * Adds a bond to the array.
      * @param bond The bond to add.
      */ addBond(bond) {
-        this.bonds.push(bond);
+        //console.log('Add ' + bond.tagName + '...');
+        let id = bond.getId();
+        if (id == undefined) {
+            id = this.getNextBondID();
+            bond.setId(id);
+        } else if (this.bonds.has(id)) {
+            let newID = this.getNextBondID();
+            console.log("Bond with id " + id + " already exists, adding with id " + newID);
+            bond.setId(newID);
+            id = newID;
+        }
+        //console.log('Bond id: ' + id);
+        this.index.set(id, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, id);
         this.nodes.set(this.nodes.size, bond);
+        this.bonds.set(id, bond);
+        /*
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.reverseIndex.keys() ' + Array.from(this.reverseIndex.keys()));
+        console.log('this.reverseIndex.values() ' + Array.from(this.reverseIndex.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */ return id;
     }
+    /**
+     * @returns The atomId.
+     */ getNextBondID() {
+        let i = 1;
+        let id = "b" + i.toString();
+        while(this.bonds.has(id)){
+            i++;
+            id = "b" + i.toString();
+        }
+        return id;
+    }
+    /**
+     * @param id The id of the atom to remove.
+     */ removeBond(id) {
+        let i = this.index.get(id);
+        if (i == undefined) throw new Error("Bond with id " + id + " does not exist!");
+        console.log("Removing bond with id " + id);
+        this.bonds.delete(id);
+        //this.index.delete(id);
+        //this.nodes.delete(i);
+        this.deleteNodeAndReindex(i, id);
+    /*
+        console.log('i ' + i);
+        console.log('this.index.size ' + this.index.size);
+        console.log('this.nodes.size ' + this.nodes.size);
+        console.log('this.atoms.size ' + this.atoms.size);
+        console.log('this.index.keys() ' + Array.from(this.index.keys()));
+        console.log('this.index.values() ' + Array.from(this.index.values()));
+        console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
+        console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
+        */ }
     /**
      * @param i The index of the bond to remove.
-     */ removeBond(i) {
-        this.bonds.splice(i, 1);
+     * @param id The id of the bond to remove.
+     */ deleteNodeAndReindex(i, id) {
         this.nodes.delete(i);
-    }
-    /**
-     * Get a set of all the bond ids.
-     */ getBondIds() {
-        let bondIds = new Set();
-        this.bonds.forEach((bond)=>{
-            bondIds.add(bond.getId());
+        this.index.delete(id);
+        this.reverseIndex.delete(i);
+        let newNodes = new Map();
+        let newIndex = new Map();
+        let newReverseIndex = new Map();
+        this.index.forEach((value, key)=>{
+            if (value > i) {
+                newNodes.set(value - 1, this.nodes.get(value));
+                newIndex.set(key, value - 1);
+                newReverseIndex.set(value - 1, key);
+            } else {
+                newNodes.set(value, this.nodes.get(value));
+                newIndex.set(key, value);
+                newReverseIndex.set(value, key);
+            }
         });
-        return bondIds;
+        this.nodes = newNodes;
+        this.index = newIndex;
+        this.reverseIndex = newReverseIndex;
     }
 }
 class PropertyScalar extends (0, _xmlJs.NumberNode) {
@@ -7655,10 +7773,10 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
     static{
         /**
      * The permitted formats.
-     */ this.formats = [
+     */ this.formats = new Set([
             "numerical",
             "analytical"
-        ];
+        ]);
     }
     static{
         /**
@@ -8055,7 +8173,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param atomId The id of the atom.
-     * @returns The atoms for the given atomId.
+     * @returns The atom for the given atomId.
      */ getAtom(atomId) {
         return this.getAtoms().getAtom(atomId);
     }
@@ -8072,36 +8190,22 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         this.nodes.set(this.nodes.size, atoms);
     }
     /**
+     * @param bondId The id of the bond.
+     * @returns The bond for the given bondId.
+     */ getBond(bondId) {
+        return this.getBonds().getBond(bondId);
+    }
+    /**
      * @returns The bonds of the molecule.
      */ getBonds() {
         let i = this.index.get(BondArray.tagName);
-        if (i != undefined) return this.nodes.get(i);
+        return this.nodes.get(i);
     }
     /**
      * @param bonds The bonds.
      */ setBonds(bonds) {
-        let i = this.index.get(BondArray.tagName);
-        if (i == undefined) {
-            this.index.set(BondArray.tagName, this.nodes.size);
-            this.addNode(bonds);
-        } else this.nodes.set(i, bonds);
-    }
-    /**
-     * @param bond The bond to add.
-     */ addBond(bond) {
-        let bonds = this.getBonds();
-        if (bonds == undefined) {
-            bonds = new BondArray(new Map());
-            this.nodes.set(this.nodes.size, bonds);
-            this.index.set(BondArray.tagName, this.nodes.size - 1);
-        }
-        bonds.addNode(bond);
-    }
-    /**
-     * @param i The index of the bond to remove.
-     */ removeBond(i) {
-        let bonds = this.getBonds();
-        if (bonds != undefined) bonds.removeBond(i);
+        this.index.set(BondArray.tagName, this.nodes.size);
+        this.nodes.set(this.nodes.size, bonds);
     }
     /**
      * @returns The energy transfer model of the molecule.
@@ -8184,1633 +8288,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8grVN":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * A reference to a molecule, not to be confused with a Molecule.
- * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
- * The attribute "role" is the role of the molecule in the reaction. Expected values are:
- * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
- * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
- */ parcelHelpers.export(exports, "ReactionMolecule", ()=>ReactionMolecule);
-/**
- * A molecule that reacts in a reaction.
- * In the XML, a "reactant" node is a child of the "reaction" node and has a child "molecule" node.
- */ parcelHelpers.export(exports, "Reactant", ()=>Reactant);
-/**
- * A molecule produced in a reaction.
- * In the XML, a "product" node is a child of the "reaction" node and has a child "molecule" node.
- */ parcelHelpers.export(exports, "Product", ()=>Product);
-/**
- * A molecule that is a transition state in a reaction.
- * In the XML, a "me:transitionState" node is a child of the "reaction" node and has a child "molecule" node.
- */ parcelHelpers.export(exports, "TransitionState", ()=>TransitionState);
-/**
- * In the XML, a "me:preExponential" node is a child of a "me:MCRCMethod" node.
- */ parcelHelpers.export(exports, "PreExponential", ()=>PreExponential);
-/**
- * In the XML, a "me:activationEnergy" node is a child of a "me:MCRCMethod" node.
- */ parcelHelpers.export(exports, "ActivationEnergy", ()=>ActivationEnergy);
-/**
- * In the XML, a "me:TInfinity" node is a child of a "me:MCRCMethod" node.
- */ parcelHelpers.export(exports, "TInfinity", ()=>TInfinity);
-/**
- * In the XML, a "me:nInfinity" node is a child of a "me:MCRCMethod" node.
- */ parcelHelpers.export(exports, "NInfinity", ()=>NInfinity);
-/**
- * Extended classes indicate how microcanonical rate constant is to be treated.
- * In the XML, a "me:MCRCMethod" node is a child of a "reaction" node.
- * A simple MCRCMethod has an attribute name="RRKM".
- * There are extended classed representing more complicated MCRCMethods:
- * "me:MesmerILT"
- * "LandauZenerCrossing"
- * "ZhuNakamuraCrossing"
- * "me:CanonicalRateCoefficient"
- * "DefinedSumOfStates"
- */ parcelHelpers.export(exports, "MCRCMethod", ()=>MCRCMethod);
-/**
- * The Inverse Laplace Transform (ILT) type of microcanonical rate constant.
- */ parcelHelpers.export(exports, "MesmerILT", ()=>MesmerILT);
-/**
- * In the XML, the "me:tunneling" node is a child of a "reaction" node.
- * The "name" attribute is one of: [Eckart, WKB].
- */ parcelHelpers.export(exports, "Tunneling", ()=>Tunneling);
-/**
- * In the XML, the "me:excessReactantConc" node is a child of a "reaction" node.
- */ parcelHelpers.export(exports, "ExcessReactantConc", ()=>ExcessReactantConc);
-/**
- * A class for representing a reaction.
- */ parcelHelpers.export(exports, "Reaction", ()=>Reaction);
-var _xmlJs = require("./xml.js");
-class ReactionMolecule extends (0, _xmlJs.TagWithAttributes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "molecule";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param tagName The tag name.
-     * @param molecule The molecule (an abbreviated molecule).
-     */ constructor(attributes){
-        super(attributes, ReactionMolecule.tagName);
-        this.ref = attributes.get("ref");
-        this.role = attributes.get("role");
-    }
-    /**
-     * @param role The role of the molecule in the reaction.
-     */ setRole(role) {
-        this.role = role;
-    }
-}
-class Reactant extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "reactant";
-    }
-    static{
-        /**
-     * The role options.
-     */ this.roleOptions = [
-            "deficientReactant",
-            "excessReactant",
-            "modelled"
-        ];
-    }
-    /**
-     * @param attributes The attributes.
-     * @param molecule The reaction molecule.
-     */ constructor(attributes, molecule){
-        super(attributes, Reactant.tagName);
-        this.addNode(molecule);
-    }
-    /**
-     * @returns The molecule.
-     */ getMolecule() {
-        return this.nodes.get(0);
-    }
-}
-class Product extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "product";
-    }
-    static{
-        /**
-     * The role options.
-     */ this.roleOptions = [
-            "modelled",
-            "sink"
-        ];
-    }
-    /**
-     * @param attributes The attributes.
-     * @param molecule The reaction molecule.
-     */ constructor(attributes, molecule){
-        super(attributes, Product.tagName);
-        this.addNode(molecule);
-    }
-    /**
-     * @returns The molecule.
-     */ getMolecule() {
-        return this.nodes.get(0);
-    }
-}
-class TransitionState extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:transitionState";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param molecule The reaction molecule.
-     */ constructor(attributes, molecule){
-        super(attributes, TransitionState.tagName);
-        this.addNode(molecule);
-    }
-    /**
-     * @returns The molecule.
-     */ getMolecule() {
-        return this.nodes.get(0);
-    }
-}
-class PreExponential extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:preExponential";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value of the factor.
-     */ constructor(attributes, value){
-        super(attributes, PreExponential.tagName, value);
-    }
-}
-class ActivationEnergy extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:activationEnergy";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value of the factor.
-     */ constructor(attributes, value){
-        super(attributes, ActivationEnergy.tagName, value);
-    }
-}
-class TInfinity extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:TInfinity";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value of the factor.
-     */ constructor(attributes, value){
-        super(attributes, TInfinity.tagName, value);
-    }
-}
-class NInfinity extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:nInfinity";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value of the factor.
-     */ constructor(attributes, value){
-        super(attributes, NInfinity.tagName, value);
-    }
-}
-class MCRCMethod extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:MCRCMethod";
-    }
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     */ constructor(attributes){
-        super(attributes, MCRCMethod.tagName);
-    }
-}
-class MesmerILT extends MCRCMethod {
-    static{
-        /**
-     * The xsiType.
-     */ this.xsiType = "me:MesmerILT";
-    }
-    static{
-        /**
-     * The tag name.
-     */ this.xsiType2 = "MesmerILT";
-    }
-    /**
-     * Should any parameters be specified as being optional?
-     * @param attributes The attributes.
-     * @param preExponential The pre-exponential factor (optional).
-     * @param activationEnergy The activation energy (optional).
-     * @param tInfinity The TInfinity (optional).
-     * @param nInfinity The nInfinity (optional).
-     */ constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity){
-        super(attributes);
-        this.index = new Map();
-        if (preExponential != undefined) {
-            this.index.set(PreExponential.tagName, this.index.size);
-            this.addNode(preExponential);
-        }
-        if (activationEnergy != undefined) {
-            this.index.set(ActivationEnergy.tagName, this.index.size);
-            this.addNode(activationEnergy);
-        }
-        if (tInfinity != undefined) {
-            this.index.set(TInfinity.tagName, this.index.size);
-            this.addNode(tInfinity);
-        }
-        if (nInfinity != undefined) {
-            this.index.set(NInfinity.tagName, this.index.size);
-            this.addNode(nInfinity);
-        }
-    }
-    /**
-     * @returns The pre-exponential factor or undefined if it does not exist.
-     */ getPreExponential() {
-        let i = this.index.get(PreExponential.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * @param preExponential The pre-exponential factor.
-     */ setPreExponential(preExponential) {
-        let i = this.index.get(PreExponential.tagName);
-        if (i == undefined) {
-            this.index.set(PreExponential.tagName, this.nodes.size);
-            this.addNode(preExponential);
-        } else this.nodes.set(i, preExponential);
-    }
-    /**
-     * @returns The activation energy or undefined if it does not exist.
-     */ getActivationEnergy() {
-        let i = this.index.get(ActivationEnergy.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * @param activationEnergy The activation energy.
-     */ setActivationEnergy(activationEnergy) {
-        let i = this.index.get(ActivationEnergy.tagName);
-        if (i == undefined) {
-            this.index.set(ActivationEnergy.tagName, this.nodes.size);
-            this.addNode(activationEnergy);
-        } else this.nodes.set(i, activationEnergy);
-    }
-    /**
-     * @returns The TInfinity or undefined if it does not exist.
-     */ getTInfinity() {
-        let i = this.index.get(TInfinity.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * @param tInfinity The TInfinity.
-     */ setTInfinity(tInfinity) {
-        let i = this.index.get(TInfinity.tagName);
-        if (i == undefined) {
-            this.index.set(TInfinity.tagName, this.nodes.size);
-            this.addNode(tInfinity);
-        } else this.nodes.set(i, tInfinity);
-    }
-    /**
-     * @returns The NInfinity or undefined if it does not exist.
-     */ getNInfinity() {
-        let i = this.index.get(NInfinity.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * @param nInfinity The NInfinity.
-     */ setNInfinity(nInfinity) {
-        let i = this.index.get(NInfinity.tagName);
-        if (i == undefined) {
-            this.index.set(NInfinity.tagName, this.nodes.size);
-            this.addNode(nInfinity);
-        } else this.nodes.set(i, nInfinity);
-    }
-}
-class Tunneling extends (0, _xmlJs.TagWithAttributes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:tunneling";
-    }
-    static{
-        /**
-     * The options.
-     */ this.options = [
-            "Eckart",
-            "WKB"
-        ];
-    }
-    static{
-        /**
-     * The key to the name attribute value.
-     */ this.s_name = "name";
-    }
-    /**
-     * @param {Map<string, string>} attributes The attributes.
-     */ constructor(attributes){
-        super(attributes, Tunneling.tagName);
-    }
-    /**
-     * @returns The name of the tunneling method.
-     */ getName() {
-        return this.attributes.get(Tunneling.s_name);
-    }
-    /**
-     * @param The name of the tunneling method.
-     */ setName(name) {
-        this.attributes.set(Tunneling.s_name, name);
-    }
-}
-class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:excessReactantConc";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value of the factor.
-     */ constructor(attributes, value){
-        super(attributes, ExcessReactantConc.tagName, value);
-    }
-}
-class Reaction extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "reaction";
-    }
-    static{
-        /**
-     * The key to the id attribute value.
-     */ this.s_id = "id";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param id The id of the reaction.
-     * @param reactants The reactants in the reaction.
-     * @param products The products of the reaction.
-     * @param tunneling The tunneling (optional).
-     * @param transitionStates The transition states (optional).
-     * @param mCRCMethod The MCRCMethod (optional).
-     * @param excessReactantConc The excess reactant concentration (optional).
-     */ constructor(attributes, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc){
-        super(attributes, Reaction.tagName);
-        this.index = new Map();
-        this.reactantsIndex = new Map();
-        this.productsIndex = new Map();
-        this.transitionStatesIndex = new Map();
-        let id = attributes.get(Reaction.s_id);
-        if (id == undefined) throw new Error(Reaction.s_id + " is undefined!");
-        this.id = id;
-        if (reactants != undefined) {
-            reactants.forEach((reactant)=>{
-                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
-                this.addNode(reactant);
-            });
-            this.index.set(Reactant.tagName, this.reactantsIndex);
-        }
-        if (products != undefined) {
-            products.forEach((product)=>{
-                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
-                this.addNode(product);
-            });
-            this.index.set(Product.tagName, this.productsIndex);
-        }
-        if (tunneling != undefined) {
-            this.index.set(Tunneling.tagName, this.nodes.size);
-            this.addNode(tunneling);
-        }
-        if (transitionStates != undefined) {
-            transitionStates.forEach((transitionState)=>{
-                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
-                this.addNode(transitionState);
-            });
-            this.index.set(TransitionState.tagName, this.transitionStatesIndex);
-        }
-        if (mCRCMethod != undefined) {
-            this.index.set(MCRCMethod.tagName, this.nodes.size);
-            this.addNode(mCRCMethod);
-        }
-        if (excessReactantConc != undefined) {
-            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
-            this.addNode(excessReactantConc);
-        }
-    }
-    /**
-     * Add a node to the index.
-     */ addToIndex(tagName, node) {
-        let v = this.index.get(tagName);
-        if (v == undefined) this.index.set(tagName, this.nodes.size);
-        else if (v instanceof Map) v.set(node.tagName, this.nodes.size);
-        else {
-            let map = new Map();
-            map.set(this.nodes.get(v).ref, v);
-            map.set(node.tagName, this.nodes.size);
-            this.index.set(tagName, map);
-        }
-    }
-    /**
-     * @returns The reactants.
-     */ getReactants() {
-        let i = this.index.get(Reactant.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
-    }
-    /**
-     * Set the reactants.
-     */ setReactants(reactants) {
-        reactants.forEach((reactant)=>{
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
-            this.addNode(reactant);
-        });
-        this.index.set(Reactant.tagName, this.reactantsIndex);
-    }
-    /**
-     * @returns A particular Reactant.
-     * @param ref The ref of the reactant to return.
-     * @returns The reactant at the given index.
-     */ getReactant(ref) {
-        let index = this.reactantsIndex.get(ref);
-        if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
-        return this.nodes.get(index);
-    }
-    /**
-     * @param reactant The reactant to add.
-     */ addReactant(reactant) {
-        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
-        this.addNode(reactant);
-    }
-    /**
-     * @param ref The ref of the reactant to remove.
-     */ removeReactant(ref) {
-        let index = this.reactantsIndex.get(ref);
-        if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
-        else {
-            this.nodes.delete(index);
-            this.reactantsIndex.delete(ref);
-        }
-    }
-    /**
-     * @returns The products.
-     */ getProducts() {
-        let i = this.index.get(Product.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
-    }
-    /**
-     * Set the products.
-     */ setProducts(products) {
-        products.forEach((product)=>{
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
-            this.addNode(product);
-        });
-        this.index.set(Product.tagName, this.productsIndex);
-    }
-    /**
-     * @returns A particular Product.
-     * @param ref The ref of the product to return.
-     * @returns The product at the given index.
-     */ getProduct(ref) {
-        let index = this.productsIndex.get(ref);
-        if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
-        return this.nodes.get(index);
-    }
-    /**
-     * @param product The product to add.
-     */ addProduct(product) {
-        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
-        this.addNode(product);
-    }
-    /**
-     * @param ref The ref of the product to remove.
-     */ removeProduct(ref) {
-        let index = this.productsIndex.get(ref);
-        if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
-        else {
-            this.nodes.delete(index);
-            this.productsIndex.delete(ref);
-        }
-    }
-    /**
-     * @returns The tunneling node or undefined if it does not exist.
-     */ getTunneling() {
-        let i = this.index.get(Tunneling.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * Set the tunneling node or create it if it is undefined.
-     */ setTunneling(tunneling) {
-        let i = this.index.get(Tunneling.tagName);
-        if (i == undefined) {
-            this.index.set(Tunneling.tagName, this.nodes.size);
-            this.addNode(tunneling);
-        } else {
-            if (i instanceof Map) throw new Error("Tunneling is a map and it is assumed there would be only 1!");
-            else this.nodes.set(i, tunneling);
-        }
-    }
-    /**
-     * @returns The transition states.
-     */ getTransitionStates() {
-        let i = this.index.get(TransitionState.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
-    }
-    /**
-     * Set the transition states.
-     */ setTransitionStates(transitionStates) {
-        transitionStates.forEach((transitionState)=>{
-            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
-            this.addNode(transitionState);
-        });
-        this.index.set(TransitionState.tagName, this.transitionStatesIndex);
-    }
-    /**
-     * @returns A particular TransitionState.
-     * @param ref The ref of the transition state to return.
-     * @returns The transition state at the given index.
-     */ getTransitionState(ref) {
-        let index = this.transitionStatesIndex.get(ref);
-        if (index == undefined) throw new Error(`Transition state with ref ${ref} not found`);
-        return this.nodes.get(index);
-    }
-    /**
-     * @param transitionState The transition state to add.
-     */ addTransitionState(transitionState) {
-        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
-        this.addNode(transitionState);
-    }
-    /**
-     * @param ref The ref of the transition state to remove.
-     */ removeTransitionState(ref) {
-        let index = this.transitionStatesIndex.get(ref);
-        if (index == undefined) throw new Error(`Transition State with ref ${ref} not found`);
-        else {
-            this.nodes.delete(index);
-            this.transitionStatesIndex.delete(ref);
-        }
-    }
-    /**
-     * @returns The MCRCMethod node or undefined if it does not exist.
-     */ getMCRCMethod() {
-        let i = this.index.get(MCRCMethod.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * Set the MCRCMethod node or create it if it is undefined.
-     */ setMCRCMethod(mCRCMethod) {
-        let i = this.index.get(MCRCMethod.tagName);
-        if (i == undefined) {
-            this.index.set(MCRCMethod.tagName, this.nodes.size);
-            this.addNode(mCRCMethod);
-        } else {
-            if (i instanceof Map) throw new Error("MCRCMethod is a map and it is assumed there would be only 1!");
-            else this.nodes.set(i, mCRCMethod);
-        }
-    }
-    /**
-     * @returns The excess reactant concentration or undefined if it does not exist.
-     */ getExcessReactantConc() {
-        let i = this.index.get(ExcessReactantConc.tagName);
-        if (i == undefined) return undefined;
-        return this.nodes.get(i);
-    }
-    /**
-     * Set the excess reactant concentration or create it if it is undefined.
-     */ setExcessReactantConc(excessReactantConc) {
-        let i = this.index.get(ExcessReactantConc.tagName);
-        if (i == undefined) {
-            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
-            this.addNode(excessReactantConc);
-        } else {
-            if (i instanceof Map) throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
-            else this.nodes.set(i, excessReactantConc);
-        }
-    }
-    /**
-     * Get the label of the reactants.
-     * @returns The label of the reactants.
-     */ getReactantsLabel() {
-        return this.getReactants().map((reactant)=>reactant.getMolecule().ref).join(" + ");
-    }
-    /**
-     * Returns the label for the products.
-     * @returns The label for the products.
-     */ getProductsLabel() {
-        return this.getProducts().map((product)=>product.getMolecule().ref).join(" + ");
-    }
-    /**
-     * Get the label of the reaction.
-     * @returns The label of the reaction.
-     */ getLabel() {
-        let label = this.getReactantsLabel() + " -> " + this.getProductsLabel();
-        return label;
-    }
-    /**
-     * Returns the total energy of all reactants.
-     * @returns The total energy of all reactants.
-     */ getReactantsEnergy(molecules) {
-        // Sum up the energy values of all the reactants in the reaction
-        return Array.from(this.getReactants()).map((reactant)=>{
-            let molecule = molecules.get(reactant.getMolecule().ref);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
-            return molecule.getEnergy();
-        }).reduce((a, b)=>a + b, 0);
-    }
-    /**
-     * Returns the total energy of all products.
-     * @returns The total energy of all products.
-     */ getProductsEnergy(molecules) {
-        // Sum up the energy values of all the products in the reaction
-        return Array.from(this.getProducts()).map((product)=>{
-            let molecule = molecules.get(product.getMolecule().ref);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
-            return molecule.getEnergy();
-        }).reduce((a, b)=>a + b, 0);
-    }
-    /**
-     * @param tagName The tag name.
-     * @param dictRef The dictRef.
-     * @returns The node with the tag name and dictRef or undefined if it does not exist.
-     */ get(tagName, dictRef) {
-        if (this.index.has(tagName)) {
-            let i = this.index.get(tagName);
-            if (i != undefined) {
-                if (i instanceof Map) {
-                    let nodeIndex = i.get(dictRef);
-                    if (nodeIndex != undefined) return this.nodes.get(nodeIndex);
-                } else return this.nodes.get(i);
-            }
-        }
-    }
-}
-
-},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hoJRr":[function(require,module,exports) {
-/**
- * Draw a horizontal line and add labels.
- * @param ctx The context to use.
- * @param strokeStyle The name of a style to use for the line.
- * @param strokewidth The width of the line.
- * @param x0 The start x-coordinate of the line.
- * @param y0 The start y-coordinate of the line. Also used for an energy label.
- * @param x1 The end x-coordinate of the line.
- * @param y1 The end y-coordinate of the line.
- * @param font The font to use.
- * @param th The height of the text in pixels.
- * @param label The label.
- * @param energyString The energy.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "drawLevel", ()=>drawLevel);
-/**
- * Draw a line (segment) on the canvas.
- * @param ctx The context to use.
- * @param strokeStyle The name of a style to use for the line.
- * @param x1 The start x-coordinate of the line.
- * @param y1 The start y-coordinate of the line.
- * @param x2 The end x-coordinate of the line.
- * @param y2 The end y-coordinate of the line.
- */ parcelHelpers.export(exports, "drawLine", ()=>drawLine);
-/**
- * Writes text to the canvas. (It is probably better to write all the labels in one go.)
- * @param ctx The context to use.
- * @param text The text to write.
- * @param font The font to use.
- * @param colour The colour of the text.
- * @param x The horizontal position of the text.
- * @param y The vertical position of the text.
- */ parcelHelpers.export(exports, "writeText", ()=>writeText);
-/**
- * @param ctx The context to use.
- * @param text The text to get the height of.
- * @param font The font to use.
- * @returns The height of the text in pixels.
- */ parcelHelpers.export(exports, "getTextHeight", ()=>getTextHeight);
-/**
- * @param ctx The context to use.
- * @param text The text to get the width of.
- * @param font The font to use.
- * @returns The width of the text in pixels.
- */ parcelHelpers.export(exports, "getTextWidth", ()=>getTextWidth);
-function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, label, energyString) {
-    let x_centre = x0 + (x1 - x0) / 2;
-    writeText(ctx, energyString, font, strokeStyle, getTextStartX(ctx, energyString, font, x_centre), y1 + th);
-    writeText(ctx, label, font, strokeStyle, getTextStartX(ctx, label, font, x_centre), y1 + 3 * th);
-    drawLine(ctx, strokeStyle, strokewidth, x0, y0, x1, y1);
-}
-/**
- * @param ctx The context to use.
- * @param text The text to get the start x-coordinate of.
- * @paramfont The font to use.  
- * @param x_centre The x-coordinate of the centre of the text.
- * @returns The x-coordinate of the start of the text.
- */ function getTextStartX(ctx, text, font, x_centre) {
-    let tw = getTextWidth(ctx, text, font);
-    return x_centre - tw / 2;
-}
-function drawLine(ctx, strokeStyle, strokewidth, x1, y1, x2, y2) {
-    ctx.beginPath();
-    ctx.strokeStyle = strokeStyle;
-    ctx.lineWidth = strokewidth;
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-}
-function writeText(ctx, text, font, colour, x, y) {
-    // Save the context (to restore after).
-    ctx.save();
-    // Translate to the point where text is to be added.
-    ctx.translate(x, y);
-    // Invert Y-axis.
-    ctx.scale(1, -1);
-    // Set the text font.
-    ctx.font = font;
-    // Set the text colour.
-    ctx.fillStyle = colour;
-    // Write the text.
-    ctx.fillText(text, 0, 0);
-    // Restore the context.
-    ctx.restore();
-}
-function getTextHeight(ctx, text, font) {
-    ctx.font = font;
-    var fontMetric = ctx.measureText(text);
-    return fontMetric.actualBoundingBoxAscent + fontMetric.actualBoundingBoxDescent;
-}
-function getTextWidth(ctx, text, font) {
-    ctx.font = font;
-    return ctx.measureText(text).width;
-}
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aksKl":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * A class for "me:bathGas".
- */ parcelHelpers.export(exports, "BathGas", ()=>BathGas);
-/**
- * A class for "me:experimentalRate".
- * The attributes must include:
- * "ref1" string
- * "ref2" string
- * "refReaction" string
- * "error".
- */ parcelHelpers.export(exports, "ExperimentalRate", ()=>ExperimentalRate);
-/**
- * A class for "me:experimentalYield".
- * The attributes must include:
- * "ref" string
- * "error" number
- * "yieldTime" number.
- */ parcelHelpers.export(exports, "ExperimentalYield", ()=>ExperimentalYield);
-/**
- * A class for "me:experimentalEigenvalue".
- * The attributes must include:
- * EigenvalueID:string
- * error: number
- */ parcelHelpers.export(exports, "ExperimentalEigenvalue", ()=>ExperimentalEigenvalue);
-/**
- * A class for "me:excessReactantConc".
- * The attributes may include:
- * percent: string ("true" or "false")
- */ parcelHelpers.export(exports, "ExcessReactantConc", ()=>ExcessReactantConc);
-/**
- * A class for representing a Pressure and Temperature pair with optional additional things: BathGas and ExperimentRate.
- * Can there be multiple BathGases and ExperimentRates?
- * The attributes include:
- * units: string
- * P: number
- * T: number
- * And optionally:
- * percentExcessReactantConc: number
- * excessReactantConc: string
- * precision: number
- * bathGas: string
- * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
- * 
- */ parcelHelpers.export(exports, "PTpair", ()=>PTpair);
-/**
- * A class for representing a set of Pressure and Temperature pairs.
- */ parcelHelpers.export(exports, "PTs", ()=>PTs);
-/**
- * A class for representing the experiment conditions.
- */ parcelHelpers.export(exports, "Conditions", ()=>Conditions);
-var _xmlJs = require("./xml.js");
-class BathGas extends (0, _xmlJs.StringNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:bathGas";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param moleculeID The moleculeID.
-     */ constructor(attributes, moleculeID){
-        super(attributes, BathGas.tagName, moleculeID);
-    }
-}
-class ExperimentalRate extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:experimentalRate";
-    }
-    static{
-        /**
-     * The key to the ref1 attribute value.
-     */ this.s_ref1 = "ref1";
-    }
-    static{
-        /**
-     * The key to the ref2 attribute value.
-     */ this.s_ref2 = "ref2";
-    }
-    static{
-        /**
-     * The key to the refReaction attribute value.
-     */ this.s_refReaction = "refReaction";
-    }
-    static{
-        /**
-     * The key to the error attribute value.
-     */ this.s_error = "error";
-    }
-    /**
-     * @param attributes The attributes. 
-     * @param value The value. 
-     */ constructor(attributes, value){
-        super(attributes, ExperimentalRate.tagName, value);
-        if (!this.attributes.has(ExperimentalRate.s_ref1)) console.error("ExperimentalRate.constructor: ref1 attribute is missing.");
-        if (!this.attributes.has(ExperimentalRate.s_ref2)) console.error("ExperimentalRate.constructor: ref2 attribute is missing.");
-        if (!this.attributes.has(ExperimentalRate.s_refReaction)) console.error("ExperimentalRate.constructor: refReaction attribute is missing.");
-        if (!this.attributes.has(ExperimentalRate.s_error)) console.error("ExperimentalRate.constructor: error attribute is missing.");
-    }
-    /**
-     * @returns The ref1 attribute or undefined if there is no ref1 attribute.
-     */ getRef1() {
-        return this.attributes.get(ExperimentalRate.s_ref1);
-    }
-    /**
-     * Set the ref1 attribute.
-     * @param ref1 The ref1.
-     */ setRef1(ref1) {
-        this.attributes.set(ExperimentalRate.s_ref1, ref1);
-    }
-    /**
-     * @returns The ref2 attribute or undefined if there is no ref2 attribute.
-     */ getRef2() {
-        return this.attributes.get(ExperimentalRate.s_ref2);
-    }
-    /**
-     * Set the ref2 attribute.
-     * @param ref2 The ref2.
-     */ setRef2(ref2) {
-        this.attributes.set(ExperimentalRate.s_ref2, ref2);
-    }
-    /**
-     * @returns The refReaction attribute or undefined if there is no refReaction attribute.
-     */ getRefReaction() {
-        return this.attributes.get(ExperimentalRate.s_refReaction);
-    }
-    /**
-     * Set the refReaction attribute.
-     * @param refReaction The refReaction.
-     */ setRefReaction(refReaction) {
-        this.attributes.set(ExperimentalRate.s_refReaction, refReaction);
-    }
-    /**
-     * @returns The error attribute or undefined if there is no error attribute.
-     */ getError() {
-        return parseFloat(this.attributes.get(ExperimentalRate.s_error));
-    }
-    /**
-     * Set the error attribute.
-     * @param error The error.
-     */ setError(error) {
-        this.attributes.set(ExperimentalRate.s_error, error.toString());
-    }
-}
-class ExperimentalYield extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:experimentalYield";
-    }
-    static{
-        /**
-     * The key to the ref attribute value.
-     */ this.s_ref = "ref";
-    }
-    static{
-        /**
-     * The key to the error attribute value.
-     */ this.s_error = "error";
-    }
-    static{
-        /**
-     * The key to the yieldTime attribute value.
-     */ this.s_yieldTime = "yieldTime";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, ExperimentalYield.tagName, value);
-    }
-    /**
-     * @returns The ref attribute or undefined if there is no ref attribute.
-     */ getRef() {
-        return this.attributes.get(ExperimentalYield.s_ref);
-    }
-    /**
-     * Set the ref attribute.
-     * @param ref The ref.
-     */ setRef(ref) {
-        this.attributes.set(ExperimentalYield.s_ref, ref);
-    }
-    /**
-     * @returns The error attribute or undefined if there is no error attribute.
-     */ getError() {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_error));
-    }
-    /**
-     * Set the error attribute.
-     * @param error The error.
-     */ setError(error) {
-        this.attributes.set(ExperimentalYield.s_error, error.toString());
-    }
-    /**
-     * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
-     */ getYieldTime() {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_yieldTime));
-    }
-    /**
-     * Set the yieldTime attribute.
-     * @param yieldTime The yieldTime.
-     */ setYieldTime(yieldTime) {
-        this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
-    }
-}
-class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-    * The tag name.
-    */ this.tagName = "me:experimentalEigenvalue";
-    }
-    static{
-        /**
-     * The key to the EigenvalueID attribute value.
-     */ this.s_EigenvalueID = "EigenvalueID";
-    }
-    static{
-        /**
-     * The key to the error attribute value.
-     */ this.s_error = "error";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, ExperimentalEigenvalue.tagName, value);
-        if (!this.attributes.has(ExperimentalEigenvalue.s_EigenvalueID)) console.error("ExperimentalEigenvalue.constructor: EigenvalueID attribute is missing.");
-        if (!this.attributes.has(ExperimentalEigenvalue.s_error)) console.error("ExperimentalEigenvalue.constructor: error attribute is missing.");
-    }
-    /**
-     * @returns The EigenvalueID attribute.
-     */ getEigenvalueID() {
-        return this.attributes.get(ExperimentalEigenvalue.s_EigenvalueID);
-    }
-    /**
-     * Set the EigenvalueID attribute.
-     * @param EigenvalueID The EigenvalueID.
-     */ setEigenvalueID(EigenvalueID) {
-        this.attributes.set(ExperimentalEigenvalue.s_EigenvalueID, EigenvalueID);
-    }
-    /**
-     * @returns The error attribute or undefined if there is no error attribute.
-     */ getError() {
-        return parseFloat(this.attributes.get(ExperimentalEigenvalue.s_error));
-    }
-    /**
-     * Set the error attribute.
-     * @param error The error.
-     */ setError(error) {
-        this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
-    }
-}
-class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:excessReactantConc";
-    }
-    static{
-        /**
-     * The key to the percent attribute value.
-     */ this.s_percent = "percent";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, ExcessReactantConc.tagName, value);
-    }
-    /**
-     * @returns The percent attribute or undefined if there is no percent attribute.
-     */ getPercent() {
-        return this.attributes.get(ExcessReactantConc.s_percent);
-    }
-    /**
-     * Set the percent attribute.
-     * @param percent The percent.
-     */ setPercent(percent) {
-        this.attributes.set(ExcessReactantConc.s_percent, percent);
-    }
-}
-class PTpair extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:PTpair";
-    }
-    static{
-        /**
-     * The key to the P attribute value.
-     */ this.s_P = "P";
-    }
-    static{
-        /**
-     * The key to the T attribute value.
-     */ this.s_T = "T";
-    }
-    static{
-        /**
-     * The key to the precision attribute value.
-     */ this.s_precision = "precision";
-    }
-    static{
-        /**
-     * The key to the excessReactantConc attribute value.
-     */ this.s_excessReactantConc = "excessReactantConc";
-    }
-    static{
-        /**
-     * The key to the percentExcessReactantConc attribute value.
-     */ this.s_percentExcessReactantConc = "percentExcessReactantConc";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param bathGas The bath gas.
-     * @param experimentRate The experiment rate.
-     */ constructor(attributes, bathGas, experimentRate, experimentalYield, experimentalEigenvalue){
-        super(attributes, PTpair.tagName);
-        this.index = new Map();
-        if (bathGas != undefined) {
-            this.index.set(BathGas.tagName, this.nodes.size);
-            this.addNode(bathGas);
-        }
-        if (experimentRate != undefined) {
-            this.index.set(ExperimentalRate.tagName, this.nodes.size);
-            this.addNode(experimentRate);
-        }
-        if (experimentalYield != undefined) {
-            this.index.set(ExperimentalYield.tagName, this.nodes.size);
-            this.addNode(experimentalYield);
-        }
-        if (experimentalEigenvalue != undefined) {
-            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
-            this.addNode(experimentalEigenvalue);
-        }
-    }
-    /**
-     * @returns The Pressure.
-     */ getP() {
-        let p = this.attributes.get(PTpair.s_P);
-        if (p != undefined) return parseFloat(p);
-        return NaN;
-    }
-    /**
-     * Set The Pressure
-     */ setP(p) {
-        this.attributes.set(PTpair.s_P, p.toString());
-    }
-    /**
-     * @returns The Temperature.
-     */ getT() {
-        let t = this.attributes.get(PTpair.s_T);
-        if (t != undefined) return parseFloat(t);
-        return NaN;
-    }
-    /**
-     * Set The Temperature.
-     */ setT(t) {
-        this.attributes.set(PTpair.s_T, t.toString());
-    }
-    /**
-     * @returns The precision attribute or undefined if there is no precision attribute.
-     */ getPrecision() {
-        return this.attributes.get(PTpair.s_precision);
-    }
-    /**
-     * Set the precision attribute.
-     * @param precision The precision.
-     */ setPrecision(precision) {
-        this.attributes.set(PTpair.s_precision, precision);
-    }
-    /**
-     * @returns The bath gas.
-     */ getBathGas() {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        else return undefined;
-    }
-    /**
-     * @param bathGas The bath gas.
-     */ setBathGas(bathGas) {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) this.nodes.set(i, bathGas);
-        else {
-            this.index.set(BathGas.tagName, this.nodes.size);
-            this.addNode(bathGas);
-        }
-    }
-    /**
-     * Remove the bath gas.
-     */ removeBathGas() {
-        let i = this.index.get(BathGas.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(BathGas.tagName);
-        }
-    }
-    /**
-     * @returns The experiment rate.
-     */ getExperimentalRate() {
-        let i = this.index.get(ExperimentalRate.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        else return undefined;
-    }
-    /**
-     * @param experimentRate The experiment rate.
-     */ setExperimentalRate(experimentRate) {
-        let i = this.index.get(ExperimentalRate.tagName);
-        if (i != undefined) this.nodes.set(i, experimentRate);
-        else {
-            this.index.set(ExperimentalRate.tagName, this.nodes.size);
-            this.addNode(experimentRate);
-        }
-    }
-    /**
-     * Remove the experiment rate.
-     */ removeExperimentalRate() {
-        let i = this.index.get(ExperimentalRate.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(ExperimentalRate.tagName);
-        }
-    }
-    /**
-     * @returns The experimental yield.
-     */ getExperimentalYield() {
-        let i = this.index.get(ExperimentalYield.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        else return undefined;
-    }
-    /**
-     * @param experimentalYield The experimental yield.
-     */ setExperimentalYield(experimentalYield) {
-        let i = this.index.get(ExperimentalYield.tagName);
-        if (i != undefined) this.nodes.set(i, experimentalYield);
-        else {
-            this.index.set(ExperimentalYield.tagName, this.nodes.size);
-            this.addNode(experimentalYield);
-        }
-    }
-    /**
-     * Remove the experimental yield.
-     */ removeExperimentalYield() {
-        let i = this.index.get(ExperimentalYield.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(ExperimentalYield.tagName);
-        }
-    }
-    /**
-     * @returns The experimental eigenvalue.
-     */ getExperimentalEigenvalue() {
-        let i = this.index.get(ExperimentalEigenvalue.tagName);
-        if (i != undefined) return this.nodes.get(i);
-        else return undefined;
-    }
-    /**
-     * @param experimentalEigenvalue The experimental eigenvalue.
-     */ setExperimentalEigenvalue(experimentalEigenvalue) {
-        let i = this.index.get(ExperimentalEigenvalue.tagName);
-        if (i != undefined) this.nodes.set(i, experimentalEigenvalue);
-        else {
-            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
-            this.addNode(experimentalEigenvalue);
-        }
-    }
-    /**
-     * Remove the experimental eigenvalue.
-     */ removeExperimentalEigenvalue() {
-        let i = this.index.get(ExperimentalEigenvalue.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(ExperimentalEigenvalue.tagName);
-        }
-    }
-    /**
-     * @returns this.attributes.get("excessReactantConc").
-     */ getExcessReactantConc() {
-        return this.attributes.get(PTpair.s_excessReactantConc);
-    }
-    /**
-     * this.attributes.set("excessReactantConc", excessReactantConc).
-     */ setExcessReactantConc(excessReactantConc) {
-        this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
-    }
-    /**
-     * @returns this.attributes.get("percentExcessReactantConc").
-     */ getPercentExcessReactantConc() {
-        return this.attributes.get(PTpair.s_percentExcessReactantConc);
-    }
-    /**
-     * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
-     */ setPercentExcessReactantConc(percentExcessReactantConc) {
-        this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
-    }
-}
-class PTs extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:PTs";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param pTs The PTs.
-     */ constructor(attributes, pTpairs){
-        super(attributes, PTs.tagName);
-        if (pTpairs != undefined) {
-            pTpairs.forEach((pTpair)=>{
-                this.addNode(pTpair);
-            });
-            this.pTpairs = pTpairs;
-        } else this.pTpairs = [];
-    }
-    /**
-     * @param i The index of the PTpair to return. 
-     * @returns The PTpair at the given index or undefined if the index is out of range.
-     */ getPTpair(i) {
-        return this.pTpairs[i];
-    }
-    /**
-     * Set the PT at the given index.
-     * @param i The index.
-     * @returns The PT pairs.
-     */ setPTpair(i, pTpair) {
-        this.nodes.set(i, pTpair);
-        this.pTpairs[i] = pTpair;
-    }
-    /**
-     * Add a PTpair.
-     * @param pTPair The PTpair to add.
-     * @returns The index of this.pTPairs where pTPair is added.
-     */ addPTpair(pTpair) {
-        this.addNode(pTpair);
-        this.pTpairs.push(pTpair);
-        return this.nodes.size - 1;
-    }
-    /**
-     * Remove the PT at the given index.
-     * @param i The index.
-     */ removePTpair(i) {
-        this.nodes.delete(i);
-        this.pTpairs.splice(i, 1);
-    }
-    /**
-     * Add a PT.
-     * @param pTPair The PT to add.
-     */ setPTpairs(pTpairs) {
-        this.nodes.clear();
-        pTpairs.forEach((pTpair)=>{
-            this.addNode(pTpair);
-            this.pTpairs.push(pTpair);
-        });
-    }
-    /**
-     * Remove all PT pairs.
-     */ removePTpairs() {
-        this.nodes.clear();
-        this.pTpairs = [];
-    }
-}
-class Conditions extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:conditions";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param bathGases The bath gases.
-     * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
-     */ constructor(attributes, bathGases, pTs){
-        super(attributes, Conditions.tagName);
-        this.index = new Map();
-        this.bathGasesIndex = new Map();
-        this.bathGases = new Set();
-        if (bathGases != undefined) {
-            this.index.set(BathGas.tagName, this.nodes.size);
-            bathGases.forEach((bathGas)=>{
-                this.bathGasesIndex.set(bathGas.value, this.nodes.size);
-                this.addNode(bathGas);
-                this.bathGases.add(bathGas);
-            });
-        }
-        if (pTs != undefined) {
-            this.index.set(PTs.tagName, this.nodes.size);
-            this.addNode(pTs);
-        }
-    }
-    /**
-     * @returns The bath gases.
-     */ getBathGases() {
-        return this.bathGases;
-    }
-    /**
-     * @param bathGas The bath gas to add.
-     */ addBathGas(bathGas) {
-        if (!this.bathGases.has(bathGas)) {
-            this.bathGases.add(bathGas);
-            this.bathGasesIndex.set(bathGas.value, this.nodes.size);
-            this.addNode(bathGas);
-        }
-    }
-    /**
-     * @param bathGas The bath gas to remove.
-     */ removeBathGas(bathGas) {
-        if (this.bathGases.has(bathGas)) {
-            this.bathGases.delete(bathGas);
-            this.nodes.delete(this.bathGasesIndex.get(bathGas.value));
-        } else console.warn("Conditions.removeBathGas: bathGas not found to remove.");
-    }
-    /**
-     * @returns The Pressure and Temperature pairs.
-     */ getPTs() {
-        let i = this.index.get(PTs.tagName);
-        if (i != undefined) return this.nodes.get(i);
-    }
-    /**
-     * @param pTs The PTs.
-     */ setPTs(pTs) {
-        let i = this.index.get(PTs.tagName);
-        if (i != undefined) this.nodes.set(i, pTs);
-        else {
-            this.index.set(PTs.tagName, this.nodes.size);
-            this.addNode(pTs);
-        }
-    }
-}
-
-},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQHfz":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * A class for "me:grainSize".
- */ parcelHelpers.export(exports, "GrainSize", ()=>GrainSize);
-/**
- * A class for "me:automaticallySetMaxEne".
- */ parcelHelpers.export(exports, "AutomaticallySetMaxEne", ()=>AutomaticallySetMaxEne);
-/**
- * A class for "me:energyAboveTheTopHill".
- */ parcelHelpers.export(exports, "EnergyAboveTheTopHill", ()=>EnergyAboveTheTopHill);
-/**
- * A class for "me:maxTemperature".
- */ parcelHelpers.export(exports, "MaxTemperature", ()=>MaxTemperature);
-/**
- * A class for model parameters.
- */ parcelHelpers.export(exports, "ModelParameters", ()=>ModelParameters);
-var _xmlJs = require("./xml.js");
-class GrainSize extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:grainSize";
-    }
-    /**
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, GrainSize.tagName, value);
-    }
-}
-class AutomaticallySetMaxEne extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:automaticallySetMaxEne";
-    }
-    /**
-     * @para attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, AutomaticallySetMaxEne.tagName, value);
-    }
-}
-class EnergyAboveTheTopHill extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:energyAboveTheTopHill";
-    }
-    /**
-     * @para attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, EnergyAboveTheTopHill.tagName, value);
-    }
-}
-class MaxTemperature extends (0, _xmlJs.NumberNode) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:maxTemperature";
-    }
-    /**
-     * @para attributes The attributes.
-     * @param value The value.
-     */ constructor(attributes, value){
-        super(attributes, MaxTemperature.tagName, value);
-    }
-}
-class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
-    static{
-        /**
-     * The tag name.
-     */ this.tagName = "me:modelParameters";
-    }
-    /**
-     * @param attributes The attributes.
-     * @param grainSize The grain size.
-     * @param automaticallySetMaxEne The automatically set max energy.
-     * @param energyAboveTheTopHill The energy above the top hill.
-     * @param maxTemperature The max temperature.
-     */ constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature){
-        super(attributes, ModelParameters.tagName);
-        this.index = new Map();
-        if (grainSize != undefined) {
-            this.index.set(GrainSize.tagName, this.nodes.size);
-            this.addNode(grainSize);
-        }
-        if (automaticallySetMaxEne != undefined) {
-            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
-            this.addNode(automaticallySetMaxEne);
-        }
-        if (energyAboveTheTopHill != undefined) {
-            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
-            this.addNode(energyAboveTheTopHill);
-        }
-        if (maxTemperature != undefined) {
-            this.index.set(MaxTemperature.tagName, this.nodes.size);
-            this.addNode(maxTemperature);
-        }
-    }
-    /**
-     * @returns The grain size or undefined.
-     */ getGrainSize() {
-        let i = this.index.get(GrainSize.tagName);
-        if (i) return this.nodes.get(i);
-    }
-    /**
-     * @param grainSize The grain size.
-     */ setGrainSize(grainSize) {
-        let i = this.index.get(GrainSize.tagName);
-        if (i) this.nodes.set(i, grainSize);
-        else {
-            this.index.set(GrainSize.tagName, this.nodes.size);
-            this.addNode(grainSize);
-        }
-    }
-    /**
-     * Removes the grain size.
-     */ removeGrainSize() {
-        let i = this.index.get(GrainSize.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(GrainSize.tagName);
-        }
-    }
-    /**
-     * @returns The automatically set max energy or undefined.
-     */ getAutomaticallySetMaxEne() {
-        let i = this.index.get(AutomaticallySetMaxEne.tagName);
-        if (i) return this.nodes.get(i);
-    }
-    /**
-     * @param automaticallySetMaxEne The automatically set max energy.
-     */ setAutomaticallySetMaxEne(automaticallySetMaxEne) {
-        let i = this.index.get(AutomaticallySetMaxEne.tagName);
-        if (i) this.nodes.set(i, automaticallySetMaxEne);
-        else {
-            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
-            this.addNode(automaticallySetMaxEne);
-        }
-    }
-    /**
-     * Removes the automatically set max energy.
-     */ removeAutomaticallySetMaxEne() {
-        let i = this.index.get(AutomaticallySetMaxEne.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(AutomaticallySetMaxEne.tagName);
-        }
-    }
-    /**
-     * @returns The energy above the top hill or undefined.
-     */ getEnergyAboveTheTopHill() {
-        let i = this.index.get(EnergyAboveTheTopHill.tagName);
-        if (i) return this.nodes.get(i);
-    }
-    /**
-     * @param energyAboveTheTopHill The energy above the top hill.
-     */ setEnergyAboveTheTopHill(energyAboveTheTopHill) {
-        let i = this.index.get(EnergyAboveTheTopHill.tagName);
-        if (i) this.nodes.set(i, energyAboveTheTopHill);
-        else {
-            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
-            this.addNode(energyAboveTheTopHill);
-        }
-    }
-    /**
-     * Removes the energy above the top hill.
-     */ removeEnergyAboveTheTopHill() {
-        let i = this.index.get(EnergyAboveTheTopHill.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(EnergyAboveTheTopHill.tagName);
-        }
-    }
-    /**
-     * @returns The max temperature or undefined.
-     */ getMaxTemperature() {
-        let i = this.index.get(MaxTemperature.tagName);
-        if (i) return this.nodes.get(i);
-    }
-    /**
-     * @param maxTemperature The max temperature.
-     */ setMaxTemperature(maxTemperature) {
-        let i = this.index.get(MaxTemperature.tagName);
-        if (i) this.nodes.set(i, maxTemperature);
-        else {
-            this.index.set(MaxTemperature.tagName, this.nodes.size);
-            this.addNode(maxTemperature);
-        }
-    }
-    /**
-     * Removes the max temperature.
-     */ removeMaxTemperature() {
-        let i = this.index.get(MaxTemperature.tagName);
-        if (i != undefined) {
-            this.nodes.delete(i);
-            this.index.delete(MaxTemperature.tagName);
-        }
-    }
-}
-
-},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"Qx5gu":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"Qx5gu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -11488,8 +9966,9 @@ class Control extends (0, _xml.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     */ constructor(attributes){
+     */ constructor(attributes, id){
         super(attributes, Control.tagName);
+        this.id = id;
         this.index = new Map();
     }
     /**
@@ -12237,6 +10716,10 @@ parcelHelpers.defineInteropFlag(exports);
  * In the XML, a "reactionList" node is a child node of a "me:mesmer" node and has "reaction" node children.
  */ parcelHelpers.export(exports, "ReactionList", ()=>ReactionList);
 /**
+ * A class for representing a "controlList" - this does not yet exist in the MEMSER, so this is not used.
+ * Currently, in the XML, a "control" node is a child node of a "me:mesmer" node and there is no "controlList".
+ */ parcelHelpers.export(exports, "ControlList", ()=>ControlList);
+/**
  * The "me:mesmer" node contains a "me:title", "moleculeList", "reactionList", "me:conditions", 
  * "me:modelParameters" and "me:control".
  */ parcelHelpers.export(exports, "Mesmer", ()=>Mesmer);
@@ -12352,6 +10835,55 @@ class ReactionList extends (0, _xmlJs.NodeWithNodes) {
         }
     }
 }
+class ControlList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "controlList";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param controls The controls.
+     */ constructor(attributes, controls){
+        super(attributes, ControlList.tagName);
+        this.index = new Map();
+        if (controls != undefined) controls.forEach((control)=>{
+            this.nodes.set(this.nodes.size, control);
+            this.index.set(control.id, this.nodes.size - 1);
+        });
+    }
+    /**
+     * @param id The id of the control.
+     * @returns The control.
+     */ getControl(id) {
+        let i = this.index.get(id);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Remove a control.
+     * @param id The id of the control to remove.
+     */ removeControl(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+    /**
+     * Add a control.
+     * @param control The control.
+     */ addControl(control) {
+        let index = this.index.get(control.id);
+        if (index !== undefined) {
+            this.nodes.set(index, control);
+            console.log("Replaced control with id " + control.id);
+        } else {
+            this.nodes.set(this.nodes.size, control);
+            this.index.set(control.id, this.nodes.size - 1);
+        }
+    }
+}
 class Mesmer extends (0, _xmlJs.NodeWithNodes) {
     static{
         this.tagName = "me:mesmer";
@@ -12403,6 +10935,30 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
     }
     static{
         /**
+     * Atomic mass map for atoms. The keys are element symbols, the values are the atomic mass according to a periodic table.
+     * (This is initialised in the constructor.)
+     */ this.atomMasses = new Map();
+    }
+    static{
+        /**
+     * Atomic radius map for atoms. The keys are element symbols, the values are the atomic radii according to a periodic table.
+     * (This is initialised in the constructor.)
+     */ this.atomRadii = new Map();
+    }
+    static{
+        /**
+     * Colour map for atoms. The keys are element symbols, the values are the colours the element is assigned.
+     * (This is initialised in the constructor.)
+     */ this.atomColors = new Map();
+    }
+    static{
+        /**
+     * Colour map for bonds. The keys are bond order, the values are the colours the bond order is assigned.
+     * (This is initialised in the constructor.)
+     */ this.bondColors = new Map();
+    }
+    static{
+        /**
      * The header of the XML file.
      */ this.header = `<?xml version="1.0" encoding="utf-8" ?>
 <?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
@@ -12414,9 +10970,81 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
      * @param reactionList The reaction list.
      * @param conditions The conditions.
      * @param modelParameters The model parameters.
-     * @param control The control.
+     * @param controls The controls.
      */ constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, controls){
         super(attributes, Mesmer.tagName);
+        let elements = [
+            "H",
+            "O",
+            "C",
+            "N",
+            "Cl",
+            "S",
+            "Ph",
+            "Fe"
+        ];
+        let colors = [
+            "White",
+            "Red",
+            "DarkGrey",
+            "Blue",
+            "Green",
+            "Yellow",
+            "Orange",
+            "Brown"
+        ];
+        for(let i = 0; i < elements.length; i++)Mesmer.atomColors.set(elements[i], colors[i]);
+        // Atomic mass units (amu)
+        let masses = [
+            1.00784,
+            15.999,
+            12.011,
+            14.007,
+            35.453,
+            32.06,
+            77.845,
+            55.845
+        ]; // Atomic masses (see https://en.wikipedia.org/wiki/Periodic_table).
+        for(let i = 0; i < elements.length; i++)Mesmer.atomMasses.set(elements[i], masses[i]);
+        // Picometers (pm),
+        let radii = [
+            37,
+            66,
+            67,
+            56,
+            99,
+            102,
+            110,
+            124
+        ]; // Calculated radii between two atoms of the same type in a molecule (https://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)).
+        for(let i = 0; i < elements.length; i++)Mesmer.atomRadii.set(elements[i], radii[i]);
+        let bondOrders = [
+            1,
+            1.5,
+            2,
+            2.5,
+            3,
+            3.5,
+            4,
+            4.5,
+            5,
+            5.5,
+            6
+        ];
+        colors = [
+            "Black",
+            "Red",
+            "DarkRed",
+            "Blue",
+            "DarkBlue",
+            "Green",
+            "DarkGreen",
+            "Yellow",
+            "DarkYellow",
+            "Orange",
+            "DarkOrange"
+        ];
+        for(let i = 0; i < bondOrders.length; i++)Mesmer.bondColors.set(bondOrders[i], colors[i]);
         this.index = new Map();
         if (title != undefined) {
             this.index.set(Title.tagName, this.nodes.size);
@@ -12439,12 +11067,17 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
             this.addNode(modelParameters);
         }
         if (controls != undefined) {
-            this.index.set((0, _controlJs.Control).tagName, this.nodes.size);
+            this.index.set((0, _modelParametersJs.ModelParameters).tagName, this.nodes.size);
             controls.forEach((control)=>{
                 this.addNode(control);
             });
         }
-    }
+    /*
+        if (controlList != undefined) {
+            this.index.set(ControlList.tagName, this.nodes.size);
+            this.addNode(controlList);
+        }
+        */ }
     /**
      * @returns The title.
      */ getTitle() {
@@ -12536,10 +11169,33 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
+     * @returns The control list.
+     */ /*
+    getControlList() {
+        let i: number | undefined = this.index.get(ControlList.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as ControlList;
+    }
+    */ /**
+     * Set the control list.
+     * @param controlList The control list.
+     */ /*
+    setControlList(controlList: ControlList) {
+        let i: number | undefined = this.index.get(ControlList.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, controlList);
+        } else {
+            this.index.set(ReactionList.tagName, this.nodes.size);
+            this.addNode(controlList);
+        }
+    }
+    */ /**
      * Add a control.
      * @param control The control.
      */ addControl(control) {
-        let i = this.index.get((0, _controlJs.Control).tagName);
+        let i = this.index.get((0, _controlJs.Control).tagName + control.id);
         if (i != undefined) this.nodes.set(i, control);
         else {
             this.index.set((0, _controlJs.Control).tagName, this.nodes.size);
@@ -12548,6 +11204,1632 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"./conditions.js":"aksKl","./control.js":"Qx5gu","./modelParameters.js":"kQHfz","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
+},{"./conditions.js":"aksKl","./control.js":"Qx5gu","./modelParameters.js":"kQHfz","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aksKl":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * A class for "me:bathGas".
+ */ parcelHelpers.export(exports, "BathGas", ()=>BathGas);
+/**
+ * A class for "me:experimentalRate".
+ * The attributes must include:
+ * "ref1" string
+ * "ref2" string
+ * "refReaction" string
+ * "error".
+ */ parcelHelpers.export(exports, "ExperimentalRate", ()=>ExperimentalRate);
+/**
+ * A class for "me:experimentalYield".
+ * The attributes must include:
+ * "ref" string
+ * "error" number
+ * "yieldTime" number.
+ */ parcelHelpers.export(exports, "ExperimentalYield", ()=>ExperimentalYield);
+/**
+ * A class for "me:experimentalEigenvalue".
+ * The attributes must include:
+ * EigenvalueID:string
+ * error: number
+ */ parcelHelpers.export(exports, "ExperimentalEigenvalue", ()=>ExperimentalEigenvalue);
+/**
+ * A class for "me:excessReactantConc".
+ * The attributes may include:
+ * percent: string ("true" or "false")
+ */ parcelHelpers.export(exports, "ExcessReactantConc", ()=>ExcessReactantConc);
+/**
+ * A class for representing a Pressure and Temperature pair with optional additional things: BathGas and ExperimentRate.
+ * Can there be multiple BathGases and ExperimentRates?
+ * The attributes include:
+ * units: string
+ * P: number
+ * T: number
+ * And optionally:
+ * percentExcessReactantConc: number
+ * excessReactantConc: string
+ * precision: number
+ * bathGas: string
+ * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
+ * 
+ */ parcelHelpers.export(exports, "PTpair", ()=>PTpair);
+/**
+ * A class for representing a set of Pressure and Temperature pairs.
+ */ parcelHelpers.export(exports, "PTs", ()=>PTs);
+/**
+ * A class for representing the experiment conditions.
+ */ parcelHelpers.export(exports, "Conditions", ()=>Conditions);
+var _xmlJs = require("./xml.js");
+class BathGas extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:bathGas";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param moleculeID The moleculeID.
+     */ constructor(attributes, moleculeID){
+        super(attributes, BathGas.tagName, moleculeID);
+    }
+}
+class ExperimentalRate extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:experimentalRate";
+    }
+    static{
+        /**
+     * The key to the ref1 attribute value.
+     */ this.s_ref1 = "ref1";
+    }
+    static{
+        /**
+     * The key to the ref2 attribute value.
+     */ this.s_ref2 = "ref2";
+    }
+    static{
+        /**
+     * The key to the refReaction attribute value.
+     */ this.s_refReaction = "refReaction";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value. 
+     */ constructor(attributes, value){
+        super(attributes, ExperimentalRate.tagName, value);
+        if (!this.attributes.has(ExperimentalRate.s_ref1)) console.error("ExperimentalRate.constructor: ref1 attribute is missing.");
+        if (!this.attributes.has(ExperimentalRate.s_ref2)) console.error("ExperimentalRate.constructor: ref2 attribute is missing.");
+        if (!this.attributes.has(ExperimentalRate.s_refReaction)) console.error("ExperimentalRate.constructor: refReaction attribute is missing.");
+        if (!this.attributes.has(ExperimentalRate.s_error)) console.error("ExperimentalRate.constructor: error attribute is missing.");
+    }
+    /**
+     * @returns The ref1 attribute or undefined if there is no ref1 attribute.
+     */ getRef1() {
+        return this.attributes.get(ExperimentalRate.s_ref1);
+    }
+    /**
+     * Set the ref1 attribute.
+     * @param ref1 The ref1.
+     */ setRef1(ref1) {
+        this.attributes.set(ExperimentalRate.s_ref1, ref1);
+    }
+    /**
+     * @returns The ref2 attribute or undefined if there is no ref2 attribute.
+     */ getRef2() {
+        return this.attributes.get(ExperimentalRate.s_ref2);
+    }
+    /**
+     * Set the ref2 attribute.
+     * @param ref2 The ref2.
+     */ setRef2(ref2) {
+        this.attributes.set(ExperimentalRate.s_ref2, ref2);
+    }
+    /**
+     * @returns The refReaction attribute or undefined if there is no refReaction attribute.
+     */ getRefReaction() {
+        return this.attributes.get(ExperimentalRate.s_refReaction);
+    }
+    /**
+     * Set the refReaction attribute.
+     * @param refReaction The refReaction.
+     */ setRefReaction(refReaction) {
+        this.attributes.set(ExperimentalRate.s_refReaction, refReaction);
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        return parseFloat(this.attributes.get(ExperimentalRate.s_error));
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        this.attributes.set(ExperimentalRate.s_error, error.toString());
+    }
+}
+class ExperimentalYield extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:experimentalYield";
+    }
+    static{
+        /**
+     * The key to the ref attribute value.
+     */ this.s_ref = "ref";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
+    }
+    static{
+        /**
+     * The key to the yieldTime attribute value.
+     */ this.s_yieldTime = "yieldTime";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExperimentalYield.tagName, value);
+    }
+    /**
+     * @returns The ref attribute or undefined if there is no ref attribute.
+     */ getRef() {
+        return this.attributes.get(ExperimentalYield.s_ref);
+    }
+    /**
+     * Set the ref attribute.
+     * @param ref The ref.
+     */ setRef(ref) {
+        this.attributes.set(ExperimentalYield.s_ref, ref);
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        return parseFloat(this.attributes.get(ExperimentalYield.s_error));
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        this.attributes.set(ExperimentalYield.s_error, error.toString());
+    }
+    /**
+     * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
+     */ getYieldTime() {
+        return parseFloat(this.attributes.get(ExperimentalYield.s_yieldTime));
+    }
+    /**
+     * Set the yieldTime attribute.
+     * @param yieldTime The yieldTime.
+     */ setYieldTime(yieldTime) {
+        this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
+    }
+}
+class ExperimentalEigenvalue extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+    * The tag name.
+    */ this.tagName = "me:experimentalEigenvalue";
+    }
+    static{
+        /**
+     * The key to the EigenvalueID attribute value.
+     */ this.s_EigenvalueID = "EigenvalueID";
+    }
+    static{
+        /**
+     * The key to the error attribute value.
+     */ this.s_error = "error";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExperimentalEigenvalue.tagName, value);
+        if (!this.attributes.has(ExperimentalEigenvalue.s_EigenvalueID)) console.error("ExperimentalEigenvalue.constructor: EigenvalueID attribute is missing.");
+        if (!this.attributes.has(ExperimentalEigenvalue.s_error)) console.error("ExperimentalEigenvalue.constructor: error attribute is missing.");
+    }
+    /**
+     * @returns The EigenvalueID attribute.
+     */ getEigenvalueID() {
+        return this.attributes.get(ExperimentalEigenvalue.s_EigenvalueID);
+    }
+    /**
+     * Set the EigenvalueID attribute.
+     * @param EigenvalueID The EigenvalueID.
+     */ setEigenvalueID(EigenvalueID) {
+        this.attributes.set(ExperimentalEigenvalue.s_EigenvalueID, EigenvalueID);
+    }
+    /**
+     * @returns The error attribute or undefined if there is no error attribute.
+     */ getError() {
+        return parseFloat(this.attributes.get(ExperimentalEigenvalue.s_error));
+    }
+    /**
+     * Set the error attribute.
+     * @param error The error.
+     */ setError(error) {
+        this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
+    }
+}
+class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:excessReactantConc";
+    }
+    static{
+        /**
+     * The key to the percent attribute value.
+     */ this.s_percent = "percent";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, ExcessReactantConc.tagName, value);
+    }
+    /**
+     * @returns The percent attribute or undefined if there is no percent attribute.
+     */ getPercent() {
+        return this.attributes.get(ExcessReactantConc.s_percent);
+    }
+    /**
+     * Set the percent attribute.
+     * @param percent The percent.
+     */ setPercent(percent) {
+        this.attributes.set(ExcessReactantConc.s_percent, percent);
+    }
+}
+class PTpair extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:PTpair";
+    }
+    static{
+        /**
+     * The key to the P attribute value.
+     */ this.s_P = "P";
+    }
+    static{
+        /**
+     * The key to the T attribute value.
+     */ this.s_T = "T";
+    }
+    static{
+        /**
+     * The key to the precision attribute value.
+     */ this.s_precision = "precision";
+    }
+    static{
+        /**
+     * The key to the excessReactantConc attribute value.
+     */ this.s_excessReactantConc = "excessReactantConc";
+    }
+    static{
+        /**
+     * The key to the percentExcessReactantConc attribute value.
+     */ this.s_percentExcessReactantConc = "percentExcessReactantConc";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param bathGas The bath gas.
+     * @param experimentRate The experiment rate.
+     */ constructor(attributes, bathGas, experimentRate, experimentalYield, experimentalEigenvalue){
+        super(attributes, PTpair.tagName);
+        this.index = new Map();
+        if (bathGas != undefined) {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+        if (experimentRate != undefined) {
+            this.index.set(ExperimentalRate.tagName, this.nodes.size);
+            this.addNode(experimentRate);
+        }
+        if (experimentalYield != undefined) {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(experimentalYield);
+        }
+        if (experimentalEigenvalue != undefined) {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
+        }
+    }
+    /**
+     * @returns The Pressure.
+     */ getP() {
+        let p = this.attributes.get(PTpair.s_P);
+        if (p != undefined) return parseFloat(p);
+        return NaN;
+    }
+    /**
+     * Set The Pressure
+     */ setP(p) {
+        this.attributes.set(PTpair.s_P, p.toString());
+    }
+    /**
+     * @returns The Temperature.
+     */ getT() {
+        let t = this.attributes.get(PTpair.s_T);
+        if (t != undefined) return parseFloat(t);
+        return NaN;
+    }
+    /**
+     * Set The Temperature.
+     */ setT(t) {
+        this.attributes.set(PTpair.s_T, t.toString());
+    }
+    /**
+     * @returns The precision attribute or undefined if there is no precision attribute.
+     */ getPrecision() {
+        return this.attributes.get(PTpair.s_precision);
+    }
+    /**
+     * Set the precision attribute.
+     * @param precision The precision.
+     */ setPrecision(precision) {
+        this.attributes.set(PTpair.s_precision, precision);
+    }
+    /**
+     * @returns The bath gas.
+     */ getBathGas() {
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        else return undefined;
+    }
+    /**
+     * @param bathGas The bath gas.
+     */ setBathGas(bathGas) {
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) this.nodes.set(i, bathGas);
+        else {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            this.addNode(bathGas);
+        }
+    }
+    /**
+     * Remove the bath gas.
+     */ removeBathGas() {
+        let i = this.index.get(BathGas.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(BathGas.tagName);
+        }
+    }
+    /**
+     * @returns The experiment rate.
+     */ getExperimentalRate() {
+        let i = this.index.get(ExperimentalRate.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        else return undefined;
+    }
+    /**
+     * @param experimentRate The experiment rate.
+     */ setExperimentalRate(experimentRate) {
+        let i = this.index.get(ExperimentalRate.tagName);
+        if (i != undefined) this.nodes.set(i, experimentRate);
+        else {
+            this.index.set(ExperimentalRate.tagName, this.nodes.size);
+            this.addNode(experimentRate);
+        }
+    }
+    /**
+     * Remove the experiment rate.
+     */ removeExperimentalRate() {
+        let i = this.index.get(ExperimentalRate.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalRate.tagName);
+        }
+    }
+    /**
+     * @returns The experimental yield.
+     */ getExperimentalYield() {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        else return undefined;
+    }
+    /**
+     * @param experimentalYield The experimental yield.
+     */ setExperimentalYield(experimentalYield) {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) this.nodes.set(i, experimentalYield);
+        else {
+            this.index.set(ExperimentalYield.tagName, this.nodes.size);
+            this.addNode(experimentalYield);
+        }
+    }
+    /**
+     * Remove the experimental yield.
+     */ removeExperimentalYield() {
+        let i = this.index.get(ExperimentalYield.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalYield.tagName);
+        }
+    }
+    /**
+     * @returns The experimental eigenvalue.
+     */ getExperimentalEigenvalue() {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) return this.nodes.get(i);
+        else return undefined;
+    }
+    /**
+     * @param experimentalEigenvalue The experimental eigenvalue.
+     */ setExperimentalEigenvalue(experimentalEigenvalue) {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) this.nodes.set(i, experimentalEigenvalue);
+        else {
+            this.index.set(ExperimentalEigenvalue.tagName, this.nodes.size);
+            this.addNode(experimentalEigenvalue);
+        }
+    }
+    /**
+     * Remove the experimental eigenvalue.
+     */ removeExperimentalEigenvalue() {
+        let i = this.index.get(ExperimentalEigenvalue.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(ExperimentalEigenvalue.tagName);
+        }
+    }
+    /**
+     * @returns this.attributes.get("excessReactantConc").
+     */ getExcessReactantConc() {
+        return this.attributes.get(PTpair.s_excessReactantConc);
+    }
+    /**
+     * this.attributes.set("excessReactantConc", excessReactantConc).
+     */ setExcessReactantConc(excessReactantConc) {
+        this.attributes.set(PTpair.s_excessReactantConc, excessReactantConc);
+    }
+    /**
+     * @returns this.attributes.get("percentExcessReactantConc").
+     */ getPercentExcessReactantConc() {
+        return this.attributes.get(PTpair.s_percentExcessReactantConc);
+    }
+    /**
+     * this.attributes.set("percentExcessReactantConc", percentExcessReactantConc).
+     */ setPercentExcessReactantConc(percentExcessReactantConc) {
+        this.attributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
+    }
+}
+class PTs extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:PTs";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param pTs The PTs.
+     */ constructor(attributes, pTpairs){
+        super(attributes, PTs.tagName);
+        if (pTpairs != undefined) {
+            pTpairs.forEach((pTpair)=>{
+                this.addNode(pTpair);
+            });
+            this.pTpairs = pTpairs;
+        } else this.pTpairs = [];
+    }
+    /**
+     * @param i The index of the PTpair to return. 
+     * @returns The PTpair at the given index or undefined if the index is out of range.
+     */ getPTpair(i) {
+        return this.pTpairs[i];
+    }
+    /**
+     * Set the PT at the given index.
+     * @param i The index.
+     * @returns The PT pairs.
+     */ setPTpair(i, pTpair) {
+        this.nodes.set(i, pTpair);
+        this.pTpairs[i] = pTpair;
+    }
+    /**
+     * Add a PTpair.
+     * @param pTPair The PTpair to add.
+     * @returns The index of this.pTPairs where pTPair is added.
+     */ addPTpair(pTpair) {
+        this.addNode(pTpair);
+        this.pTpairs.push(pTpair);
+        return this.nodes.size - 1;
+    }
+    /**
+     * Remove the PT at the given index.
+     * @param i The index.
+     */ removePTpair(i) {
+        this.nodes.delete(i);
+        this.pTpairs.splice(i, 1);
+    }
+    /**
+     * Add a PT.
+     * @param pTPair The PT to add.
+     */ setPTpairs(pTpairs) {
+        this.nodes.clear();
+        pTpairs.forEach((pTpair)=>{
+            this.addNode(pTpair);
+            this.pTpairs.push(pTpair);
+        });
+    }
+    /**
+     * Remove all PT pairs.
+     */ removePTpairs() {
+        this.nodes.clear();
+        this.pTpairs = [];
+    }
+}
+class Conditions extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:conditions";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param bathGases The bath gases.
+     * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
+     */ constructor(attributes, bathGases, pTs){
+        super(attributes, Conditions.tagName);
+        this.index = new Map();
+        this.bathGasesIndex = new Map();
+        this.bathGases = new Set();
+        if (bathGases != undefined) {
+            this.index.set(BathGas.tagName, this.nodes.size);
+            bathGases.forEach((bathGas)=>{
+                this.bathGasesIndex.set(bathGas.value, this.nodes.size);
+                this.addNode(bathGas);
+                this.bathGases.add(bathGas);
+            });
+        }
+        if (pTs != undefined) {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
+    }
+    /**
+     * @returns The bath gases.
+     */ getBathGases() {
+        return this.bathGases;
+    }
+    /**
+     * @param bathGas The bath gas to add.
+     */ addBathGas(bathGas) {
+        if (!this.bathGases.has(bathGas)) {
+            this.bathGases.add(bathGas);
+            this.bathGasesIndex.set(bathGas.value, this.nodes.size);
+            this.addNode(bathGas);
+        }
+    }
+    /**
+     * @param bathGas The bath gas to remove.
+     */ removeBathGas(bathGas) {
+        if (this.bathGases.has(bathGas)) {
+            this.bathGases.delete(bathGas);
+            this.nodes.delete(this.bathGasesIndex.get(bathGas.value));
+        } else console.warn("Conditions.removeBathGas: bathGas not found to remove.");
+    }
+    /**
+     * @returns The Pressure and Temperature pairs.
+     */ getPTs() {
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) return this.nodes.get(i);
+    }
+    /**
+     * @param pTs The PTs.
+     */ setPTs(pTs) {
+        let i = this.index.get(PTs.tagName);
+        if (i != undefined) this.nodes.set(i, pTs);
+        else {
+            this.index.set(PTs.tagName, this.nodes.size);
+            this.addNode(pTs);
+        }
+    }
+}
+
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kQHfz":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * A class for "me:grainSize".
+ */ parcelHelpers.export(exports, "GrainSize", ()=>GrainSize);
+/**
+ * A class for "me:automaticallySetMaxEne".
+ */ parcelHelpers.export(exports, "AutomaticallySetMaxEne", ()=>AutomaticallySetMaxEne);
+/**
+ * A class for "me:energyAboveTheTopHill".
+ */ parcelHelpers.export(exports, "EnergyAboveTheTopHill", ()=>EnergyAboveTheTopHill);
+/**
+ * A class for "me:maxTemperature".
+ */ parcelHelpers.export(exports, "MaxTemperature", ()=>MaxTemperature);
+/**
+ * A class for model parameters.
+ */ parcelHelpers.export(exports, "ModelParameters", ()=>ModelParameters);
+var _xmlJs = require("./xml.js");
+class GrainSize extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:grainSize";
+    }
+    /**
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, GrainSize.tagName, value);
+    }
+}
+class AutomaticallySetMaxEne extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:automaticallySetMaxEne";
+    }
+    /**
+     * @para attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, AutomaticallySetMaxEne.tagName, value);
+    }
+}
+class EnergyAboveTheTopHill extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:energyAboveTheTopHill";
+    }
+    /**
+     * @para attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, EnergyAboveTheTopHill.tagName, value);
+    }
+}
+class MaxTemperature extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:maxTemperature";
+    }
+    /**
+     * @para attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, MaxTemperature.tagName, value);
+    }
+}
+class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:modelParameters";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param grainSize The grain size.
+     * @param automaticallySetMaxEne The automatically set max energy.
+     * @param energyAboveTheTopHill The energy above the top hill.
+     * @param maxTemperature The max temperature.
+     */ constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature){
+        super(attributes, ModelParameters.tagName);
+        this.index = new Map();
+        if (grainSize != undefined) {
+            this.index.set(GrainSize.tagName, this.nodes.size);
+            this.addNode(grainSize);
+        }
+        if (automaticallySetMaxEne != undefined) {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
+        if (energyAboveTheTopHill != undefined) {
+            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
+            this.addNode(energyAboveTheTopHill);
+        }
+        if (maxTemperature != undefined) {
+            this.index.set(MaxTemperature.tagName, this.nodes.size);
+            this.addNode(maxTemperature);
+        }
+    }
+    /**
+     * @returns The grain size or undefined.
+     */ getGrainSize() {
+        let i = this.index.get(GrainSize.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param grainSize The grain size.
+     */ setGrainSize(grainSize) {
+        let i = this.index.get(GrainSize.tagName);
+        if (i) this.nodes.set(i, grainSize);
+        else {
+            this.index.set(GrainSize.tagName, this.nodes.size);
+            this.addNode(grainSize);
+        }
+    }
+    /**
+     * Removes the grain size.
+     */ removeGrainSize() {
+        let i = this.index.get(GrainSize.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(GrainSize.tagName);
+        }
+    }
+    /**
+     * @returns The automatically set max energy or undefined.
+     */ getAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param automaticallySetMaxEne The automatically set max energy.
+     */ setAutomaticallySetMaxEne(automaticallySetMaxEne) {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i) this.nodes.set(i, automaticallySetMaxEne);
+        else {
+            this.index.set(AutomaticallySetMaxEne.tagName, this.nodes.size);
+            this.addNode(automaticallySetMaxEne);
+        }
+    }
+    /**
+     * Removes the automatically set max energy.
+     */ removeAutomaticallySetMaxEne() {
+        let i = this.index.get(AutomaticallySetMaxEne.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(AutomaticallySetMaxEne.tagName);
+        }
+    }
+    /**
+     * @returns The energy above the top hill or undefined.
+     */ getEnergyAboveTheTopHill() {
+        let i = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param energyAboveTheTopHill The energy above the top hill.
+     */ setEnergyAboveTheTopHill(energyAboveTheTopHill) {
+        let i = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i) this.nodes.set(i, energyAboveTheTopHill);
+        else {
+            this.index.set(EnergyAboveTheTopHill.tagName, this.nodes.size);
+            this.addNode(energyAboveTheTopHill);
+        }
+    }
+    /**
+     * Removes the energy above the top hill.
+     */ removeEnergyAboveTheTopHill() {
+        let i = this.index.get(EnergyAboveTheTopHill.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(EnergyAboveTheTopHill.tagName);
+        }
+    }
+    /**
+     * @returns The max temperature or undefined.
+     */ getMaxTemperature() {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i) return this.nodes.get(i);
+    }
+    /**
+     * @param maxTemperature The max temperature.
+     */ setMaxTemperature(maxTemperature) {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i) this.nodes.set(i, maxTemperature);
+        else {
+            this.index.set(MaxTemperature.tagName, this.nodes.size);
+            this.addNode(maxTemperature);
+        }
+    }
+    /**
+     * Removes the max temperature.
+     */ removeMaxTemperature() {
+        let i = this.index.get(MaxTemperature.tagName);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(MaxTemperature.tagName);
+        }
+    }
+}
+
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8grVN":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * A reference to a molecule, not to be confused with a Molecule.
+ * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
+ * The attribute "role" is the role of the molecule in the reaction. Expected values are:
+ * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
+ * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
+ */ parcelHelpers.export(exports, "ReactionMolecule", ()=>ReactionMolecule);
+/**
+ * A molecule that reacts in a reaction.
+ * In the XML, a "reactant" node is a child of the "reaction" node and has a child "molecule" node.
+ */ parcelHelpers.export(exports, "Reactant", ()=>Reactant);
+/**
+ * A molecule produced in a reaction.
+ * In the XML, a "product" node is a child of the "reaction" node and has a child "molecule" node.
+ */ parcelHelpers.export(exports, "Product", ()=>Product);
+/**
+ * A molecule that is a transition state in a reaction.
+ * In the XML, a "me:transitionState" node is a child of the "reaction" node and has a child "molecule" node.
+ */ parcelHelpers.export(exports, "TransitionState", ()=>TransitionState);
+/**
+ * In the XML, a "me:preExponential" node is a child of a "me:MCRCMethod" node.
+ */ parcelHelpers.export(exports, "PreExponential", ()=>PreExponential);
+/**
+ * In the XML, a "me:activationEnergy" node is a child of a "me:MCRCMethod" node.
+ */ parcelHelpers.export(exports, "ActivationEnergy", ()=>ActivationEnergy);
+/**
+ * In the XML, a "me:TInfinity" node is a child of a "me:MCRCMethod" node.
+ */ parcelHelpers.export(exports, "TInfinity", ()=>TInfinity);
+/**
+ * In the XML, a "me:nInfinity" node is a child of a "me:MCRCMethod" node.
+ */ parcelHelpers.export(exports, "NInfinity", ()=>NInfinity);
+/**
+ * Extended classes indicate how microcanonical rate constant is to be treated.
+ * In the XML, a "me:MCRCMethod" node is a child of a "reaction" node.
+ * A simple MCRCMethod has an attribute name="RRKM".
+ * There are extended classed representing more complicated MCRCMethods:
+ * "me:MesmerILT"
+ * "LandauZenerCrossing"
+ * "ZhuNakamuraCrossing"
+ * "me:CanonicalRateCoefficient"
+ * "DefinedSumOfStates"
+ */ parcelHelpers.export(exports, "MCRCMethod", ()=>MCRCMethod);
+/**
+ * The Inverse Laplace Transform (ILT) type of microcanonical rate constant.
+ */ parcelHelpers.export(exports, "MesmerILT", ()=>MesmerILT);
+/**
+ * In the XML, the "me:tunneling" node is a child of a "reaction" node.
+ * The "name" attribute is one of: [Eckart, WKB].
+ */ parcelHelpers.export(exports, "Tunneling", ()=>Tunneling);
+/**
+ * In the XML, the "me:excessReactantConc" node is a child of a "reaction" node.
+ */ parcelHelpers.export(exports, "ExcessReactantConc", ()=>ExcessReactantConc);
+/**
+ * A class for representing a reaction.
+ */ parcelHelpers.export(exports, "Reaction", ()=>Reaction);
+var _xmlJs = require("./xml.js");
+class ReactionMolecule extends (0, _xmlJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "molecule";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param tagName The tag name.
+     * @param molecule The molecule (an abbreviated molecule).
+     */ constructor(attributes){
+        super(attributes, ReactionMolecule.tagName);
+        this.ref = attributes.get("ref");
+        this.role = attributes.get("role");
+    }
+    /**
+     * @param role The role of the molecule in the reaction.
+     */ setRole(role) {
+        this.role = role;
+    }
+}
+class Reactant extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "reactant";
+    }
+    static{
+        /**
+     * The role options.
+     */ this.roleOptions = [
+            "deficientReactant",
+            "excessReactant",
+            "modelled"
+        ];
+    }
+    /**
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, Reactant.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
+    }
+}
+class Product extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "product";
+    }
+    static{
+        /**
+     * The role options.
+     */ this.roleOptions = [
+            "modelled",
+            "sink"
+        ];
+    }
+    /**
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, Product.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
+    }
+}
+class TransitionState extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:transitionState";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param molecule The reaction molecule.
+     */ constructor(attributes, molecule){
+        super(attributes, TransitionState.tagName);
+        this.addNode(molecule);
+    }
+    /**
+     * @returns The molecule.
+     */ getMolecule() {
+        return this.nodes.get(0);
+    }
+}
+class PreExponential extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:preExponential";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */ constructor(attributes, value){
+        super(attributes, PreExponential.tagName, value);
+    }
+}
+class ActivationEnergy extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:activationEnergy";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */ constructor(attributes, value){
+        super(attributes, ActivationEnergy.tagName, value);
+    }
+}
+class TInfinity extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:TInfinity";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */ constructor(attributes, value){
+        super(attributes, TInfinity.tagName, value);
+    }
+}
+class NInfinity extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:nInfinity";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */ constructor(attributes, value){
+        super(attributes, NInfinity.tagName, value);
+    }
+}
+class MCRCMethod extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:MCRCMethod";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, MCRCMethod.tagName);
+    }
+}
+class MesmerILT extends MCRCMethod {
+    static{
+        /**
+     * The xsiType.
+     */ this.xsiType = "me:MesmerILT";
+    }
+    static{
+        /**
+     * The tag name.
+     */ this.xsiType2 = "MesmerILT";
+    }
+    /**
+     * Should any parameters be specified as being optional?
+     * @param attributes The attributes.
+     * @param preExponential The pre-exponential factor (optional).
+     * @param activationEnergy The activation energy (optional).
+     * @param tInfinity The TInfinity (optional).
+     * @param nInfinity The nInfinity (optional).
+     */ constructor(attributes, preExponential, activationEnergy, tInfinity, nInfinity){
+        super(attributes);
+        this.index = new Map();
+        if (preExponential != undefined) {
+            this.index.set(PreExponential.tagName, this.index.size);
+            this.addNode(preExponential);
+        }
+        if (activationEnergy != undefined) {
+            this.index.set(ActivationEnergy.tagName, this.index.size);
+            this.addNode(activationEnergy);
+        }
+        if (tInfinity != undefined) {
+            this.index.set(TInfinity.tagName, this.index.size);
+            this.addNode(tInfinity);
+        }
+        if (nInfinity != undefined) {
+            this.index.set(NInfinity.tagName, this.index.size);
+            this.addNode(nInfinity);
+        }
+    }
+    /**
+     * @returns The pre-exponential factor or undefined if it does not exist.
+     */ getPreExponential() {
+        let i = this.index.get(PreExponential.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * @param preExponential The pre-exponential factor.
+     */ setPreExponential(preExponential) {
+        let i = this.index.get(PreExponential.tagName);
+        if (i == undefined) {
+            this.index.set(PreExponential.tagName, this.nodes.size);
+            this.addNode(preExponential);
+        } else this.nodes.set(i, preExponential);
+    }
+    /**
+     * @returns The activation energy or undefined if it does not exist.
+     */ getActivationEnergy() {
+        let i = this.index.get(ActivationEnergy.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * @param activationEnergy The activation energy.
+     */ setActivationEnergy(activationEnergy) {
+        let i = this.index.get(ActivationEnergy.tagName);
+        if (i == undefined) {
+            this.index.set(ActivationEnergy.tagName, this.nodes.size);
+            this.addNode(activationEnergy);
+        } else this.nodes.set(i, activationEnergy);
+    }
+    /**
+     * @returns The TInfinity or undefined if it does not exist.
+     */ getTInfinity() {
+        let i = this.index.get(TInfinity.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * @param tInfinity The TInfinity.
+     */ setTInfinity(tInfinity) {
+        let i = this.index.get(TInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(TInfinity.tagName, this.nodes.size);
+            this.addNode(tInfinity);
+        } else this.nodes.set(i, tInfinity);
+    }
+    /**
+     * @returns The NInfinity or undefined if it does not exist.
+     */ getNInfinity() {
+        let i = this.index.get(NInfinity.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * @param nInfinity The NInfinity.
+     */ setNInfinity(nInfinity) {
+        let i = this.index.get(NInfinity.tagName);
+        if (i == undefined) {
+            this.index.set(NInfinity.tagName, this.nodes.size);
+            this.addNode(nInfinity);
+        } else this.nodes.set(i, nInfinity);
+    }
+}
+class Tunneling extends (0, _xmlJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:tunneling";
+    }
+    static{
+        /**
+     * The options.
+     */ this.options = [
+            "Eckart",
+            "WKB"
+        ];
+    }
+    static{
+        /**
+     * The key to the name attribute value.
+     */ this.s_name = "name";
+    }
+    /**
+     * @param {Map<string, string>} attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, Tunneling.tagName);
+    }
+    /**
+     * @returns The name of the tunneling method.
+     */ getName() {
+        return this.attributes.get(Tunneling.s_name);
+    }
+    /**
+     * @param The name of the tunneling method.
+     */ setName(name) {
+        this.attributes.set(Tunneling.s_name, name);
+    }
+}
+class ExcessReactantConc extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:excessReactantConc";
+    }
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */ constructor(attributes, value){
+        super(attributes, ExcessReactantConc.tagName, value);
+    }
+}
+class Reaction extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "reaction";
+    }
+    static{
+        /**
+     * The key to the id attribute value.
+     */ this.s_id = "id";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param id The id of the reaction.
+     * @param reactants The reactants in the reaction.
+     * @param products The products of the reaction.
+     * @param tunneling The tunneling (optional).
+     * @param transitionStates The transition states (optional).
+     * @param mCRCMethod The MCRCMethod (optional).
+     * @param excessReactantConc The excess reactant concentration (optional).
+     */ constructor(attributes, reactants, products, tunneling, transitionStates, mCRCMethod, excessReactantConc){
+        super(attributes, Reaction.tagName);
+        this.index = new Map();
+        this.reactantsIndex = new Map();
+        this.productsIndex = new Map();
+        this.transitionStatesIndex = new Map();
+        let id = attributes.get(Reaction.s_id);
+        if (id == undefined) throw new Error(Reaction.s_id + " is undefined!");
+        this.id = id;
+        if (reactants != undefined) {
+            reactants.forEach((reactant)=>{
+                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+                this.addNode(reactant);
+            });
+            this.index.set(Reactant.tagName, this.reactantsIndex);
+        }
+        if (products != undefined) {
+            products.forEach((product)=>{
+                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+                this.addNode(product);
+            });
+            this.index.set(Product.tagName, this.productsIndex);
+        }
+        if (tunneling != undefined) {
+            this.index.set(Tunneling.tagName, this.nodes.size);
+            this.addNode(tunneling);
+        }
+        if (transitionStates != undefined) {
+            transitionStates.forEach((transitionState)=>{
+                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+                this.addNode(transitionState);
+            });
+            this.index.set(TransitionState.tagName, this.transitionStatesIndex);
+        }
+        if (mCRCMethod != undefined) {
+            this.index.set(MCRCMethod.tagName, this.nodes.size);
+            this.addNode(mCRCMethod);
+        }
+        if (excessReactantConc != undefined) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        }
+    }
+    /**
+     * Add a node to the index.
+     */ addToIndex(tagName, node) {
+        let v = this.index.get(tagName);
+        if (v == undefined) this.index.set(tagName, this.nodes.size);
+        else if (v instanceof Map) v.set(node.tagName, this.nodes.size);
+        else {
+            let map = new Map();
+            map.set(this.nodes.get(v).ref, v);
+            map.set(node.tagName, this.nodes.size);
+            this.index.set(tagName, map);
+        }
+    }
+    /**
+     * @returns The reactants.
+     */ getReactants() {
+        let i = this.index.get(Reactant.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
+    }
+    /**
+     * Set the reactants.
+     */ setReactants(reactants) {
+        reactants.forEach((reactant)=>{
+            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+            this.addNode(reactant);
+        });
+        this.index.set(Reactant.tagName, this.reactantsIndex);
+    }
+    /**
+     * @returns A particular Reactant.
+     * @param ref The ref of the reactant to return.
+     * @returns The reactant at the given index.
+     */ getReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
+        if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @param reactant The reactant to add.
+     */ addReactant(reactant) {
+        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+        this.addNode(reactant);
+    }
+    /**
+     * @param ref The ref of the reactant to remove.
+     */ removeReactant(ref) {
+        let index = this.reactantsIndex.get(ref);
+        if (index == undefined) throw new Error(`Reactant with ref ${ref} not found`);
+        else {
+            this.nodes.delete(index);
+            this.reactantsIndex.delete(ref);
+        }
+    }
+    /**
+     * @returns The products.
+     */ getProducts() {
+        let i = this.index.get(Product.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
+    }
+    /**
+     * Set the products.
+     */ setProducts(products) {
+        products.forEach((product)=>{
+            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+            this.addNode(product);
+        });
+        this.index.set(Product.tagName, this.productsIndex);
+    }
+    /**
+     * @returns A particular Product.
+     * @param ref The ref of the product to return.
+     * @returns The product at the given index.
+     */ getProduct(ref) {
+        let index = this.productsIndex.get(ref);
+        if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @param product The product to add.
+     */ addProduct(product) {
+        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+        this.addNode(product);
+    }
+    /**
+     * @param ref The ref of the product to remove.
+     */ removeProduct(ref) {
+        let index = this.productsIndex.get(ref);
+        if (index == undefined) throw new Error(`Product with ref ${ref} not found`);
+        else {
+            this.nodes.delete(index);
+            this.productsIndex.delete(ref);
+        }
+    }
+    /**
+     * @returns The tunneling node or undefined if it does not exist.
+     */ getTunneling() {
+        let i = this.index.get(Tunneling.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the tunneling node or create it if it is undefined.
+     */ setTunneling(tunneling) {
+        let i = this.index.get(Tunneling.tagName);
+        if (i == undefined) {
+            this.index.set(Tunneling.tagName, this.nodes.size);
+            this.addNode(tunneling);
+        } else {
+            if (i instanceof Map) throw new Error("Tunneling is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, tunneling);
+        }
+    }
+    /**
+     * @returns The transition states.
+     */ getTransitionStates() {
+        let i = this.index.get(TransitionState.tagName);
+        if (i == undefined) return [];
+        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
+        else return [
+            this.nodes.get(i)
+        ];
+    }
+    /**
+     * Set the transition states.
+     */ setTransitionStates(transitionStates) {
+        transitionStates.forEach((transitionState)=>{
+            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+            this.addNode(transitionState);
+        });
+        this.index.set(TransitionState.tagName, this.transitionStatesIndex);
+    }
+    /**
+     * @returns A particular TransitionState.
+     * @param ref The ref of the transition state to return.
+     * @returns The transition state at the given index.
+     */ getTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index == undefined) throw new Error(`Transition state with ref ${ref} not found`);
+        return this.nodes.get(index);
+    }
+    /**
+     * @param transitionState The transition state to add.
+     */ addTransitionState(transitionState) {
+        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+        this.addNode(transitionState);
+    }
+    /**
+     * @param ref The ref of the transition state to remove.
+     */ removeTransitionState(ref) {
+        let index = this.transitionStatesIndex.get(ref);
+        if (index == undefined) throw new Error(`Transition State with ref ${ref} not found`);
+        else {
+            this.nodes.delete(index);
+            this.transitionStatesIndex.delete(ref);
+        }
+    }
+    /**
+     * @returns The MCRCMethod node or undefined if it does not exist.
+     */ getMCRCMethod() {
+        let i = this.index.get(MCRCMethod.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the MCRCMethod node or create it if it is undefined.
+     */ setMCRCMethod(mCRCMethod) {
+        let i = this.index.get(MCRCMethod.tagName);
+        if (i == undefined) {
+            this.index.set(MCRCMethod.tagName, this.nodes.size);
+            this.addNode(mCRCMethod);
+        } else {
+            if (i instanceof Map) throw new Error("MCRCMethod is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, mCRCMethod);
+        }
+    }
+    /**
+     * @returns The excess reactant concentration or undefined if it does not exist.
+     */ getExcessReactantConc() {
+        let i = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) return undefined;
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the excess reactant concentration or create it if it is undefined.
+     */ setExcessReactantConc(excessReactantConc) {
+        let i = this.index.get(ExcessReactantConc.tagName);
+        if (i == undefined) {
+            this.index.set(ExcessReactantConc.tagName, this.nodes.size);
+            this.addNode(excessReactantConc);
+        } else {
+            if (i instanceof Map) throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
+            else this.nodes.set(i, excessReactantConc);
+        }
+    }
+    /**
+     * Get the label of the reactants.
+     * @returns The label of the reactants.
+     */ getReactantsLabel() {
+        return this.getReactants().map((reactant)=>reactant.getMolecule().ref).join(" + ");
+    }
+    /**
+     * Returns the label for the products.
+     * @returns The label for the products.
+     */ getProductsLabel() {
+        return this.getProducts().map((product)=>product.getMolecule().ref).join(" + ");
+    }
+    /**
+     * Get the label of the reaction.
+     * @returns The label of the reaction.
+     */ getLabel() {
+        let label = this.getReactantsLabel() + " -> " + this.getProductsLabel();
+        return label;
+    }
+    /**
+     * Returns the total energy of all reactants.
+     * @returns The total energy of all reactants.
+     */ getReactantsEnergy(molecules) {
+        // Sum up the energy values of all the reactants in the reaction
+        return Array.from(this.getReactants()).map((reactant)=>{
+            let molecule = molecules.get(reactant.getMolecule().ref);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
+            return molecule.getEnergy();
+        }).reduce((a, b)=>a + b, 0);
+    }
+    /**
+     * Returns the total energy of all products.
+     * @returns The total energy of all products.
+     */ getProductsEnergy(molecules) {
+        // Sum up the energy values of all the products in the reaction
+        return Array.from(this.getProducts()).map((product)=>{
+            let molecule = molecules.get(product.getMolecule().ref);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
+            return molecule.getEnergy();
+        }).reduce((a, b)=>a + b, 0);
+    }
+    /**
+     * @param tagName The tag name.
+     * @param dictRef The dictRef.
+     * @returns The node with the tag name and dictRef or undefined if it does not exist.
+     */ get(tagName, dictRef) {
+        if (this.index.has(tagName)) {
+            let i = this.index.get(tagName);
+            if (i != undefined) {
+                if (i instanceof Map) {
+                    let nodeIndex = i.get(dictRef);
+                    if (nodeIndex != undefined) return this.nodes.get(nodeIndex);
+                } else return this.nodes.get(i);
+            }
+        }
+    }
+}
+
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hoJRr":[function(require,module,exports) {
+/**
+ * Draw a horizontal line and add labels.
+ * @param ctx The context to use.
+ * @param strokeStyle The name of a style to use for the line.
+ * @param strokewidth The width of the line.
+ * @param x0 The start x-coordinate of the line.
+ * @param y0 The start y-coordinate of the line. Also used for an energy label.
+ * @param x1 The end x-coordinate of the line.
+ * @param y1 The end y-coordinate of the line.
+ * @param font The font to use.
+ * @param th The height of the text in pixels.
+ * @param label The label.
+ * @param energyString The energy.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "drawLevel", ()=>drawLevel);
+/**
+ * Draw a line (segment) on the canvas.
+ * @param ctx The context to use.
+ * @param strokeStyle The name of a style to use for the line.
+ * @param x1 The start x-coordinate of the line.
+ * @param y1 The start y-coordinate of the line.
+ * @param x2 The end x-coordinate of the line.
+ * @param y2 The end y-coordinate of the line.
+ */ parcelHelpers.export(exports, "drawLine", ()=>drawLine);
+/**
+ * Writes text to the canvas. (It is probably better to write all the labels in one go.)
+ * @param ctx The context to use.
+ * @param text The text to write.
+ * @param font The font to use.
+ * @param colour The colour of the text.
+ * @param x The horizontal position of the text.
+ * @param y The vertical position of the text.
+ */ parcelHelpers.export(exports, "writeText", ()=>writeText);
+/**
+ * @param ctx The context to use.
+ * @param text The text to get the height of.
+ * @param font The font to use.
+ * @returns The height of the text in pixels.
+ */ parcelHelpers.export(exports, "getTextHeight", ()=>getTextHeight);
+/**
+ * @param ctx The context to use.
+ * @param text The text to get the width of.
+ * @param font The font to use.
+ * @returns The width of the text in pixels.
+ */ parcelHelpers.export(exports, "getTextWidth", ()=>getTextWidth);
+function drawLevel(ctx, strokeStyle, strokewidth, x0, y0, x1, y1, font, th, label, energyString) {
+    let x_centre = x0 + (x1 - x0) / 2;
+    writeText(ctx, energyString, font, strokeStyle, getTextStartX(ctx, energyString, font, x_centre), y1 + th);
+    writeText(ctx, label, font, strokeStyle, getTextStartX(ctx, label, font, x_centre), y1 + 3 * th);
+    drawLine(ctx, strokeStyle, strokewidth, x0, y0, x1, y1);
+}
+/**
+ * @param ctx The context to use.
+ * @param text The text to get the start x-coordinate of.
+ * @paramfont The font to use.  
+ * @param x_centre The x-coordinate of the centre of the text.
+ * @returns The x-coordinate of the start of the text.
+ */ function getTextStartX(ctx, text, font, x_centre) {
+    let tw = getTextWidth(ctx, text, font);
+    return x_centre - tw / 2;
+}
+function drawLine(ctx, strokeStyle, strokewidth, x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = strokewidth;
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
+function writeText(ctx, text, font, colour, x, y) {
+    // Save the context (to restore after).
+    ctx.save();
+    // Translate to the point where text is to be added.
+    ctx.translate(x, y);
+    // Invert Y-axis.
+    ctx.scale(1, -1);
+    // Set the text font.
+    ctx.font = font;
+    // Set the text colour.
+    ctx.fillStyle = colour;
+    // Write the text.
+    ctx.fillText(text, 0, 0);
+    // Restore the context.
+    ctx.restore();
+}
+function getTextHeight(ctx, text, font) {
+    ctx.font = font;
+    var fontMetric = ctx.measureText(text);
+    return fontMetric.actualBoundingBoxAscent + fontMetric.actualBoundingBoxDescent;
+}
+function getTextWidth(ctx, text, font) {
+    ctx.font = font;
+    return ctx.measureText(text).width;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
 
 //# sourceMappingURL=index.50584fd7.js.map

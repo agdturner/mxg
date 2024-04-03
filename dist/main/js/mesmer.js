@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mesmer = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
+exports.Mesmer = exports.ControlList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
 const conditions_js_1 = require("./conditions.js");
 const control_js_1 = require("./control.js");
 const modelParameters_js_1 = require("./modelParameters.js");
@@ -151,6 +151,72 @@ class ReactionList extends xml_js_1.NodeWithNodes {
 }
 exports.ReactionList = ReactionList;
 /**
+ * A class for representing a "controlList" - this does not yet exist in the MEMSER, so this is not used.
+ * Currently, in the XML, a "control" node is a child node of a "me:mesmer" node and there is no "controlList".
+ */
+class ControlList extends xml_js_1.NodeWithNodes {
+    /**
+     * The tag name.
+     */
+    static tagName = "controlList";
+    /**
+     * The index. The keys are the control ids and the values are the node indexes.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     * @param controls The controls.
+     */
+    constructor(attributes, controls) {
+        super(attributes, ControlList.tagName);
+        this.index = new Map();
+        if (controls != undefined) {
+            controls.forEach(control => {
+                this.nodes.set(this.nodes.size, control);
+                this.index.set(control.id, this.nodes.size - 1);
+            });
+        }
+    }
+    /**
+     * @param id The id of the control.
+     * @returns The control.
+     */
+    getControl(id) {
+        let i = this.index.get(id);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i);
+    }
+    /**
+     * Remove a control.
+     * @param id The id of the control to remove.
+     */
+    removeControl(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+    /**
+     * Add a control.
+     * @param control The control.
+     */
+    addControl(control) {
+        let index = this.index.get(control.id);
+        if (index !== undefined) {
+            this.nodes.set(index, control);
+            console.log('Replaced control with id ' + control.id);
+        }
+        else {
+            this.nodes.set(this.nodes.size, control);
+            this.index.set(control.id, this.nodes.size - 1);
+        }
+    }
+}
+exports.ControlList = ControlList;
+/**
  * The "me:mesmer" node contains a "me:title", "moleculeList", "reactionList", "me:conditions",
  * "me:modelParameters" and "me:control".
  */
@@ -173,6 +239,26 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      */
     static frequencyUnits = ["cm-1", "GHz", "amuA^2"];
     /**
+     * Atomic mass map for atoms. The keys are element symbols, the values are the atomic mass according to a periodic table.
+     * (This is initialised in the constructor.)
+     */
+    static atomMasses = new Map();
+    /**
+     * Atomic radius map for atoms. The keys are element symbols, the values are the atomic radii according to a periodic table.
+     * (This is initialised in the constructor.)
+     */
+    static atomRadii = new Map();
+    /**
+     * Colour map for atoms. The keys are element symbols, the values are the colours the element is assigned.
+     * (This is initialised in the constructor.)
+     */
+    static atomColors = new Map();
+    /**
+     * Colour map for bonds. The keys are bond order, the values are the colours the bond order is assigned.
+     * (This is initialised in the constructor.)
+     */
+    static bondColors = new Map();
+    /**
      * The header of the XML file.
      */
     static header = `<?xml version="1.0" encoding="utf-8" ?>
@@ -188,10 +274,30 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      * @param reactionList The reaction list.
      * @param conditions The conditions.
      * @param modelParameters The model parameters.
-     * @param control The control.
+     * @param controls The controls.
      */
-    constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, control) {
+    constructor(attributes, title, moleculeList, reactionList, conditions, modelParameters, controls /*controlList?: ControlList*/) {
         super(attributes, Mesmer.tagName);
+        let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
+        let colors = ["White", "Red", "DarkGrey", "Blue", "Green", "Yellow", "Orange", "Brown"];
+        for (let i = 0; i < elements.length; i++) {
+            Mesmer.atomColors.set(elements[i], colors[i]);
+        }
+        // Atomic mass units (amu)
+        let masses = [1.00784, 15.999, 12.011, 14.007, 35.453, 32.06, 77.845, 55.845]; // Atomic masses (see https://en.wikipedia.org/wiki/Periodic_table).
+        for (let i = 0; i < elements.length; i++) {
+            Mesmer.atomMasses.set(elements[i], masses[i]);
+        }
+        // Picometers (pm),
+        let radii = [37, 66, 67, 56, 99, 102, 110, 124]; // Calculated radii between two atoms of the same type in a molecule (https://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)).
+        for (let i = 0; i < elements.length; i++) {
+            Mesmer.atomRadii.set(elements[i], radii[i]);
+        }
+        let bondOrders = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6];
+        colors = ["Black", "Red", "DarkRed", "Blue", "DarkBlue", "Green", "DarkGreen", "Yellow", "DarkYellow", "Orange", "DarkOrange"];
+        for (let i = 0; i < bondOrders.length; i++) {
+            Mesmer.bondColors.set(bondOrders[i], colors[i]);
+        }
         this.index = new Map();
         if (title != undefined) {
             this.index.set(Title.tagName, this.nodes.size);
@@ -213,10 +319,18 @@ class Mesmer extends xml_js_1.NodeWithNodes {
             this.index.set(modelParameters_js_1.ModelParameters.tagName, this.nodes.size);
             this.addNode(modelParameters);
         }
-        if (control != undefined) {
-            this.index.set(control_js_1.Control.tagName, this.nodes.size);
-            this.addNode(control);
+        if (controls != undefined) {
+            this.index.set(modelParameters_js_1.ModelParameters.tagName, this.nodes.size);
+            controls.forEach(control => {
+                this.addNode(control);
+            });
         }
+        /*
+        if (controlList != undefined) {
+            this.index.set(ControlList.tagName, this.nodes.size);
+            this.addNode(controlList);
+        }
+        */
     }
     /**
      * @returns The title.
@@ -339,21 +453,38 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         }
     }
     /**
-     * @returns The control.
+     * @returns The control list.
      */
-    getControl() {
-        let i = this.index.get(control_js_1.Control.tagName);
+    /*
+    getControlList() {
+        let i: number | undefined = this.index.get(ControlList.tagName);
         if (i == undefined) {
             return undefined;
         }
-        return this.nodes.get(i);
+        return this.nodes.get(i) as ControlList;
     }
+    */
     /**
-     * Set the control.
+     * Set the control list.
+     * @param controlList The control list.
+     */
+    /*
+    setControlList(controlList: ControlList) {
+        let i: number | undefined = this.index.get(ControlList.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, controlList);
+        } else {
+            this.index.set(ReactionList.tagName, this.nodes.size);
+            this.addNode(controlList);
+        }
+    }
+    */
+    /**
+     * Add a control.
      * @param control The control.
      */
-    setControl(control) {
-        let i = this.index.get(control_js_1.Control.tagName);
+    addControl(control) {
+        let i = this.index.get(control_js_1.Control.tagName + control.id);
         if (i != undefined) {
             this.nodes.set(i, control);
         }

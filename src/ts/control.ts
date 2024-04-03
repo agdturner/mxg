@@ -2066,6 +2066,11 @@ export class Control extends NodeWithNodes {
     static readonly tagName: string = "me:control";
 
     /**
+     * The id.
+     */
+    id: number;
+
+    /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
     index: Map<string, number>;
@@ -2073,8 +2078,9 @@ export class Control extends NodeWithNodes {
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes: Map<string, string>, id: number) {
         super(attributes, Control.tagName);
+        this.id = id;
         this.index = new Map<string, number>();
     }
 

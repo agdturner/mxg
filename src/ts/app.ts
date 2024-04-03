@@ -194,14 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
     menuDiv.style.border = '1px solid black';
     menuDiv.style.backgroundColor = 'lightgrey';
 
-
-
-
-
-
-
-
-
     // Create Load button.
     let loadButton = createButton('Load', boundary1);
     loadButton.addEventListener('click', (event: MouseEvent) => {
@@ -279,22 +271,24 @@ document.addEventListener('DOMContentLoaded', () => {
     p1.style.alignContent = 'center';
     let p2 = document.createElement('p');
     welcomeDiv.appendChild(p2);
-    p2.textContent = 'MXG development was funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January 2024.';
+    p2.textContent = 'MXG development is funded by the UK Engineering and Physical Sciences Research Council (EPSRC) from January \
+    to April 2024.';
     let p3 = document.createElement('p');
     welcomeDiv.appendChild(p3);
-    p3.textContent = 'The menu above contains buttons. The Load button is tyo be used to select a MESMER file to load (the file \
-        will not be modified). MXG reads the file and presents the data it contains so that the user can make changes and use \
-        the Save button to generate a new MESMER file. The saved file should have the same content as was loaded except it \
-        will contain no comments, values will be trimmed of white space, and some numbers may be output in a standard \
-        scientific notation if they were not already. The saved file will also reflect any changes specified using the GUI.';
+    p3.textContent = 'The menu Load button is to be used to select a MESMER file to load (the file loaded will not be modified). \
+        MXG reads the file and presents the data it contains so that the user can make changes and use the Save button to generate \
+        a new MESMER file. The saved file should have the same content as was loaded except it will contain no comments or blank \
+        lines, values will be trimmed of white space, and some numbers may be output in a standard scientific notation if they were \
+        not already. The saved file will also reflect any changes specified using the GUI.';
     let p4 = document.createElement('p');
     welcomeDiv.appendChild(p4);
-    p4.textContent = 'MXG aims to be user-friendly and accessible. Between the Load and Save buttons are buttons to \
-        increase or decrease the font size. It is planned to have themes selectable to provide a dark mode rendering and to \
-        support users without normal colour vision.';
+    p4.textContent = 'Between the Load and Save buttons are buttons to increase or decrease the font size. In addition to changing the \
+        text size of any text components, this will also redraw the reaction diagram so that the text rendered onto the canvas reflects \
+        this change. It is planned to have themes selectable to provide a dark mode rendering and to support users that struggle to \
+        distinguish between certain colours.';
     let p5 = document.createElement('p');
-    p5.textContent += 'The development is in an alpha release phase and is not recommended for general use. A community release with \
-        ongoing support from MESMER developers is scheduled for the end of April 2024. MXG is free and open source software based on \
+    p5.textContent += 'The development is in an alpha release phase and is not recommended for general use. A community release that \
+        is to be supported by the MESMER community is scheduled for the end of April 2024. MXG is free and open source software based on \
         free and open source software. The main development GitHub repository is:';
     p5.appendChild(mxg_a);
     welcomeDiv.appendChild(p5);
@@ -330,6 +324,10 @@ document.addEventListener('DOMContentLoaded', () => {
     p10.textContent = 'The "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" buttons contain \
         a triangular symbol which indicate a collapsed (triangle orientated with a point down: ▼) or expanded (triangle with a point \
         up: ▲) state. Actioning these buttons will either expand or collapse content that should appear or be present below the button.';
+    let p11 = document.createElement('p');
+    instructionsDiv.appendChild(p11);
+    p10.textContent = 'The 3D rendering of any molecules with coordinates is provded by <a href="https://github.com/3dmol/3Dmol.js">3DMol.js</a> which incorporates code from GLmol, \
+    Three.js, and jQuery and is licensed under a BSD-3-Clause license.';
 });
 
 /**
@@ -587,21 +585,21 @@ function parse(xml: XMLDocument) {
         })
     );
 
-    // Controls.
-    let controlsDivId = 'controls';
-    let controlsDiv: HTMLDivElement = document.getElementById(controlsDivId) as HTMLDivElement;
-    let controlsListDiv: HTMLDivElement = processControl(xml);
-    controlsListDiv.id = 'controlList';
-    // If the controlListDiv already exists, remove it.
-    remove(controlsListDiv.id);
-    controlsDiv.appendChild(
+    // Control.
+    let controlDivId = 'control';
+    let controlDiv: HTMLDivElement = document.getElementById(controlDivId) as HTMLDivElement;
+    let controlsDiv: HTMLDivElement = processControl(xml);
+    controlsDiv.id = 'controls';
+    // If the controlsDiv already exists, remove it.
+    remove(controlsDiv.id);
+    controlDiv.appendChild(
         getCollapsibleDiv({
-            content: controlsListDiv,
+            content: controlsDiv,
             buttonLabel: "Controls",
             buttonFontSize: fontSize1,
             boundary: boundary1,
             level: level0,
-            contentDivId: controlsListDiv.id
+            contentDivId: controlsDiv.id
         })
     );
 
@@ -705,7 +703,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 // Create a new Atom.
                 let atom: Atom = new Atom(getAttributes(xml_atoms[j]));
                 let atomId: string = atomArray.addAtom(atom);
-                console.log("atomId=" + atomId);
+                //console.log("atomId=" + atomId);
                 // Add the atomDiv to the atomArrayDiv.
                 let atomDiv: HTMLDivElement = createFlexDiv(level3);
                 atomArrayDiv.appendChild(atomDiv);
@@ -850,11 +848,38 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 throw new Error("Expecting 1 or 0 " + BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
             }
             let xml_bonds: HTMLCollectionOf<Element> = xml_bondArrays[0].getElementsByTagName(Bond.tagName);
-            let bonds: Bond[] = [];
+            bondArray = new BondArray(getAttributes(xml_bondArrays[0]));
             for (let j = 0; j < xml_bonds.length; j++) {
-                bonds.push(new Bond(getAttributes(xml_bonds[j])));
+                // Create a new Bond.
+                let bond: Bond = new Bond(getAttributes(xml_bonds[j]));
+                let bondId: string = bondArray.addBond(bond);
+                    // Add the bondDiv to the bondArrayDiv.
+                    let bondDiv: HTMLDivElement = createFlexDiv(level3);
+                    bondArrayDiv.appendChild(bondDiv);
+                    let inputId: string = moleculeId + "_" + bondId;
+                    bondDiv.appendChild(createLabel(Bond.s_id + " " + bondId, boundary1));
+                    // atomRefs2.
+                    let atomRefs2: string = bond.atomRefs2;
+                    let atomRefs2lwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Bond.s_atomRefs2, boundary1, boundary1,
+                        (event: Event) => {
+                            let target = event.target as HTMLInputElement;
+                            bond.setAtomRefs2(target.value);
+                            console.log("The " + Bond.s_atomRefs2 + " has changed from " + atomRefs2 + " to " + target.value);
+                            resizeInputElement(target);
+                        }, atomRefs2, Bond.s_atomRefs2, fontSize3);
+                    bondDiv.appendChild(atomRefs2lwi);
+                    // order.
+                    let orderId: string = inputId + "_" + Bond.s_order;
+                    processOrder(bond, bondDiv, orderId, Bond.s_order);
+                // Add a remove bond button.
+                let removeBondButton: HTMLButtonElement = createButton(removeString, boundary1);
+                bondDiv.appendChild(removeBondButton);
+                removeBondButton.style.fontSize = fontSize4;
+                removeBondButton.addEventListener('click', () => {
+                    molecule.getBonds().removeBond(bondId);
+                    bondDiv.remove();
+                });
             }
-            bondArray = new BondArray(getAttributes(xml_bondArrays[0]), bonds);
             molecule.setBonds(bondArray);
             moleculeTagNames.delete(BondArray.tagName);
         } else {
@@ -863,13 +888,13 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 if (xml_bonds.length > 1) {
                     throw new Error("Expecting 1 " + Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + BondArray.tagName + "?");
                 }
-                let bonds: Bond[] = [];
-                bonds.push(new Bond(getAttributes(xml_bonds[0])));
-                bondArray = new BondArray(getAttributes(xml_bondArrays[0]), bonds);
+                bondArray = new BondArray(new Map());
+                bondArray.addBond(new Bond(getAttributes(xml_bonds[0])));
                 molecule.setBonds(bondArray);
             }
         }
         moleculeTagNames.delete(Bond.tagName);
+
 
 
         // Add a 3Dmol.js viewer.
@@ -884,20 +909,24 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let viewer = $3Dmol.createViewer(viewerDiv, config);
             // Set the viewer style to stick and ball.
             viewer.setStyle({ stick: {} });
+            // Create a 3Dmol viewer control to turn labels on and off.
+            //viewer.addControl();
+            
+
+
             (atomArray as AtomArray).atoms.forEach(function (atom) {
-                if (atom.getElementType() == "C") {
-                    viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: 0.3, color: 'orange' });
-                } else if (atom.getElementType() == "H") {
-                    viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: 0.2, color: 'blue' });
-                } else {
-                    viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: 0.3, color: 'red' });
-                }
+                let color: string = Mesmer.atomColors.get(atom.getElementType()) || 'Purple';
+                let am: number = Mesmer.atomMasses.get(atom.getElementType()) || 1;
+                viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: 0.3 * am /10.0, color: color });
+                //viewer.addLabel(atom.getElementType(), { position: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() } });
             });
             (bondArray as BondArray).bonds.forEach(function (bond) {
                 let atomIds: string[] = bond.atomRefs2.split(" ");
                 let atom1: Atom = atomArray.getAtom(atomIds[0]) as Atom;
                 let atom2: Atom = atomArray.getAtom(atomIds[1]) as Atom;
-                viewer.addCylinder({ start: { x: atom1.getX3(), y: atom1.getY3(), z: atom1.getZ3() }, end: { x: atom2.getX3(), y: atom2.getY3(), z: atom2.getZ3() }, radius: 0.1, color: 'grey' });
+                let order: number = bond.getOrder() || 1;
+                let color: string = Mesmer.bondColors.get(order) || 'Purple';
+                viewer.addCylinder({ start: { x: atom1.getX3(), y: atom1.getY3(), z: atom1.getZ3() }, end: { x: atom2.getX3(), y: atom2.getY3(), z: atom2.getZ3() }, radius: 0.02 * order, color: color });
             });
             viewer.zoomTo();
             viewer.render();
@@ -1018,7 +1047,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 let bondRef: BondRef = new BondRef(getAttributes(xml_bondRefs[0]), getNodeValue(getFirstChildNode(xml_bondRefs[0])));
                 extraDOSCMethod.setBondRef(bondRef);
                 // Create a HTMLSelectElement to select the bondRef.
-                let bondIds: Set<string> = (molecule.getBonds() as BondArray).getBondIds();
+                let bondIds: string[] = (molecule.getBonds() as BondArray).getBondIds();
                 let select: HTMLSelectElement = createSelectElement(bondIds, BondRef.tagName, bondRef.value, molecule.id + "_" + BondRef.tagName, boundary1);
                 select.addEventListener('change', (event: Event) => {
                     let target = event.target as HTMLSelectElement;
@@ -1322,54 +1351,71 @@ function addCoordinate(div: HTMLDivElement, atom: Atom, id: string, value: numbe
 }
 
 /**
- * @param div The div to add the input to.
- * @param atom The atom.
- * @param id The id.
- * @param x3 The x3 value.
- * @param boundary The boundary.
- * @param level The level.
+ * Process an order.
+ * @param bond The bond.
+ * @param bondDiv The bond div.
+ * @param orderId The order id.
+ * @param order The order name.
  */
-/*
-function addX3(div: HTMLDivElement, atom: Atom, id: string, x3: number,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let x3String: string = (x3 || NaN).toExponential();
-    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            atom.setX3(parseFloat(target.value));
-            console.log("The " + Atom.s_x3 + " has changed from " + x3 + " to " + target.value);
-            resizeInputElement(target);
-        }, x3String, Atom.s_x3, fontSize3);
-    lwi.id = id;
-    div.appendChild(lwi);
+function processOrder(bond: Bond, bondDiv: HTMLDivElement, orderId: string, order: string): void {
+    let div: HTMLDivElement = createFlexDiv(boundary1);
+    bondDiv.appendChild(div);
+    let buttonTextContentSelected: string = order + selected;
+    let buttonTextContentDeselected: string = order + deselected;
+    let button = createButton(buttonTextContentDeselected, boundary1);
+    div.appendChild(button);
+    button.classList.add('optionOn');
+    button.classList.add('optionOff');
+    let value: number | undefined = bond.getOrder();
+    if (value == undefined) {
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle('optionOn');
+    } else {
+        addOrder(div, bond, orderId, value, boundary1);
+        button.textContent = buttonTextContentSelected;
+        button.classList.toggle('optionOff');
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event: MouseEvent) => {
+        // Check if the AtomArray already exists
+        if (document.getElementById(orderId) == null) {
+            addOrder(div, bond, orderId, NaN, boundary1);
+            button.textContent = buttonTextContentSelected;
+            button.classList.toggle('optionOff');
+            button.classList.toggle('optionOn');
+        } else {
+            // Remove any existing div.
+            document.getElementById(orderId)?.remove();
+            console.log("Removed " + orderId);
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle('optionOn')
+            button.classList.toggle('optionOff');
+        }
+    });
 }
-*/
 
 /**
  * @param div The div to add the input to.
- * @param atom The atom.
+ * @param bond The bond.
  * @param id The id.
- * @param x3 The x3 value.
+ * @param value The order value.
  * @param boundary The boundary.
- * @param level The level.
  */
-/*
-function addY3(div: HTMLDivElement, atom: Atom, id: string, y3: number,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let y3String: string = (y3 || NaN).toExponential();
-    let lwi: HTMLDivElement = createLabelWithInput("text", id + "_input", boundary, level,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            atom.setY3(parseFloat(target.value));
-            console.log("The " + Atom.s_y3 + " has changed from " + y3 + " to " + target.value);
-            resizeInputElement(target);
-        }, y3String, Atom.s_y3, fontSize3);
-    lwi.id = id;
-    div.appendChild(lwi);
+function addOrder(div: HTMLDivElement, bond: Bond, id: string, value: number,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let valueString: string = (value || NaN).toExponential();
+    let input: HTMLInputElement = createInput("text", id + "_input", boundary);
+    input.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLInputElement;
+        bond.setOrder(parseFloat(target.value));
+        console.log("Bond order changed from " + value + " to " + target.value);
+        resizeInputElement(target);
+    });
+    input.value = valueString;
+    resizeInputElement(input);
+    input.id = id;
+    div.appendChild(input);
 }
-*/
 
 /**
  * Display the XML.
@@ -2080,18 +2126,15 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             reactionDiv.appendChild(inputDiv);
         }
 
-        // Create a new collapsible div for the reaction.
-        let reactionCollapsibleDiv = getCollapsibleDiv({
+        // Create a new collapsible div for the reaction and append to the reactionListDiv.
+        reactionListDiv.appendChild(getCollapsibleDiv({
             content: reactionDiv,
             buttonLabel: reaction.id + "(" + reaction.getLabel() + ")",
             buttonFontSize: fontSize2,
             boundary: boundary1,
             level: level1,
             contentDivId: reaction.tagName + "_" + reaction.id
-        });
-
-        // Append the collapsibleDiv to the reactionListDiv.
-        reactionListDiv.appendChild(reactionCollapsibleDiv);
+        }));
 
     }
     return reactionListDiv;
@@ -3411,15 +3454,26 @@ function processControl(xml: XMLDocument): HTMLDivElement {
     console.log(Control.tagName);
     // Get the XML "me:control" element.
     let xml_controls: HTMLCollectionOf<Element> = xml.getElementsByTagName(Control.tagName);
-    // Create a collapsible div for controls.
     let controlsDiv: HTMLDivElement = createDiv(boundary1);
-    controlsDiv.id = controlsDivId;
     for (let i = 0; i < xml_controls.length; i++) {
         let xml_control: Element = xml_controls[i];
-        // Create div to contain the controls.
+        // Create div to contain the control.
         let controlDiv: HTMLDivElement = createDiv(boundary1);
-        let control: Control = new Control(getAttributes(xml_control));
+        controlDiv.id = 'control' + i.toString();
+        let control: Control = new Control(getAttributes(xml_control), i);
         mesmer.addControl(control);
+        // Create a collapsible div for control.
+        controlsDiv.appendChild(
+            getCollapsibleDiv({
+                content: controlDiv,
+                buttonLabel: "Control " + i.toString(),
+                buttonFontSize: fontSize2,
+                boundary: boundary1,
+                level: level1,
+                contentDivId: controlDiv.id
+            })
+        );
+        let level = level2;
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
         processCalculateRateCoefficientsOnly(control, onOffControls, xml_control);
@@ -3443,21 +3497,20 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         processUseTheSameCellNumberForAllConditions(control, onOffControls, xml_control);
         processForceMacroDetailedBalance(control, onOffControls, xml_control);
         // Create a div for the on/off controls.
-        let onOffControlsDiv: HTMLDivElement = createFlexDiv(level1);
+        let onOffControlsDiv: HTMLDivElement = createFlexDiv(level);
         let orderedOnOffControls = new Map([...onOffControls.entries()].sort());
         orderedOnOffControls.forEach((button: HTMLButtonElement) => {
             onOffControlsDiv.appendChild(button);
         });
         controlDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        processTestMicroRates(control, controlDiv, xml_control);
-        processCalcMethod(control, controlDiv, xml_control);
-        processEigenvalues(control, controlDiv, xml_control);
-        processShortestTimeOfInterest(control, controlDiv, xml_control);
-        processMaximumEvolutionTime(control, controlDiv, xml_control);
-        processAutomaticallySetMaxEneControl(control, controlDiv, xml_control);
-        processDiagramEnergyOffset(control, controlDiv, xml_control);
-        controlsDiv.appendChild(controlDiv);
+        processTestMicroRates(control, controlDiv, xml_control, level);
+        processCalcMethod(control, controlDiv, xml_control, level);
+        processEigenvalues(control, controlDiv, xml_control, level);
+        processShortestTimeOfInterest(control, controlDiv, xml_control, level);
+        processMaximumEvolutionTime(control, controlDiv, xml_control, level);
+        processAutomaticallySetMaxEneControl(control, controlDiv, xml_control, level);
+        processDiagramEnergyOffset(control, controlDiv, xml_control, level);
     }
     return controlsDiv;
 }
@@ -4286,12 +4339,18 @@ function processForceMacroDetailedBalance(control: Control, onOffControls: Map<s
 /**
  * Process "me:testMicroRates".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The control div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processTestMicroRates(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = TestMicroRates.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -4417,12 +4476,18 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
 /**
  * Process "me:calcMethod".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processCalcMethod(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processCalcMethod(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = CalcMethod.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -5231,12 +5296,18 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, op
 /**
  * Process "me:eigenvalues".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processEigenvalues(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processEigenvalues(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = Eigenvalues.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -5304,12 +5375,18 @@ function createEigenValuesInput(control: Control, div: HTMLDivElement, eigenvalu
 /**
  * Process "me:shortestTimeOfInterest".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processShortestTimeOfInterest(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processShortestTimeOfInterest(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = ShortestTimeOfInterest.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -5378,12 +5455,18 @@ function createShortestTimeOfInterest(control: Control, div: HTMLDivElement, sto
 /**
  * Process "me:MaximumEvolutionTime".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processMaximumEvolutionTime(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processMaximumEvolutionTime(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = MaximumEvolutionTime.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -5452,12 +5535,18 @@ function createMaximumEvolutionTimeInput(control: Control, div: HTMLDivElement, 
 /**
  * Process "me:automaticallySetMaxEne".
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processAutomaticallySetMaxEneControl(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processAutomaticallySetMaxEneControl(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = AutomaticallySetMaxEne.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
@@ -5526,12 +5615,18 @@ function createAutomaticallySetMaxEneInputControl(control: Control, div: HTMLDiv
 /**
  * Process me:diagramEnergyOffset.
  * @param control The control.
- * @param controlsDiv The controls div.
+ * @param controlDiv The controls div.
  * @param xml_control The xml control.
+ * @param level The level.
  */
-function processDiagramEnergyOffset(control: Control, controlsDiv: HTMLDivElement, xml_control: Element): void {
-    let div: HTMLDivElement = createFlexDiv(level1);
-    controlsDiv.appendChild(div);
+function processDiagramEnergyOffset(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
+    level : {
+        marginLeft: string;
+        marginTop: string;
+        marginBottom: string;
+    }): void {
+    let div: HTMLDivElement = createFlexDiv(level);
+    controlDiv.appendChild(div);
     let tagName: string = DiagramEnergyOffset.tagName;
     let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
