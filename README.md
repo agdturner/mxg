@@ -36,14 +36,15 @@ Currently supported are those involved in alpha testing. A community release wit
 ### Version 0.9
 - Changes since 0.5:
   - 3DMol.js is used to visualise molecules with 3D coordinates.
-  - Multiple Control elements are handled.
+  - Multiple Control elements can now be handled.
   - Atom and Bond arrays are shown and editable.
   - Rather than using labels and checkboxes, buttons with appropriate text are used.
   - More detail has been added to Control, ModelParameter and Condition sections of the GUI.
   - There is a menu and welcome text rather than just a load button.
-  - Various bugs were fixes.
-  - More numerical values are now output in exponent format.
-  - The reaction well diagram can be popped out and popped back. 
+  - Various bugs were fixed.
+  - More numerical values are now output in exponential format.
+  - The reaction well diagram can be popped out and popped back.
+  - PTPairs can be added and removed, and there is a way to add multiple entries via a spreadsheet.
 
 ### Version 0.5
 - This is a refactoring of Version 0.4.
