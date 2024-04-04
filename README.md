@@ -25,13 +25,13 @@ The 3D rendering of any molecules with coordinates is provded by 3DMol.js which 
 
 
 ## User Guide
-Currently supported are those involved in alpha testing. A community release with ongoing support from the MESMER community is tentatively scheduled for the end of April 2024. The alpha versions are not recommended for general use, but please feel free to have a play.
+The alpha versions are not recommended for general use, but please feel free to have a play. A community release supported by the MESMER community is tentatively scheduled for the end of April 2024. 
 
 ### User Testing
 - Please ensure you are testing the right version.
-  - Please uninstall any installed PWA before installing a different version to test.
+  - Please uninstall any installed PWA before installing again using a different browser to test things work in different browsers.
     -  Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
-- Please report issues with documentation/installation/use to help develop something better...
+- Please report issues with documentation/installation/use...
 
 ### Version 0.9
 - Changes since 0.5:
@@ -55,13 +55,12 @@ Currently supported are those involved in alpha testing. A community release wit
   - If the users edits a me:ZPE property, the reaction well diagram updates.
 
 ### Version 0.3
-- Changes sine 0.2.
+- Changes since 0.2.
   - More details are revealed and made these editable.
 
 ### Version 0.2
-- This builds on Version 0.1
-- For the example [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml) file:
-  - The rotation constants and vibration frequencies can now also be edited.
+- Changes since 0.1
+  - The rotation constants and vibration frequencies can be edited.
   - Rather than present the data for molecules in a single table, the details are collapsible and editable via buttons.
   - Additional tables present data for: Conditions, Model Parameters, and Control.
 
