@@ -2,7 +2,7 @@
 
 ## Introduction
 
-MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). [EPSRC](https://www.ukri.org/councils/epsrc/) funded development from January 2024 until April 2024. The aim is to release a community supported version at the end of April.
+MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). [EPSRC](https://www.ukri.org/councils/epsrc/) funded development from January 2024 until April 2024.
 
 MXG can be used online and installed onto devices as a Progressive Web Application (PWA). The latest unstable release and alpha version are served from GitHub Pages from where the respective PWA can be installed:
  - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
@@ -29,8 +29,8 @@ The alpha versions are not recommended for general use, but please feel free to 
 
 ### User Testing
 - Please ensure you are testing the right version.
-  - Please uninstall any installed PWA before installing again using a different browser to test things work in different browsers.
-    -  Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
+  - Please uninstall any installed PWA before installing a different version or to test the PWA using a different Web browser.
+    - Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
 - Please report issues with documentation/installation/use...
 
 ### Version 0.9
