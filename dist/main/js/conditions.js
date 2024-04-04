@@ -362,10 +362,12 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns The Pressure.
      */
     getP() {
+        //if (this !== undefined) {
         let p = this.attributes.get(PTpair.s_P);
-        if (p != undefined) {
+        if (p !== undefined) {
             return parseFloat(p);
         }
+        //}
         return NaN;
     }
     /**
@@ -378,10 +380,12 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns The Temperature.
      */
     getT() {
+        //if (this !== undefined) {
         let t = this.attributes.get(PTpair.s_T);
-        if (t != undefined) {
+        if (t !== undefined) {
             return parseFloat(t);
         }
+        //}
         return NaN;
     }
     /**

@@ -463,7 +463,7 @@ export class CalcMethodFitting extends CalcMethod {
  * A class for "me:MarquardtIterations".
  */
 export class MarquardtIterations extends NumberNode {
-
+    
     /**
      * The tag name.
      */

@@ -1,5 +1,5 @@
 /**
- * Thow an error if the key is not in the map otherwise return the value mapped to the key.
+ * Get the value mapped to the key.
  * @param map The map to search in. 
  * @param key The key to search for.
  * @returns The value mapped to the key.
@@ -10,6 +10,26 @@ export function get(map: Map<any, any>, key: any): any {
         throw new Error(`Key ${key} not found in map`);
     }
     return map.get(key);
+}
+
+/**
+ * For getting a valid HTML id. HTML id attribute values must contain at least one character and must not 
+ * contain any space characters. They also cannot start with a digit, two hyphens, or a hyphen followed by
+ * a digit.
+ * @param parts The parts of the ID.
+ * @return A string ID composed of the parts joined by the delimiter.
+ */
+export function getID(...parts: string[]): string {
+    let id = parts.join("-");
+    // Replace any character that is not a letter (upper or lower case), a digit, a hyphen, or an underscore 
+    // with an underscore. 
+    let validId = id.replace(/[^a-zA-Z-_0-9]/g, '_');
+    // If the first character is a digit, two hyphens, or a hyphen followed by a digit, add an underscore to 
+    // the beginning of the ID.
+    if (/^[0-9]|^--|-^[0-9]/.test(validId)) {
+        validId = '_' + validId;
+    }
+    return validId;
 }
 
 /**

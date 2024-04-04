@@ -413,10 +413,12 @@ export class PTpair extends NodeWithNodes {
      * @returns The Pressure.
      */
     getP(): number {
-        let p: string | undefined = this.attributes.get(PTpair.s_P);
-        if (p != undefined) {
-            return parseFloat(p);
-        }
+        //if (this !== undefined) {
+            let p: string | undefined = this.attributes.get(PTpair.s_P);
+            if (p !== undefined) {
+                return parseFloat(p);
+            }
+        //}
         return NaN;
     }
 
@@ -431,10 +433,12 @@ export class PTpair extends NodeWithNodes {
      * @returns The Temperature.
      */
     getT(): number {
-        let t: string | undefined = this.attributes.get(PTpair.s_T);
-        if (t != undefined) {
-            return parseFloat(t);
-        }
+        //if (this !== undefined) {
+            let t: string | undefined = this.attributes.get(PTpair.s_T);
+            if (t !== undefined) {
+                return parseFloat(t);
+            }
+        //}
         return NaN;
     }
 
@@ -714,7 +718,7 @@ export class PTs extends NodeWithNodes {
             this.pTpairs.push(pTpair);
         });
     }
-    
+
     /**
      * Remove all PT pairs.
      */
