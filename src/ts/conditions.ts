@@ -739,6 +739,11 @@ export class Conditions extends NodeWithNodes {
     static tagName: string = "me:conditions";
 
     /**
+     * The id.
+     */
+    id: number;
+
+    /**
      * The index. The keys are the node names and the values are the node indexes.
      */
     index: Map<string, number | Map<string, number>>;
@@ -758,8 +763,9 @@ export class Conditions extends NodeWithNodes {
      * @param bathGases The bath gases.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
-    constructor(attributes: Map<string, string>, bathGases?: Set<BathGas>, pTs?: PTs) {
+    constructor(attributes: Map<string, string>, id: number, bathGases?: Set<BathGas>, pTs?: PTs) {
         super(attributes, Conditions.tagName);
+        this.id = id;
         this.index = new Map();
         this.bathGasesIndex = new Map();
         this.bathGases = new Set();

@@ -15,16 +15,23 @@ export function remove(id: string, ids?: Set<string>) {
 
 /**
  * Create a collapsible div.
- * @param options The options for creating the collapsible div.
- * @returns A collapsible div.
+ * @param divToAppendTo The div to append to.
+ * @param content The content to be collapsible.
+ * @param buttonLabel The label for the button.
+ * @param buttonFontSize The font size for the button.
+ * @param boundary The boundary for the div.
+ * @param level The level for the div.
+ * @param contentDivId The id for the content div.
+ * @returns A div with collapsible content.
  */
 export function getCollapsibleDiv(
-    { content, buttonLabel, buttonFontSize = '',
+    { divToAddTo: divToAppendTo, elementToInsertBefore, content, buttonLabel, buttonFontSize = '',
         boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
         level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
         contentDivId = '',
         contentDivClassName = '' }:
-        {
+        {   divToAddTo: HTMLDivElement,
+            elementToInsertBefore: Element | null,
             content: HTMLElement,
             buttonLabel: string,
             buttonFontSize?: string,
@@ -33,9 +40,8 @@ export function getCollapsibleDiv(
             contentDivId?: string,
             contentDivClassName?: string
         }): HTMLDivElement {
-    let contentDiv: HTMLDivElement = createDiv(undefined, boundary);
-    contentDiv.id = contentDivId;
-    contentDiv.className = contentDivClassName;
+    let div: HTMLDivElement = createDiv(contentDivId, boundary);
+    div.className = contentDivClassName;
     let button: HTMLButtonElement = document.createElement('button');
     button.id = contentDivId + 'Button';
     button.className = 'collapsible';
@@ -47,22 +53,26 @@ export function getCollapsibleDiv(
     });
     button.style.fontSize = buttonFontSize;
     Object.assign(button.style, level);
-    contentDiv.appendChild(button);
-    contentDiv.appendChild(content);
-    return contentDiv;
+    div.appendChild(button);
+    div.appendChild(content);
+    if (elementToInsertBefore != null) {
+        divToAppendTo.insertBefore(div, elementToInsertBefore);
+    } else {
+          divToAppendTo.appendChild(div);
+    }
+    setCollapsibleEventListener(button);
+    return div;
 }
 
 /**
- * For making elements with the class "collapsible" collapsible.
+ * For setting the event listener for a collapsible element.
+ * @param e The element to add the event listener to.
  */
-export function makeCollapsible(): void {
-    var collapsibleElements = document.getElementsByClassName("collapsible");
-    for (var i = 0; i < collapsibleElements.length; i++) {
-        // Remove existing event listener
-        collapsibleElements[i].removeEventListener("click", toggleCollapsible);
-        // Add new event listener
-        collapsibleElements[i].addEventListener("click", toggleCollapsible);
-    }
+function setCollapsibleEventListener(e: Element): void {
+    // Remove any existing event listener.
+    e.removeEventListener("click", toggleCollapsible);
+    // Add new event listener.
+    e.addEventListener("click", toggleCollapsible);
 }
 
 /**
@@ -70,11 +80,19 @@ export function makeCollapsible(): void {
  */
 function toggleCollapsible(this: HTMLElement): void {
     this.classList.toggle("active");
-    let contentDiv = this.nextElementSibling as HTMLElement;
-    if (contentDiv.style.display === "block") {
-        contentDiv.style.display = "none";
+    let nes: Element | null = this.nextElementSibling;
+    if (nes != null) {
+        if (nes instanceof HTMLDivElement) {
+            if (nes.style.display === "block") {
+                nes.style.display = "none";
+            } else {
+                nes.style.display = "block";
+            }
+        } else {
+            console.log("toggleCollapsible: nextElementSibling is not an HTMLDivElement");
+        }
     } else {
-        contentDiv.style.display = "block";
+        console.log("toggleCollapsible: nextElementSibling is null");
     }
 }
 

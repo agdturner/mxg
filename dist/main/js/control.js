@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SensitivityNumVarRedIters = exports.SensitivityAnalysisOrder = exports.SensitivityAnalysisSamples = exports.CalcMethodThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethodFitting = exports.FittingIterations = exports.CalcMethodGridSearch = exports.CalcMethodSimpleCalc = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstants = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
+exports.SensitivityNumVarRedIters = exports.SensitivityAnalysisOrder = exports.SensitivityAnalysisSamples = exports.CalcMethodThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethodFitting = exports.FittingIterations = exports.CalcMethodGridSearch = exports.CalcMethodSimpleCalc = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstant = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
 exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.CalcMethodSensitivityAnalysis = exports.SensitivityVarRedMethod = void 0;
 const xml_1 = require("./xml");
 /**
@@ -227,16 +227,16 @@ exports.TestDOS = TestDOS;
 /**
  * A class for "me:testRateConstant".
  */
-class TestRateConstants extends xml_1.Tag {
+class TestRateConstant extends xml_1.Tag {
     /**
      * The tag name.
      */
-    static tagName = "me:testRateConstants";
+    static tagName = "me:testRateConstant";
     constructor() {
-        super(TestRateConstants.tagName);
+        super(TestRateConstant.tagName);
     }
 }
-exports.TestRateConstants = TestRateConstants;
+exports.TestRateConstant = TestRateConstant;
 /**
  * A class for "me:useTheSameCellNumberForAllConditions.
  */
@@ -2446,7 +2446,7 @@ class Control extends xml_1.NodeWithNodes {
      * @returns The testRateConstant or undefined.
      */
     getTestRateConstants() {
-        let i = this.index.get(TestRateConstants.tagName);
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
             return this.nodes.get(i);
         }
@@ -2456,12 +2456,12 @@ class Control extends xml_1.NodeWithNodes {
      * @param testRateConstant The testRateConstant.
      */
     setTestRateConstants(testRateConstant) {
-        let i = this.index.get(TestRateConstants.tagName);
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
             this.nodes.set(i, testRateConstant);
         }
         else {
-            this.index.set(TestRateConstants.tagName, this.nodes.size);
+            this.index.set(TestRateConstant.tagName, this.nodes.size);
             this.addNode(testRateConstant);
         }
     }
@@ -2469,10 +2469,10 @@ class Control extends xml_1.NodeWithNodes {
      * Remove the testRateConstant.
      */
     removeTestRateConstants() {
-        let i = this.index.get(TestRateConstants.tagName);
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(TestRateConstants.tagName);
+            this.index.delete(TestRateConstant.tagName);
         }
     }
     /**

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.Molecule = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+const range_js_1 = require("./range.js");
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 /**
@@ -896,9 +897,11 @@ class PropertyList extends xml_js_1.NodeWithNodes {
 exports.PropertyList = PropertyList;
 /**
  * In the XML, a "me:deltaEDown" node is a child node of a "me:energyTransferModel" node.
- * The attributes may include "bathGas", "units", "lower", "upper", and "stepsize".
+ * The attributes may include:
+ * "bathGas";
+ * and other attributes of a RangeNode.
  */
-class DeltaEDown extends xml_js_1.NumberNode {
+class DeltaEDown extends range_js_1.RangeNode {
     /**
      * The tag name.
      */
@@ -907,22 +910,6 @@ class DeltaEDown extends xml_js_1.NumberNode {
      * The key for the bathGas attribute.
      */
     static s_bathGas = "bathGas";
-    /**
-     * The key for the units attribute.
-     */
-    static s_units = "units";
-    /**
-     * The key for the lower attribute.
-     */
-    static s_lower = "lower";
-    /**
-     * The key for the upper attribute.
-     */
-    static s_upper = "upper";
-    /**
-     * The key for the stepsize attribute.
-     */
-    static s_stepsize = "stepsize";
     /**
      * @param attributes The attributes.
      * @param units The units.
@@ -942,67 +929,120 @@ class DeltaEDown extends xml_js_1.NumberNode {
     setBathGas(bathGas) {
         this.attributes.set(DeltaEDown.s_bathGas, bathGas);
     }
-    /**
-     * @returns The units of the DeltaEDown.
-     */
-    getUnits() {
-        return this.attributes.get(DeltaEDown.s_units);
-    }
-    /**
-     * @param units The units of the DeltaEDown.
-     */
-    setUnits(units) {
-        this.attributes.set(DeltaEDown.s_units, units);
-    }
-    /**
-     * @returns The lower of the DeltaEDown.
-     */
-    getLower() {
-        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_lower));
-    }
-    /**
-     * @param lower The lower of the DeltaEDown.
-     */
-    setLower(lower) {
-        this.attributes.set(DeltaEDown.s_lower, lower.toString());
-    }
-    /**
-     * @returns The upper of the DeltaEDown.
-     */
-    getUpper() {
-        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_upper));
-    }
-    /**
-     * @param upper The upper of the DeltaEDown.
-     */
-    setUpper(upper) {
-        this.attributes.set(DeltaEDown.s_upper, upper.toString());
-    }
-    /**
-     * @returns The stepsize of the DeltaEDown.
-     */
-    getStepsize() {
-        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDown.s_stepsize));
-    }
-    /**
-     * @param stepsize The stepsize of the DeltaEDown.
-     */
-    setStepsize(stepsize) {
-        this.attributes.set(DeltaEDown.s_stepsize, stepsize.toString());
-    }
-    /**
-     * @param value The value of the DeltaEDown.
-     */
-    setValue(value) {
-        this.value = value;
-    }
 }
 exports.DeltaEDown = DeltaEDown;
 /**
+ * In the XML, a "me:deltaEDown2" node is a child node of a "me:energyTransferModel" node.
+ * The attributes may include:
+ * "bathGas";
+ * and other attributes of a RangeNode.
+ */
+class DeltaEDown2 extends DeltaEDown {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:deltaEDown2";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, value);
+    }
+}
+exports.DeltaEDown2 = DeltaEDown2;
+/**
+ * In the XML, a "me:deltaEDownLinEne" node is a child node of a "me:energyTransferModel" node.
+ * The attributes may include:
+ * "referenceTemperature";
+ * and other attributes of a RangeNode.
+ */
+class DeltaEDownTExponent extends range_js_1.RangeNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:deltaEDownTExponent";
+    /**
+     * The referenceTemperature attribute key.
+     */
+    static s_referenceTemperature = "referenceTemperature";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, DeltaEDownTExponent.tagName, value);
+    }
+    /**
+     * @returns The referenceTemperature.
+     */
+    getReferenceTemperature() {
+        return parseFloat((0, util_js_1.get)(this.attributes, DeltaEDownTExponent.s_referenceTemperature));
+    }
+    /**
+     * @param referenceTemperature The referenceTemperature.
+     */
+    setReferenceTemperature(referenceTemperature) {
+        this.attributes.set(DeltaEDownTExponent.s_referenceTemperature, referenceTemperature.toString());
+    }
+}
+exports.DeltaEDownTExponent = DeltaEDownTExponent;
+/**
+ * In the XML, a "me:deltaEDownLinEne" node is a child node of a "me:energyTransferModel" node.
+ */
+class DeltaEDownLinEne extends range_js_1.RangeNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:deltaEDownLinEne";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, DeltaEDownLinEne.tagName, value);
+    }
+}
+exports.DeltaEDownLinEne = DeltaEDownLinEne;
+/**
  * In the XML, a "me:energyTransferModel" node is a child node of a "molecule" node.
+ * The attributes are expected to include:
+ * "xsi:type" with expected values ["me:ExponentialDown", "me:BiExponentialDown"].
  * It may have:
- * One or more "me:deltaEDown" child nodes.
- * Additional child nodes might include "me:deltaEDownTExponent".
+ * One or multiple child nodes of the following types:
+ * "me:deltaEDown"
+ * "me:deltaEDown2" (for "me:BiExponentialDown")
+ * "me:deltaEDownTExponent"
+ * "me:deltaEDownLinEne"
+ * "me:deltaEDownTActivation"
+ * Examples:
+ * <moleculeList>
+ *   <molecule id="Isomer1">
+ *     <me:energyTransferModel xsi:type="me:ExponentialDown">
+ *       <me:deltaEDown units="cm-1" lower="100" upper="400" stepsize="10">174</me:deltaEDown>
+ *     </me:energyTransferModel>
+ *   </molecule>
+ *   <molecule id="Isomer2">
+ *     <me:energyTransferModel xsi:type="me:ExponentialDown">
+ *       <me:deltaEDown units="cm-1" derivedFrom="Isomer1:deltaEDown">174</me:deltaEDown>
+ *     </me:energyTransferModel>
+ *   </molecule>
+ * </moleculeList>
+ * <me:energyTransferModel xsi:type="me:ExponentialDown">
+ *   <me:deltaEDown units="cm-1" lower="140.0" upper="220." stepsize="10.0">210.0</me:deltaEDown>
+ *   <me:deltaEDownTExponent lower="0.0" upper="1.0" stepsize="0.01">0.6</me:deltaEDownTExponent>
+ *   <me:deltaEDownLinEne lower="1.e-06" upper="1.0" stepsize="1.e-06">0.0006</me:deltaEDownLinEne>
+ * </me:energyTransferModel>
+ * <me:energyTransferModel xsi:type="me:ExponentialDown">
+ *   <me:deltaEDown bathGas="Ar" units="cm-1" lower="20" upper="400" stepsize="10.0">47.9654</me:deltaEDown>
+ *   <me:deltaEDownTExponent bathGas="Ar" referenceTemperature="298" lower="0" upper="2" stepsize="0.02" >1.37982</me:deltaEDownTExponent>
+ *   <me:deltaEDownTActivation bathGas="Ar" units="K-1" lower="-1.0" upper="1.0" stepsize="1e-5" >-7.95961e-05 </me:deltaEDownTActivation>
+ * </me:energyTransferModel>
+ * <me:energyTransferModel xsi:type="me:BiExponentialDown">
+ *  <me:deltaEDown units="cm-1">210.0</me:deltaEDown>
+ *  <me:deltaEDown2 units="cm-1">500.0</me:deltaEDown2>
+ *  <me:ratio>0.5</me:ratio>
+ * </me:energyTransferModel>
  */
 class EnergyTransferModel extends xml_js_1.NodeWithNodes {
     /**

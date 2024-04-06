@@ -260,15 +260,15 @@ export class TestDOS extends Tag {
 /**
  * A class for "me:testRateConstant".
  */
-export class TestRateConstants extends Tag {
+export class TestRateConstant extends Tag {
 
     /**
      * The tag name.
      */
-    static readonly tagName: string = "me:testRateConstants";
+    static readonly tagName: string = "me:testRateConstant";
 
     constructor() {
-        super(TestRateConstants.tagName);
+        super(TestRateConstant.tagName);
     }
 }
 
@@ -2682,10 +2682,10 @@ export class Control extends NodeWithNodes {
     /**
      * @returns The testRateConstant or undefined.
      */
-    getTestRateConstants(): TestRateConstants | undefined {
-        let i = this.index.get(TestRateConstants.tagName);
+    getTestRateConstants(): TestRateConstant | undefined {
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
-            return this.nodes.get(i) as TestRateConstants;
+            return this.nodes.get(i) as TestRateConstant;
         }
         return undefined;
     }
@@ -2693,12 +2693,12 @@ export class Control extends NodeWithNodes {
     /**
      * @param testRateConstant The testRateConstant.
      */
-    setTestRateConstants(testRateConstant: TestRateConstants) {
-        let i = this.index.get(TestRateConstants.tagName);
+    setTestRateConstants(testRateConstant: TestRateConstant) {
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
             this.nodes.set(i, testRateConstant);
         } else {
-            this.index.set(TestRateConstants.tagName, this.nodes.size);
+            this.index.set(TestRateConstant.tagName, this.nodes.size);
             this.addNode(testRateConstant);
         }
     }
@@ -2707,10 +2707,10 @@ export class Control extends NodeWithNodes {
      * Remove the testRateConstant.
      */
     removeTestRateConstants() {
-        let i = this.index.get(TestRateConstants.tagName);
+        let i = this.index.get(TestRateConstant.tagName);
         if (i != undefined) {
             this.nodes.delete(i);
-            this.index.delete(TestRateConstants.tagName);
+            this.index.delete(TestRateConstant.tagName);
         }
     }
 

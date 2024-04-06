@@ -664,6 +664,10 @@ class Conditions extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:conditions";
     /**
+     * The id.
+     */
+    id;
+    /**
      * The index. The keys are the node names and the values are the node indexes.
      */
     index;
@@ -680,8 +684,9 @@ class Conditions extends xml_js_1.NodeWithNodes {
      * @param bathGases The bath gases.
      * @param pTs The PTs - the Pressure, Temperature, BathGas, ExperimentRate instances.
      */
-    constructor(attributes, bathGases, pTs) {
+    constructor(attributes, id, bathGases, pTs) {
         super(attributes, Conditions.tagName);
+        this.id = id;
         this.index = new Map();
         this.bathGasesIndex = new Map();
         this.bathGases = new Set();

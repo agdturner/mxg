@@ -3,6 +3,7 @@ import { Control } from "./control.js";
 import { ModelParameters } from "./modelParameters.js";
 import { Molecule } from "./molecule.js";
 import { Reaction } from "./reaction.js";
+import { arrayToString, mapToString } from "./util.js";
 import { NodeWithNodes, StringNode } from "./xml.js";
 
 /**
@@ -164,6 +165,76 @@ export class ReactionList extends NodeWithNodes {
 }
 
 /**
+ * A class for representing a "conditionsList" - this does not yet exist in the MEMSER, so this is not used.
+ * Currently, in the XML, a "conditions" node is a child node of a "me:mesmer" node and there is no "conditionsList".
+ */
+export class ConditionsList extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "conditionsList";
+
+    /**
+     * The index. The keys are the conditions ids and the values are the node indexes.
+     */
+    index: Map<number, number>;
+
+    /**
+     * @param attributes The attributes.
+     * @param conditionss The conditions.
+     */
+    constructor(attributes: Map<string, string>, conditionss?: Conditions[]) {
+        super(attributes, ControlList.tagName);
+        this.index = new Map();
+        if (conditionss != undefined) {
+            conditionss.forEach(conditions => {
+                this.nodes.set(this.nodes.size, conditions);
+                this.index.set(conditions.id, this.nodes.size - 1);
+            });
+        }
+    }
+
+    /**
+     * @param id The id of the control.
+     * @returns The conditions.
+     */
+    getConditions(id: number): Conditions | undefined {
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            return this.nodes.get(i) as Conditions;
+        }
+    }
+
+    /**
+     * Remove a control.
+     * @param id The id of the control to remove.
+     */
+    removeConditions(id: number): void {
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+
+    /**
+     * Add a conditions.
+     * @param conditions The conditions.
+     */
+    addConditions(conditions: Conditions): void {
+        let index = this.index.get(conditions.id);
+        if (index != undefined) {
+            this.nodes.set(index, conditions);
+            console.log('Replaced conditions with id ' + conditions.id);
+        } else {
+            this.nodes.set(this.nodes.size, conditions);
+            this.index.set(conditions.id, this.nodes.size - 1);
+        }
+    }
+}
+
+/**
  * A class for representing a "controlList" - this does not yet exist in the MEMSER, so this is not used.
  * Currently, in the XML, a "control" node is a child node of a "me:mesmer" node and there is no "controlList".
  */
@@ -200,10 +271,9 @@ export class ControlList extends NodeWithNodes {
      */
     getControl(id: number): Control | undefined {
         let i: number | undefined = this.index.get(id);
-        if (i == undefined) {
-            return undefined;
+        if (i != undefined) {
+            return this.nodes.get(i) as Control;
         }
-        return this.nodes.get(i) as Control;
     }
 
     /**
@@ -299,6 +369,16 @@ export class Mesmer extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
+     * The conditions index. The keys are the conditions ids and the values are the node indexes.
+     */
+    conditionsIndex: Map<number, number>;
+
+    /**
+     * The control index. The keys are the control ids and the values are the node indexes.
+     */
+    controlIndex: Map<number, number>;
+
+    /**
      * @param attributes The attributes.
      * @param moleculeList The molecule list.
      * @param reactionList The reaction list.
@@ -307,7 +387,7 @@ export class Mesmer extends NodeWithNodes {
      * @param controls The controls.
      */
     constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
-        conditions?: Conditions, modelParameters?: ModelParameters, controls?: Control[]/*controlList?: ControlList*/) {
+        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[]) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
         let colors = ["White", "Red", "DarkGrey", "Blue", "Green", "Yellow", "Orange", "Brown"];
@@ -342,26 +422,26 @@ export class Mesmer extends NodeWithNodes {
             this.index.set(ReactionList.tagName, this.nodes.size);
             this.addNode(reactionList);
         }
-        if (conditions != undefined) {
-            this.index.set(Conditions.tagName, this.nodes.size);
-            this.addNode(conditions);
+        this.conditionsIndex = new Map();
+        if (conditionss != undefined) {
+            conditionss.forEach(conditions => {
+                this.index.set(Conditions.tagName + conditions.id, this.nodes.size);
+                this.conditionsIndex.set(conditions.id, this.nodes.size);
+                this.addNode(conditions);
+            });
         }
         if (modelParameters != undefined) {
             this.index.set(ModelParameters.tagName, this.nodes.size);
             this.addNode(modelParameters);
         }
+        this.controlIndex = new Map();
         if (controls != undefined) {
-            this.index.set(ModelParameters.tagName, this.nodes.size);
             controls.forEach(control => {
+                this.index.set(Control.tagName + control.id, this.nodes.size);
+                this.controlIndex.set(control.id, this.nodes.size);
                 this.addNode(control);
             });
         }
-        /*
-        if (controlList != undefined) {
-            this.index.set(ControlList.tagName, this.nodes.size);
-            this.addNode(controlList);
-        }
-        */
     }
 
     /**
@@ -369,10 +449,9 @@ export class Mesmer extends NodeWithNodes {
      */
     getTitle() {
         let i: number | undefined = this.index.get(Title.tagName);
-        if (i == undefined) {
-            return undefined;
+        if (i != undefined) {
+            return this.nodes.get(i) as Title;
         }
-        return this.nodes.get(i) as Title;
     }
 
     /**
@@ -394,10 +473,9 @@ export class Mesmer extends NodeWithNodes {
      */
     getMoleculeList() {
         let i: number | undefined = this.index.get(MoleculeList.tagName);
-        if (i == undefined) {
-            return undefined;
+        if (i != undefined) {
+            return this.nodes.get(i) as MoleculeList;
         }
-        return this.nodes.get(i) as MoleculeList;
     }
 
     /**
@@ -419,10 +497,9 @@ export class Mesmer extends NodeWithNodes {
      */
     getReactionList() {
         let i: number | undefined = this.index.get(ReactionList.tagName);
-        if (i == undefined) {
-            return undefined;
+        if (i != undefined) {
+            return this.nodes.get(i) as ReactionList;
         }
-        return this.nodes.get(i) as ReactionList;
     }
 
     /**
@@ -440,27 +517,42 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
-     * @returns The conditions.
+     * Add a Conditions.
+     * @param conditions The Conditions.
      */
-    getConditions() {
-        let i: number | undefined = this.index.get(Conditions.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        return this.nodes.get(i) as Conditions;
-    }
-
-    /**
-     * Set the conditions.
-     * @param conditions The conditions.
-     */
-    setConditions(conditions: Conditions) {
-        let i: number | undefined = this.index.get(Conditions.tagName);
+    addConditions(conditions: Conditions) {
+        let id = Conditions.tagName + conditions.id;
+        let i: number | undefined = this.index.get(id);
         if (i != undefined) {
             this.nodes.set(i, conditions);
         } else {
-            this.index.set(Conditions.tagName, this.nodes.size);
+            this.index.set(id, this.nodes.size);
+            this.conditionsIndex.set(conditions.id, this.nodes.size);
             this.addNode(conditions);
+        }
+    }
+
+    /**
+     * @param conditionsID The id of the conditions.
+     * @returns The conditions for the conditionsID.
+     */
+    getConditions(conditionsID: number) {
+        let i: number | undefined = this.conditionsIndex.get(conditionsID);
+        if (i != undefined) {
+            return this.nodes.get(i) as Conditions;
+        }        
+    }
+
+    /**
+     * Remove a conditions.
+     * @param conditionsID The id of the conditions to remove.
+     */
+    removeConditions(conditionsID: number) {
+        let i: number | undefined = this.conditionsIndex.get(conditionsID);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Conditions.tagName + conditionsID);
+            this.conditionsIndex.delete(conditionsID);
         }
     }
 
@@ -469,10 +561,9 @@ export class Mesmer extends NodeWithNodes {
      */
     getModelParameters() {
         let i: number | undefined = this.index.get(ModelParameters.tagName);
-        if (i == undefined) {
-            return undefined;
+        if (i != undefined) {
+            return this.nodes.get(i) as ModelParameters;
         }
-        return this.nodes.get(i) as ModelParameters;
     }
 
     /**
@@ -488,47 +579,63 @@ export class Mesmer extends NodeWithNodes {
             this.addNode(modelParameters);
         }
     }
-
+    
     /**
-     * @returns The control list.
-     */
-    /*
-    getControlList() {
-        let i: number | undefined = this.index.get(ControlList.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        return this.nodes.get(i) as ControlList;
-    }
-    */
-
-    /**
-     * Set the control list.
-     * @param controlList The control list.
-     */
-    /*
-    setControlList(controlList: ControlList) {
-        let i: number | undefined = this.index.get(ControlList.tagName);
-        if (i != undefined) {
-            this.nodes.set(i, controlList);
-        } else {
-            this.index.set(ReactionList.tagName, this.nodes.size);
-            this.addNode(controlList);
-        }
-    }
-    */
-
-    /**
-     * Add a control.
-     * @param control The control.
+     * Add a Control.
+     * @param control The Control.
      */
     addControl(control: Control) {
-        let i: number | undefined = this.index.get(Control.tagName + control.id);
+        let id = Control.tagName + control.id;
+        let i: number | undefined = this.index.get(id);
         if (i != undefined) {
             this.nodes.set(i, control);
         } else {
-            this.index.set(Control.tagName, this.nodes.size);
+            this.index.set(id, this.nodes.size);
+            this.controlIndex.set(control.id, this.nodes.size);
             this.addNode(control);
         }
+    }
+
+    /**
+     * @returns The control.
+     */
+    getControl(controlID: number) {
+        let i: number | undefined = this.controlIndex.get(controlID);
+        if (i != undefined) {
+            return this.nodes.get(i) as Control;
+        }
+    }
+
+    /**
+     * @returns The next control id.
+     */
+    getNextControlID(): number {
+        let id = 0;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.controlIndex.keys()).sort((a, b) => a - b);
+        console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            if (key > id) {
+                return id;
+            }
+            id ++;
+        });
+        return id;
+    }
+
+    /**
+     * Remove a control.
+     * @param controlID The id of the control to remove.
+     */
+    removeControl(controlID: number) {
+        let i: number | undefined = this.controlIndex.get(controlID);
+        console.log("removeControl " + controlID + " " + i);
+        console.log("controlIndex " + arrayToString(Array.from(this.controlIndex.keys())));
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Control.tagName + controlID);
+            this.controlIndex.delete(controlID);
+        }
+
     }
 }
