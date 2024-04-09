@@ -501,6 +501,22 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * @returns The next control id.
+     */
+    getNextConditionsID() {
+        let id = 0;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.conditionsIndex.keys()).sort((a, b) => a - b);
+        console.log("sortedKeys " + (0, util_js_1.arrayToString)(sortedKeys));
+        sortedKeys.forEach((key) => {
+            if (key > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
+    /**
      * Remove a conditions.
      * @param conditionsID The id of the conditions to remove.
      */

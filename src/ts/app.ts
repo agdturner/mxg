@@ -123,12 +123,14 @@ let addSymbol: string = "\uFF0B";
 let addString: string = "add " + addSymbol;
 let removeSymbol: string = "\u2715";
 let removeString: string = "remove " + removeSymbol;
+let refreshSymbol: string = "\u27F3";
+let refreshString: string = "refresh " + refreshSymbol;
 let s_Add_from_spreadsheet: string = "Add " + addSymbol + " from spreadsheet";
 
 // Selected and deselected symbology.
 let selected: string = " \u2713";
 let deselected: string = " \u2717";
-let selectAnotherOption: string = "Action/select another option...";
+let selectOption: string = "Select an option (use keys to cycle through options)...";
 
 // HTML IDs
 let menuDivId = 'menu';
@@ -142,6 +144,8 @@ let xmlDivId = 'xml';
 
 // Strings for the GUI.
 let s_Input: string = "Input";
+let s_optionOn = 'optionOn';
+let s_optionOff = 'optionOff';
 
 // For dark/light mode.
 let dark: boolean;
@@ -516,7 +520,8 @@ function parse(xml: XMLDocument) {
         level: level0,
         contentDivId: moleculeListDiv.id
     });
-    mesmer.setMoleculeList(new MoleculeList(getAttributes(moleculeListDiv), Array.from(molecules.values())));
+    //mesmer.setMoleculeList(new MoleculeList(getAttributes(moleculeListDiv), Array.from(molecules.values())));
+    mesmer.setMoleculeList(new MoleculeList(new Map(), Array.from(molecules.values())));
 
     // Reactions.
     let reactionsDiv: HTMLDivElement = document.getElementById(reactionsDivId) as HTMLDivElement;
@@ -535,7 +540,8 @@ function parse(xml: XMLDocument) {
         level: level0,
         contentDivId: reactionsListDiv.id
     });
-    mesmer.setReactionList(new ReactionList(getAttributes(reactionsDiv), Array.from(reactions.values())));
+    //mesmer.setReactionList(new ReactionList(getAttributes(reactionsDiv), Array.from(reactions.values())));
+    mesmer.setReactionList(new ReactionList(new Map(), Array.from(reactions.values())));
 
     // Add the reactions diagram canvas.
     // Destroy any existing reactions diagram.
@@ -589,23 +595,23 @@ function parse(xml: XMLDocument) {
         }
     });
 
-    // Conditions
+    // Conditions.
     let conditionsDiv: HTMLDivElement = document.getElementById(conditionsDivId) as HTMLDivElement;
-    let conditionsListDivId = addID('conditionsList');
-    // If the conditionsListDiv already exists, remove it.
-    remove(conditionsListDivId);
-    let conditionsListDiv: HTMLDivElement = processConditions(xml);
-    conditionsListDiv.id = conditionsListDivId;
+    let conditionssDivId: string = addID(conditionsDivId, 'conditionss');
+    // If the conditionssDiv already exists, remove it.
+    remove(conditionssDivId);
+    let conditionssDiv: HTMLDivElement = processConditions(xml);
+    conditionssDiv.id = conditionssDivId;
     getCollapsibleDiv({
         divToAddTo: conditionsDiv,
         elementToInsertBefore: null,
-        content: conditionsListDiv,
+        content: conditionssDiv,
         buttonLabel: "Conditions",
         buttonFontSize: fontSize1,
         boundary: boundary1,
         level: level0,
-        contentDivId: conditionsListDiv.id
-    })
+        contentDivId: conditionssDiv.id
+    });
 
     // Model Parameters.
     let modelParametersDiv: HTMLDivElement = document.getElementById(modelParametersDivId) as HTMLDivElement;
@@ -709,9 +715,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
 
         molecules.set(moleculeId, molecule);
 
-        // Molecule characteristics.
-        let moleculeHasCoordinates: boolean = false;
-
         // Init atoms.
         let atomArray: AtomArray = new AtomArray(new Map()); // This will be replaced if there is an AtomArray.
         // Function to be used to remove an atom.
@@ -722,18 +725,9 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             throw new Error("Expecting 1 or 0 " + AtomArray.tagName + " but finding " + xml_atomArrays.length + "!");
         }
         // Create a new collapsible div for the AtomArray.
-        let atomArrayDiv: HTMLDivElement = document.createElement("div");
-        let contentDivId: string = moleculeId + "_" + AtomArray.tagName;
-        getCollapsibleDiv({
-            divToAddTo: moleculeDiv,
-            elementToInsertBefore: null,
-            content: atomArrayDiv,
-            buttonLabel: AtomArray.tagName,
-            buttonFontSize: fontSize3,
-            boundary: boundary1,
-            level: level2,
-            contentDivId: contentDivId
-        });
+        let atomArrayDiv: HTMLDivElement = getCollapsibleContentDiv(moleculeId, moleculeDiv, null, AtomArray.tagName, AtomArray.tagName,
+            boundary1, level2, fontSize3);
+        //let atomArrayDiv: HTMLDivElement = createAtomArrayDiv(moleculeId, moleculeDiv, boundary1, level2);
         if (xml_atomArrays.length == 1) {
             let xml_atomArray = xml_atomArrays[0];
             let xml_atoms: HTMLCollectionOf<Element> = xml_atomArray.getElementsByTagName(Atom.tagName);
@@ -750,38 +744,12 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 // Add the atomDiv to the atomArrayDiv.
                 let atomDiv: HTMLDivElement = createFlexDiv(undefined, level3);
                 atomArrayDiv.appendChild(atomDiv);
-                let inputId: string = moleculeId + "_" + atomId;
-                /**
-                let atomIdlwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_id, boundary1, boundary1,
-                    (event: Event) => {
-                        let target = event.target as HTMLInputElement;
-                        let newAtomId: string = target.value;
-                        if (atomArray.atoms.has(target.value)) {
-                            console.warn("Atom with id " + target.value + " already exists!");
-                            newAtomId = atomArray.getNextAtomID();
-                        }
-                        atom.setId(newAtomId);
-                        atomArray.atoms.set(newAtomId, atom);
-                        atomArray.index.set(newAtomId, atomArray.index.get(atomId) as number);
-                        atomArray.index.delete(atomId);
-                        console.log("The id has changed from " + atomId + " to " + newAtomId);
-                        resizeInputElement(target);
-                    }, atomId, Atom.s_id, fontSize3);
-                atomDiv.appendChild(atomIdlwi);
-                **/
-                atomDiv.appendChild(createLabel(Atom.s_id + " " + atomId, boundary1));
+                let inputId: string = getID(moleculeId, atomId);
+                atomDiv.appendChild(createLabel(atomId, boundary1));
                 // elementType.
-                let elementType: string = atom.getElementType();
-                let elementTypelwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_elementType, boundary1, boundary1,
-                    (event: Event) => {
-                        let target = event.target as HTMLInputElement;
-                        atom.setElementType(target.value);
-                        console.log("The elementType has changed from " + elementType + " to " + target.value);
-                        resizeInputElement(target);
-                    }, elementType, Atom.s_elementType, fontSize3);
-                atomDiv.appendChild(elementTypelwi);
-                // Coordinates.
-                moleculeHasCoordinates = processCoordinates(inputId, atom, atomDiv);
+                processElementType(inputId, atom, atomDiv, false, boundary1, boundary1);
+                // coordinates.
+                processCoordinates(inputId, atom, atomDiv, boundary1, boundary1);
                 addRemoveButton(atomDiv, boundary1, removeAtom, atomId);
             }
             moleculeTagNames.delete(AtomArray.tagName);
@@ -795,33 +763,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 throw new Error("Expecting 1 " + Atom.tagName + " but finding " + xml_atoms.length + ". Should these be in an " + AtomArray.tagName + "?");
             }
         }
-        // Create an add atom button.
-        let addAtomButton: HTMLButtonElement = createButton(addString, undefined, level3);
-        addAtomButton.style.fontSize = fontSize4;
-        addAtomButton.addEventListener('click', () => {
-            let attributes: Map<string, string> = new Map();
-            attributes.set(Atom.s_elementType, "Please specify an " + Atom.s_elementType);
-            let atom: Atom = new Atom(attributes);
-            //let atomId: string = atomArray.addAtom(atom);
-            let atomId: string = molecule.getAtoms().addAtom(atom);
-            let atomDiv: HTMLDivElement = createFlexDiv(undefined, level3);
-            let inputId: string = moleculeId + "_" + atomId;
-            atomDiv.appendChild(createLabel(Atom.s_id + " " + atomId, boundary1));
-            let elementType: string = atom.getElementType();
-            let elementTypelwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Atom.s_elementType, boundary1, boundary1,
-                (event: Event) => {
-                    let target = event.target as HTMLInputElement;
-                    atom.setElementType(target.value);
-                    console.log("The elementType has changed to " + target.value);
-                    resizeInputElement(target);
-                }, elementType, Atom.s_elementType, fontSize3);
-            atomDiv.appendChild(elementTypelwi);
-            // Coordinates.
-            moleculeHasCoordinates = processCoordinates(inputId, atom, atomDiv);
-            addRemoveButton(atomDiv, boundary1, removeAtom, atomId);
-            atomArrayDiv.insertBefore(atomDiv, addAtomButton);
-        });
-        atomArrayDiv.appendChild(addAtomButton);
+        atomArrayDiv.appendChild(getAddAtomButton(molecule, moleculeId, atomArrayDiv, Atom.tagName, boundary1, level3, fontSize4));
         //console.log("atomsNode=" + atomsNode);
         moleculeTagNames.delete(Atom.tagName);
 
@@ -833,18 +775,8 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         // There may be only 1 bond in a BondArray.
         let xml_bondArrays: HTMLCollectionOf<Element> = xml_molecules[i].getElementsByTagName(BondArray.tagName);
         // Create a new collapsible div for the BondArray.
-        let bondArrayDiv: HTMLDivElement = document.createElement("div");
-        let bondArrayContentDivId: string = moleculeId + "_" + BondArray.tagName;
-        getCollapsibleDiv({
-            divToAddTo: moleculeDiv,
-            elementToInsertBefore: null,
-            content: bondArrayDiv,
-            buttonLabel: BondArray.tagName,
-            buttonFontSize: fontSize3,
-            boundary: boundary1,
-            level: level2,
-            contentDivId: bondArrayContentDivId
-        });
+        let bondArrayDiv: HTMLDivElement = getCollapsibleContentDiv(moleculeId, moleculeDiv, null, BondArray.tagName, BondArray.tagName,
+            boundary1, level2, fontSize3);
         if (xml_bondArrays.length > 0) {
             if (xml_bondArrays.length > 1) {
                 throw new Error("Expecting 1 or 0 " + BondArray.tagName + " but finding " + xml_bondArrays.length + "!");
@@ -858,22 +790,14 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 // Add the bondDiv to the bondArrayDiv.
                 let bondDiv: HTMLDivElement = createFlexDiv(undefined, level3);
                 bondArrayDiv.appendChild(bondDiv);
-                let inputId: string = moleculeId + "_" + bondId;
-                bondDiv.appendChild(createLabel(Bond.s_id + " " + bondId, boundary1));
+                let inputId: string = getID(moleculeId, bondId);
+                bondDiv.appendChild(createLabel(bondId, boundary1));
                 // atomRefs2.
-                let atomRefs2: string = bond.atomRefs2;
-                let atomRefs2lwi: HTMLDivElement = createLabelWithInput("text", inputId + "_" + Bond.s_atomRefs2, boundary1, boundary1,
-                    (event: Event) => {
-                        let target = event.target as HTMLInputElement;
-                        bond.setAtomRefs2(target.value);
-                        console.log("The " + Bond.s_atomRefs2 + " has changed from " + atomRefs2 + " to " + target.value);
-                        resizeInputElement(target);
-                    }, atomRefs2, Bond.s_atomRefs2, fontSize3);
-                bondDiv.appendChild(atomRefs2lwi);
+                processAtomsRefs2(molecule, bondDiv, bond, inputId, boundary1);
                 // order.
-                let orderId: string = inputId + "_" + Bond.s_order;
-                processOrder(bond, bondDiv, orderId, Bond.s_order);
+                processOrder(bondDiv, bond, inputId, Bond.s_order, boundary1);
                 addRemoveButton(bondDiv, boundary1, removeBond, bondId);
+                addRefreshButton(molecule, bondDiv, inputId, boundary1);
             }
             molecule.setBonds(bondArray);
             moleculeTagNames.delete(BondArray.tagName);
@@ -888,35 +812,48 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 molecule.setBonds(bondArray);
             }
         }
+        bondArrayDiv.appendChild(getAddBondButton(molecule, moleculeId, bondArrayDiv, Bond.tagName, boundary1, level3));
         moleculeTagNames.delete(Bond.tagName);
 
 
 
         // Add a 3Dmol.js viewer.
         // Create a new div for the viewer.
-        if (moleculeHasCoordinates) {
-            let viewerDiv: HTMLDivElement = createDiv(undefined, level2);
-            let viewerDivId: string = moleculeId + "_viewer";
-            viewerDiv.id = viewerDivId;
+        let viewerContainerDivID: string = addID(moleculeId, "viewerContainer");
+        let viewerContainerDiv: HTMLDivElement = createDiv(viewerContainerDivID, level2);
+        moleculeDiv.appendChild(viewerContainerDiv);
+        let viewerDivID: string = addID(moleculeId, "viewer");
+        function create3DViewer(): void {
+            let viewerDiv: HTMLDivElement = createDiv(viewerDivID, level2);
             viewerDiv.className = "mol-container";
-            moleculeDiv.appendChild(viewerDiv);
+            viewerContainerDiv.appendChild(viewerDiv);
             let config = { backgroundColor: 'grey' };
             let viewer = $3Dmol.createViewer(viewerDiv, config);
             // Set the viewer style to stick and ball.
             viewer.setStyle({ stick: {} });
             // Create a 3Dmol viewer control to turn labels on and off.
-            //viewer.addControl();
-
-
-
             (atomArray as AtomArray).atoms.forEach(function (atom) {
-                let color: string = Mesmer.atomColors.get(atom.getElementType()) || 'Purple';
-                let am: number = Mesmer.atomMasses.get(atom.getElementType()) || 1;
-                let radius: number = Mesmer.atomRadii.get(atom.getElementType()) || 1;
-                //viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: 0.3 * am / 10.0, color: color });
-                //viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: radius / 110.0, color: color });
-                viewer.addSphere({ center: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() }, radius: (radius * (am ** (1 / 3.0))) / 275.0, color: color });
-                //viewer.addLabel(atom.getElementType(), { position: { x: atom.getX3(), y: atom.getY3(), z: atom.getZ3() } });
+                let et: string | undefined = atom.getElementType();
+                let color: string;
+                if (et == undefined) {
+                    color = 'Purple';
+                } else {
+                    color = Mesmer.atomColors.get(et) || 'Purple';
+                }
+                //let am: number = Mesmer.atomMasses.get(atom.getElementType()) || 1;
+                let radius: number;
+                if (et == undefined) {
+                    radius = 1;
+                } else {
+                    radius = Mesmer.atomRadii.get(atom.getElementType()!) || 1;
+                }
+                let ax: number = atom.getX3() || 0;
+                let ay: number = atom.getY3() || 0;
+                let az: number = atom.getZ3() || 0;
+                //viewer.addSphere({ center: { x: ax, y: ay, z: az }, radius: 0.3 * am / 10.0, color: color });
+                viewer.addSphere({ center: { x: ax, y: ay, z: az }, radius: radius / 110.0, color: color });
+                //viewer.addSphere({ center: { x: ax, y: ay, z: az }, radius: (radius * (am ** (1 / 3.0))) / 275.0, color: color });
+                //viewer.addLabel(atom.getElementType(), { position: { x: ax, y: ay, z: az } });
             });
             (bondArray as BondArray).bonds.forEach(function (bond) {
                 let atomIds: string[] = bond.atomRefs2.split(" ");
@@ -924,14 +861,27 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 let atom2: Atom = atomArray.getAtom(atomIds[1]) as Atom;
                 let order: number = bond.getOrder() || 1;
                 let color: string = Mesmer.bondColors.get(order) || 'Purple';
-                viewer.addCylinder({ start: { x: atom1.getX3(), y: atom1.getY3(), z: atom1.getZ3() }, end: { x: atom2.getX3(), y: atom2.getY3(), z: atom2.getZ3() }, radius: 0.02 * order, color: color });
+
+                let a1x: number = atom1.getX3() || 0;
+                let a1y: number = atom1.getY3() || 0;
+                let a1z: number = atom1.getZ3() || 0;
+
+                let a2x: number = atom2.getX3() || 0;
+                let a2y: number = atom2.getY3() || 0;
+                let a2z: number = atom2.getZ3() || 0;
+                viewer.addCylinder({ start: { x: a1x, y: a1y, z: a1z }, end: { x: a2x, y: a2y, z: a2z }, radius: 0.06 * order, color: color });
             });
             viewer.zoomTo();
             viewer.render();
             viewer.zoom(0.8, 2000);
         }
-
-
+        // Add a redraw button.
+        let redrawButton: HTMLButtonElement = createButton("Draw/Redraw", undefined);
+        redrawButton.addEventListener('click', () => {
+            remove(viewerDivID, ids);
+            create3DViewer();
+        });
+        viewerContainerDiv.appendChild(redrawButton);
 
 
 
@@ -1074,7 +1024,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     }, hinderedRotorPotential.getExpansionSize().toExponential(), HinderedRotorPotential.s_expansionSize));
 
                 // Add useSineTerms.
-                let useSineTermsLabel: HTMLLabelElement = createLabel("Use sine terms:", boundary1);
+                let useSineTermsLabel: HTMLLabelElement = createLabel(HinderedRotorPotential.s_useSineTerms, boundary1);
                 hinderedRotorPotentialDiv.appendChild(useSineTermsLabel);
                 let useSineTermsInputId: string = getID(molecule.id, DOSCMethod.tagName, HinderedRotorPotential.tagName, HinderedRotorPotential.s_useSineTerms);
                 let useSineTermsInput: HTMLInputElement = createInput("checkbox", useSineTermsInputId, boundary1);
@@ -1107,9 +1057,9 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     let potentialPointDiv: HTMLDivElement = createFlexDiv(undefined, level5);
                     potentialPointCollapsibleDiv.appendChild(potentialPointDiv);
                     // Process angle
-                    let angleLabel: HTMLLabelElement = createLabel("Angle:", boundary1);
+                    let angleLabel: HTMLLabelElement = createLabel(PotentialPoint.s_angle, boundary1);
                     potentialPointDiv.appendChild(angleLabel);
-                    let angleInputElementId: string = molecule.id + "_" + PotentialPoint.tagName + "_angle";
+                    let angleInputElementId: string = getID(molecule.id, PotentialPoint.tagName, PotentialPoint.s_angle);
                     let angleInputElement: HTMLInputElement = createInput("number", angleInputElementId, boundary1);
                     angleInputElement.addEventListener('change', (event: Event) => {
                         let target = event.target as HTMLInputElement;
@@ -1128,9 +1078,9 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     resizeInputElement(angleInputElement);
                     potentialPointDiv.appendChild(angleInputElement);
                     // Create a new div element for the potential.
-                    let potentialLabel: HTMLLabelElement = createLabel("Potential:", boundary1);
+                    let potentialLabel: HTMLLabelElement = createLabel(PotentialPoint.s_potential, boundary1);
                     potentialPointDiv.appendChild(potentialLabel);
-                    let potentialInputElementId = molecule.id + "_" + PotentialPoint.tagName + "_potential";
+                    let potentialInputElementId = getID(molecule.id, PotentialPoint.tagName, PotentialPoint.s_potential);
                     let potentialInputElement: HTMLInputElement = createInput("number", potentialInputElementId, boundary1);
                     potentialInputElement.addEventListener('change', (event: Event) => {
                         let target = event.target as HTMLInputElement;
@@ -1230,7 +1180,226 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             contentDivId: molecule.tagName + "_" + molecule.id
         });
     }
+    // Create an add molecule button.
+    let addMoleculeButton: HTMLButtonElement = createButton(addString, undefined, level1);
+    moleculeListDiv.appendChild(addMoleculeButton);
+    addMoleculeButton.addEventListener('click', () => {
+        // Ask the user to specify the molecule ID.
+        let moleculeId: string | null = prompt("Please enter the chemical formular:", "IDNotSpecified");
+        let molecule: Molecule = new Molecule(new Map(), moleculeId!);
+        molecules.set(moleculeId!, molecule);
+        let moleculeDiv: HTMLDivElement = createDiv(moleculeId!, level1);
+        moleculeListDiv.insertBefore(moleculeDiv, addMoleculeButton);
+        // Create a new collapsible div for the molecule.
+        getCollapsibleDiv({
+            divToAddTo: moleculeListDiv,
+            elementToInsertBefore: addMoleculeButton,
+            content: moleculeDiv,
+            buttonLabel: molecule.getLabel(),
+            buttonFontSize: fontSize2,
+            boundary: boundary1,
+            level: level1,
+            contentDivId: molecule.tagName + "_" + moleculeId
+        });
+        // Atoms.
+        let atomArrayDiv: HTMLDivElement = getCollapsibleContentDiv(moleculeId!, moleculeDiv, null, AtomArray.tagName, AtomArray.tagName,
+            boundary1, level1, fontSize2);
+        atomArrayDiv.appendChild(getAddAtomButton(molecule, moleculeId!, atomArrayDiv, Atom.tagName, boundary1, level2, fontSize2));
+        // Bonds.
+        let bondArrayDiv: HTMLDivElement = getCollapsibleContentDiv(moleculeId!, moleculeDiv, null, BondArray.tagName, BondArray.tagName,
+            boundary1, level1, fontSize2);
+        bondArrayDiv.appendChild(getAddBondButton(molecule, moleculeId!, bondArrayDiv, Bond.tagName, boundary1, level2));
+        // Properties.
+        let propertiesDiv: HTMLDivElement = getCollapsibleContentDiv(moleculeId!, moleculeDiv, null, Property.tagName, Property.tagName,
+            boundary1, level1, fontSize2);
+        //propertiesDiv.appendChild(getAddPropertyButton(molecule, moleculeId!, propertiesDiv, Property.tagName, boundary1, level2, fontSize2));    
+
+
+    });
     return moleculeListDiv;
+}
+
+/**
+ * 
+ * @param moleculeId The molecule id.
+ * @param divToAddTo The div to add to.
+ * @param elementToInsertBefore The element to insert before.
+ * @param buttonLabel The button label.
+ * @param typeID The type (used to compile an id along with moleculeId).
+ * @param boundary The boundary.
+ * @param level The level.
+ * @param buttonFontSize The button font size.
+ * @returns The content div of the collapsible.
+ */
+function getCollapsibleContentDiv(moleculeId: string, divToAddTo: HTMLDivElement, elementToInsertBefore: HTMLElement | null,
+    buttonLabel: string, typeID: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    buttonFontSize: string): HTMLDivElement {
+    let div: HTMLDivElement = document.createElement("div");
+    getCollapsibleDiv({
+        divToAddTo: divToAddTo,
+        elementToInsertBefore: elementToInsertBefore,
+        content: div,
+        buttonLabel: buttonLabel,
+        buttonFontSize: buttonFontSize,
+        boundary: boundary,
+        level: level,
+        contentDivId: getID(moleculeId, typeID)
+    });
+    return div;
+}
+
+function getAddAtomButton(molecule: Molecule, moleculeId: string, atomArrayDiv: HTMLDivElement, typeID: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    fontSize: string): HTMLButtonElement {
+    // Create an add atom button.
+    let addAtomButton: HTMLButtonElement = createButton(addString, getID(moleculeId, "Add" + typeID + "Button"), level);
+    addAtomButton.addEventListener('click', () => {
+        let attributes: Map<string, string> = new Map();
+        let atom: Atom = new Atom(attributes);
+        let atomId: string = molecule.getAtoms().addAtom(atom);
+        let atomDiv: HTMLDivElement = createFlexDiv(undefined, level);
+        let inputId: string = getID(moleculeId, atomId);
+        atomDiv.appendChild(createLabel(atomId, boundary));
+        // elementType.
+        processElementType(inputId, atom, atomDiv, true, boundary, boundary);
+        // Coordinates.
+        processCoordinates(inputId, atom, atomDiv, boundary, boundary);
+        let removeAtom = (id: string) => molecule.getAtoms().removeAtom(id);
+        addRemoveButton(atomDiv, boundary, removeAtom, atomId);
+        atomArrayDiv.insertBefore(atomDiv, addAtomButton);
+    });
+    return addAtomButton;
+}
+
+function getAddBondButton(molecule: Molecule, moleculeId: string, bondArrayDiv: HTMLDivElement, typeID: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
+    // Create an add button.
+    let button: HTMLButtonElement = createButton(addString, getID(moleculeId, "Add" + typeID + "Button"), level);
+    button.addEventListener('click', () => {
+        let attributes: Map<string, string> = new Map();
+        attributes.set(Bond.s_atomRefs2, "Please specify " + Bond.s_atomRefs2);
+        let bond: Bond = new Bond(attributes);
+        let bondId: string = molecule.getBonds().addBond(bond);
+        let bondDiv: HTMLDivElement = createFlexDiv(undefined, level);
+        bondArrayDiv.insertBefore(bondDiv, button);
+        let inputId: string = moleculeId + "_" + bondId;
+        bondDiv.appendChild(createLabel(bondId, boundary));
+        // atomRefs2.
+        processAtomsRefs2(molecule, bondDiv, bond, inputId, boundary);
+        // order.
+        processOrder(bondDiv, bond, inputId, Bond.s_order, boundary);
+        let removeBond = (id: string) => molecule.getBonds().removeBond(id);
+        addRemoveButton(bondDiv, boundary, removeBond, bondId);
+        addRefreshButton(molecule, bondDiv, inputId, boundary1);
+    });
+    bondArrayDiv.appendChild(button);
+    return button;
+}
+
+function reprocessAtomRefs2(molecule: Molecule, inputId: string) {
+        // a.
+        let aID = getID(inputId, Bond.s_atomRefs2, "0");
+        let aselect: HTMLSelectElement = document.getElementById(aID) as HTMLSelectElement;
+        // Change the options.
+        let atomRefOptions: string[] = Array.from((molecule.getAtoms() as AtomArray).atoms.keys());
+        let av: string = "";
+        if (aselect != null) {
+            av = aselect.value;
+            aselect.innerHTML = "";
+        }
+        atomRefOptions.forEach((option) => {
+            let oe: HTMLOptionElement = document.createElement('option');
+            oe.value = option;
+            oe.text = option;
+            if (aselect != null) {
+                aselect.add(oe);
+            }
+        });
+        if (aselect != null) {
+            aselect.value = av;
+        }
+
+        // b.
+        let bID = getID(inputId, Bond.s_atomRefs2, "1");
+        let bselect: HTMLSelectElement = document.getElementById(bID) as HTMLSelectElement;
+        let bv: string = "";
+        if (bselect != null) {
+            bv = bselect.value;
+            bselect.innerHTML = "";
+        }
+        atomRefOptions.forEach((option) => {
+            let oe: HTMLOptionElement = document.createElement('option');
+            oe.value = option;
+            oe.text = option;
+            if (bselect != null) {
+                bselect.add(oe);
+            }
+        });
+        if (bselect != null) {
+            bselect.value = bv;
+        }
+    }
+
+function processAtomsRefs2(molecule: Molecule, bondDiv: HTMLDivElement, bond: Bond, inputId: string, 
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let atomRefs2: string = bond.atomRefs2;
+    let atomRefs: string[] = atomRefs2.split(" ");
+    let atomRefOptions: string[] = Array.from((molecule.getAtoms() as AtomArray).atoms.keys());    
+    // alws.
+    let alws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[0]", atomRefOptions, Atom.tagName, atomRefs[0], 
+        getID(inputId, Bond.s_atomRefs2, "0"), boundary, boundary);
+    let aselect: HTMLSelectElement = alws.querySelector('select') as HTMLSelectElement;
+    aselect.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLSelectElement;
+        bond.setAtomRefs2(target.value + " " + atomRefs[1]);
+        resizeSelectElement(target);
+    });
+    aselect.value = atomRefs[0];
+    resizeSelectElement(aselect);
+    bondDiv.appendChild(alws);
+    // blws.
+    let blws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[1]", atomRefOptions, Atom.tagName, atomRefs[1], 
+        getID(inputId, Bond.s_atomRefs2, "1"), boundary, boundary);
+    let bselect: HTMLSelectElement = blws.querySelector('select') as HTMLSelectElement;
+    bselect.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLSelectElement;
+        bond.setAtomRefs2(atomRefs[0] + " " + target.value);
+        resizeSelectElement(target);
+    });
+    bselect.value = atomRefs[1];
+    resizeSelectElement(bselect);
+    bondDiv.appendChild(blws);
+}
+
+function getAddProperty(molecule: Molecule, moleculeId: string, bondArrayDiv: HTMLDivElement, typeID: string,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    fontSize: string): HTMLButtonElement {
+    // Create an add button.
+    let button: HTMLButtonElement = createButton(addString, getID(moleculeId, "Add" + typeID + "Button"), level);
+    button.addEventListener('click', () => {
+        let attributes: Map<string, string> = new Map();
+        attributes.set(Bond.s_atomRefs2, "Please specify " + Bond.s_atomRefs2);
+        let bond: Bond = new Bond(attributes);
+        let bondId: string = molecule.getBonds().addBond(bond);
+        let bondDiv: HTMLDivElement = createFlexDiv(undefined, level);
+        bondArrayDiv.insertBefore(bondDiv, button);
+        let inputId: string = getID(moleculeId, bondId);
+        bondDiv.appendChild(createLabel(bondId, boundary));
+        // atomRefs2.
+        processAtomsRefs2(molecule, bondDiv, bond, inputId, boundary);
+        // order.
+        processOrder(bondDiv, bond, inputId, Bond.s_order, boundary);
+        let removeBond = (id: string) => molecule.getBonds().removeBond(id);
+        addRemoveButton(bondDiv, boundary, removeBond, bondId);
+        addRefreshButton(molecule, bondDiv, inputId, boundary);
+    });
+    bondArrayDiv.appendChild(button);
+    return button;
 }
 
 /**
@@ -1254,24 +1423,64 @@ function createProperty(xml: Element, div: HTMLDivElement, molecule: Molecule,
     return p;
 }
 
+
+
+function processElementType(inputId: string, atom: Atom, atomDiv: HTMLDivElement, first: boolean,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) : HTMLDivElement {
+        let elementType: string | undefined = atom.getElementType();
+        //console.log("Atom.s_elementType " + elementType);
+        let selectTypes: string[] = Atom.elementTypes;
+        // Select.
+        if (elementType == undefined) {
+            elementType = selectOption;
+            selectTypes = doSelectOption(Atom.elementTypes, first);
+            //console.log("Atom.s_elementTypes " + arrayToString(Atom.elementTypes));
+        }
+        let lws: HTMLDivElement = createLabelWithSelect(Atom.s_elementType, selectTypes, Atom.s_elementType,
+        elementType!, getID(inputId, Atom.s_elementType), boundary, level);
+        let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
+        select.addEventListener('change', (event: Event) => {
+            let target = event.target as HTMLSelectElement;
+            atom.setElementType(target.value);
+            resizeSelectElement(target);
+        });
+        select.value = elementType;
+        resizeSelectElement(select);
+        selectAnotherOptionEventListener(selectTypes, select);
+        atomDiv.appendChild(lws);
+        return lws;
+}
+
+function doSelectOption(options: string[], first: boolean) : string[] {
+        if (first) {
+            options.push(selectOption);
+        } else {
+            // remove selectOption if present.
+            let index = options.indexOf(selectOption);
+            if (index > -1) {
+                options.splice(index, 1);
+            }
+        }
+        return options;
+    }
+
+
 /**
  * Process atom coordinates.
  * @param inputId The input id.
  * @param atom The atom.
  * @param atomDiv The atom div.
  */
-function processCoordinates(inputId: string, atom: Atom, atomDiv: HTMLDivElement): boolean {
+function processCoordinates(inputId: string, atom: Atom, atomDiv: HTMLDivElement,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
     let x3id: string = inputId + "_" + Atom.s_x3;
-    processCoordinate(atom, atomDiv, x3id, Atom.s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom));
+    processCoordinate(atom, atomDiv, x3id, Atom.s_x3, atom.getX3.bind(atom), atom.setX3.bind(atom), boundary, level);
     let y3id: string = inputId + "_" + Atom.s_y3;
-    processCoordinate(atom, atomDiv, y3id, Atom.s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom));
+    processCoordinate(atom, atomDiv, y3id, Atom.s_y3, atom.getY3.bind(atom), atom.setY3.bind(atom), boundary, level);
     let z3id: string = inputId + "_" + Atom.s_z3;
-    processCoordinate(atom, atomDiv, z3id, Atom.s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom));
-    // If the atom has coordinates, set moleculeHasCoordinates to true.
-    if (atom.hasCoordinates()) {
-        return true;
-    }
-    return false;
+    processCoordinate(atom, atomDiv, z3id, Atom.s_z3, atom.getZ3.bind(atom), atom.setZ3.bind(atom), boundary, level);
 }
 
 /**
@@ -1285,40 +1494,40 @@ function processCoordinates(inputId: string, atom: Atom, atomDiv: HTMLDivElement
  * @param logMessage The message to log when the value changes.
  */
 function processCoordinate(atom: Atom, atomDiv: HTMLDivElement, id: string, coordinate: string,
-    getter: () => number | undefined, setter: (value: number) => void): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, boundary1);
+    getter: () => number | undefined, setter: (value: number) => void,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+    let div: HTMLDivElement = createFlexDiv(undefined, boundary);
     atomDiv.appendChild(div);
     let buttonTextContentSelected: string = coordinate + selected;
     let buttonTextContentDeselected: string = coordinate + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
+    let button = createButton(buttonTextContentDeselected, undefined, boundary);
     div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     let value: number | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
+        button.classList.toggle(s_optionOn);
     } else {
-        addCoordinate(div, atom, id + "_input", value, setter, coordinate, boundary1);
+        addCoordinate(div, atom, getID(id, "Input"), value, setter, coordinate, boundary);
         button.textContent = buttonTextContentSelected;
-        button.classList.toggle('optionOff');
+        button.classList.toggle(s_optionOff);
     }
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
         // Check if the AtomArray already exists
         if (document.getElementById(id) == null) {
-            addCoordinate(div, atom, id, NaN, setter, coordinate, boundary1);
+            addCoordinate(div, atom, id, NaN, setter, coordinate, boundary);
             button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
         } else {
             // Remove any existing div.
             document.getElementById(id)?.remove();
             console.log("Removed " + id);
             button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
         }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
     });
 }
 
@@ -1335,7 +1544,7 @@ function processCoordinate(atom: Atom, atomDiv: HTMLDivElement, id: string, coor
 function addCoordinate(div: HTMLDivElement, atom: Atom, id: string, value: number,
     setter: (value: number) => void, coordinate: string,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let valueString: string = (value || NaN).toExponential();
+    let valueString: string = (value || NaN).toString();
     let input: HTMLInputElement = createInput("text", id, boundary);
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
@@ -1360,7 +1569,6 @@ function addRemoveButton(div: HTMLDivElement,
     removeFunction: (...args: any[]) => void, ...args: any[]): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(removeString, undefined, margin);
     div.appendChild(button);
-    button.style.fontSize = fontSize4;
     button.addEventListener('click', () => {
         removeFunction(...args);
         div.remove();
@@ -1368,47 +1576,56 @@ function addRemoveButton(div: HTMLDivElement,
     return button;
 }
 
+function addRefreshButton(molecule: Molecule, bondDiv: HTMLDivElement, inputId: string,
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let button: HTMLButtonElement = createButton(refreshString, undefined, margin);
+    bondDiv.appendChild(button);
+    button.addEventListener('click', () => {
+        reprocessAtomRefs2(molecule, inputId);
+    });
+
+}
+
 /**
  * Process an order.
  * @param bond The bond.
  * @param bondDiv The bond div.
- * @param orderId The order id.
+ * @param inputId The input id.
  * @param order The order name.
  */
-function processOrder(bond: Bond, bondDiv: HTMLDivElement, orderId: string, order: string): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, boundary1);
+function processOrder(bondDiv: HTMLDivElement, bond: Bond, inputId: string, order: string,
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+    let orderId: string = getID(inputId, Bond.s_order);
+    let div: HTMLDivElement = createFlexDiv(undefined, margin);
     bondDiv.appendChild(div);
     let buttonTextContentSelected: string = order + selected;
     let buttonTextContentDeselected: string = order + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
+    let button = createButton(buttonTextContentDeselected, undefined, margin);
     div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     let value: number | undefined = bond.getOrder();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
+        button.classList.toggle(s_optionOn);
     } else {
-        addOrder(div, bond, orderId, value, boundary1);
+        addOrder(div, bond, orderId, value, margin);
         button.textContent = buttonTextContentSelected;
-        button.classList.toggle('optionOff');
+        button.classList.toggle(s_optionOff);
     }
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the AtomArray already exists
         if (document.getElementById(orderId) == null) {
-            addOrder(div, bond, orderId, NaN, boundary1);
+            addOrder(div, bond, orderId, 1, margin);
             button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
         } else {
             // Remove any existing div.
             document.getElementById(orderId)?.remove();
             console.log("Removed " + orderId);
             button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
         }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
     });
 }
 
@@ -1421,18 +1638,18 @@ function processOrder(bond: Bond, bondDiv: HTMLDivElement, orderId: string, orde
  */
 function addOrder(div: HTMLDivElement, bond: Bond, id: string, value: number,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let valueString: string = (value || NaN).toExponential();
-    let input: HTMLInputElement = createInput("text", id + "_input", boundary);
-    input.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLInputElement;
+    let valueString: string = value.toString();
+    let select: HTMLSelectElement = createSelectElement(Bond.orderOptions, Bond.s_order, valueString, id, boundary);
+    select.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLSelectElement;
         bond.setOrder(parseFloat(target.value));
-        console.log("Bond order changed from " + value + " to " + target.value);
-        resizeInputElement(target);
+        console.log(Bond.s_order + " changed from " + valueString + " to " + target.value);
+        resizeSelectElement(target);
     });
-    input.value = valueString;
-    resizeInputElement(input);
-    input.id = id;
-    div.appendChild(input);
+    select.value = valueString;
+    resizeSelectElement(select);
+    select.id = id;
+    div.appendChild(select);
 }
 
 /**
@@ -1909,7 +2126,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let transitionState: TransitionState = new TransitionState(getAttributes(xml_transitionStates[j]), molecule);
                 transitionStates.push(transitionState);
                 // Create a label for the Transition State.
-                let label: HTMLLabelElement = createLabel(molecule.ref + " role: transitionState", level3);
+                let label: HTMLLabelElement = createLabel(molecule.ref + " role transitionState", level3);
                 transitionStatesDiv.appendChild(label);
             }
             reaction.setTransitionStates(transitionStates);
@@ -2143,63 +2360,69 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
  */
 function processConditions(xml: XMLDocument): HTMLDivElement {
     console.log(Conditions.tagName);
-    console.log(Control.tagName);
+    // Create a div for the conditionss.
+    let conditionssDiv: HTMLDivElement = createDiv(undefined, boundary1);
     // Get the XML "me:conditions" element.
     let xml_conditionss: HTMLCollectionOf<Element> = xml.getElementsByTagName(Conditions.tagName);
-    let conditionssDiv: HTMLDivElement = createDiv(undefined, boundary1);
     for (let i = 0; i < xml_conditionss.length; i++) {
         let xml_conditions: Element = xml_conditionss[i];
-        // Create div to contain theconditions.
-        let conditionsDiv: HTMLDivElement = createDiv(undefined, boundary1);
-        conditionsDiv.id = 'conditions' + i.toString();
-        let conditions: Conditions = new Conditions(getAttributes(xml_conditions), i);
-        mesmer.addConditions(conditions);
-        // Create a collapsible div for control.
-        getCollapsibleDiv({
-            divToAddTo: conditionssDiv,
-            elementToInsertBefore: null,
-            content: conditionsDiv,
-            buttonLabel: "Conditions " + i.toString(),
-            buttonFontSize: fontSize2,
-            boundary: boundary1,
-            level: level1,
-            contentDivId: conditionsDiv.id
-        });
+        // Create div to contain the conditions.
+        let conditionsID: string = getID(Conditions.tagName, i.toString());
+        let conditionsDiv: HTMLDivElement = createDiv(conditionsID, boundary1);
+        let conditions: Conditions = addConditions(getAttributes(xml_conditions), conditionsDiv, null, conditionssDiv, i);
         let level = level2;
         let nextLevel = level3;
-        // Load conditions.
-
-        // Bath Gases
-        let bathGasesDiv: HTMLDivElement = document.createElement("div");
-        conditionsDiv.appendChild(bathGasesDiv);
-        // Add collapsible div.
-        getCollapsibleDiv({
-            divToAddTo: conditionsDiv,
-            elementToInsertBefore: null,
-            content: bathGasesDiv,
-            buttonLabel: BathGas.tagName,
-            buttonFontSize: fontSize2,
-            boundary: boundary1,
-            level: level,
-            contentDivId: BathGas.tagName
+        handleBathGases(conditions, conditionsDiv, xml_conditions, level, nextLevel);
+        handlePTs(conditions, conditionsDiv, xml_conditions, level, nextLevel);
+        // Add a remove conditions button.
+        let removeButton: HTMLButtonElement = addRemoveButton(conditionsDiv, level, mesmer.removeConditions.bind(mesmer), i);
+        removeButton.addEventListener('click', (event: MouseEvent) => {
+            // Remove the conditions.
+            remove(conditionsID, ids);
         });
+    }
+    // Create an add button to add a conditions.
+    createAddConditionsButton(conditionssDiv, level2, level3);
+    return conditionssDiv;
+}
 
-        // Add add button.
-        let addBathGasButton: HTMLButtonElement = createButton(addString, undefined, nextLevel);
-        bathGasesDiv.appendChild(addBathGasButton);
-        addBathGasButton.addEventListener('click', () => {
-            let bathGas: BathGas = new BathGas(new Map(), selectAnotherOption);
-            conditions.addBathGas(bathGas);
-            let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
-            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
-            addRemoveButton(div, boundary1, (bathGas) => {
-                bathGasesDiv.removeChild(div);
-                conditions.removeBathGas(bathGas);
-            });
-            bathGasesDiv.insertBefore(div, addBathGasButton);
+
+function handleBathGases(conditions: Conditions, conditionsDiv: HTMLDivElement, xml_conditions: Element | null,
+    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string },
+    nextLevel: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+
+    // Bath Gases
+    let bathGasesDiv: HTMLDivElement = document.createElement("div");
+    conditionsDiv.appendChild(bathGasesDiv);
+    // Add collapsible div.
+    getCollapsibleDiv({
+        divToAddTo: conditionsDiv,
+        elementToInsertBefore: null,
+        content: bathGasesDiv,
+        buttonLabel: BathGas.tagName,
+        buttonFontSize: fontSize2,
+        boundary: boundary1,
+        level: level,
+        contentDivId: BathGas.tagName
+    });
+
+    // Add add button.
+    let addBathGasButton: HTMLButtonElement = createButton(addString, undefined, nextLevel);
+    bathGasesDiv.appendChild(addBathGasButton);
+    addBathGasButton.addEventListener('click', () => {
+        let bathGas: BathGas = new BathGas(new Map(), selectOption);
+        conditions.addBathGas(bathGas);
+        let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
+        div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
+        addRemoveButton(div, boundary1, (bathGas) => {
+            bathGasesDiv.removeChild(div);
+            conditions.removeBathGas(bathGas);
         });
+        bathGasesDiv.insertBefore(div, addBathGasButton);
+    });
 
-        // Process any "bathGas" elements that are immediate children of xml_conditions.
+    // Process any "bathGas" elements that are immediate children of xml_conditions.
+    if (xml_conditions != null) {
         let xml_bathGases: Element[] = Array.from(xml_conditions.children).filter(child => child.tagName === BathGas.tagName);
         if (xml_bathGases.length > 0) {
             for (let i = 0; i < xml_bathGases.length; i++) {
@@ -2209,21 +2432,35 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                 console.log("bathGas" + bathGas.toString());
                 conditions.addBathGas(bathGas);
                 let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
-                div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true));
+                div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, false));
                 addRemoveButton(div, boundary1, (bathGas) => {
                     bathGasesDiv.removeChild(div);
                     conditions.removeBathGas(bathGas);
                 });
                 bathGasesDiv.insertBefore(div, addBathGasButton);
             }
+        } else {
+            let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
+            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), undefined, true));
+            addRemoveButton(div, boundary1, (bathGas) => {
+                bathGasesDiv.removeChild(div);
+                conditions.removeBathGas(bathGas);
+            });
+            bathGasesDiv.insertBefore(div, addBathGasButton);
         }
+    }
+}
 
-        // PTs
-        let moleculeKeys: Set<string> = new Set(molecules.keys());
-        // Create a new div for the PTs.
-        let pTsDiv: HTMLDivElement = createDiv(undefined, boundary1);
-        conditionsDiv.appendChild(pTsDiv);
-        let pTs: PTs;
+function handlePTs(conditions: Conditions, conditionsDiv: HTMLDivElement, xml_conditions: Element | null,
+    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string },
+    nextLevel: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+    // PTs
+    let moleculeKeys: Set<string> = new Set(molecules.keys());
+    // Create a new div for the PTs.
+    let pTsDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    conditionsDiv.appendChild(pTsDiv);
+    let pTs: PTs;
+    if (xml_conditions) {
         let xml_PTss: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(PTs.tagName);
         if (xml_PTss.length > 0) {
             if (xml_PTss.length > 1) {
@@ -2281,222 +2518,296 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
                         pTpair.setExperimentalEigenvalue(experimentalEigenvalue);
                     }
                     // Create pTpairDiv.
-                    createPTpairDiv(pTs, pTsDiv, pTpair, i, moleculeKeys, nextLevel);
+                    createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, i, moleculeKeys, nextLevel);
                 }
             }
         } else {
             pTs = new PTs(new Map());
         }
-        conditions.setPTs(pTs);
-        // Add collapsible div.
-        getCollapsibleDiv({
-            divToAddTo: conditionsDiv,
-            elementToInsertBefore: null,
-            content: pTsDiv,
-            buttonLabel: PTs.tagName,
-            buttonFontSize: fontSize2,
-            boundary: boundary1,
-            level: level,
-            contentDivId: BathGas.tagName
-        });
-        // Create an add button to add a new PTpair.
-        let addButton: HTMLButtonElement = createButton(addString, undefined, nextLevel);
-        pTsDiv.appendChild(addButton);
-        // Add event listener to the addButton.
-        addButton.addEventListener('click', () => {
-            // Create a new PTpair.
-            let pTpairAttributes: Map<string, string> = new Map();
-            pTpairAttributes.set("units", "Torr");
-            let pTpair: PTpair = new PTpair(pTpairAttributes);
-            let pTpairIndex: number = pTs.addPTpair(pTpair);
-            console.log("Added new pTpair pTpairIndex=" + pTpairIndex);
-            // Create a new div for the PTpair.
-            createPTpairDiv(pTs, pTsDiv, pTpair, pTpairIndex, moleculeKeys, nextLevel);
-        });
-        // Create an add from spreadsheet button to add multiple PTPairs.
-        let addMultipleButton: HTMLButtonElement = createButton(s_Add_from_spreadsheet, undefined, boundary1);
-        pTsDiv.appendChild(addMultipleButton);
-        // Add event listener to the addMultipleButton.
-        addMultipleButton.addEventListener('click', () => {
-            // Add a new text input for the user to paste the PTPairs.
-            let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
-            let addFromSpreadsheetId = PTs.tagName + "_" + "addFromSpreadsheet";
-            let inputElement: HTMLInputElement = createInput("text", addFromSpreadsheetId, nextLevel);
-            div.appendChild(inputElement);
-            pTsDiv.insertBefore(div, addButton);
-            // Add an event listener to the inputElement.
-            inputElement.addEventListener('change', () => {
-                console.log("inputElement.value=" + inputElement.value);
-                console.log("inputElement.value.length=" + inputElement.value.length);
-                if (inputElement.value.length > 0) {
-                    let pTpairsArray: string[] = inputElement.value.split(" ");
-                    // Is there a header?
-                    let index: Map<string, number> = new Map();
-                    pTpairsArray[0].split("\t").forEach((value, i) => {
-                        index.set(value, i);
-                    });
-                    console.log("pTpairsArray.length=" + pTpairsArray.length);
-                    for (let i = 1; i < pTpairsArray.length; i++) {
-                        let pTpairArray: string[] = pTpairsArray[i].split("\t");
-                        let pIndex: number = index.get("P") as number;
-                        let p: number = parseFloat(pTpairArray[pIndex]);
-                        let unitsIndex: number = index.get("units") as number;
-                        let pTpairAttributes: Map<string, string> = new Map();
-                        if (index.has("units")) {
-                            let units: string = pTpairArray[unitsIndex];
-                            pTpairAttributes.set("units", units);
-                        }
-                        let pTpair: PTpair = new PTpair(pTpairAttributes);
-                        pTs.addPTpair(pTpair);
-                        let tIndex: number = index.get("T") as number;
-                        let t: number = parseFloat(pTpairArray[tIndex]);
-                        pTpair.setP(p);
-                        pTpair.setT(t);
-                        if (index.has(PTpair.s_excessReactantConc)) {
-                            let excessReactantConIndex: number = index.get(PTpair.s_excessReactantConc) as number;
-                            let excessReactantConc: string = pTpairArray[excessReactantConIndex];
-                            pTpairAttributes.set(PTpair.s_excessReactantConc, excessReactantConc);
-                        }
-                        if (index.has(PTpair.s_percentExcessReactantConc)) {
-                            let percentExcessReactantConIndex: number = index.get(PTpair.s_percentExcessReactantConc) as number;
-                            let percentExcessReactantConc: string = pTpairArray[percentExcessReactantConIndex];
-                            pTpairAttributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
-                        }
-                        if (index.has(PTpair.s_precision)) {
-                            let precisionIndex: number = index.get(PTpair.s_precision) as number;
-                            let precision: string = pTpairArray[precisionIndex];
-                            pTpairAttributes.set(PTpair.s_precision, precision);
-                            //console.log("precision=" + precision);
-                        }
-                        if (index.has(BathGas.tagName)) {
-                            let bathGasIndex: number = index.get(BathGas.tagName) as number;
-                            let bathGas: string = pTpairArray[bathGasIndex];
-                            pTpair.setBathGas(new BathGas(new Map(), bathGas));
-                        }
-                        if (index.has(ExperimentalRate.tagName)) {
-                            let experimentalRateIndex: number = index.get(ExperimentalRate.tagName) as number;
-                            let experimentalRate: string = pTpairArray[experimentalRateIndex];
-                            pTpairAttributes.set(ExperimentalRate.tagName, experimentalRate);
-                            pTpair.setExperimentalRate(new ExperimentalRate(new Map(), parseFloat(experimentalRate)));
-                            // Set the attributes of the experimentalRate.
-                            // ref1.
-                            let experimentalRateRef1Index = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref1) as number;
-                            let experimentalRateRef1 = pTpairArray[experimentalRateRef1Index];
-                            pTpair.getExperimentalRate()?.setRef1(experimentalRateRef1);
-                            // ref2.
-                            let experimentalRateRef2Index = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref2) as number;
-                            let experimentalRateRef2 = pTpairArray[experimentalRateRef2Index];
-                            pTpair.getExperimentalRate()?.setRef2(experimentalRateRef2);
-                            // refReaction.
-                            let experimentalRateRefReactionIndex = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_refReaction) as number;
-                            let experimentalRateRefReaction = pTpairArray[experimentalRateRefReactionIndex];
-                            pTpair.getExperimentalRate()?.setRefReaction(experimentalRateRefReaction);
-                            // error.
-                            let experimentalRateErrorIndex = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_error) as number;
-                            let experimentalRateError = pTpairArray[experimentalRateErrorIndex];
-                            pTpair.getExperimentalRate()?.setError(parseFloat(experimentalRateError));
-                        }
-                        if (index.has(ExperimentalYield.tagName)) {
-                            let experimentalYieldIndex: number = index.get(ExperimentalYield.tagName) as number;
-                            let experimentalYield: string = pTpairArray[experimentalYieldIndex];
-                            pTpair.setExperimentalYield(new ExperimentalYield(new Map(), parseFloat(experimentalYield)));
-                            // Set the attributes of the experimentalYield.
-                            // ref.
-                            let experimentalYieldRefIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_ref) as number;
-                            let experimentalYieldRef = pTpairArray[experimentalYieldRefIndex];
-                            pTpair.getExperimentalYield()?.setRef(experimentalYieldRef);
-                            // yieldTime.
-                            let experimentalYieldYieldTimeIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_yieldTime) as number;
-                            let experimentalYieldYieldTime = pTpairArray[experimentalYieldYieldTimeIndex];
-                            pTpair.getExperimentalYield()?.setYieldTime(parseFloat(experimentalYieldYieldTime));
-                            // error.
-                            let experimentalYieldErrorIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_error) as number;
-                            let experimentalYieldError = pTpairArray[experimentalYieldErrorIndex];
-                            pTpair.getExperimentalYield()?.setError(parseFloat(experimentalYieldError));
-                        }
-                        if (index.has(ExperimentalEigenvalue.tagName)) {
-                            let experimentalEigenvalueIndex: number = index.get(ExperimentalEigenvalue.tagName) as number;
-                            let experimentalEigenvalue: string = pTpairArray[experimentalEigenvalueIndex];
-                            pTpair.setExperimentalEigenvalue(new ExperimentalEigenvalue(new Map(), parseFloat(experimentalEigenvalue)));
-                            // Set the attributes of the experimentalEigenvalue.
-                            // EigenvalueID.
-                            let experimentalEigenvalueEigenvalueIDIndex = index.get(ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_EigenvalueID) as number;
-                            let experimentalEigenvalueEigenvalueID = pTpairArray[experimentalEigenvalueEigenvalueIDIndex];
-                            pTpair.getExperimentalEigenvalue()?.setEigenvalueID(experimentalEigenvalueEigenvalueID);
-                            // error.
-                            let experimentalEigenvalueErrorIndex = index.get(ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_error) as number;
-                            let experimentalEigenvalueError = pTpairArray[experimentalEigenvalueErrorIndex];
-                            pTpair.getExperimentalEigenvalue()?.setError(parseFloat(experimentalEigenvalueError));
-                        }
-                        //console.log("pTpair=" + pTpair);
-                        let pTpairIndex: number = pTs.pTpairs.length - 1;
-                        // Create a new div for the PTpair.
-                        createPTpairDiv(pTs, pTsDiv, pTpair, pTpairIndex, moleculeKeys, nextLevel);
+    } else {
+        pTs = new PTs(new Map());
+    }
+    conditions.setPTs(pTs);
+    // Add collapsible div.
+    getCollapsibleDiv({
+        divToAddTo: conditionsDiv,
+        elementToInsertBefore: null,
+        content: pTsDiv,
+        buttonLabel: PTs.tagName,
+        buttonFontSize: fontSize2,
+        boundary: boundary1,
+        level: level,
+        contentDivId: BathGas.tagName
+    });
+    // Create a buttons div for the add, add from spreadsheet and remove all buttons.
+    let pTsButtonsDiv = createDiv(undefined, nextLevel);
+    pTsDiv.appendChild(pTsButtonsDiv);
+    // Create an add button to add a new PTpair.
+    let addButton: HTMLButtonElement = createButton(addString, undefined, boundary1);
+    pTsButtonsDiv.appendChild(addButton);
+    // Add event listener to the addButton.
+    addButton.addEventListener('click', () => {
+        // Create a new PTpair.
+        let pTpairAttributes: Map<string, string> = new Map();
+        pTpairAttributes.set("units", "Torr");
+        let pTpair: PTpair = new PTpair(pTpairAttributes);
+        let pTpairIndex: number = pTs.addPTpair(pTpair);
+        console.log("Added new pTpair pTpairIndex=" + pTpairIndex);
+        // Create a new div for the PTpair.
+        createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, pTpairIndex, moleculeKeys, nextLevel);
+    });
+    // Create an add from spreadsheet button to add multiple PTPairs.
+    let addMultipleButton: HTMLButtonElement = createButton(s_Add_from_spreadsheet, undefined, boundary1);
+    pTsButtonsDiv.appendChild(addMultipleButton);
+    // Add event listener to the addMultipleButton.
+    addMultipleButton.addEventListener('click', () => {
+        // Add a new text input for the user to paste the PTPairs.
+        let div: HTMLDivElement = createFlexDiv(undefined, nextLevel);
+        let addFromSpreadsheetId = PTs.tagName + "_" + "addFromSpreadsheet";
+        let input: HTMLInputElement = createInput("text", addFromSpreadsheetId, nextLevel);
+        div.appendChild(input);
+        pTsDiv.insertBefore(div, addButton);
+        // Add an event listener to the inputElement.
+        input.addEventListener('change', () => {
+            console.log("inputElement.value=" + input.value);
+            console.log("inputElement.value.length=" + input.value.length);
+            if (input.value.length > 0) {
+                let pTpairsArray: string[] = input.value.split(" ");
+                // Is there a header?
+                let index: Map<string, number> = new Map();
+                pTpairsArray[0].split("\t").forEach((value, i) => {
+                    index.set(value, i);
+                });
+                console.log("pTpairsArray.length=" + pTpairsArray.length);
+                for (let i = 1; i < pTpairsArray.length; i++) {
+                    let pTpairArray: string[] = pTpairsArray[i].split("\t");
+                    let pIndex: number = index.get("P") as number;
+                    let p: number = parseFloat(pTpairArray[pIndex]);
+                    let unitsIndex: number = index.get("units") as number;
+                    let pTpairAttributes: Map<string, string> = new Map();
+                    if (index.has("units")) {
+                        let units: string = pTpairArray[unitsIndex];
+                        pTpairAttributes.set("units", units);
                     }
-                    pTsDiv.removeChild(div);
+                    let pTpair: PTpair = new PTpair(pTpairAttributes);
+                    pTs.addPTpair(pTpair);
+                    let tIndex: number = index.get("T") as number;
+                    let t: number = parseFloat(pTpairArray[tIndex]);
+                    pTpair.setP(p);
+                    pTpair.setT(t);
+                    if (index.has(PTpair.s_excessReactantConc)) {
+                        let excessReactantConIndex: number = index.get(PTpair.s_excessReactantConc) as number;
+                        let excessReactantConc: string = pTpairArray[excessReactantConIndex];
+                        pTpairAttributes.set(PTpair.s_excessReactantConc, excessReactantConc);
+                    }
+                    if (index.has(PTpair.s_percentExcessReactantConc)) {
+                        let percentExcessReactantConIndex: number = index.get(PTpair.s_percentExcessReactantConc) as number;
+                        let percentExcessReactantConc: string = pTpairArray[percentExcessReactantConIndex];
+                        pTpairAttributes.set(PTpair.s_percentExcessReactantConc, percentExcessReactantConc);
+                    }
+                    if (index.has(PTpair.s_precision)) {
+                        let precisionIndex: number = index.get(PTpair.s_precision) as number;
+                        let precision: string = pTpairArray[precisionIndex];
+                        pTpairAttributes.set(PTpair.s_precision, precision);
+                        //console.log("precision=" + precision);
+                    }
+                    if (index.has(BathGas.tagName)) {
+                        let bathGasIndex: number = index.get(BathGas.tagName) as number;
+                        let bathGas: string = pTpairArray[bathGasIndex];
+                        pTpair.setBathGas(new BathGas(new Map(), bathGas));
+                    }
+                    if (index.has(ExperimentalRate.tagName)) {
+                        let experimentalRateIndex: number = index.get(ExperimentalRate.tagName) as number;
+                        let experimentalRate: string = pTpairArray[experimentalRateIndex];
+                        pTpairAttributes.set(ExperimentalRate.tagName, experimentalRate);
+                        pTpair.setExperimentalRate(new ExperimentalRate(new Map(), parseFloat(experimentalRate)));
+                        // Set the attributes of the experimentalRate.
+                        // ref1.
+                        let experimentalRateRef1Index = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref1) as number;
+                        let experimentalRateRef1 = pTpairArray[experimentalRateRef1Index];
+                        pTpair.getExperimentalRate()?.setRef1(experimentalRateRef1);
+                        // ref2.
+                        let experimentalRateRef2Index = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref2) as number;
+                        let experimentalRateRef2 = pTpairArray[experimentalRateRef2Index];
+                        pTpair.getExperimentalRate()?.setRef2(experimentalRateRef2);
+                        // refReaction.
+                        let experimentalRateRefReactionIndex = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_refReaction) as number;
+                        let experimentalRateRefReaction = pTpairArray[experimentalRateRefReactionIndex];
+                        pTpair.getExperimentalRate()?.setRefReaction(experimentalRateRefReaction);
+                        // error.
+                        let experimentalRateErrorIndex = index.get(ExperimentalRate.tagName + "_" + ExperimentalRate.s_error) as number;
+                        let experimentalRateError = pTpairArray[experimentalRateErrorIndex];
+                        pTpair.getExperimentalRate()?.setError(parseFloat(experimentalRateError));
+                    }
+                    if (index.has(ExperimentalYield.tagName)) {
+                        let experimentalYieldIndex: number = index.get(ExperimentalYield.tagName) as number;
+                        let experimentalYield: string = pTpairArray[experimentalYieldIndex];
+                        pTpair.setExperimentalYield(new ExperimentalYield(new Map(), parseFloat(experimentalYield)));
+                        // Set the attributes of the experimentalYield.
+                        // ref.
+                        let experimentalYieldRefIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_ref) as number;
+                        let experimentalYieldRef = pTpairArray[experimentalYieldRefIndex];
+                        pTpair.getExperimentalYield()?.setRef(experimentalYieldRef);
+                        // yieldTime.
+                        let experimentalYieldYieldTimeIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_yieldTime) as number;
+                        let experimentalYieldYieldTime = pTpairArray[experimentalYieldYieldTimeIndex];
+                        pTpair.getExperimentalYield()?.setYieldTime(parseFloat(experimentalYieldYieldTime));
+                        // error.
+                        let experimentalYieldErrorIndex = index.get(ExperimentalYield.tagName + "_" + ExperimentalYield.s_error) as number;
+                        let experimentalYieldError = pTpairArray[experimentalYieldErrorIndex];
+                        pTpair.getExperimentalYield()?.setError(parseFloat(experimentalYieldError));
+                    }
+                    if (index.has(ExperimentalEigenvalue.tagName)) {
+                        let experimentalEigenvalueIndex: number = index.get(ExperimentalEigenvalue.tagName) as number;
+                        let experimentalEigenvalue: string = pTpairArray[experimentalEigenvalueIndex];
+                        pTpair.setExperimentalEigenvalue(new ExperimentalEigenvalue(new Map(), parseFloat(experimentalEigenvalue)));
+                        // Set the attributes of the experimentalEigenvalue.
+                        // EigenvalueID.
+                        let experimentalEigenvalueEigenvalueIDIndex = index.get(ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_EigenvalueID) as number;
+                        let experimentalEigenvalueEigenvalueID = pTpairArray[experimentalEigenvalueEigenvalueIDIndex];
+                        pTpair.getExperimentalEigenvalue()?.setEigenvalueID(experimentalEigenvalueEigenvalueID);
+                        // error.
+                        let experimentalEigenvalueErrorIndex = index.get(ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_error) as number;
+                        let experimentalEigenvalueError = pTpairArray[experimentalEigenvalueErrorIndex];
+                        pTpair.getExperimentalEigenvalue()?.setError(parseFloat(experimentalEigenvalueError));
+                    }
+                    //console.log("pTpair=" + pTpair);
+                    let pTpairIndex: number = pTs.pTpairs.length - 1;
+                    // Create a new div for the PTpair.
+                    createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, pTpairIndex, moleculeKeys, nextLevel);
                 }
-            });
-        });
-        // Add a remove all button.
-        let removeAllButton: HTMLButtonElement = createButton("Remove All", undefined, boundary1);
-        pTsDiv.appendChild(removeAllButton);
-        removeAllButton.addEventListener('click', () => {
-            pTs.removePTpairs();
-            // Remove all elements before the add button.
-            let child: Node | null = pTsDiv.firstChild;
-            while (child != null && child != addButton) {
-                let nextSibling: Node | null = child.nextSibling;
-                pTsDiv.removeChild(child);
-                child = nextSibling;
+                pTsDiv.removeChild(div);
             }
         });
-    }
-    return conditionssDiv;
+    });
+    // Add a remove all button.
+    let removeAllButton: HTMLButtonElement = createButton("Remove All", undefined, boundary1);
+    pTsButtonsDiv.appendChild(removeAllButton);
+    removeAllButton.addEventListener('click', () => {
+        pTs.removePTpairs();
+        // Remove all elements before the pTsButtonsDiv.
+        let child: Node | null = pTsDiv.firstChild;
+        while (child != null && child != pTsButtonsDiv) {
+            let nextSibling: Node | null = child.nextSibling;
+            pTsDiv.removeChild(child);
+            child = nextSibling;
+        }
+    });
+}
+
+/**
+ * @param controlsDiv 
+ * @param level The level.
+ * @returns A button.
+ */
+function createAddConditionsButton(conditionssDiv: HTMLDivElement,
+    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string },
+    nextLevel: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): HTMLButtonElement {
+    let button: HTMLButtonElement = createButton("Add Conditions", undefined, level1);
+    conditionssDiv.appendChild(button);
+    button.addEventListener('click', (event: MouseEvent) => {
+        let i: number = mesmer.getNextConditionsID();
+        console.log("Add Conditions " + i.toString());
+        let conditionsID: string = getID(Conditions.tagName, i.toString());
+        let conditionsDiv: HTMLDivElement = createDiv(conditionsID, boundary1);
+        // ElementToInsert before is element after the conditions div with the previous index.
+        let elementToInsertBefore: Element | null;
+        if (i > 0) {
+            let aboveElement = document.getElementById(getID(Conditions.tagName, (i - 1).toString())) as Element;
+            let nextElementSibling: Element | null = aboveElement.nextElementSibling;
+            // If nextElementSibling is not a child of conditionssDiv the element.
+            if (nextElementSibling != null) {
+                if (nextElementSibling.parentElement == conditionssDiv) {
+                    elementToInsertBefore = nextElementSibling;
+                } else {
+                    elementToInsertBefore = button;
+                }
+            } else {
+                elementToInsertBefore = button;
+            }
+        } else {
+            elementToInsertBefore = button;
+        }
+        // Add the conditions
+        let conditions: Conditions = addConditions(new Map(), conditionsDiv, elementToInsertBefore, conditionssDiv, i);
+        handleBathGases(conditions, conditionsDiv, null, level, nextLevel);
+        handlePTs(conditions, conditionsDiv, null, level, nextLevel);
+        // Add a remove conditions button.
+        let removeButton: HTMLButtonElement = addRemoveButton(conditionsDiv, level2, mesmer.removeConditions.bind(mesmer), i);
+        removeButton.addEventListener('click', (event: MouseEvent) => {
+            // Remove the control.
+            remove(conditionsID, ids);
+        });
+    });
+    return button;
+}
+
+/**
+ * Add and return a new conditions.
+ */
+function addConditions(attributes: Map<string, string>, conditionsDiv: HTMLDivElement, elementToInsertBefore: Element | null,
+    conditionssDiv: HTMLDivElement, i: number): Conditions {
+    let conditions: Conditions = new Conditions(attributes, i);
+    mesmer.addConditions(conditions);
+    getCollapsibleDiv({
+        divToAddTo: conditionssDiv,
+        elementToInsertBefore: elementToInsertBefore,
+        content: conditionsDiv,
+        buttonLabel: "Conditions " + i.toString(),
+        buttonFontSize: fontSize2,
+        boundary: boundary1,
+        level: level1,
+        contentDivId: conditionsDiv.id
+    });
+    return conditions;
 }
 
 /**
  * @param pTs The PTs.
  * @param pTpairDiv The PTpair div.
  * @param pTpair The PTpair.
- * @param index The index.
+ * @param pTIndex The index.
  * @param moleculeKeys The molecule keys.
  * @param level The level.
  */
-function createPTpairDiv(pTs: PTs, pTsDiv: HTMLDivElement, pTpair: PTpair, index: number,
+function createPTpairDiv(pTs: PTs, pTsDiv: HTMLDivElement, pTpair: PTpair, conditionsDivId: string, pTIndex: number,
     moleculeKeys: Set<string>,
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let pTpairDiv: HTMLDivElement = createFlexDiv(undefined, level);
-    pTsDiv.appendChild(pTpairDiv);
+    pTsDiv.append(pTpairDiv);
     addPorT(pTpairDiv, PTpair.s_P, pTpair.getP.bind(pTpair), pTpair.setP.bind(pTpair)); // The binding is necessary to maintain the correct "this".
     addAnyUnits(Mesmer.pressureUnits, pTpair.attributes, pTpairDiv, PTpair.tagName, PTpair.tagName, boundary1);
     addPorT(pTpairDiv, PTpair.s_T, pTpair.getT.bind(pTpair), pTpair.setT.bind(pTpair)); // The binding is necessary to maintain the correct "this".
+    let id: string = getID(conditionsDivId, PTpair.tagName, pTIndex.toString());
     // ExcessReactantConc.
-    addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_excessReactantConc, PTpair.tagName + "_" + PTpair.s_excessReactantConc + index,
+    addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_excessReactantConc, getID(id, PTpair.s_excessReactantConc),
         [pTpair], createExcessReactantConcInputElement);
     // PercentExcessReactantConc.
     addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_percentExcessReactantConc);
     // Precision.
-    addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_precision, PTpair.tagName + "_" + PTpair.s_precision + index,
+    addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_precision, getID(id, PTpair.s_precision),
         [pTpair], createPrecisionSelectElement);
     // BathGas.
-    addButtonWithToggle(pTpairDiv, pTpair, BathGas.tagName, PTpair.tagName + "_" + BathGas.tagName + index,
+    addButtonWithToggle(pTpairDiv, pTpair, BathGas.tagName, getID(id, BathGas.tagName),
         [pTpair, moleculeKeys, true], createBathGasSelectElement);
-    // ExperimentalRate
-
-    //addExperimentalRate(pTpairDiv, pTpair, index);
-
-    addExperimentalYield(pTpairDiv, pTpair, index);
-    addExperimentalEigenvalue(pTpairDiv, pTpair, index);
-    // Function to be used to remove an PTpair.
-    let removePTpair: (pTpairDiv: HTMLDivElement, i: number | undefined, pTpair: PTpair) => void
-        = (pTpairDiv, i, pTpair) => {
-            pTsDiv.removeChild(pTpairDiv);
-            if (i !== undefined) {
-                pTs.removePTpair(i);
-            }
-            pTpair.removeBathGas();
-        };
-    addRemoveButton(pTpairDiv, boundary1, removePTpair, pTpairDiv, index, pTpair);
+    // ExperimentalRate.
+    addButtonWithToggle(pTpairDiv, pTpair, ExperimentalRate.tagName, getID(id, ExperimentalRate.tagName),
+        [undefined, pTpair, pTIndex], addExperimentalRateDetails);
+    // ExperimentalYield.
+    addButtonWithToggle(pTpairDiv, pTpair, ExperimentalYield.tagName, getID(id, ExperimentalYield.tagName),
+        [undefined, pTpair, pTIndex], addExperimentalYieldDetails);
+    // ExperimentalEigenvalue.
+    addButtonWithToggle(pTpairDiv, pTpair, ExperimentalEigenvalue.tagName, getID(id, ExperimentalEigenvalue.tagName),
+        [undefined, pTpair, pTIndex], addExperimentalEigenvalueDetails);
+    // Function to be used to remove a PTpair.
+    let removePTpair: (pTpairDiv: HTMLDivElement, i: number | undefined, pTpair: PTpair) => void = (pTpairDiv, i, pTpair) => {
+        pTsDiv.removeChild(pTpairDiv);
+        if (i !== undefined) {
+            pTs.removePTpair(i);
+        }
+        pTpair.removeBathGas();
+    };
+    addRemoveButton(pTpairDiv, boundary1, removePTpair, pTpairDiv, pTIndex, pTpair);
     return pTpairDiv;
 }
 
@@ -2534,26 +2845,24 @@ function addPorT(pTpairDiv: HTMLDivElement, name: string, getter: () => number, 
  * @param handler The handler function that creates any element.
  */
 function addButtonWithToggle(pTpairDiv: HTMLDivElement, pTpair: PTpair, attribute: string, id?: string,
-    handlerArgs?: any[], handler?: (id: string, ...args: any[]) => HTMLInputElement | HTMLSelectElement): void {
+    handlerArgs?: any[], handler?: (id: string, ...args: any[]) => HTMLInputElement | HTMLSelectElement | HTMLDivElement): void {
     let div: HTMLDivElement = createDiv(undefined, boundary1);
     pTpairDiv.append(div);
     let buttonTextContentSelected: string = attribute + selected;
     let buttonTextContentDeselected: string = attribute + deselected;
     let button = createButton(buttonTextContentDeselected, undefined, boundary1);
     div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     if (pTpair.attributes.get(attribute)?.toLowerCase() == "true") {
-        button.classList.toggle('optionOff');
+        button.classList.toggle(s_optionOff);
         button.textContent = buttonTextContentSelected;
     } else {
-        button.classList.toggle('optionOn');
+        button.classList.toggle(s_optionOn);
         button.textContent = buttonTextContentDeselected;
     }
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
-        button.classList.toggle('optionOn');
-        button.classList.toggle('optionOff');
         if (button.textContent === buttonTextContentDeselected) {
             button.textContent = buttonTextContentSelected;
             pTpair.attributes.set(attribute, "true");
@@ -2562,20 +2871,18 @@ function addButtonWithToggle(pTpairDiv: HTMLDivElement, pTpair: PTpair, attribut
                     if (handler == createBathGasSelectElement) {
                         let bathGas: BathGas | undefined = pTpair.getBathGas();
                         if (bathGas == undefined) {
-                            button.classList.toggle('optionOn');
                             button.textContent = buttonTextContentDeselected;
                         } else {
-                            button.classList.toggle('optionOff');
                             button.textContent = buttonTextContentSelected;
                             if (handlerArgs[1].has(bathGas.value) == false) {
                                 console.warn("moleculeKeys does not contain " + bathGas.value);
                             }
                             div.appendChild(handler(id, bathGas, true));
                         }
-                        let input: HTMLInputElement | HTMLSelectElement = handler(id, ...handlerArgs);
+                        let input: HTMLInputElement | HTMLSelectElement | HTMLDivElement = handler(id, ...handlerArgs);
                         div.insertBefore(input, button.nextSibling);
                     } else {
-                        let input: HTMLInputElement | HTMLSelectElement = handler(id, ...handlerArgs);
+                        let input: HTMLInputElement | HTMLSelectElement | HTMLDivElement = handler(id, ...handlerArgs);
                         div.insertBefore(input, button.nextSibling);
                     }
                 }
@@ -2588,6 +2895,8 @@ function addButtonWithToggle(pTpairDiv: HTMLDivElement, pTpair: PTpair, attribut
                 remove(id, ids);
             }
         }
+        button.classList.toggle(s_optionOn);
+        button.classList.toggle(s_optionOff);
     });
 }
 
@@ -2625,6 +2934,10 @@ function createPrecisionSelectElement(id: string, pTpair: PTpair): HTMLSelectEle
     let value: string;
     if (pTpair.attributes.has(PTpair.s_precision)) {
         value = pTpair.attributes.get(PTpair.s_precision) as string;
+        console.log("precision value=" + value);
+
+        console.log("pTpair.attributes" + mapToString(pTpair.attributes));
+
     } else {
         value = Mesmer.precisionOptions[0];
     }
@@ -2640,56 +2953,14 @@ function createPrecisionSelectElement(id: string, pTpair: PTpair): HTMLSelectEle
 }
 
 /**
- * @param pTpairDiv The PTpair div.
- * @param pTpair The PTpair.
- * @param i The index.
- * @param moleculeKeys The molecule keys.
- 
-function addBathGas(pTpairDiv: HTMLDivElement, pTpair: PTpair, i: number, moleculeKeys: Set<string>): void {
-    let div: HTMLDivElement = createDiv(boundary1);
-    pTpairDiv.append(div);
-    let tagName: string = BathGas.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    let bathGas: BathGas | undefined = pTpair.getBathGas();
-    let id = PTpair.tagName + "_" + tagName + "_select" + "_" + i;
-    if (bathGas == undefined) {
-        button.classList.toggle('optionOn');
-        button.textContent = buttonTextContentDeselected;
-    } else {
-        button.classList.toggle('optionOff');
-        button.textContent = buttonTextContentSelected;
-        if (moleculeKeys.has(bathGas.value) == false) {
-            console.warn("moleculeKeys does not contain " + bathGas.value);
-        }
-        div.appendChild(getBathGasSelectElement(pTpair, id, bathGas, true));
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        button.classList.toggle('optionOn');
-        button.classList.toggle('optionOff');
-        if (button.textContent === buttonTextContentDeselected) {
-            button.textContent = buttonTextContentSelected;
-            div.appendChild(getBathGasSelectElement(pTpair, id, bathGas, true));
-        } else {
-            button.textContent = buttonTextContentDeselected;
-            // Remove the select element.
-            remove(id);
-        }
-    });
-}
-
-/**
  * @param pTpair The PTpair.
  * @param id The id.
  * @param bathGas The bath gas.
  * @returns A select element.
  */
 function createBathGasSelectElement(id: string, pTpair: PTpair, bathGas: BathGas | undefined, first: boolean): HTMLSelectElement {
+    console.log("createBathGasSelectElement");
+    console.log("pTpair " + pTpair.toString());
     let select: HTMLSelectElement = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, first);
     select.id = id;
     select.addEventListener('change', (event: Event) => {
@@ -2709,17 +2980,17 @@ function createBathGasSelectElement(id: string, pTpair: PTpair, bathGas: BathGas
 function createSelectElementBathGas(options: string[], bathGas: BathGas | undefined, first: boolean): HTMLSelectElement {
     let value: string;
     if (first) {
-        options.push(selectAnotherOption);
+        options.push(selectOption);
     } else {
         // remove selectAnotherOption if it is present.
-        let index = options.indexOf(selectAnotherOption);
+        let index = options.indexOf(selectOption);
         if (index > -1) {
             options.splice(index, 1);
         }
     }
     if (bathGas == undefined) {
-        bathGas = new BathGas(new Map(), selectAnotherOption);
-        value = selectAnotherOption;
+        bathGas = new BathGas(new Map(), selectOption);
+        value = selectOption;
     } else {
         value = bathGas.value;
     }
@@ -2738,276 +3009,139 @@ function createSelectElementBathGas(options: string[], bathGas: BathGas | undefi
     return select;
 }
 
-/**
- * @param pTpairDiv The PTpair div.
- * @param pTpair The PTpair.
- * @param i The index.
- */
-function addExperimentalRate(pTpairDiv: HTMLDivElement, pTpair: PTpair, i: number): void {
-    let div: HTMLDivElement = createDiv(undefined, boundary1);
-    pTpairDiv.append(div);
-    let tagName: string = ExperimentalRate.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    let id = PTpair.tagName + "_" + tagName + "_" + i;
-    if (pTpair.getExperimentalRate() == undefined) {
-        button.classList.toggle('optionOn');
-        button.textContent = buttonTextContentDeselected;
-    } else {
-        button.classList.toggle('optionOff');
-        button.textContent = buttonTextContentSelected;
-        div.appendChild(addExperimentalRateDetails(pTpair, id));
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        button.classList.toggle('optionOn');
-        button.classList.toggle('optionOff');
-        if (button.textContent === buttonTextContentDeselected) {
-            button.textContent = buttonTextContentSelected;
-            div.appendChild(addExperimentalRateDetails(pTpair, id));
-        } else {
-            button.textContent = buttonTextContentDeselected;
-            // Remove the element.
-            remove(id, ids);
-        }
-    });
+
+function addExperimentalRateDetails(id: string, pTpair: PTpair, index: number): HTMLDivElement {
+    console.log("addExperimentalRateDetails");
+    console.log("pTpair " + pTpair.toString());
+    return addExperimentalDetails(
+        pTpair,
+        PTpair.tagName + "_" + ExperimentalRate.tagName + "_" + index,
+        pTpair => pTpair.getExperimentalRate(),
+        (pTpair, value) => pTpair.setExperimentalRate(value),
+        ExperimentalRate,
+        [
+            {
+                tagName: ExperimentalRate.tagName, type: "number",
+                eventHandler: (event, target) => setNumberNode(pTpair.getExperimentalRate() as ExperimentalRate, target),
+                valueGetter: () => (pTpair.getExperimentalRate() as ExperimentalRate).value.toString()
+            },
+            {
+                tagName: ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref1, type: "text",
+                eventHandler: (event, target) => pTpair.getExperimentalRate()?.setRef1(target.value),
+                valueGetter: () => (pTpair.getExperimentalRate() as ExperimentalRate).getRef1()
+            },
+            {
+                tagName: ExperimentalRate.tagName + "_" + ExperimentalRate.s_ref2, type: "text",
+                eventHandler: (event, target) => pTpair.getExperimentalRate()?.setRef2(target.value),
+                valueGetter: () => (pTpair.getExperimentalRate() as ExperimentalRate).getRef2()
+            },
+            {
+                tagName: ExperimentalRate.tagName + "_" + ExperimentalRate.s_refReaction, type: "text",
+                eventHandler: (event, target) => pTpair.getExperimentalRate()?.setRefReaction(target.value),
+                valueGetter: () => (pTpair.getExperimentalRate() as ExperimentalRate).getRefReaction()
+            },
+            {
+                tagName: ExperimentalRate.tagName + "_" + ExperimentalRate.s_error, type: "number",
+                eventHandler: (event, target) => pTpair.getExperimentalRate()?.setError(parseFloat(target.value)),
+                valueGetter: () => (pTpair.getExperimentalRate() as ExperimentalRate).getError().toString()
+            }
+        ]
+    );
 }
 
+function addExperimentalYieldDetails(id: string, pTpair: PTpair, index: number): HTMLDivElement {
+    return addExperimentalDetails(
+        pTpair,
+        PTpair.tagName + "_" + ExperimentalYield.tagName + "_" + index,
+        pTpair => pTpair.getExperimentalYield(),
+        (pTpair, value) => pTpair.setExperimentalYield(value),
+        ExperimentalYield,
+        [
+            {
+                tagName: ExperimentalYield.tagName, type: "number",
+                eventHandler: (event, target) => setNumberNode(pTpair.getExperimentalYield() as ExperimentalYield, target),
+                valueGetter: () => (pTpair.getExperimentalYield() as ExperimentalYield).value.toString()
+            },
+            {
+                tagName: ExperimentalYield.tagName + "_" + ExperimentalYield.s_ref, type: "text",
+                eventHandler: (event, target) => pTpair.getExperimentalYield()?.setRef(target.value),
+                valueGetter: () => (pTpair.getExperimentalYield() as ExperimentalYield).getRef()
+            },
+            {
+                tagName: ExperimentalYield.tagName + "_" + ExperimentalYield.s_yieldTime, type: "number",
+                eventHandler: (event, target) => pTpair.getExperimentalYield()?.setYieldTime(parseFloat(target.value)),
+                valueGetter: () => (pTpair.getExperimentalYield() as ExperimentalYield).getYieldTime().toString()
+            },
+            {
+                tagName: ExperimentalYield.tagName + "_" + ExperimentalYield.s_error, type: "number",
+                eventHandler: (event, target) => pTpair.getExperimentalYield()?.setError(parseFloat(target.value)),
+                valueGetter: () => (pTpair.getExperimentalYield() as ExperimentalYield).getError().toString()
+            }
+        ]
+    );
+}
+
+function addExperimentalEigenvalueDetails(id: string, pTpair: PTpair, index: number): HTMLDivElement {
+    return addExperimentalDetails(
+        pTpair,
+        PTpair.tagName + "_" + ExperimentalEigenvalue.tagName + "_" + index,
+        pTpair => pTpair.getExperimentalEigenvalue(),
+        (pTpair, value) => pTpair.setExperimentalEigenvalue(value),
+        ExperimentalEigenvalue,
+        [
+            {
+                tagName: ExperimentalEigenvalue.tagName, type: "number",
+                eventHandler: (event, target) => setNumberNode(pTpair.getExperimentalEigenvalue() as ExperimentalEigenvalue, target),
+                valueGetter: () => (pTpair.getExperimentalEigenvalue() as ExperimentalEigenvalue).value.toString()
+            },
+            {
+                tagName: ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_EigenvalueID, type: "text",
+                eventHandler: (event, target) => pTpair.getExperimentalEigenvalue()?.setEigenvalueID(target.value),
+                valueGetter: () => (pTpair.getExperimentalEigenvalue() as ExperimentalEigenvalue).getEigenvalueID()
+            },
+            {
+                tagName: ExperimentalEigenvalue.tagName + "_" + ExperimentalEigenvalue.s_error, type: "number",
+                eventHandler: (event, target) => pTpair.getExperimentalEigenvalue()?.setError(parseFloat(target.value)),
+                valueGetter: () => (pTpair.getExperimentalEigenvalue() as ExperimentalEigenvalue).getError().toString()
+            }
+        ]
+    );
+}
 /**
  * @param pTpair The PTpair.
  * @param id The id.
+ * @param getExperimental The getter.
+ * @param setExperimental The setter.
+ * @param ExperimentalClass The class.
+ * @param details The details.
+ * @returns HTMLDivElement.
  */
-function addExperimentalRateDetails(pTpair: PTpair, id: string): HTMLDivElement {
+function addExperimentalDetails<T extends ExperimentalRate | ExperimentalYield | ExperimentalEigenvalue>(
+    pTpair: PTpair,
+    id: string,
+    getExperimental: (pTpair: PTpair) => T | undefined,
+    setExperimental: (pTpair: PTpair, value: T) => void,
+    ExperimentalClass: { new(attributes: Map<string, any>, value: number): T },
+    details: {
+        tagName: string, type: string, eventHandler: (event: Event, target: HTMLInputElement) => void,
+        valueGetter: () => string, label?: string
+    }[]): HTMLDivElement {
     let div = createDiv(undefined, boundary1);
     div.id = id;
-    let experimentalRate: ExperimentalRate | undefined = pTpair.getExperimentalRate();
-    if (experimentalRate == undefined) {
-        experimentalRate = new ExperimentalRate(new Map(), NaN);
-        pTpair.setExperimentalRate(experimentalRate);
+    let experimental: T | undefined = getExperimental(pTpair);
+    if (experimental == undefined) {
+        experimental = new ExperimentalClass(new Map(), NaN);
+        setExperimental(pTpair, experimental);
     }
-    // value.
-    let rateId = id + "_" + ExperimentalRate.tagName;
-    let ratelwi: HTMLDivElement = createLabelWithInput("number", rateId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        setNumberNode((experimentalRate as ExperimentalRate), target);
-        console.log("Set " + ExperimentalRate.tagName + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalRate as ExperimentalRate).value.toString(), "");
-    div.appendChild(ratelwi);
-    // ref1.
-    let ref1Id = id + ExperimentalRate.s_ref1;
-    let ref1lwi: HTMLDivElement = createLabelWithInput("string", ref1Id, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalRate()?.setRef1(target.value);
-        console.log("Set " + ExperimentalRate.s_ref1 + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalRate as ExperimentalRate).getRef1(), ExperimentalRate.s_ref1);
-    div.appendChild(ref1lwi);
-    // ref2.
-    let ref2Id = id + ExperimentalRate.s_ref2;
-    let ref2lwi: HTMLDivElement = createLabelWithInput("string", ref2Id, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalRate()?.setRef2(target.value);
-        console.log("Set " + ExperimentalRate.s_ref2 + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalRate as ExperimentalRate).getRef2(), ExperimentalRate.s_ref2);
-    div.appendChild(ref2lwi);
-    // refReaction.
-    let refReactionId = id + ExperimentalRate.s_refReaction;
-    let refReactionlwi: HTMLDivElement = createLabelWithInput("string", refReactionId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalRate()?.setRefReaction(target.value);
-        console.log("Set " + ExperimentalRate.s_refReaction + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalRate as ExperimentalRate).getRefReaction(), ExperimentalRate.s_refReaction);
-    div.appendChild(refReactionlwi);
-    // Error.
-    let errorId = id + ExperimentalRate.s_error;
-    let errorlwi: HTMLDivElement = createLabelWithInput("number", errorId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalRate()?.setError(parseFloat(target.value));
-        console.log("Set " + ExperimentalRate.s_error + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalRate as ExperimentalRate).getError().toExponential(), ExperimentalRate.s_error);
-    div.appendChild(errorlwi);
-    return div;
-}
-
-/**
- * @param pTpairDiv The PTpair div.
- * @param pTpair The PTpair.
- * @param i The index.
- */
-function addExperimentalYield(pTpairDiv: HTMLDivElement, pTpair: PTpair, i: number): void {
-    let div: HTMLDivElement = createDiv(undefined, boundary1);
-    pTpairDiv.append(div);
-    let tagName: string = ExperimentalYield.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    let id = PTpair.tagName + "_" + tagName + "_" + i;
-    if (pTpair.getExperimentalYield() == undefined) {
-        button.classList.toggle('optionOn');
-        button.textContent = buttonTextContentDeselected;
-    } else {
-        button.classList.toggle('optionOff');
-        button.textContent = buttonTextContentSelected;
-        div.appendChild(addExperimentalYieldDetails(pTpair, id));
+    for (let detail of details) {
+        let detailId = id + "_" + detail.tagName;
+        div.appendChild(createLabelWithInput(detail.type, detailId, boundary1, level0, (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            detail.eventHandler(event, target);
+            console.log("Set " + detail.tagName + " to " + target.value);
+            resizeInputElement(target);
+        }, detail.valueGetter(), detail.label || ""));
     }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        button.classList.toggle('optionOn');
-        button.classList.toggle('optionOff');
-        if (button.textContent === buttonTextContentDeselected) {
-            button.textContent = buttonTextContentSelected;
-            div.appendChild(addExperimentalYieldDetails(pTpair, id));
-        } else {
-            button.textContent = buttonTextContentDeselected;
-            // Remove the element.
-            remove(id, ids);
-        }
-    });
-}
-
-/**
- * @param pTpair The PTpair.
- * @param id The id.
- */
-function addExperimentalYieldDetails(pTpair: PTpair, id: string): HTMLDivElement {
-    let div = createDiv(undefined, boundary1);
-    div.id = id;
-    let experimentalYield: ExperimentalYield | undefined = pTpair.getExperimentalYield();
-    if (experimentalYield == undefined) {
-        experimentalYield = new ExperimentalYield(new Map(), NaN);
-        pTpair.setExperimentalYield(experimentalYield);
-    }
-    // value.
-    let yieldId = id + "_" + ExperimentalYield.tagName;
-    let yieldlwi: HTMLDivElement = createLabelWithInput("number", yieldId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        setNumberNode((experimentalYield as ExperimentalYield), target);
-        console.log("Set " + ExperimentalYield.tagName + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalYield as ExperimentalYield).value.toString(), "");
-    div.appendChild(yieldlwi);
-    // ref.
-    let refId = id + ExperimentalYield.s_ref;
-    let reflwi: HTMLDivElement = createLabelWithInput("string", refId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalYield()?.setRef(target.value);
-        console.log("Set " + ExperimentalYield.s_ref + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalYield as ExperimentalYield).getRef(), ExperimentalYield.s_ref);
-    div.appendChild(reflwi);
-    // yieldTime.
-    let yieldTimeId = id + ExperimentalYield.s_yieldTime;
-    let yieldTimelwi: HTMLDivElement = createLabelWithInput("number", yieldTimeId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalYield()?.setYieldTime(parseFloat(target.value));
-        console.log("Set " + ExperimentalYield.s_yieldTime + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalYield as ExperimentalYield).getYieldTime().toString(), ExperimentalYield.s_yieldTime);
-    div.appendChild(yieldTimelwi);
-    // Error.
-    let errorId = id + ExperimentalYield.s_error;
-    let errorlwi: HTMLDivElement = createLabelWithInput("number", errorId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalYield()?.setError(parseFloat(target.value));
-        console.log("Set " + ExperimentalYield.s_error + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalYield as ExperimentalYield).getError().toExponential(), ExperimentalYield.s_error);
-    div.appendChild(errorlwi);
-    return div;
-}
-
-
-/**
- * @param pTpairDiv The PTpair div.
- * @param pTpair The PTpair.
- * @param i The index.
- * @param moleculeKeys The molecule keys.
- */
-function addExperimentalEigenvalue(pTpairDiv: HTMLDivElement, pTpair: PTpair, i: number): void {
-    let div: HTMLDivElement = createDiv(undefined, boundary1);
-    pTpairDiv.append(div);
-    let tagName: string = ExperimentalEigenvalue.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    let id = PTpair.tagName + "_" + tagName + "_" + i;
-    if (pTpair.getExperimentalEigenvalue() == undefined) {
-        button.classList.toggle('optionOn');
-        button.textContent = buttonTextContentDeselected;
-    } else {
-        button.classList.toggle('optionOff');
-        button.textContent = buttonTextContentSelected;
-        div.appendChild(addExperimentalEigenvalueDetails(pTpair, id));
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        button.classList.toggle('optionOn');
-        button.classList.toggle('optionOff');
-        if (button.textContent === buttonTextContentDeselected) {
-            button.textContent = buttonTextContentSelected;
-            div.appendChild(addExperimentalEigenvalueDetails(pTpair, id));
-        } else {
-            button.textContent = buttonTextContentDeselected;
-            // Remove the element.
-            remove(id, ids);
-        }
-    });
-}
-
-/**
- * @param pTpairDiv The PTpair div.
- * @param pTpair The PTpair.
- * @param i The index.
- */
-function addExperimentalEigenvalueDetails(pTpair: PTpair, id: string): HTMLDivElement {
-    let div = createDiv(undefined, boundary1);
-    div.id = id;
-    let experimentalEigenvalue: ExperimentalEigenvalue | undefined = pTpair.getExperimentalEigenvalue();
-    if (experimentalEigenvalue == undefined) {
-        experimentalEigenvalue = new ExperimentalEigenvalue(new Map(), NaN);
-        pTpair.setExperimentalEigenvalue(experimentalEigenvalue);
-    }
-    // value.
-    let eigenvalueId = id + "_" + ExperimentalEigenvalue.tagName;
-    let eigenvaluelwi: HTMLDivElement = createLabelWithInput("number", eigenvalueId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        setNumberNode((experimentalEigenvalue as ExperimentalEigenvalue), target);
-        console.log("Set " + ExperimentalEigenvalue.tagName + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalEigenvalue as ExperimentalEigenvalue).value.toString(), "");
-    div.appendChild(eigenvaluelwi);
-    // EigenvalueID.
-    let eigenvalueIDId = id + "_" + ExperimentalEigenvalue.s_EigenvalueID;
-    let eigenvalueIDlwi: HTMLDivElement = createLabelWithInput("string", eigenvalueIDId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalEigenvalue()?.setEigenvalueID(target.value);
-        console.log("Set " + ExperimentalEigenvalue.s_EigenvalueID + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalEigenvalue as ExperimentalEigenvalue).getEigenvalueID(), ExperimentalEigenvalue.s_EigenvalueID);
-    div.appendChild(eigenvalueIDlwi);
-    // Error.
-    let errorId = id + ExperimentalEigenvalue.s_error;
-    let errorlwi: HTMLDivElement = createLabelWithInput("number", errorId, boundary1, level0, (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        pTpair.getExperimentalEigenvalue()?.setError(parseFloat(target.value));
-        console.log("Set " + ExperimentalEigenvalue.s_error + " to " + target.value);
-        resizeInputElement(target);
-    }, (experimentalEigenvalue as ExperimentalEigenvalue).getError().toExponential(), ExperimentalEigenvalue.s_error);
-    div.appendChild(errorlwi);
     return div;
 }
 
@@ -3022,9 +3156,12 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
     let modelParameters: ModelParameters = new ModelParameters(getAttributes(xml_modelParameters));
     mesmer.setModelParameters(modelParameters);
     processGrainSize(modelParameters, xml_modelParameters, modelParametersDiv);
-    processAutomaticallySetMaxEneModelParameters(modelParameters, xml_modelParameters, modelParametersDiv);
-    processEnergyAboveTheTopHill(modelParameters, xml_modelParameters, modelParametersDiv);
-    processMaxTemperature(modelParameters, xml_modelParameters, modelParametersDiv);
+    processModelParametersN(modelParameters, xml_modelParameters, modelParametersDiv, AutomaticallySetMaxEne,
+        modelParameters.setAutomaticallySetMaxEne, modelParameters.removeAutomaticallySetMaxEne);
+    processModelParametersN(modelParameters, xml_modelParameters, modelParametersDiv, EnergyAboveTheTopHill,
+        modelParameters.setEnergyAboveTheTopHill, modelParameters.removeEnergyAboveTheTopHill);
+    processModelParametersN(modelParameters, xml_modelParameters, modelParametersDiv, MaxTemperature,
+        modelParameters.setMaxTemperature, modelParameters.removeMaxTemperature);
     return modelParametersDiv;
 }
 
@@ -3041,8 +3178,8 @@ function processGrainSize(modelParameters: ModelParameters, xml_modelParameters:
     let buttonTextContentDeselected: string = tagName + deselected;
     let xml: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(tagName);
     let button = createButton(tagName, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     div.appendChild(button);
     let id = ModelParameters.tagName + "_" + tagName + "_input";
     let ids = ModelParameters.tagName + "_" + tagName + "_select";
@@ -3053,288 +3190,108 @@ function processGrainSize(modelParameters: ModelParameters, xml_modelParameters:
         let value: number = parseFloat(valueString);
         gs = new GrainSize(getAttributes(xml[0]), value);
         button.textContent = buttonTextContentSelected;
-        createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
-        button.classList.toggle('optionOff');
+        createInputModelParameters(modelParameters, div, gs, id, ids, valueString, modelParameters.setGrainSize, Mesmer.energyUnits);
+        button.classList.toggle(s_optionOff);
     } else {
         valueString = "";
         gs = new GrainSize(new Map(), NaN);
         button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
+        button.classList.toggle(s_optionOn);
     }
     // Add event listener for the button.
     button.addEventListener('click', () => {
         // Check if the GrainSize already exists
         if (!modelParameters.index.has(GrainSize.tagName)) {
-            createGrainSizeInput(modelParameters, div, gs, id, ids, valueString);
+            createInputModelParameters(modelParameters, div, gs, id, ids, valueString, modelParameters.setGrainSize, Mesmer.energyUnits);
             button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
         } else {
             valueString = gs.value.toExponential();
             modelParameters.removeGrainSize();
             document.getElementById(id)?.remove();
             document.getElementById(ids)?.remove();
             button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
         }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
     });
 }
 
 /**
- * @param modelParameters The model parameters.
- * @param div The div.
- * @param gs The grain size.
- * @param id The id.
- * @param ids The id for the units select.
- * @param valueString The value string.
- */
-function createGrainSizeInput(modelParameters: ModelParameters, div: HTMLDivElement, gs: GrainSize,
-    id: string, ids: string, valueString: string): void {
-    modelParameters.setGrainSize(gs);
-    let input: HTMLInputElement = createInput("number", id, boundary1);
-    input.addEventListener('change', (event: Event) => {
-        if (event.target instanceof HTMLInputElement) {
-            setNumberNode(gs, event.target);
-            resizeInputElement(event.target);
-        }
-    });
-    input.value = valueString;
-    resizeInputElement(input);
-    div.appendChild(input);
-    addAnyUnits(Mesmer.energyUnits, gs.attributes, div, ids, GrainSize.tagName, boundary1);
-}
-
-/**
- * Process "me:automaticallySetMaxEne".
+ * Process numerical modelParameters.
  * @param modelParameters The ModelParameters.
  * @param modelParametersDiv The modelParameters div.
  * @param xml_modelParameters The xml modelParameters.
  */
-function processAutomaticallySetMaxEneModelParameters(modelParameters: ModelParameters, xml_modelParameters: Element,
-    modelParametersDiv: HTMLDivElement): void {
+function processModelParametersN<T extends { new(attributes: Map<string, string>, value: number): any; tagName: string }>(
+    modelParameters: ModelParameters, xml_modelParameters: Element, modelParametersDiv: HTMLDivElement, ModelParameterType: T,
+    setModelParameter: (mp: InstanceType<T>) => void, removeModelParameter: () => void): void {
     let div: HTMLDivElement = createFlexDiv(undefined, level1);
     modelParametersDiv.appendChild(div);
-    let tagName: string = AutomaticallySetMaxEne.tagName;
+    let tagName: string = ModelParameterType.tagName;
     let buttonTextContentSelected: string = tagName + selected;
     let buttonTextContentDeselected: string = tagName + deselected;
     let xml: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(tagName);
     let button = createButton(tagName, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     div.appendChild(button);
     let id = ModelParameters.tagName + "_" + tagName + "_input";
     let ids = ModelParameters.tagName + "_" + tagName + "_select";
-    let asme: AutomaticallySetMaxEne;
+    let mp: InstanceType<T>;
     let valueString: string;
     if (xml.length == 1) {
         valueString = getNodeValue(getFirstChildNode(xml[0]));
         let value: number = parseFloat(valueString);
-        asme = new AutomaticallySetMaxEne(getAttributes(xml[0]), value);
+        mp = new ModelParameterType(getAttributes(xml[0]), value);
         button.textContent = buttonTextContentSelected;
-        createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
-        button.classList.toggle('optionOff');
+        createInputModelParameters(modelParameters, div, mp, id, ids, valueString, setModelParameter, undefined);
+        button.classList.toggle(s_optionOff);
     } else {
         valueString = "";
-        asme = new AutomaticallySetMaxEne(new Map(), NaN);
+        mp = new ModelParameterType(new Map(), NaN);
         button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
+        button.classList.toggle(s_optionOn);
     }
     // Add event listener for the button.
     button.addEventListener('click', () => {
-        // Check if the AutomaticallySetMaxEne already exists
-        if (!modelParameters.index.has(AutomaticallySetMaxEne.tagName)) {
-            createAutomaticallySetMaxEneInputModelParameters(modelParameters, div, asme, id, ids, valueString);
+        // Check if the ModelParameter already exists
+        if (!modelParameters.index.has(tagName)) {
+            createInputModelParameters(modelParameters, div, mp, id, ids, valueString, setModelParameter, undefined);
             button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
         } else {
-            valueString = asme.value.toExponential();
-            modelParameters.removeAutomaticallySetMaxEne();
-            // Remove any existing div.
+            valueString = mp.value.toExponential();
+            removeModelParameter();
             document.getElementById(id)?.remove();
             button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
         }
-    });
-}
-
-/**
- * @param modelParameters The ModelParameters.
- * @param div The div.
- * @param asme The automatically set max energy.
- * @param id The id.
- * @param ids The id for the units select.
- * @param valueString The value string.
- */
-function createAutomaticallySetMaxEneInputModelParameters(modelParameters: ModelParameters, div: HTMLDivElement, asme: AutomaticallySetMaxEne,
-    id: string, ids: string, valueString: string) {
-    modelParameters.setAutomaticallySetMaxEne(asme);
-    let input: HTMLInputElement = createInput("number", id, boundary1);
-    input.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        setNumberNode(asme, target);
-        resizeInputElement(target);
-    });
-    input.value = valueString;
-    resizeInputElement(input);
-    div.appendChild(input);
-    addAnyUnits(Mesmer.energyUnits, asme.attributes, div, ids, AutomaticallySetMaxEne.tagName, boundary1);
-}
-
-/**
- * Process "me:energyAboveTheTopHill".
- * @param modelParameters The ModelParameters.
- * @param modelParametersDiv The modelParameters div.
- * @param xml_modelParameters The xml modelParameters.
- */
-function processEnergyAboveTheTopHill(modelParameters: ModelParameters, xml_modelParameters: Element, modelParametersDiv: HTMLDivElement): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, level1);
-    modelParametersDiv.appendChild(div);
-    let tagName: string = EnergyAboveTheTopHill.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let xml: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(tagName);
-    let button = createButton(tagName, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    div.appendChild(button);
-    let id = ModelParameters.tagName + "_" + tagName + "_input";
-    let ids = ModelParameters.tagName + "_" + tagName + "_select";
-    let eatth: EnergyAboveTheTopHill;
-    let valueString: string;
-    if (xml.length == 1) {
-        valueString = getNodeValue(getFirstChildNode(xml[0]));
-        let value: number = parseFloat(valueString);
-        eatth = new EnergyAboveTheTopHill(getAttributes(xml[0]), value);
-        button.textContent = buttonTextContentSelected;
-        createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
-        button.classList.toggle('optionOff');
-    } else {
-        valueString = "";
-        eatth = new EnergyAboveTheTopHill(new Map(), NaN);
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the EnergyAboveTheTopHill already exists
-        if (!modelParameters.index.has(EnergyAboveTheTopHill.tagName)) {
-            createEnergyAboveTheTopHillInput(modelParameters, div, eatth, id, ids, valueString);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            valueString = eatth.value.toExponential();
-            modelParameters.removeEnergyAboveTheTopHill();
-            // Remove any existing div.
-            document.getElementById(id)?.remove();
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
     });
 }
 
 /**
  * @param modelParameters The model parameters.
  * @param div The div.
- * @param eatth The energy above the top hill.
+ * @param element The element.
  * @param id The id.
  * @param ids The id for the units select.
  * @param valueString The value string.
+ * @param setElementMethod The method to set the element.
+ * @param units The units.
  */
-function createEnergyAboveTheTopHillInput(modelParameters: ModelParameters, div: HTMLDivElement, eatth: EnergyAboveTheTopHill,
-    id: string, ids: string, valueString: string): void {
-    modelParameters.setEnergyAboveTheTopHill(eatth);
+function createInputModelParameters(modelParameters: ModelParameters, div: HTMLDivElement, element: any,
+    id: string, ids: string, valueString: string, setElementMethod: (value: any) => void, units: any): void {
+    setElementMethod.call(modelParameters, element);
     let input: HTMLInputElement = createInput("number", id, boundary1);
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
-        setNumberNode(eatth, target);
+        setNumberNode(element, target);
         resizeInputElement(target);
     });
     input.value = valueString;
     resizeInputElement(input);
     div.appendChild(input);
-    addAnyUnits(Mesmer.energyUnits, eatth.attributes, div, ids, EnergyAboveTheTopHill.tagName, boundary1);
-}
-
-/**
- * Process "me:maxTemperature".
- * @param modelParameters The ModelParameters.
- * @param modelParametersDiv The modelParameters div.
- * @param xml_modelParameters The xml modelParameters.
- */
-function processMaxTemperature(modelParameters: ModelParameters, xml_modelParameters: Element, modelParametersDiv: HTMLDivElement): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, level1);
-    modelParametersDiv.appendChild(div);
-    let tagName: string = MaxTemperature.tagName;
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let xml: HTMLCollectionOf<Element> = xml_modelParameters.getElementsByTagName(tagName);
-    let button = createButton(tagName, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    div.appendChild(button);
-    let id = ModelParameters.tagName + "_" + tagName + "_input";
-    let ids = ModelParameters.tagName + "_" + tagName + "_select";
-    let mt: MaxTemperature;
-    let valueString: string;
-    if (xml.length == 1) {
-        valueString = getNodeValue(getFirstChildNode(xml[0]));
-        let value: number = parseFloat(valueString);
-        mt = new MaxTemperature(getAttributes(xml[0]), value);
-        button.textContent = buttonTextContentSelected;
-        createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
-        button.classList.toggle('optionOff');
-    } else {
-        valueString = "";
-        mt = new MaxTemperature(new Map(), NaN);
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the MaxTemperature already exists
-        if (!modelParameters.index.has(MaxTemperature.tagName)) {
-            createMaxTemperatureInput(modelParameters, div, mt, id, ids, valueString);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            valueString = mt.value.toExponential();
-            modelParameters.removeMaxTemperature();
-            // Remove any existing div.
-            document.getElementById(id)?.remove();
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
-    });
-}
-
-/**
- * @param modelParameters The model parameters.
- * @param div The div.
- * @param mt The max temperature.
- * @param id The id.
- * @param ids The id for the units select.
- * @param valueString The value string.
- */
-function createMaxTemperatureInput(modelParameters: ModelParameters, div: HTMLDivElement, mt: MaxTemperature, id: string,
-    ids: string, valueString: string): void {
-    modelParameters.setMaxTemperature(mt);
-    let input: HTMLInputElement = createInput("number", id, boundary1);
-    input.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        setNumberNode(mt, target);
-        resizeInputElement(target);
-    });
-    input.value = valueString;
-    resizeInputElement(input);
-    div.appendChild(input);
-    addAnyUnits(undefined, mt.attributes, div, ids, MaxTemperature.tagName, boundary1);
+    addAnyUnits(units, element.attributes, div, ids, element.constructor.tagName, boundary1);
 }
 
 /**
@@ -3387,54 +3344,15 @@ function processControl(xml: XMLDocument): HTMLDivElement {
     for (let i = 0; i < xml_controls.length; i++) {
         let xml_control: Element = xml_controls[i];
         // Create div to contain the control.
-        let controlID: string = addID(Control.tagName, i.toString());
+        let controlID: string = getID(Control.tagName, i.toString());
         let controlDiv: HTMLDivElement = createDiv(controlID, boundary1);
         let control: Control = addControl(getAttributes(xml_control), controlDiv, null, controlsDiv, i);
         let level = level2;
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
-        processControlOptionSimple(control, onOffControls, xml_control, CalculateRateCoefficientsOnly.tagName,
-            CalculateRateCoefficientsOnly, control.setCalculateRateCoefficientsOnly, control.removeCalculateRateCoefficientsOnly);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintCellDOS.tagName,
-            PrintCellDOS, control.setPrintCellDOS, control.removePrintCellDOS);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintCellTransitionStateFlux.tagName,
-            PrintCellTransitionStateFlux, control.setPrintCellTransitionStateFlux, control.removePrintCellTransitionStateFlux);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintReactionOperatorColumnSums.tagName,
-            PrintReactionOperatorColumnSums, control.setPrintReactionOperatorColumnSums, control.removePrintReactionOperatorColumnSums);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainBoltzmann.tagName,
-            PrintGrainBoltzmann, control.setPrintGrainBoltzmann, control.removePrintGrainBoltzmann);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainDOS.tagName,
-            PrintGrainDOS, control.setPrintGrainDOS, control.removePrintGrainDOS);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainkbE.tagName,
-            PrintGrainkbE, control.setPrintGrainkbE, control.removePrintGrainkbE);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainkfE.tagName,
-            PrintGrainkfE, control.setPrintGrainkfE, control.removePrintGrainkfE);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintTSsos.tagName,
-            PrintTSsos, control.setPrintTSsos, control.removePrintTSsos);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainedSpeciesProfile.tagName,
-            PrintGrainedSpeciesProfile, control.setPrintGrainedSpeciesProfile, control.removePrintGrainedSpeciesProfile);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintGrainTransitionStateFlux.tagName,
-            PrintGrainTransitionStateFlux, control.setPrintGrainTransitionStateFlux, control.removePrintGrainTransitionStateFlux);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintReactionOperatorSize.tagName,
-            PrintReactionOperatorSize, control.setPrintReactionOperatorSize, control.removePrintReactionOperatorSize);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintSpeciesProfile.tagName,
-            PrintSpeciesProfile, control.setPrintSpeciesProfile, control.removePrintSpeciesProfile);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintPhenomenologicalEvolution.tagName,
-            PrintPhenomenologicalEvolution, control.setPrintPhenomenologicalEvolution, control.removePrintPhenomenologicalEvolution);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintTunnelingCoefficients.tagName,
-            PrintTunnelingCoefficients, control.setPrintTunnelingCoefficients, control.removePrintTunnelingCoefficients);
-        processControlOptionSimple(control, onOffControls, xml_control, PrintCrossingCoefficients.tagName,
-            PrintCrossingCoefficients, control.setPrintCrossingCoefficients, control.removePrintCrossingCoefficients);
-        processControlOptionSimple(control, onOffControls, xml_control, TestDOS.tagName,
-            TestDOS, control.setTestDOS, control.removeTestDOS);
-        processControlOptionSimple(control, onOffControls, xml_control, TestRateConstant.tagName,
-            TestRateConstant, control.setTestRateConstants, control.removeTestRateConstants);
-        processControlOptionSimple(control, onOffControls, xml_control, UseTheSameCellNumberForAllConditions.tagName,
-            UseTheSameCellNumberForAllConditions, control.setUseTheSameCellNumberForAllConditions, control.removeUseTheSameCellNumberForAllConditions);
-        //processControlOptionSimple(control, onOffControls, xml_control, HideInactive.tagName,
-        //    HideInactive, control.setHideInactive, control.removeHideInactive);
-        processControlOptionSimple(control, onOffControls, xml_control, ForceMacroDetailedBalance.tagName,
-            ForceMacroDetailedBalance, control.setForceMacroDetailedBalance, control.removeForceMacroDetailedBalance);
+        getControlOptionsSimple(control).forEach(option => {
+            handleControl(control, controlDiv, i, onOffControls, xml_control, null, option.class, option.setMethod, option.removeMethod);
+        });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level);
         let orderedOnOffControls = new Map([...onOffControls.entries()].sort());
@@ -3443,19 +3361,11 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         });
         controlDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        processTestMicroRates(control, controlDiv, xml_control, level);
-        processCalcMethod(control, controlDiv, i, xml_control, level);
-        // Controls with items to set.
-        processControlItem(control, controlDiv, xml_control, level, Eigenvalues.tagName, Eigenvalues,
-            control.setEigenvalues, control.removeEigenvalues);
-        processControlItem(control, controlDiv, xml_control, level, ShortestTimeOfInterest.tagName, ShortestTimeOfInterest,
-            control.setShortestTimeOfInterest, control.removeShortestTimeOfInterest);
-        processControlItem(control, controlDiv, xml_control, level, MaximumEvolutionTime.tagName, MaximumEvolutionTime,
-            control.setMaximumEvolutionTime, control.removeMaximumEvolutionTime);
-        processControlItem(control, controlDiv, xml_control, level, AutomaticallySetMaxEne.tagName, AutomaticallySetMaxEne,
-            control.setAutomaticallySetMaxEne, control.removeAutomaticallySetMaxEne);
-        processControlItem(control, controlDiv, xml_control, level, DiagramEnergyOffset.tagName, DiagramEnergyOffset,
-            control.setDiagramEnergyOffset, control.removeDiagramEnergyOffset);
+        handleTestMicroRates(control, controlDiv, null, level);
+        handleCalcMethod(control, controlDiv, i, xml_control, level);
+        getControlItems(control).forEach(item => {
+            handleControl(control, controlDiv, i, onOffControls, xml_control, level, item.class, item.setMethod, item.removeMethod, true);
+        });
         // Add a remove control button.
         let removeButton: HTMLButtonElement = addRemoveButton(controlDiv, level2, mesmer.removeControl.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
@@ -3464,12 +3374,55 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         });
     }
     // Create an add button to add a control.
-    let addButton: HTMLButtonElement = createAddControlButton(controlsDiv, level2);
+    createAddControlButton(controlsDiv, level2);
     return controlsDiv;
 }
 
 /**
- * 
+ * @param control The control.
+ * @return An array of the on/off control options.
+ */
+function getControlOptionsSimple(control: Control): { class: any, setMethod: (value: any) => void, removeMethod: () => void }[] {
+    return [
+        { class: CalculateRateCoefficientsOnly, setMethod: control.setCalculateRateCoefficientsOnly, removeMethod: control.removeCalculateRateCoefficientsOnly },
+        { class: PrintCellDOS, setMethod: control.setPrintCellDOS, removeMethod: control.removePrintCellDOS },
+        { class: PrintCellTransitionStateFlux, setMethod: control.setPrintCellTransitionStateFlux, removeMethod: control.removePrintCellTransitionStateFlux },
+        { class: PrintReactionOperatorColumnSums, setMethod: control.setPrintReactionOperatorColumnSums, removeMethod: control.removePrintReactionOperatorColumnSums },
+        { class: PrintGrainBoltzmann, setMethod: control.setPrintGrainBoltzmann, removeMethod: control.removePrintGrainBoltzmann },
+        { class: PrintGrainDOS, setMethod: control.setPrintGrainDOS, removeMethod: control.removePrintGrainDOS },
+        { class: PrintGrainkbE, setMethod: control.setPrintGrainkbE, removeMethod: control.removePrintGrainkbE },
+        { class: PrintGrainkfE, setMethod: control.setPrintGrainkfE, removeMethod: control.removePrintGrainkfE },
+        { class: PrintTSsos, setMethod: control.setPrintTSsos, removeMethod: control.removePrintTSsos },
+        { class: PrintGrainedSpeciesProfile, setMethod: control.setPrintGrainedSpeciesProfile, removeMethod: control.removePrintGrainedSpeciesProfile },
+        { class: PrintGrainTransitionStateFlux, setMethod: control.setPrintGrainTransitionStateFlux, removeMethod: control.removePrintGrainTransitionStateFlux },
+        { class: PrintReactionOperatorSize, setMethod: control.setPrintReactionOperatorSize, removeMethod: control.removePrintReactionOperatorSize },
+        { class: PrintSpeciesProfile, setMethod: control.setPrintSpeciesProfile, removeMethod: control.removePrintSpeciesProfile },
+        { class: PrintPhenomenologicalEvolution, setMethod: control.setPrintPhenomenologicalEvolution, removeMethod: control.removePrintPhenomenologicalEvolution },
+        { class: PrintTunnelingCoefficients, setMethod: control.setPrintTunnelingCoefficients, removeMethod: control.removePrintTunnelingCoefficients },
+        { class: PrintCrossingCoefficients, setMethod: control.setPrintCrossingCoefficients, removeMethod: control.removePrintCrossingCoefficients },
+        { class: TestDOS, setMethod: control.setTestDOS, removeMethod: control.removeTestDOS },
+        { class: TestRateConstant, setMethod: control.setTestRateConstants, removeMethod: control.removeTestRateConstants },
+        { class: UseTheSameCellNumberForAllConditions, setMethod: control.setUseTheSameCellNumberForAllConditions, removeMethod: control.removeUseTheSameCellNumberForAllConditions },
+        //{ class: HideInactive, setMethod: control.setHideInactive, removeMethod: control.removeHideInactive }
+        { class: ForceMacroDetailedBalance, setMethod: control.setForceMacroDetailedBalance, removeMethod: control.removeForceMacroDetailedBalance },
+    ];
+}
+
+/**
+ * @param control The control.
+ * @return An array of the control items.
+ */
+function getControlItems(control: Control): { class: any, setMethod: (value: any) => void, removeMethod: () => void }[] {
+    return [
+        { class: Eigenvalues, setMethod: control.setEigenvalues, removeMethod: control.removeEigenvalues },
+        { class: ShortestTimeOfInterest, setMethod: control.setShortestTimeOfInterest, removeMethod: control.removeShortestTimeOfInterest },
+        { class: MaximumEvolutionTime, setMethod: control.setMaximumEvolutionTime, removeMethod: control.removeMaximumEvolutionTime },
+        { class: AutomaticallySetMaxEne, setMethod: control.setAutomaticallySetMaxEne, removeMethod: control.removeAutomaticallySetMaxEne },
+        { class: DiagramEnergyOffset, setMethod: control.setDiagramEnergyOffset, removeMethod: control.removeDiagramEnergyOffset },
+    ];
+}
+
+/**
  * @param controlsDiv 
  * @param level The level.
  * @returns A button.
@@ -3481,7 +3434,7 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
     button.addEventListener('click', (event: MouseEvent) => {
         let i: number = mesmer.getNextControlID();
         console.log("Add Control " + i.toString());
-        let controlID: string = addID(Control.tagName, i.toString());
+        let controlID: string = getID(Control.tagName, i.toString());
         let controlDiv: HTMLDivElement = createDiv(controlID, boundary1);
         // ElementToInsert before is element after the control div with the previous index.
         let elementToInsertBefore: Element | null;
@@ -3503,49 +3456,11 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
         }
         // Add the control
         let control: Control = addControl(new Map(), controlDiv, elementToInsertBefore, controlsDiv, i);
-        mesmer.addControl(control);
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
-        addControlOptionSimple(control, onOffControls, CalculateRateCoefficientsOnly.tagName,
-            CalculateRateCoefficientsOnly, control.setCalculateRateCoefficientsOnly, control.removeCalculateRateCoefficientsOnly);
-        addControlOptionSimple(control, onOffControls, PrintCellDOS.tagName,
-            PrintCellDOS, control.setPrintCellDOS, control.removePrintCellDOS);
-        addControlOptionSimple(control, onOffControls, PrintCellTransitionStateFlux.tagName,
-            PrintCellTransitionStateFlux, control.setPrintCellTransitionStateFlux, control.removePrintCellTransitionStateFlux);
-        addControlOptionSimple(control, onOffControls, PrintReactionOperatorColumnSums.tagName,
-            PrintReactionOperatorColumnSums, control.setPrintReactionOperatorColumnSums, control.removePrintReactionOperatorColumnSums);
-        addControlOptionSimple(control, onOffControls, PrintGrainBoltzmann.tagName,
-            PrintGrainBoltzmann, control.setPrintGrainBoltzmann, control.removePrintGrainBoltzmann);
-        addControlOptionSimple(control, onOffControls, PrintGrainDOS.tagName,
-            PrintGrainDOS, control.setPrintGrainDOS, control.removePrintGrainDOS);
-        addControlOptionSimple(control, onOffControls, PrintGrainkbE.tagName,
-            PrintGrainkbE, control.setPrintGrainkbE, control.removePrintGrainkbE);
-        addControlOptionSimple(control, onOffControls, PrintGrainkfE.tagName,
-            PrintGrainkfE, control.setPrintGrainkfE, control.removePrintGrainkfE);
-        addControlOptionSimple(control, onOffControls, PrintTSsos.tagName,
-            PrintTSsos, control.setPrintTSsos, control.removePrintTSsos);
-        addControlOptionSimple(control, onOffControls, PrintGrainedSpeciesProfile.tagName,
-            PrintGrainedSpeciesProfile, control.setPrintGrainedSpeciesProfile, control.removePrintGrainedSpeciesProfile);
-        addControlOptionSimple(control, onOffControls, PrintGrainTransitionStateFlux.tagName,
-            PrintGrainTransitionStateFlux, control.setPrintGrainTransitionStateFlux, control.removePrintGrainTransitionStateFlux);
-        addControlOptionSimple(control, onOffControls, PrintReactionOperatorSize.tagName,
-            PrintReactionOperatorSize, control.setPrintReactionOperatorSize, control.removePrintReactionOperatorSize);
-        addControlOptionSimple(control, onOffControls, PrintSpeciesProfile.tagName,
-            PrintSpeciesProfile, control.setPrintSpeciesProfile, control.removePrintSpeciesProfile);
-        addControlOptionSimple(control, onOffControls, PrintPhenomenologicalEvolution.tagName,
-            PrintPhenomenologicalEvolution, control.setPrintPhenomenologicalEvolution, control.removePrintPhenomenologicalEvolution);
-        addControlOptionSimple(control, onOffControls, PrintTunnelingCoefficients.tagName,
-            PrintTunnelingCoefficients, control.setPrintTunnelingCoefficients, control.removePrintTunnelingCoefficients);
-        addControlOptionSimple(control, onOffControls, PrintCrossingCoefficients.tagName,
-            PrintCrossingCoefficients, control.setPrintCrossingCoefficients, control.removePrintCrossingCoefficients);
-        addControlOptionSimple(control, onOffControls, TestDOS.tagName,
-            TestDOS, control.setTestDOS, control.removeTestDOS);
-        addControlOptionSimple(control, onOffControls, TestRateConstant.tagName,
-            TestRateConstant, control.setTestRateConstants, control.removeTestRateConstants);
-        addControlOptionSimple(control, onOffControls, UseTheSameCellNumberForAllConditions.tagName,
-            UseTheSameCellNumberForAllConditions, control.setUseTheSameCellNumberForAllConditions, control.removeUseTheSameCellNumberForAllConditions);
-        //addControlOptionSimple(control, onOffControls, HideInactive.tagName,
-        //    HideInactive, control.setHideInactive, control.removeHideInactive);
+        getControlOptionsSimple(control).forEach(option => {
+            handleControl(control, controlDiv, i, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
+        });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level);
         let orderedOnOffControls = new Map([...onOffControls.entries()].sort());
@@ -3554,16 +3469,11 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
         });
         controlDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        /*
-        addTestMicroRates();
-        addCalcMethod();
-        // Controls with items to set.
-        addControlItem(Eigenvalues);
-        addControlItem(ShortestTimeOfInterest);
-        addControlItem(MaximumEvolutionTime);
-        addControlItem(AutomaticallySetMaxEne);
-        addControlItem(DiagramEnergyOffset);
-        */
+        handleTestMicroRates(control, controlDiv, null, level);
+        handleCalcMethod(control, controlDiv, i, null, level);
+        getControlItems(control).forEach(item => {
+            handleControl(control, controlDiv, i, onOffControls, null, level, item.class, item.setMethod, item.removeMethod, true);
+        });
         // Add a remove control button.
         let removeButton: HTMLButtonElement = addRemoveButton(controlDiv, level2, mesmer.removeControl.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
@@ -3577,7 +3487,7 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
 /**
  * Add and return a new control.
  */
-function addControl(attributes: Map<string, string>, controlDiv: HTMLDivElement, elementToInsertBefore: Element | null, 
+function addControl(attributes: Map<string, string>, controlDiv: HTMLDivElement, elementToInsertBefore: Element | null,
     controlsDiv: HTMLDivElement, i: number): Control {
     let control: Control = new Control(attributes, i);
     mesmer.addControl(control);
@@ -3592,149 +3502,6 @@ function addControl(attributes: Map<string, string>, controlDiv: HTMLDivElement,
         contentDivId: controlDiv.id
     });
     return control;
-}
-
-/**
- * Process "me:calculateRateCoefficientsOnly".
- * @param control The control.
- * @param onOffControls The on/off controls map.
- * @param xml_control The xml control.
- * @param tagName The tag name.
- * @param ControlClass The control class.
- * @param setControlMethod The set control method.
- * @param removeControlMethod The remove control method.
- */
-function processControlOptionSimple(control: Control, onOffControls: Map<string, HTMLButtonElement>, xml_control: Element,
-    tagName: string, ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void): void {
-    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    onOffControls.set(tagName, button);
-    let controlInstance: any = new ControlClass();
-    if (xml.length == 1) {
-        setControlMethod.call(control, controlInstance);
-        button.textContent = buttonTextContentSelected;
-        button.classList.toggle('optionOff');
-    } else {
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the control already exists
-        if (!control.index.has(tagName)) {
-            setControlMethod.call(control, controlInstance);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            removeControlMethod.call(control);
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
-    });
-}
-
-/**
- * Process "me:calculateRateCoefficientsOnly".
- * @param control The control.
- * @param onOffControls The on/off controls map.
- * @param xml_control The xml control.
- * @param tagName The tag name.
- * @param ControlClass The control class.
- * @param setControlMethod The set control method.
- * @param removeControlMethod The remove control method.
- */
-function addControlOptionSimple(control: Control, onOffControls: Map<string, HTMLButtonElement>,
-    tagName: string, ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void): void {
-    //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    onOffControls.set(tagName, button);
-    let controlInstance: any = new ControlClass();
-    //setControlMethod.call(control, controlInstance);
-    //button.textContent = buttonTextContentSelected;
-    //button.classList.toggle('optionOff');
-    button.textContent = buttonTextContentDeselected;
-    button.classList.toggle('optionOn');
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the control already exists
-        if (!control.index.has(tagName)) {
-            setControlMethod.call(control, controlInstance);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            removeControlMethod.call(control);
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
-    });
-}
-
-/**
- * Process "me:calcMethod".
- * @param control The control.
- * @param controlDiv The control div.
- * @param xml_control The xml control.
- * @param level The level.
- */
-function processControlItem(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
-    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string },
-    tagName: string, ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, level);
-    controlDiv.appendChild(div);
-    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    let id = Control.tagName + "_" + tagName + "_input";
-    let controlInstance: any;
-    let valueString: string;
-    if (xml.length == 1) {
-        valueString = getNodeValue(getFirstChildNode(xml[0]));
-        let value: number = parseFloat(valueString);
-        controlInstance = new ControlClass(getAttributes(xml[0]), value);
-        button.textContent = buttonTextContentSelected;
-        createInputControlItem(control, div, controlInstance, setControlMethod, id, valueString);
-        button.classList.toggle('optionOff');
-    } else {
-        valueString = "";
-        controlInstance = new ControlClass(new Map(), NaN);
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the control already exists
-        if (!control.index.has(tagName)) {
-            createInputControlItem(control, div, controlInstance, setControlMethod, id, valueString);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            valueString = controlInstance.value.toExponential();
-            removeControlMethod.call(control);
-            // Remove any existing div.
-            remove(id);
-            //document.getElementById(id)?.remove();
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
-    });
 }
 
 /**
@@ -3760,48 +3527,201 @@ function createInputControlItem(control: Control, div: HTMLDivElement, obj: any,
 }
 
 /**
+ * 
+ * @param control The control.
+ * @param controlDiv The control div.
+ * @param index The index.
+ * @param onOffControls The on/off controls.
+ * @param xml_control The xml control.
+ * @param ControlClass The control class.
+ * @param setControlMethod The set control method.
+ * @param removeControlMethod The remove control method.
+ */
+function handleControl(control: Control, controlDiv: HTMLDivElement, index: number, onOffControls: Map<string, HTMLButtonElement> | null,
+    xml_control: Element | null, level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string } | null,
+    ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void, handleInput: boolean = false): void {
+    let tagName: string = ControlClass.tagName;
+    let buttonTextContentSelected: string = tagName + selected;
+    let buttonTextContentDeselected: string = tagName + deselected;
+    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
+    if (onOffControls) {
+        onOffControls.set(tagName, button);
+    }
+    let controlInstance: any;
+    let div: HTMLDivElement;
+    let id: string;
+
+    if (level) {
+        div = createFlexDiv(undefined, level);
+        controlDiv.appendChild(div);
+        div.appendChild(button);
+        id = getID(Control.tagName, index.toString(), s_Input);
+    }
+
+    if (xml_control) {
+        let xml: HTMLCollectionOf<Element> = xml_control!.getElementsByTagName(tagName);
+        if (xml.length == 1) {
+            if (handleInput) {
+                let valueString = getNodeValue(getFirstChildNode(xml[0]));
+                let value: number = parseFloat(valueString);
+                controlInstance = new ControlClass(getAttributes(xml[0]), value);
+                createInputControlItem(control, div!, controlInstance, setControlMethod, id!, valueString);
+            } else {
+                setControlMethod.call(control, controlInstance);
+            }
+            button.textContent = buttonTextContentSelected;
+            button.classList.toggle(s_optionOff);
+        } else {
+            button.textContent = buttonTextContentDeselected;
+            button.classList.toggle(s_optionOn);
+        }
+    } else {
+        controlInstance = new ControlClass(new Map());
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle(s_optionOn);
+    }
+
+    button.addEventListener('click', (event: MouseEvent) => {
+        if (!control.index.has(tagName)) {
+            if (handleInput) {
+                createInputControlItem(control, div!, controlInstance, setControlMethod, id!, "");
+            } else {
+                setControlMethod.call(control, controlInstance);
+            }
+            button.textContent = buttonTextContentSelected;
+        } else {
+            if (handleInput) {
+                remove(id!);
+            }
+            removeControlMethod.call(control);
+            button.textContent = buttonTextContentDeselected;
+        }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
+    });
+}
+
+/**
+ * @param control The control.
+ * @param controlDiv The control div.
+ * @param i The index.
+ * @param xml_control The xml control. 
+ * @param level The level.
+ */
+function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: number, xml_control: Element | null,
+    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+    let div: HTMLDivElement = createFlexDiv(undefined, level);
+    controlDiv.appendChild(div);
+    let tagName: string = CalcMethod.tagName;
+    let buttonTextContentSelected: string = tagName + selected;
+    let buttonTextContentDeselected: string = tagName + deselected;
+    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
+    div.appendChild(button);
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
+    // Add the div for the CalcMethod.
+    let divCmId = getID(Control.tagName, CalcMethod.tagName, i.toString());
+    let divCm: HTMLDivElement = createFlexDiv(divCmId, boundary1);
+    div.appendChild(divCm);
+    let options: string[] = CalcMethod.options;
+    let divCmDetailsId = getID(divCmId, "details");
+    let divCmDetailsSelectId = getID(divCmDetailsId, "select");
+    let cm: CalcMethod;
+    let first: boolean = true;
+
+    if (xml_control) {
+        let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
+        if (xml.length > 0) {
+            if (xml.length > 1) {
+                throw new Error("More than one CalcMethod element.");
+            }
+            let attributes: Map<string, string> = getAttributes(xml[0]);
+            let xsi_type: string = attributes.get("xsi:type") as string;
+            cm = getCalcMethod(control, div, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId, divCm);
+            control.setCalcMethod(cm);
+            button.classList.toggle(s_optionOff);
+            button.textContent = buttonTextContentSelected;
+        } else {
+            button.classList.toggle(s_optionOn);
+            button.textContent = buttonTextContentDeselected;
+        }
+    } else {
+        button.classList.toggle(s_optionOn);
+        button.textContent = buttonTextContentDeselected;
+    }
+
+    // Add event listener for the button.
+    button.addEventListener('click', (event: MouseEvent) => {
+        // Check if the CalcMethod already exists
+        if (!control.index.has(tagName)) {
+            if (first) {
+                options.push(selectOption);
+            }
+            // Remove any existing select.
+            remove(divCmDetailsSelectId);
+            remove(divCmDetailsId);
+            // Create the select element.
+            let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, selectOption, divCmDetailsId, divCmDetailsSelectId);
+            divCm.appendChild(select);
+            button.textContent = buttonTextContentSelected;
+        } else {
+            control.removeCalcMethod();
+            // Remove any existing div.
+            remove(divCmDetailsSelectId);
+            remove(divCmDetailsId);
+            button.textContent = buttonTextContentDeselected;
+        }
+        console.log("button.classList " + button.classList);
+        console.log("button.className " + button.className);
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
+    });
+}
+
+/**
  * Process "me:testMicroRates".
  * @param control The control.
  * @param controlDiv The control div.
  * @param xml_control The xml control.
  * @param level The level.
  */
-function processTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml_control: Element,
-    level: {
-        marginLeft: string;
-        marginTop: string;
-        marginBottom: string;
-    }): void {
+function handleTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml_control: Element | null,
+    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
     let div: HTMLDivElement = createFlexDiv(undefined, level);
     controlDiv.appendChild(div);
     let tagName: string = TestMicroRates.tagName;
-    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
     let buttonTextContentSelected: string = tagName + selected;
     let buttonTextContentDeselected: string = tagName + deselected;
     let button = createButton(tagName, undefined, boundary1);
     button.id = Control.tagName + "_" + tagName;
     div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
     let idTmax = Control.tagName + "_" + tagName + "_Tmax";
     let idTmin = Control.tagName + "_" + tagName + "_Tmin";
     let idTstep = Control.tagName + "_" + tagName + "_Tstep";
-    if (xml.length == 1) {
-        button.textContent = buttonTextContentSelected;
-        createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
-        button.classList.toggle('optionOff');
+    if (xml_control) {
+        let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
+        if (xml.length == 1) {
+            createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
+            button.classList.toggle(s_optionOff);
+            button.textContent = buttonTextContentSelected;
+        } else {
+            button.classList.toggle(s_optionOn);
+            button.textContent = buttonTextContentDeselected;
+        }
     } else {
+        button.classList.toggle(s_optionOn);
         button.textContent = buttonTextContentDeselected;
-        button.classList.toggle('optionOn');
     }
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
         // Check if the TestMicroRates already exists
         if (!control.index.has(tagName)) {
-            createTestMicroRates(control, div, xml, idTmax, idTmin, idTstep);
+            createTestMicroRates(control, div, null, idTmax, idTmin, idTstep);
             button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
         } else {
             control.removeTestMicroRates();
             // Remove any existing Tmax.
@@ -3811,9 +3731,9 @@ function processTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml
             // Remove any existing Tstep.
             document.getElementById(idTstep)?.remove();
             button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
         }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
     });
 }
 
@@ -3825,11 +3745,14 @@ function processTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml
  * @param idTmin The Tmin id.
  * @param idTstep The Tstep id.
  */
-function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HTMLCollectionOf<Element>,
+function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HTMLCollectionOf<Element> | null,
     idTmax: string, idTmin: string, idTstep: string): void {
     let attributes: Map<string, string>;
     let tmr: TestMicroRates;
-    if (xml_tmr.length == 1) {
+    if (xml_tmr != null && xml_tmr.length > 0) {
+        if (xml_tmr.length > 1) {
+            throw new Error("More than one TestMicroRates element.");
+        }
         attributes = getAttributes(xml_tmr[0]);
         tmr = new TestMicroRates(attributes);
     } else {
@@ -3897,355 +3820,151 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
 }
 
 /**
- * Process "me:calcMethod".
+ * Get the CalcMethod from the XML.
  * @param control The control.
- * @param controlDiv The controls div.
- * @param i The index of the control.
- * @param xml_control The xml control.
- * @param level The level.
+ * @param div div.
+ * @param xml The xml.
+ * @param options The options.
+ * @param attributes The attributes.
+ * @param tagName The tag name.
+ * @param xsi_type The xsi:type.
+ * @param divCmDetailsId The div cm details id.
+ * @param divCmDetailsSelectId The div cm details select id.
+ * @param divCm The div cm.
+ * @returns The CalcMethod.
  */
-function processCalcMethod(control: Control, controlDiv: HTMLDivElement, i: number, xml_control: Element,
-    level: {
-        marginLeft: string;
-        marginTop: string;
-        marginBottom: string;
-    }): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, level);
-    controlDiv.appendChild(div);
-    let tagName: string = CalcMethod.tagName;
-    let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
-    let buttonTextContentSelected: string = tagName + selected;
-    let buttonTextContentDeselected: string = tagName + deselected;
-    let button = createButton(buttonTextContentDeselected, undefined, boundary1);
-    div.appendChild(button);
-    button.classList.add('optionOn');
-    button.classList.add('optionOff');
-    // Add the div for the CalcMethod.
-    let divCmId = addID(Control.tagName, CalcMethod.tagName, i.toString());
-    let divCm: HTMLDivElement = createFlexDiv(divCmId, boundary1);
-    div.appendChild(divCm);
-    let options: string[] = CalcMethod.options;
-    let divCmDetailsId = addID(divCmId, "details");
-    let divCmDetailsSelectId = addID(divCmDetailsId, "select");
+function getCalcMethod(control: Control, div: HTMLDivElement, xml: HTMLCollectionOf<Element>, options: string[],
+    attributes: Map<string, string>, tagName: string, xsi_type: string,
+    divCmDetailsId: string, divCmDetailsSelectId: string, divCm: HTMLDivElement): CalcMethod {
     let cm: CalcMethod;
-    if (xml.length > 0) {
-        if (xml.length > 1) {
-            throw new Error("More than one CalcMethod element.");
+    // Create the select element.
+    let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, xsi_type, divCmDetailsId,
+        divCmDetailsSelectId);
+    // Set the select element to the correct value.
+    select.value = xsi_type;
+    divCm.appendChild(select);
+    // Add the details div.
+    let divCmDetails: HTMLDivElement = createFlexDiv(undefined, boundary1);
+    divCmDetails.id = divCmDetailsId;
+    divCm.appendChild(divCmDetails);
+    if (xsi_type == CalcMethodSimpleCalc.xsi_type || xsi_type == CalcMethodSimpleCalc.xsi_type2) {
+        cm = new CalcMethodSimpleCalc(attributes);
+    } else if (xsi_type == CalcMethodGridSearch.xsi_type || xsi_type == CalcMethodGridSearch.xsi_type2) {
+        cm = new CalcMethodGridSearch(attributes);
+    } else if (xsi_type == CalcMethodFitting.xsi_type || xsi_type == CalcMethodFitting.xsi_type2) {
+        let cmf: CalcMethodFitting = new CalcMethodFitting(attributes);
+        cm = cmf;
+        // FittingIterations.
+        let fi_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(FittingIterations.tagName);
+        if (fi_xml.length > 0) {
+            if (fi_xml.length == 1) {
+                let value: number = parseFloat(getNodeValue(getFirstChildNode(fi_xml[0])));
+                let fittingIterations: FittingIterations = new FittingIterations(getAttributes(fi_xml[0]), value);
+                cmf.setFittingIterations(fittingIterations);
+            } else {
+                throw new Error("More than one FittingIterations element.");
+            }
         }
-        button.classList.toggle('optionOff');
-        button.textContent = buttonTextContentSelected;
-        let attributes: Map<string, string> = getAttributes(xml[0]);
-        let xsi_type: string = attributes.get("xsi:type") as string;
-        // Create the select element.
-        let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
-        // Set the select element to the correct value.
-        select.value = xsi_type;
-        divCm.appendChild(select);
-        // Add the details div.
-        let divCmDetails: HTMLDivElement = createFlexDiv(undefined, boundary1);
-        divCmDetails.id = divCmDetailsId;
-        divCm.appendChild(divCmDetails);
-        if (xsi_type == CalcMethodSimpleCalc.xsi_type || xsi_type == CalcMethodSimpleCalc.xsi_type2) {
-            cm = new CalcMethodSimpleCalc(attributes);
-        } else if (xsi_type == CalcMethodGridSearch.xsi_type || xsi_type == CalcMethodGridSearch.xsi_type2) {
-            cm = new CalcMethodGridSearch(attributes);
-        } else if (xsi_type == CalcMethodFitting.xsi_type || xsi_type == CalcMethodFitting.xsi_type2) {
-            let cmf: CalcMethodFitting = new CalcMethodFitting(attributes);
-            cm = cmf;
-            // FittingIterations.
-            let fi_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(FittingIterations.tagName);
-            if (fi_xml.length > 0) {
-                if (fi_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(fi_xml[0])));
-                    let fittingIterations: FittingIterations = new FittingIterations(getAttributes(fi_xml[0]), value);
-                    cmf.setFittingIterations(fittingIterations);
+        processCalcMethodFitting(divCmDetails, cmf);
+    } else if (xsi_type == CalcMethodMarquardt.xsi_type || xsi_type == CalcMethodMarquardt.xsi_type2) {
+        let cmm: CalcMethodMarquardt = new CalcMethodMarquardt(attributes);
+        cm = cmm;
+        function processElement(xml: HTMLCollectionOf<Element>, ClassConstructor: any, setterMethod: (value: any) => void) {
+            let tagName: string = MarquardtIterations.tagName;
+            let elementXml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(tagName);
+            if (elementXml.length > 0) {
+                if (elementXml.length == 1) {
+                    let value: number = parseFloat(getNodeValue(getFirstChildNode(elementXml[0])));
+                    let instance = new ClassConstructor(getAttributes(elementXml[0]), value);
+                    setterMethod(instance);
                 } else {
-                    throw new Error("More than one FittingIterations element.");
+                    throw new Error(`More than one ${tagName} element.`);
                 }
             }
-            processCalcMethodFitting(divCmDetails, cmf);
-        } else if (xsi_type == CalcMethodMarquardt.xsi_type || xsi_type == CalcMethodMarquardt.xsi_type2) {
-            let cmm: CalcMethodMarquardt = new CalcMethodMarquardt(attributes);
-            cm = cmm;
-            // MarquardtIterations.
-            let mi_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(MarquardtIterations.tagName);
-            if (mi_xml.length > 0) {
-                if (mi_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(mi_xml[0])));
-                    let marquardtIterations: MarquardtIterations = new MarquardtIterations(getAttributes(mi_xml[0]), value);
-                    cmm.setMarquardtIterations(marquardtIterations);
-                } else {
-                    throw new Error("More than one MarquardtIterations element.");
-                }
-            }
-            // MarquardtTolerance.
-            let mt_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(MarquardtTolerance.tagName);
-            if (mt_xml.length > 0) {
-                if (mt_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(mt_xml[0])));
-                    let marquardtTolerance: MarquardtTolerance = new MarquardtTolerance(getAttributes(mt_xml[0]), value);
-                    cmm.setMarquardtTolerance(marquardtTolerance);
-                } else {
-                    throw new Error("More than one MarquardtTolerance element.");
-                }
-            }
-            // MarquardtDerivDelta.
-            let mdd_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(MarquardtDerivDelta.tagName);
-            if (mdd_xml.length > 0) {
-                if (mdd_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(mdd_xml[0])));
-                    let marquardtDerivDelta: MarquardtDerivDelta = new MarquardtDerivDelta(getAttributes(mdd_xml[0]), value);
-                    cmm.setMarquardtDerivDelta(marquardtDerivDelta);
-                } else {
-                    throw new Error("More than one MarquardtDerivDelta element.");
-                }
-            }
-            processCalcMethodMarquardt(divCmDetails, cmm);
-        } else if (xsi_type == CalcMethodAnalyticalRepresentation.xsi_type || xsi_type == CalcMethodAnalyticalRepresentation.xsi_type2) {
-            let cmar: CalcMethodAnalyticalRepresentation = new CalcMethodAnalyticalRepresentation(attributes);
-            cm = cmar;
-            // Format.
-            let format_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Format.tagName);
-            if (format_xml.length > 0) {
-                if (format_xml.length == 1) {
-                    let value: string = getNodeValue(getFirstChildNode(format_xml[0]));
-                    let format: Format = new Format(getAttributes(format_xml[0]), value);
-                    cmar.setFormat(format);
-                } else {
-                    throw new Error("More than one Format element.");
-                }
-            }
-            // Precision.
-            let precision_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Precision.tagName);
-            if (precision_xml.length > 0) {
-                if (precision_xml.length == 1) {
-                    let value: string = getNodeValue(getFirstChildNode(precision_xml[0]));
-                    let precision: Precision = new Precision(getAttributes(precision_xml[0]), value);
-                    cmar.setPrecision(precision);
-                } else {
-                    throw new Error("More than one Precision element.");
-                }
-            }
-            // ChebNumTemp.
-            let chebNumTemp_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebNumTemp.tagName);
-            if (chebNumTemp_xml.length > 0) {
-                if (chebNumTemp_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebNumTemp_xml[0])));
-                    let chebNumTemp: ChebNumTemp = new ChebNumTemp(getAttributes(chebNumTemp_xml[0]), value);
-                    cmar.setChebNumTemp(chebNumTemp);
-                } else {
-                    throw new Error("More than one ChebNumTemp element.");
-                }
-            }
-            // ChebNumConc.
-            let chebNumConc_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebNumConc.tagName);
-            if (chebNumConc_xml.length > 0) {
-                if (chebNumConc_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebNumConc_xml[0])));
-                    let chebNumConc: ChebNumConc = new ChebNumConc(getAttributes(chebNumConc_xml[0]), value);
-                    cmar.setChebNumConc(chebNumConc);
-                } else {
-                    throw new Error("More than one ChebNumConc element.");
-                }
-            }
-            // ChebMaxTemp.
-            let chebMaxTemp_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebMaxTemp.tagName);
-            if (chebMaxTemp_xml.length > 0) {
-                if (chebMaxTemp_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebMaxTemp_xml[0])));
-                    let chebMaxTemp: ChebMaxTemp = new ChebMaxTemp(getAttributes(chebMaxTemp_xml[0]), value);
-                    cmar.setChebMaxTemp(chebMaxTemp);
-                } else {
-                    throw new Error("More than one ChebMaxTemp element.");
-                }
-            }
-            // ChebMinTemp.
-            let chebMinTemp_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebMinTemp.tagName);
-            if (chebMinTemp_xml.length > 0) {
-                if (chebMinTemp_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebMinTemp_xml[0])));
-                    let chebMinTemp: ChebMinTemp = new ChebMinTemp(getAttributes(chebMinTemp_xml[0]), value);
-                    cmar.setChebMinTemp(chebMinTemp);
-                } else {
-                    throw new Error("More than one ChebMinTemp element.");
-                }
-            }
-            // ChebMaxConc.
-            let chebMaxConc_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebMaxConc.tagName);
-            if (chebMaxConc_xml.length > 0) {
-                if (chebMaxConc_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebMaxConc_xml[0])));
-                    let chebMaxConc: ChebMaxConc = new ChebMaxConc(getAttributes(chebMaxConc_xml[0]), value);
-                    cmar.setChebMaxConc(chebMaxConc);
-                } else {
-                    throw new Error("More than one ChebMaxConc element.");
-                }
-            }
-            // ChebMinConc.
-            let chebMinConc_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebMinConc.tagName);
-            if (chebMinConc_xml.length > 0) {
-                if (chebMinConc_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebMinConc_xml[0])));
-                    let chebMinConc: ChebMinConc = new ChebMinConc(getAttributes(chebMinConc_xml[0]), value);
-                    cmar.setChebMinConc(chebMinConc);
-                } else {
-                    throw new Error("More than one ChebMinConc element.");
-                }
-            }
-            // ChebTExSize.
-            let chebTExSize_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebTExSize.tagName);
-            if (chebTExSize_xml.length > 0) {
-                if (chebTExSize_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebTExSize_xml[0])));
-                    let chebTExSize: ChebTExSize = new ChebTExSize(getAttributes(chebTExSize_xml[0]), value);
-                    cmar.setChebTExSize(chebTExSize);
-                } else {
-                    throw new Error("More than one ChebTExSize element.");
-                }
-            }
-            // ChebPExSize.
-            let chebPExSize_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(ChebPExSize.tagName);
-            if (chebPExSize_xml.length > 0) {
-                if (chebPExSize_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(chebPExSize_xml[0])));
-                    let chebPExSize: ChebPExSize = new ChebPExSize(getAttributes(chebPExSize_xml[0]), value);
-                    cmar.setChebPExSize(chebPExSize);
-                } else {
-                    throw new Error("More than one ChebPExSize element.");
-                }
-            }
-            processCalcMethodAnalyticalRepresentation(divCmDetails, cmar);
-        } else if (xsi_type == CalcMethodThermodynamicTable.xsi_type || xsi_type == CalcMethodThermodynamicTable.xsi_type2) {
-            let cmtt: CalcMethodThermodynamicTable = new CalcMethodThermodynamicTable(attributes);
-            cm = cmtt;
-            // Tmin.
-            let tmin_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Tmin.tagName);
-            if (tmin_xml.length > 0) {
-                if (tmin_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(tmin_xml[0])));
-                    let tmin: Tmin = new Tmin(getAttributes(tmin_xml[0]), value);
-                    cmtt.setTmin(tmin);
-                } else {
-                    throw new Error("More than one Tmin element.");
-                }
-            }
-            // Tmid.
-            let tmid_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Tmid.tagName);
-            if (tmid_xml.length > 0) {
-                if (tmid_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(tmid_xml[0])));
-                    let tmid: Tmid = new Tmid(getAttributes(tmid_xml[0]), value);
-                    cmtt.setTmid(tmid);
-                } else {
-                    throw new Error("More than one Tmid element.");
-                }
-            }
-            // Tmax.
-            let tmax_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Tmax.tagName);
-            if (tmax_xml.length > 0) {
-                if (tmax_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(tmax_xml[0])));
-                    let tmax: Tmax = new Tmax(getAttributes(tmax_xml[0]), value);
-                    cmtt.setTmax(tmax);
-                } else {
-                    throw new Error("More than one Tmax element.");
-                }
-            }
-            // Tstep.
-            let tstep_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(Tstep.tagName);
-            if (tstep_xml.length > 0) {
-                if (tstep_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(tstep_xml[0])));
-                    let tstep: Tstep = new Tstep(getAttributes(tstep_xml[0]), value);
-                    cmtt.setTstep(tstep);
-                } else {
-                    throw new Error("More than one Tstep element.");
-                }
-            }
-            processCalcMethodThermodynamicTable(divCmDetails, cmtt);
-        } else if (xsi_type == CalcMethodSensitivityAnalysis.xsi_type || xsi_type == CalcMethodSensitivityAnalysis.xsi_type2) {
-            let cmsa: CalcMethodSensitivityAnalysis = new CalcMethodSensitivityAnalysis(attributes);
-            cm = cmsa;
-            // SensitivityAnalysisSamples.
-            let sas_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(SensitivityAnalysisSamples.tagName);
-            if (sas_xml.length > 0) {
-                if (sas_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(sas_xml[0])));
-                    let sensitivityAnalysisSamples: SensitivityAnalysisSamples = new SensitivityAnalysisSamples(getAttributes(sas_xml[0]), value);
-                    cmsa.setSensitivityAnalysisSamples(sensitivityAnalysisSamples);
-                } else {
-                    throw new Error("More than one SensitivityAnalysisSamples element.");
-                }
-            }
-            // SensitivityAnalysisOrder.
-            let sao_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(SensitivityAnalysisOrder.tagName);
-            if (sao_xml.length > 0) {
-                if (sao_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(sao_xml[0])));
-                    let sensitivityAnalysisOrder: SensitivityAnalysisOrder = new SensitivityAnalysisOrder(getAttributes(sao_xml[0]), value);
-                    cmsa.setSensitivityAnalysisOrder(sensitivityAnalysisOrder);
-                } else {
-                    throw new Error("More than one SensitivityAnalysisOrder element.");
-                }
-            }
-            // SensitivityNumVarRedIters.
-            let snvri_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(SensitivityNumVarRedIters.tagName);
-            if (snvri_xml.length > 0) {
-                if (snvri_xml.length == 1) {
-                    let value: number = parseFloat(getNodeValue(getFirstChildNode(snvri_xml[0])));
-                    let sensitivityNumVarRedIters: SensitivityNumVarRedIters = new SensitivityNumVarRedIters(getAttributes(snvri_xml[0]), value);
-                    cmsa.setSensitivityNumVarRedIters(sensitivityNumVarRedIters);
-                } else {
-                    throw new Error("More than one SensitivityNumVarRedIters element.");
-                }
-            }
-            // SensitivityVarRedMethod.
-            let svrm_xml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(SensitivityVarRedMethod.tagName);
-            if (svrm_xml.length > 0) {
-                if (svrm_xml.length == 1) {
-                    let value: string = getNodeValue(getFirstChildNode(svrm_xml[0]));
-                    let sensitivityVarRedMethod: SensitivityVarRedMethod = new SensitivityVarRedMethod(getAttributes(svrm_xml[0]), value);
-                    cmsa.setSensitivityVarRedMethod(sensitivityVarRedMethod);
-                }
-            }
-            processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
-        } else {
-            throw new Error("Unknown xsi:type: " + xsi_type);
         }
-        control.setCalcMethod(cm);
-        // The select element should have 
-
+        processElement(xml, MarquardtIterations, cmm.setMarquardtIterations.bind(cmm));
+        processElement(xml, MarquardtTolerance, cmm.setMarquardtTolerance.bind(cmm));
+        processElement(xml, MarquardtDerivDelta, cmm.setMarquardtDerivDelta.bind(cmm));
+        processCalcMethodMarquardt(divCmDetails, cmm);
+    } else if (xsi_type == CalcMethodAnalyticalRepresentation.xsi_type || xsi_type == CalcMethodAnalyticalRepresentation.xsi_type2) {
+        let cmar: CalcMethodAnalyticalRepresentation = new CalcMethodAnalyticalRepresentation(attributes);
+        cm = cmar;
+        function processElement(xml: HTMLCollectionOf<Element>, ClassConstructor: any, setterMethod: (value: any) => void) {
+            let tagName: string = ClassConstructor.tagName;
+            let elementXml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(tagName);
+            if (elementXml.length > 0) {
+                if (elementXml.length == 1) {
+                    let value: any = getNodeValue(getFirstChildNode(elementXml[0]));
+                    if (!isNaN(parseFloat(value))) {
+                        value = parseFloat(value);
+                    }
+                    let instance = new ClassConstructor(getAttributes(elementXml[0]), value);
+                    setterMethod(instance);
+                } else {
+                    throw new Error(`More than one ${tagName} element.`);
+                }
+            }
+        }
+        processElement(xml, Format, cmar.setFormat.bind(cmar));
+        processElement(xml, Precision, cmar.setPrecision.bind(cmar));
+        processElement(xml, ChebNumTemp, cmar.setChebNumTemp.bind(cmar));
+        processElement(xml, ChebNumConc, cmar.setChebNumConc.bind(cmar));
+        processElement(xml, ChebMaxTemp, cmar.setChebMaxTemp.bind(cmar));
+        processElement(xml, ChebMinTemp, cmar.setChebMinTemp.bind(cmar));
+        processElement(xml, ChebMaxConc, cmar.setChebMaxConc.bind(cmar));
+        processElement(xml, ChebMinConc, cmar.setChebMinConc.bind(cmar));
+        processElement(xml, ChebTExSize, cmar.setChebTExSize.bind(cmar));
+        processElement(xml, ChebPExSize, cmar.setChebPExSize.bind(cmar));
+        processCalcMethodAnalyticalRepresentation(divCmDetails, cmar);
+    } else if (xsi_type == CalcMethodThermodynamicTable.xsi_type || xsi_type == CalcMethodThermodynamicTable.xsi_type2) {
+        let cmtt: CalcMethodThermodynamicTable = new CalcMethodThermodynamicTable(attributes);
+        cm = cmtt;
+        function processElement(xml: HTMLCollectionOf<Element>, ClassConstructor: any, setterMethod: (value: any) => void) {
+            let tagName: string = ClassConstructor.tagName;
+            let elementXml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(tagName);
+            if (elementXml.length > 0) {
+                if (elementXml.length == 1) {
+                    let value: number = parseFloat(getNodeValue(getFirstChildNode(elementXml[0])));
+                    let instance = new ClassConstructor(getAttributes(elementXml[0]), value);
+                    setterMethod(instance);
+                } else {
+                    throw new Error(`More than one ${tagName} element.`);
+                }
+            }
+        }
+        processElement(xml, Tmin, cmtt.setTmin.bind(cmtt));
+        processElement(xml, Tmid, cmtt.setTmid.bind(cmtt));
+        processElement(xml, Tmax, cmtt.setTmax.bind(cmtt));
+        processElement(xml, Tstep, cmtt.setTstep.bind(cmtt));
+        processCalcMethodThermodynamicTable(divCmDetails, cmtt);
+    } else if (xsi_type == CalcMethodSensitivityAnalysis.xsi_type || xsi_type == CalcMethodSensitivityAnalysis.xsi_type2) {
+        let cmsa: CalcMethodSensitivityAnalysis = new CalcMethodSensitivityAnalysis(attributes);
+        cm = cmsa;
+        function processElement(xml: HTMLCollectionOf<Element>, ClassConstructor: any, setterMethod: (value: any) => void) {
+            let tagName: string = ClassConstructor.tagName;
+            let elementXml: HTMLCollectionOf<Element> = xml[0].getElementsByTagName(tagName);
+            if (elementXml.length > 0) {
+                if (elementXml.length == 1) {
+                    let value: any = getNodeValue(getFirstChildNode(elementXml[0]));
+                    if (!isNaN(parseFloat(value))) {
+                        value = parseFloat(value);
+                    }
+                    let instance = new ClassConstructor(getAttributes(elementXml[0]), value);
+                    setterMethod(instance);
+                } else {
+                    throw new Error(`More than one ${tagName} element.`);
+                }
+            }
+        }
+        processElement(xml, SensitivityAnalysisSamples, cmsa.setSensitivityAnalysisSamples.bind(cmsa));
+        processElement(xml, SensitivityAnalysisOrder, cmsa.setSensitivityAnalysisOrder.bind(cmsa));
+        processElement(xml, SensitivityNumVarRedIters, cmsa.setSensitivityNumVarRedIters.bind(cmsa));
+        processElement(xml, SensitivityVarRedMethod, cmsa.setSensitivityVarRedMethod.bind(cmsa));
+        processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
     } else {
-        button.classList.toggle('optionOn');
-        button.textContent = buttonTextContentDeselected;
+        throw new Error("Unknown xsi:type: " + xsi_type);
     }
-    let first: boolean = true;
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        // Check if the CalcMethod already exists
-        if (!control.index.has(tagName)) {
-            if (first) {
-                options.push(selectAnotherOption);
-            }
-            // Remove any existing select.
-            remove(divCmDetailsSelectId);
-            remove(divCmDetailsId);
-            // Create the select element.
-            let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, selectAnotherOption, divCmDetailsId, divCmDetailsSelectId);
-            divCm.appendChild(select);
-            button.textContent = buttonTextContentSelected;
-            button.classList.toggle('optionOff');
-            button.classList.toggle('optionOn');
-        } else {
-            control.removeCalcMethod();
-            // Remove any existing div.
-            remove(divCmDetailsSelectId);
-            remove(divCmDetailsId);
-            button.textContent = buttonTextContentDeselected;
-            button.classList.toggle('optionOn')
-            button.classList.toggle('optionOff');
-        }
-    });
+    return cm;
 }
 
 /**
@@ -4276,6 +3995,26 @@ function processCalcMethodFitting(divCmDetails: HTMLDivElement, cm: CalcMethodFi
  * @param cm The CalcMethodMarquardt.
  */
 function processCalcMethodMarquardt(divCmDetails: HTMLDivElement, cm: CalcMethodMarquardt) {
+    function createLabelWithInputForObject(obj: { value: number, tagName: string }, divCmDetails: HTMLElement,
+        boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+        level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+        let id = getID(divCmDetails.id, obj.tagName, "Input");
+        let value = obj.value.toString();
+        let labelTextContent = obj.tagName;
+        let inputHandler = (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the value is a number.
+            if (isNumeric(target.value)) {
+                obj.value = parseFloat(target.value);
+                console.log("Set " + obj.tagName + " to " + target.value);
+            } else {
+                alert("Value is not numeric, resetting...");
+                target.value = obj.value.toString();
+            }
+            resizeInputElement(target);
+        };
+        divCmDetails.appendChild(createLabelWithInput("number", id, boundary, level, inputHandler, value, labelTextContent));
+    }
     // MarquardtIterations.
     let marquardtIterations: MarquardtIterations = cm.getMarquardtIterations() || new MarquardtIterations(new Map(), NaN);
     cm.setMarquardtIterations(marquardtIterations);
@@ -4291,74 +4030,29 @@ function processCalcMethodMarquardt(divCmDetails: HTMLDivElement, cm: CalcMethod
 }
 
 /**
- * @param obj The object.
- * @param divCmDetails The details div.
- * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
- * @param level The level to go around the HTMLLabelElement and HTMLInputElement.
- */
-function createLabelWithInputForObject(obj: { value: number, tagName: string }, divCmDetails: HTMLElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let id = addID(divCmDetails.id, obj.tagName, "Input");
-    let value = obj.value.toString();
-    let labelTextContent = obj.tagName;
-    let inputHandler = (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        // Check the value is a number.
-        if (isNumeric(target.value)) {
-            obj.value = parseFloat(target.value);
-            console.log("Set " + obj.tagName + " to " + target.value);
-        } else {
-            alert("Value is not numeric, resetting...");
-            target.value = obj.value.toString();
-        }
-        resizeInputElement(target);
-    };
-    divCmDetails.appendChild(createLabelWithInput("number", id, boundary, level, inputHandler, value, labelTextContent));
-}
-
-/**
  * @param divCmDetails The details div.
  * @param cm The CalcMethodAnalyticalRepresentation.
  */
 function processCalcMethodAnalyticalRepresentation(divCmDetails: HTMLDivElement, cm: CalcMethodAnalyticalRepresentation) {
     // "me:format".
     let format: Format = cm.getFormat() || new Format(new Map(), Format.options[0]);
-    // Format value.
-    cm.setFormat(format);
-    let lwsFormat: HTMLDivElement = createLabelWithSelect(Format.tagName, Format.options, Format.tagName, format.value,
-        divCmDetails.id, boundary1, boundary1);
-    lwsFormat.querySelector('select')?.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLSelectElement;
-        format.value = target.value;
-        console.log("Set Format to " + target.value);
-        resizeSelectElement(target);
-    });
-    divCmDetails.appendChild(lwsFormat);
-    // Format rateUnits.
-    let value = Format.rateUnitsOptions[0];
-    format.setRateUnits(value);
-    let lwsFormatRateUnits: HTMLDivElement = createLabelWithSelect(Format.rateUnits, Format.rateUnitsOptions, Format.rateUnits,
-        value, divCmDetails.id, boundary1, boundary1);
-    lwsFormatRateUnits.querySelector('select')?.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLSelectElement;
-        format.setRateUnits(target.value);
-        console.log("Set Format rateUnits to " + target.value);
-        resizeSelectElement(target);
-    });
-    divCmDetails.appendChild(lwsFormatRateUnits);
-    // "me:precision".
-    let precision: Precision = cm.getPrecision() || new Precision(new Map(), Mesmer.precisionOptions[0]);
-    cm.setPrecision(precision);
-    let lwsPrecision: HTMLDivElement = createLabelWithSelect(Precision.tagName, Mesmer.precisionOptions, Precision.tagName, precision.value,
-        divCmDetails.id, boundary1, boundary1);
-    lwsPrecision.querySelector('select')?.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLSelectElement;
-        precision.value = target.value;
-        console.log("Set Precision to " + target.value);
-        resizeSelectElement(target);
-    });
-    divCmDetails.appendChild(lwsPrecision);
+    // value, rateUnits, "me:precision"
+    function processSelectElement(ClassConstructor: any, getter: () => any, setter: (value: any) => void, tagName: string, options: string[]) {
+        let element: any = getter() || new ClassConstructor(new Map(), options[0]);
+        setter(element);
+        let lwsElement: HTMLDivElement = createLabelWithSelect(tagName, options, tagName, element.value,
+            divCmDetails.id, boundary1, boundary1);
+        lwsElement.querySelector('select')?.addEventListener('change', (event: Event) => {
+            let target = event.target as HTMLSelectElement;
+            element.value = target.value;
+            console.log(`Set ${tagName} to ` + target.value);
+            resizeSelectElement(target);
+        });
+        divCmDetails.appendChild(lwsElement);
+    }
+    processSelectElement(Format, cm.getFormat.bind(cm), cm.setFormat.bind(cm), Format.tagName, Format.options);
+    processSelectElement(Format, () => format.getRateUnits(), format.setRateUnits.bind(format), Format.rateUnits, Format.rateUnitsOptions);
+    processSelectElement(Precision, cm.getPrecision.bind(cm), cm.setPrecision.bind(cm), Precision.tagName, Mesmer.precisionOptions);
     // "me:chebNumTemp".
     let chebNumTemp: ChebNumTemp = cm.getChebNumTemp() || new ChebNumTemp(new Map(), NaN);
     cm.setChebNumTemp(chebNumTemp);
@@ -4375,118 +4069,32 @@ function processCalcMethodAnalyticalRepresentation(divCmDetails: HTMLDivElement,
             }
             resizeInputElement(target);
         }, chebNumTemp.value.toString(), ChebNumTemp.tagName));
-    // "me:chebNumConc".
-    let chebNumConc: ChebNumConc = cm.getChebNumConc() || new ChebNumConc(new Map(), NaN);
-    cm.setChebNumConc(chebNumConc);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebNumConc_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebNumConc.value = parseFloat(target.value);
-                console.log("Set ChebNumConc to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebNumConc.value.toString(), ChebNumConc.tagName));
-    // "me:chebMaxTemp".
-    let chebMaxTemp: ChebMaxTemp = cm.getChebMaxTemp() || new ChebMaxTemp(new Map(), NaN);
-    cm.setChebMaxTemp(chebMaxTemp);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebMaxTemp_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebMaxTemp.value = parseFloat(target.value);
-                console.log("Set ChebMaxTemp to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebMaxTemp.value.toString(), ChebMaxTemp.tagName));
-    // "me:chebMinTemp".
-    let chebMinTemp: ChebMinTemp = cm.getChebMinTemp() || new ChebMinTemp(new Map(), NaN);
-    cm.setChebMinTemp(chebMinTemp);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebMinTemp_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebMinTemp.value = parseFloat(target.value);
-                console.log("Set ChebMinTemp to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebMinTemp.value.toString(), ChebMinTemp.tagName));
-    // "me:chebMaxConc".
-    let chebMaxConc: ChebMaxConc = cm.getChebMaxConc() || new ChebMaxConc(new Map(), NaN);
-    cm.setChebMaxConc(chebMaxConc);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebMaxConc_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebMaxConc.value = parseFloat(target.value);
-                console.log("Set ChebMaxConc to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebMaxConc.value.toString(), ChebMaxConc.tagName));
-    // "me:chebMinConc".
-    let chebMinConc: ChebMinConc = cm.getChebMinConc() || new ChebMinConc(new Map(), NaN);
-    cm.setChebMinConc(chebMinConc);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebMinConc_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebMinConc.value = parseFloat(target.value);
-                console.log("Set ChebMinConc to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebMinConc.value.toString(), ChebMinConc.tagName));
-    // "me:chebTExSize".
-    let chebTExSize: ChebTExSize = cm.getChebTExSize() || new ChebTExSize(new Map(), NaN);
-    cm.setChebTExSize(chebTExSize);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebTExSize_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebTExSize.value = parseFloat(target.value);
-                console.log("Set ChebTExSize to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebTExSize.value.toString(), ChebTExSize.tagName));
-    // "me:chebPExSize".
-    let chebPExSize: ChebPExSize = cm.getChebPExSize() || new ChebPExSize(new Map(), NaN);
-    cm.setChebPExSize(chebPExSize);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_ChebPExSize_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                chebPExSize.value = parseFloat(target.value);
-                console.log("Set ChebPExSize to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, chebPExSize.value.toString(), ChebPExSize.tagName));
+    // "me:chebNumConc", "me:chebMaxTemp", "me:chebMaxTemp", "me:chebMinTemp", "me:chebMaxConc", "me:chebMinConc",
+    // "me:chebTExSize", "me:chebPExSize".
+    function processElement(ClassConstructor: any, getter: () => any, setter: (value: any) => void, tagName: string) {
+        let element: any = getter() || new ClassConstructor(new Map(), NaN);
+        setter(element);
+        divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + `_${tagName}_input`, boundary1, level0,
+            (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the value is a number.
+                if (isNumeric(target.value)) {
+                    element.value = parseFloat(target.value);
+                    console.log(`Set ${tagName} to ` + target.value);
+                } else {
+                    alert("Value is not numeric, resetting...");
+                    target.value = NaN.toString();
+                }
+                resizeInputElement(target);
+            }, element.value.toString(), tagName));
+    }
+    processElement(ChebNumConc, cm.getChebNumConc.bind(cm), cm.setChebNumConc.bind(cm), ChebNumConc.tagName);
+    processElement(ChebMaxTemp, cm.getChebMaxTemp.bind(cm), cm.setChebMaxTemp.bind(cm), ChebMaxTemp.tagName);
+    processElement(ChebMinTemp, cm.getChebMinTemp.bind(cm), cm.setChebMinTemp.bind(cm), ChebMinTemp.tagName);
+    processElement(ChebMaxConc, cm.getChebMaxConc.bind(cm), cm.setChebMaxConc.bind(cm), ChebMaxConc.tagName);
+    processElement(ChebMinConc, cm.getChebMinConc.bind(cm), cm.setChebMinConc.bind(cm), ChebMinConc.tagName);
+    processElement(ChebTExSize, cm.getChebTExSize.bind(cm), cm.setChebTExSize.bind(cm), ChebTExSize.tagName);
+    processElement(ChebPExSize, cm.getChebPExSize.bind(cm), cm.setChebPExSize.bind(cm), ChebPExSize.tagName);
 }
 
 /**
@@ -4494,70 +4102,28 @@ function processCalcMethodAnalyticalRepresentation(divCmDetails: HTMLDivElement,
  * @param cm The CalcMethodThermodynamicTable.
  */
 function processCalcMethodThermodynamicTable(divCmDetails: HTMLDivElement, cm: CalcMethodThermodynamicTable) {
-    // "me:Tmin".
-    let tmin: Tmin = cm.getTmin() || new Tmin(new Map(), NaN);
-    cm.setTmin(tmin);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_Tmin_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                tmin.value = parseFloat(target.value);
-                console.log("Set Tmin to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, tmin.value.toString(), Tmin.tagName));
-    // "me:Tmid".
-    let tmid: Tmid = cm.getTmid() || new Tmid(new Map(), NaN);
-    cm.setTmid(tmid);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_Tmid_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                tmid.value = parseFloat(target.value);
-                console.log("Set Tmid to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, tmid.value.toString(), Tmid.tagName));
-    // "me:Tmax".
-    let tmax: Tmax = cm.getTmax() || new Tmax(new Map(), NaN);
-    cm.setTmax(tmax);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_Tmax_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                tmax.value = parseFloat(target.value);
-                console.log("Set Tmax to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, tmax.value.toString(), Tmax.tagName));
-    // "me:Tstep".
-    let tstep: Tstep = cm.getTstep() || new Tstep(new Map(), NaN);
-    cm.setTstep(tstep);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_Tstep_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                tstep.value = parseFloat(target.value);
-                console.log("Set Tstep to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, tstep.value.toString(), Tstep.tagName));
+    // "me:Tmin", "me:Tmid", "me:Tmax, "me:Tstep".
+    function processElement(ClassConstructor: any, getter: () => any, setter: (value: any) => void, tagName: string) {
+        let element: any = getter() || new ClassConstructor(new Map(), NaN);
+        setter(element);
+        divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + `_${tagName}_input`, boundary1, level0,
+            (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the value is a number.
+                if (isNumeric(target.value)) {
+                    element.value = parseFloat(target.value);
+                    console.log(`Set ${tagName} to ` + target.value);
+                } else {
+                    alert("Value is not numeric, resetting...");
+                    target.value = NaN.toString();
+                }
+                resizeInputElement(target);
+            }, element.value.toString(), tagName));
+    }
+    processElement(Tmin, cm.getTmin.bind(cm), cm.setTmin.bind(cm), Tmin.tagName);
+    processElement(Tmid, cm.getTmid.bind(cm), cm.setTmid.bind(cm), Tmid.tagName);
+    processElement(Tmax, cm.getTmax.bind(cm), cm.setTmax.bind(cm), Tmax.tagName);
+    processElement(Tstep, cm.getTstep.bind(cm), cm.setTstep.bind(cm), Tstep.tagName);
 }
 
 /**
@@ -4565,54 +4131,27 @@ function processCalcMethodThermodynamicTable(divCmDetails: HTMLDivElement, cm: C
  * @param cm The CalcMethodSensitivityAnalysis.
  */
 function processCalcMethodSensitivityAnalysis(divCmDetails: HTMLDivElement, cm: CalcMethodSensitivityAnalysis) {
-    // "me:sensitivityAnalysisSamples".
-    let sensitivityAnalysisSamples: SensitivityAnalysisSamples = cm.getSensitivityAnalysisSamples() || new SensitivityAnalysisSamples(new Map(), NaN);
-    cm.setSensitivityAnalysisSamples(sensitivityAnalysisSamples);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_SensitivityAnalysisSamples_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                sensitivityAnalysisSamples.value = parseFloat(target.value);
-                console.log("Set SensitivityAnalysisSamples to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, sensitivityAnalysisSamples.value.toString(), SensitivityAnalysisSamples.tagName));
-    // "me:sensitivityAnalysisOrder".
-    let sensitivityAnalysisOrder: SensitivityAnalysisOrder = cm.getSensitivityAnalysisOrder() || new SensitivityAnalysisOrder(new Map(), NaN);
-    cm.setSensitivityAnalysisOrder(sensitivityAnalysisOrder);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_SensitivityAnalysisOrder_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                sensitivityAnalysisOrder.value = parseFloat(target.value);
-                console.log("Set SensitivityAnalysisOrder to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, sensitivityAnalysisOrder.value.toString(), SensitivityAnalysisOrder.tagName));
-    // "me:sensitivityNumVarRedIters".
-    let sensitivityNumVarRedIters: SensitivityNumVarRedIters = cm.getSensitivityNumVarRedIters() || new SensitivityNumVarRedIters(new Map(), NaN);
-    cm.setSensitivityNumVarRedIters(sensitivityNumVarRedIters);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_SensitivityNumVarRedIters_input", boundary1, level0,
-        (event: Event) => {
-            let target = event.target as HTMLInputElement;
-            // Check the value is a number.
-            if (isNumeric(target.value)) {
-                sensitivityNumVarRedIters.value = parseFloat(target.value);
-                console.log("Set SensitivityNumVarRedIters to " + target.value);
-            } else {
-                alert("Value is not numeric, resetting...");
-                target.value = NaN.toString();
-            }
-            resizeInputElement(target);
-        }, sensitivityNumVarRedIters.value.toString(), SensitivityNumVarRedIters.tagName));
+    // "me:sensitivityAnalysisSamples", "me:sensitivityAnalysisOrder", "me:sensitivityNumVarRedIters".
+    function processNumberElement(ClassConstructor: any, getter: () => any, setter: (value: any) => void, tagName: string) {
+        let element: any = getter() || new ClassConstructor(new Map(), NaN);
+        setter(element);
+        divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + `_${tagName}_input`, boundary1, level0,
+            (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the value is a number.
+                if (isNumeric(target.value)) {
+                    element.value = parseFloat(target.value);
+                    console.log(`Set ${tagName} to ` + target.value);
+                } else {
+                    alert("Value is not numeric, resetting...");
+                    target.value = NaN.toString();
+                }
+                resizeInputElement(target);
+            }, element.value.toString(), tagName));
+    }
+    processNumberElement(SensitivityAnalysisSamples, cm.getSensitivityAnalysisSamples.bind(cm), cm.setSensitivityAnalysisSamples.bind(cm), SensitivityAnalysisSamples.tagName);
+    processNumberElement(SensitivityAnalysisOrder, cm.getSensitivityAnalysisOrder.bind(cm), cm.setSensitivityAnalysisOrder.bind(cm), SensitivityAnalysisOrder.tagName);
+    processNumberElement(SensitivityNumVarRedIters, cm.getSensitivityNumVarRedIters.bind(cm), cm.setSensitivityNumVarRedIters.bind(cm), SensitivityNumVarRedIters.tagName);
     // "me:sensitivityVarRedMethod".
     let sensitivityVarRedMethod: SensitivityVarRedMethod = cm.getSensitivityVarRedMethod() || new SensitivityVarRedMethod(new Map(), "");
     cm.setSensitivityVarRedMethod(sensitivityVarRedMethod);
@@ -4634,11 +4173,11 @@ function processCalcMethodSensitivityAnalysis(divCmDetails: HTMLDivElement, cm: 
  */
 function selectAnotherOptionEventListener(options: string[], select: HTMLSelectElement) {
     select.addEventListener('click', (event: MouseEvent) => {
-        if (options[options.length - 1] == selectAnotherOption) {
+        if (options[options.length - 1] == selectOption) {
             options.pop();
         }
         let lastIndex: number = select.options.length - 1;
-        if (select.options[lastIndex].value == selectAnotherOption) {
+        if (select.options[lastIndex].value == selectOption) {
             select.remove(lastIndex);
         }
     });

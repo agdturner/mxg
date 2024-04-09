@@ -151,9 +151,9 @@ export class TagWithAttributes extends Tag {
             s += "\n" + padding;
         }
         s += '<' + this.tagName;
-            for (let [k, v] of this.attributes) {
-                s += ' ' + k + '="' + v.toString() + '"';
-            }
+        for (let [k, v] of this.attributes) {
+            s += ' ' + k + '="' + v.toString() + '"';
+        }
         return s + ' />';
     }
 }
@@ -226,7 +226,17 @@ export class NumberNode extends TagWithAttributes {
      * @returns An XML representation.
      */
     override toXML(padding?: string): string {
-        return getTag(this.value.toString().trim(), this.tagName, this.attributes, padding, false);
+        let stringValue = this.value.toString().trim();
+        let c : number;
+        if (this.value < 0) {
+            c = 7;
+        } else {
+            c = 6;
+        }
+        if (stringValue.length > c) {
+            stringValue = this.value.toExponential().trim();
+        }
+        return getTag(stringValue, this.tagName, this.attributes, padding, false);
     }
 }
 
@@ -336,13 +346,20 @@ export class NodeWithNodes extends TagWithAttributes {
         }
         let s: string = "";
         if (this.nodes.size > 0) {
+
+            let i: number = 0;
+
             this.nodes.forEach((v) => {
-                if (v instanceof NodeWithNodes) {
-                    s += (v as NodeWithNodes).toXML(pad, padding1);
-                } else if (v instanceof TagWithAttributes) {
-                    s += (v as TagWithAttributes).toXML(padding1);
+                if (v == undefined) {
+                    console.warn("Node " + i.toString() + " is undefined this.nodes.size = " + this.nodes.size);
                 } else {
-                    s += (v as Tag).toXML(padding1);
+                    if (v instanceof NodeWithNodes) {
+                        s += (v as NodeWithNodes).toXML(pad, padding1);
+                    } else if (v instanceof TagWithAttributes) {
+                        s += (v as TagWithAttributes).toXML(padding1);
+                    } else {
+                        s += (v as Tag).toXML(padding1);
+                    }
                 }
             });
             return getTag(s, this.tagName, this.attributes, padding, true);

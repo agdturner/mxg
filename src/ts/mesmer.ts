@@ -544,6 +544,23 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
+     * @returns The next control id.
+     */
+    getNextConditionsID(): number {
+        let id = 0;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.conditionsIndex.keys()).sort((a, b) => a - b);
+        console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            if (key > id) {
+                return id;
+            }
+            id ++;
+        });
+        return id;
+    }
+    
+    /**
      * Remove a conditions.
      * @param conditionsID The id of the conditions to remove.
      */
@@ -555,7 +572,7 @@ export class Mesmer extends NodeWithNodes {
             this.conditionsIndex.delete(conditionsID);
         }
     }
-
+    
     /**
      * @returns The model parameters.
      */
@@ -636,6 +653,5 @@ export class Mesmer extends NodeWithNodes {
             this.index.delete(Control.tagName + controlID);
             this.controlIndex.delete(controlID);
         }
-
     }
 }

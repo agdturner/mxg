@@ -19,8 +19,8 @@ import {
  */
 
 /**
- * Atom instances must have an "elementType" attribute.
- * The attributes may include:
+ * Atom attributes may include:
+ * "elementType" - the element type of the atom. This should be a known element types.
  * "id"
  * "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
  * "spinMultiplicity" - the spin multiplicity of the atom.
@@ -33,6 +33,16 @@ export class Atom extends TagWithAttributes {
      * The tag name.
      */
     static readonly tagName: string = "atom";
+
+    /**
+     * The atoms with 1 to 118 protons inclusive. (source: https://query.wikidata.org/#SELECT%20%3Felement%20%3Fsymbol%20%20%3Fprotons%0AWHERE%0A%7B%0A%20%20%3Felement%20wdt%3AP31%20wd%3AQ11344%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP1086%20%3Fprotons%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP246%20%3Fsymbol%20.%0A%7D%0A%0AORDER%20BY%20%3Fprotons)
+     */
+    static readonly elementTypes: string[] = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar",
+        "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb",
+        "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu",
+        "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
+        "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
+        "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"];
 
     /**
      * The key for the id attribute.
@@ -64,11 +74,6 @@ export class Atom extends TagWithAttributes {
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, Atom.tagName);
-        let elementType: string | undefined = attributes.get(Atom.s_elementType);
-        if (elementType == undefined) {
-            throw new Error(Atom.s_elementType + ' is undefined');
-        }
-
     }
 
     /**
@@ -101,8 +106,8 @@ export class Atom extends TagWithAttributes {
     /**
      * @returns The element type.
      */
-    getElementType(): string {
-        return this.attributes.get(Atom.s_elementType) as string;
+    getElementType(): string | undefined {
+        return this.attributes.get(Atom.s_elementType);
     }
 
     /**
@@ -283,9 +288,11 @@ export class AtomArray extends NodeWithNodes {
     getNextAtomID(): string {
         let i: number = 1;
         let id: string = "a" + i.toString();
-        while (this.atoms.has(id)) {
-            i++;
-            id = "a" + i.toString();
+        if (this.atoms.has(id)) {
+            while (this.atoms.has(id)) {
+                i++;
+                id = "a" + i.toString();
+            }
         }
         return id;
     }
@@ -373,6 +380,11 @@ export class Bond extends TagWithAttributes {
      * The key for the order attribute.
      */
     static readonly s_order: string = "order";
+
+    /**
+     * The order options.
+     */
+    static readonly orderOptions: string[] = ["1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6"];
 
     /**
      * The atomRefs2 stored for convenience, this is also stored as an attribute.
@@ -1776,8 +1788,10 @@ export class Molecule extends NodeWithNodes {
     constructor(
         attributes: Map<string, string>,
         id: string,
-        atoms?: Atom | AtomArray,
-        bonds?: Bond | BondArray,
+        //atoms?: Atom | AtomArray,
+        atoms?: AtomArray,
+        //bonds?: Bond | BondArray,
+        bonds?: BondArray,
         properties?: PropertyList | Property,
         energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod,
@@ -1788,21 +1802,19 @@ export class Molecule extends NodeWithNodes {
         this.id = id;
         let i: number = 0;
         // Atoms
-        if (atoms) {
-            this.nodes.set(i, atoms);
-            if (atoms instanceof Atom) {
-                this.index.set(Atom.tagName, i);
-            } else {
-                this.index.set(AtomArray.tagName, i);
-            }
-            i++;
+        if (!atoms) {
+            atoms = new AtomArray(new Map());
         }
+        this.nodes.set(i, atoms);
+        this.index.set(AtomArray.tagName, i);
+        i++;
         // Bonds
-        if (bonds) {
-            this.nodes.set(i, bonds);
-            this.index.set(BondArray.tagName, i);
-            i++;
+        if (!bonds) {
+            bonds = new BondArray(new Map());
         }
+        this.nodes.set(i, bonds);
+        this.index.set(BondArray.tagName, i);
+        i++;
         // Properties
         if (properties) {
             this.nodes.set(i, properties);
@@ -1833,11 +1845,15 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
-     * Get the description of the molecule.
-     * @returns The description of the molecule, or undefined if it is not set.
+     * Get the description or the id of the molecule.
+     * @returns The description of the molecule, or the id if it is not set.
      */
-    getDescription(): string | undefined {
-        return this.attributes.get(Molecule.s_description);
+    getDescription(): string {
+        let description: string | undefined = this.attributes.get(Molecule.s_description);
+        if (description != undefined) {
+            return description;
+        }
+        return this.id;
     }
 
     /**

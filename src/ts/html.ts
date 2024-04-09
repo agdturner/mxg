@@ -30,7 +30,8 @@ export function getCollapsibleDiv(
         level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
         contentDivId = '',
         contentDivClassName = '' }:
-        {   divToAddTo: HTMLDivElement,
+        {
+            divToAddTo: HTMLDivElement,
             elementToInsertBefore: Element | null,
             content: HTMLElement,
             buttonLabel: string,
@@ -58,7 +59,7 @@ export function getCollapsibleDiv(
     if (elementToInsertBefore != null) {
         divToAppendTo.insertBefore(div, elementToInsertBefore);
     } else {
-          divToAppendTo.appendChild(div);
+        divToAppendTo.appendChild(div);
     }
     setCollapsibleEventListener(button);
     return div;
@@ -100,8 +101,8 @@ function toggleCollapsible(this: HTMLElement): void {
  * Create and return HTMLDivElement that contains an HTMLLabelElement and a HTMLInputElement.
  * @param type The input type (e.g. "text", "number").
  * @param id The id of the input.
- * @param boundary The boundary to go around the HTMLLabelElement and HTMLInputElement.
- * @param level The level to go around the HTMLLabelElement and HTMLInputElement.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
+ * @param divMargin The margin for the HTMLDivElement.
  * @param func The function called on a change to the input.
  * @param value The value of the input.
  * @param labelTextContent The label text.
@@ -110,15 +111,13 @@ function toggleCollapsible(this: HTMLElement): void {
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
 export function createLabelWithInput(type: string, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     func: (event: Event) => any, value: string, labelTextContent: string, inputFontsize?: string): HTMLDivElement {
-    let input: HTMLInputElement = createInputWithFunction(type, id, boundary, func, value, inputFontsize);
-    Object.assign(input.style, boundary);
-    let label: HTMLLabelElement = createLabel(labelTextContent, boundary);
+    let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
+    let input: HTMLInputElement = createInputWithFunction(type, id, componentMargin, func, value, inputFontsize);
+    let label: HTMLLabelElement = createLabel(labelTextContent, componentMargin);
     label.htmlFor = id;
-    Object.assign(label.style, boundary);
-    let div: HTMLDivElement = createFlexDiv(undefined, level);
     div.appendChild(label);
     div.appendChild(input);
     return div;
@@ -247,7 +246,7 @@ export function createLabelWithSelect(textContent: string, options: string[] | S
     name: string, value: string, id: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let div: HTMLDivElement = createDiv(undefined, divMargin);
+    let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
     let label: HTMLLabelElement = createLabel(textContent, componentMargin);
     label.htmlFor = id;
     div.appendChild(label);
