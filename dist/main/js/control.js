@@ -2684,16 +2684,16 @@ class Control extends xml_1.NodeWithNodes {
         return undefined;
     }
     /**
-     * @param MaximumEvolutionTime The MaximumEvolutionTime.
+     * @param maximumEvolutionTime The MaximumEvolutionTime.
      */
-    setMaximumEvolutionTime(MaximumEvolutionTime) {
+    setMaximumEvolutionTime(maximumEvolutionTime) {
         let i = this.index.get(MaximumEvolutionTime.tagName);
         if (i != undefined) {
-            this.nodes.set(i, MaximumEvolutionTime);
+            this.nodes.set(i, maximumEvolutionTime);
         }
         else {
             this.index.set(MaximumEvolutionTime.tagName, this.nodes.size);
-            this.addNode(MaximumEvolutionTime);
+            this.addNode(maximumEvolutionTime);
         }
     }
     /**

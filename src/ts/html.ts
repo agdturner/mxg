@@ -1,3 +1,10 @@
+import { getID } from "./util";
+
+export const s_button: string = "button";
+export const s_collapsible: string = "collapsible";
+export const sy_downTriangle: string = "\u25BC"; // ▼
+export const sy_upTriangle: string = "\u25B2"; // ▲
+
 /**
  * Remove an element with the given id.
  * @param id The id of the element to remove.
@@ -14,52 +21,39 @@ export function remove(id: string, ids?: Set<string>) {
 }
 
 /**
- * Create a collapsible div.
+ * Create a HTMLDivElement containing a HTMLButtonElement and a HTMLDivElement which display is toggled as the button is actioned. 
+ * By default the content is not displayed. Then if the button is actioned the content is diplayed, then if actioned again it is 
+ * not diplayed and so on...
+ * 
+ * @param id The id of the HTMLDivElement returned which is also used to generate ids of components.
  * @param divToAppendTo The div to append to.
- * @param content The content to be collapsible.
+ * @param elementToInsertBefore The element to insert before. (If null then the content will be appended to the div.)
+ * @param content The content to expand/collapse.
  * @param buttonLabel The label for the button.
- * @param buttonFontSize The font size for the button.
- * @param boundary The boundary for the div.
- * @param level The level for the div.
- * @param contentDivId The id for the content div.
- * @returns A div with collapsible content.
+ * @param buttonMargin The margin for the button.
+ * @param margin The margin for HTMLDivElement created. 
+ * @returns A HTMLDivElement containing a HTMLButtonElement and the content.
  */
-export function getCollapsibleDiv(
-    { divToAddTo: divToAppendTo, elementToInsertBefore, content, buttonLabel, buttonFontSize = '',
-        boundary = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
-        level = { marginLeft: '', marginTop: '', marginBottom: '', marginRight: '' },
-        contentDivId = '',
-        contentDivClassName = '' }:
-        {
-            divToAddTo: HTMLDivElement,
-            elementToInsertBefore: Element | null,
-            content: HTMLElement,
-            buttonLabel: string,
-            buttonFontSize?: string,
-            boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-            level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-            contentDivId?: string,
-            contentDivClassName?: string
-        }): HTMLDivElement {
-    let div: HTMLDivElement = createDiv(contentDivId, boundary);
-    div.className = contentDivClassName;
-    let button: HTMLButtonElement = document.createElement('button');
-    button.id = contentDivId + 'Button';
-    button.className = 'collapsible';
-    button.innerText = `${buttonLabel} ▼`;
+export function getCollapsibleDiv(id: string, divToAddTo: HTMLDivElement, elementToInsertBefore: Element | null,
+            content: HTMLElement, 
+            buttonLabel: string, 
+            componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+            margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    let div: HTMLDivElement = createDiv(id, margin);
+    let buttonId: string = getID(id, s_button);
+    let button: HTMLButtonElement = createButton(buttonLabel + " " + sy_downTriangle, buttonId, componentMargin);
+    button.className = s_collapsible;
     button.addEventListener('click', function () {
-        button.innerText = button.innerText.includes('▼')
-            ? `${buttonLabel} ▲`
-            : `${buttonLabel} ▼`;
+        let parts = button.textContent!.split(' ');
+        parts[parts.length - 1] = parts[parts.length - 1] === sy_downTriangle ? sy_upTriangle : sy_downTriangle;
+        button.textContent = parts.join(' ');
     });
-    button.style.fontSize = buttonFontSize;
-    Object.assign(button.style, level);
     div.appendChild(button);
     div.appendChild(content);
     if (elementToInsertBefore != null) {
-        divToAppendTo.insertBefore(div, elementToInsertBefore);
+        divToAddTo.insertBefore(div, elementToInsertBefore);
     } else {
-        divToAppendTo.appendChild(div);
+        divToAddTo.appendChild(div);
     }
     setCollapsibleEventListener(button);
     return div;
@@ -106,16 +100,14 @@ function toggleCollapsible(this: HTMLElement): void {
  * @param func The function called on a change to the input.
  * @param value The value of the input.
  * @param labelTextContent The label text.
- * @param inputFontsize The font size of the input.
- * @param labelFontsize The font size of the label.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
 export function createLabelWithInput(type: string, id: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    func: (event: Event) => any, value: string, labelTextContent: string, inputFontsize?: string): HTMLDivElement {
+    func: (event: Event) => any, value: string, labelTextContent: string): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
-    let input: HTMLInputElement = createInputWithFunction(type, id, componentMargin, func, value, inputFontsize);
+    let input: HTMLInputElement = createInputWithFunction(type, id, componentMargin, func, value);
     let label: HTMLLabelElement = createLabel(labelTextContent, componentMargin);
     label.htmlFor = id;
     div.appendChild(label);
@@ -126,20 +118,17 @@ export function createLabelWithInput(type: string, id: string,
 /**
  * Create and return a HTMLInputElement.
  * @param type The input type (e.g. "text", "number").
- * @param id The id of the input.
+ * @param id The id of the HTMLInputElement.
+ * @param margin The margin for the HTMLInputElement.
  * @param func The function called on a change to the input.
  * @returns A HTMLInputElement.
  */
-export function createInputWithFunction(type: string, id: string, boundary: {
-    marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string
-},
-    func: (event: Event) => any, value: string, inputFontsize?: string): HTMLInputElement {
-    let input: HTMLInputElement = createInput(type, id, boundary);
+export function createInputWithFunction(type: string, id: string, 
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    func: (event: Event) => any, value: string): HTMLInputElement {
+    let input: HTMLInputElement = createInput(type, id, margin);
     input.onchange = func;
     input.value = value;
-    if (inputFontsize != undefined) {
-        input.style.fontSize = inputFontsize;
-    }
     resizeInputElement(input);
     return input;
 }
@@ -147,7 +136,7 @@ export function createInputWithFunction(type: string, id: string, boundary: {
 /**
  * Create and return a HTMLInputElement.
  * @param type The input type (e.g. "text", "number", "checkbox").
- * @param id The id of the input.
+ * @param id The id of the HTMLInputElement.
  * @param margin The margin for the HTMLInputElement.
  * @returns A HTMLInputElement.
  */
@@ -158,8 +147,66 @@ export function createInput(type: string, id: string,
     input.type = type;
     input.id = id;
     Object.assign(input.style, margin);
+    input.style.fontSize = '1em'; // Set the font size with a relative unit.
     input.classList.add('auto-width');
     return input;
+}
+
+/**
+ * Create and return HTMLDivElement that contains an HTMLLabelElement and a HTMLTextAreaElement.
+ * @param id The id of the HTMLTextAreaElement.
+ * @param componentMargin The margin for the HTMLLabelElement and HTMLSelectElement.
+ * @param divMargin The margin for the HTMLDivElement.
+ * @param func The function called on a change to the input.
+ * @param value The value of the input.
+ * @param labelTextContent The label text.
+ * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLTextAreaElement.
+ */
+export function createLabelWithTextArea(id: string,
+    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    func: (event: Event) => any, value: string, labelTextContent: string): HTMLDivElement {
+    let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
+    let ta: HTMLTextAreaElement = createTextAreaWithFunction(id, componentMargin, func, value);
+    let label: HTMLLabelElement = createLabel(labelTextContent, componentMargin);
+    label.htmlFor = id;
+    div.appendChild(label);
+    div.appendChild(ta);
+    return div;
+}
+
+/**
+ * Create and return a HTMLTextAreaElement.
+ * @param id The id of the HTMLTextAreaElement.
+ * @param margin The margin for the HTMLInputElement.
+ * @param func The function called on a change to the HTMLTextAreaElement.
+ * @returns A HTMLInputElement.
+ */
+export function createTextAreaWithFunction(id: string, 
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    func: (event: Event) => any, value: string): HTMLTextAreaElement {
+    let ta: HTMLTextAreaElement = createTextArea(id, margin);
+    ta.onchange = func;
+    ta.value = value;
+    resizeTextAreaElement(ta);
+    return ta;
+}
+
+/**
+ * Create and return a HTMLTextAreaElement.
+ * @param id The id of the HTMLTextAreaElement.
+ * @param margin The margin for the HTMLTextAreaElement.
+ * @returns A HTMLTextAreaElement.
+ */
+export function createTextArea(id: string,
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
+    : HTMLTextAreaElement {
+    let ta: HTMLTextAreaElement = document.createElement('textarea');
+    ta.id = id;
+    Object.assign(ta.style, margin);
+    ta.style.fontSize = '1em'; // Set the font size with a relative unit.
+    ta.classList.add('auto-width');
+    return ta;
 }
 
 /**
@@ -179,28 +226,43 @@ export function getSelfClosingTag(attributes: Map<string, string> | undefined, t
 
 /**
  * For resizing an HTMLInputElement to the width of what it contains.
- * @param input The input to resize.
+ * @param i The HTMLInputElement to resize.
  * @param minSize The minimum size of the input.
  */
-export function resizeInputElement(input: HTMLInputElement, minSize?: number) {
+export function resizeInputElement(i: HTMLInputElement, minSize?: number) {
     if (minSize == undefined) {
         minSize = 4;
     }
-    input.style.width = (input.value.length + minSize) + "ch";
+    i.style.width = (i.value.length + minSize) + "ch";
 }
 
 /**
  * For resizing an HTMLSelectElement to the width of what it contains.
  * 
- * @param input The input to resize.
+ * @param s The HTMLSelectElement to resize.
  * @param minSize The minimum size of the input.
  */
-export function resizeSelectElement(input: HTMLSelectElement, minSize?: number) {
+export function resizeSelectElement(s: HTMLSelectElement, minSize?: number) {
     if (minSize == undefined) {
         minSize = 6;
     }
-    input.style.width = (input.value.length + minSize) + "ch";
+    s.style.width = (s.value.length + minSize) + "ch";
 }
+
+/**
+ * For resizing an HTMLTextAreaElement to the width of what it contains.
+ * 
+ * @param ta The HTMLTextAreaElement to resize.
+ * @param minSize The minimum size of the input.
+ */
+export function resizeTextAreaElement(ta: HTMLTextAreaElement, minSize?: number) {
+    if (minSize == undefined) {
+        minSize = 6;
+    }
+    ta.style.width = (ta.value.length + minSize) + "ch";
+}
+
+
 
 /**
  * Create and return an HTMLSelectElement.
@@ -328,6 +390,7 @@ export function createFlexDiv(id?: string,
     let div: HTMLDivElement = createDiv(id, margin);
     div.style.display = 'flex';
     div.style.flexWrap = 'wrap';
+    //div.classList.add('auto-width-flex');
     return div;
 }
 

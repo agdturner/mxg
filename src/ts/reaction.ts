@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import {
     Molecule, ZPE
 } from './molecule.js';
@@ -159,7 +160,7 @@ export class PreExponential extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, PreExponential.tagName, value);
     }
 }
@@ -178,7 +179,7 @@ export class ActivationEnergy extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ActivationEnergy.tagName, value);
     }
 }
@@ -197,7 +198,7 @@ export class TInfinity extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, TInfinity.tagName, value);
     }
 }
@@ -216,7 +217,7 @@ export class NInfinity extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, NInfinity.tagName, value);
     }
 }
@@ -451,7 +452,7 @@ export class ExcessReactantConc extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value of the factor.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExcessReactantConc.tagName, value);
     }
 }
@@ -874,7 +875,7 @@ export class Reaction extends NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
-    getReactantsEnergy(molecules: Map<string, Molecule>): number {
+    getReactantsEnergy(molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map(reactant => {
             let molecule = molecules.get(reactant.getMolecule().ref);
@@ -882,14 +883,14 @@ export class Reaction extends NodeWithNodes {
                 throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
             }
             return molecule.getEnergy();
-        }).reduce((a, b) => a + b, 0);
+        }).reduce((a, b) => a.add(b), new Big(0));
     }
 
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(molecules: Map<string, Molecule>): number {
+    getProductsEnergy(molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map(product => {
             let molecule = molecules.get(product.getMolecule().ref);
@@ -897,7 +898,7 @@ export class Reaction extends NodeWithNodes {
                 throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
             }
             return molecule.getEnergy();
-        }).reduce((a, b) => a + b, 0);
+        }).reduce((a, b) => a.add(b), new Big(0));
     }
 
     /**

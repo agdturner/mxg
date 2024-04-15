@@ -1,3 +1,4 @@
+import Big from "big.js";
 import {
     getSelfClosingTag
 } from "./html";
@@ -202,13 +203,13 @@ export class NumberNode extends TagWithAttributes {
     /**
      * The value.
      */
-    value: number;
+    value: Big;
 
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, tagName: string, value: number) {
+    constructor(attributes: Map<string, string>, tagName: string, value: Big) {
         super(attributes, tagName);
         this.value = value;
     }
@@ -227,8 +228,9 @@ export class NumberNode extends TagWithAttributes {
      */
     override toXML(padding?: string): string {
         let stringValue = this.value.toString().trim();
+        
         let c : number;
-        if (this.value < 0) {
+        if (this.value < new Big(0)) {
             c = 7;
         } else {
             c = 6;
@@ -248,7 +250,7 @@ export class NumberArrayNode extends TagWithAttributes {
     /**
      * The values.
      */
-    values: number[];
+    values: Big[];
 
     /**
      * The delimiter of the values.
@@ -261,7 +263,7 @@ export class NumberArrayNode extends TagWithAttributes {
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
      */
-    constructor(attributes: Map<string, string>, tagName: string, values: number[], delimiter?: string) {
+    constructor(attributes: Map<string, string>, tagName: string, values: Big[], delimiter?: string) {
         super(attributes, tagName);
         this.values = values;
         if (delimiter != undefined) {

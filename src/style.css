@@ -9,6 +9,10 @@
   min-width: 50px; /* Adjust this value as needed */
 }
 
+.auto-width-flex {
+  flex: 0 1 auto;
+}
+
 /* Set light mode colors for buttons */
 .light-mode {
   color: #202020;

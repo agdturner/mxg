@@ -15,7 +15,7 @@ export class GrainSize extends NumberNode {
     /**
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, GrainSize.tagName, value);
     }
 }
@@ -34,7 +34,7 @@ export class AutomaticallySetMaxEne extends NumberNode {
      * @para attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, AutomaticallySetMaxEne.tagName, value);
     }
 }
@@ -53,7 +53,7 @@ export class EnergyAboveTheTopHill extends NumberNode {
      * @para attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, EnergyAboveTheTopHill.tagName, value);
     }
 }
@@ -72,7 +72,7 @@ export class MaxTemperature extends NumberNode {
      * @para attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, MaxTemperature.tagName, value);
     }
 }

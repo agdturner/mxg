@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Molecule = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const range_js_1 = require("./range.js");
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
@@ -16,8 +20,8 @@ const xml_js_1 = require("./xml.js");
  * This would include data about atoms, bonds, molecule properties and other things...
  */
 /**
- * Atom instances must have an "elementType" attribute.
- * The attributes may include:
+ * Atom attributes may include:
+ * "elementType" - the element type of the atom. This should be a known element types.
  * "id"
  * "x3", "y3", "z3" - coordinates used to depict a molecule containing the atom.
  * "spinMultiplicity" - the spin multiplicity of the atom.
@@ -50,14 +54,15 @@ class Atom extends xml_js_1.TagWithAttributes {
      */
     static s_z3 = "z3";
     /**
+     * A reference to any molecule that the atom is a part of.
+     */
+    molecule;
+    /**
      * @param attributes The attributes. If there is no "elementType" key an error will be thrown.
      */
-    constructor(attributes) {
+    constructor(attributes, molecule) {
         super(attributes, Atom.tagName);
-        let elementType = attributes.get(Atom.s_elementType);
-        if (elementType == undefined) {
-            throw new Error(Atom.s_elementType + ' is undefined');
-        }
+        this.molecule = molecule;
     }
     /**
      * @returns True if the atom has coordinates.
@@ -95,12 +100,12 @@ class Atom extends xml_js_1.TagWithAttributes {
         this.attributes.set(Atom.s_elementType, elementType);
     }
     /**
-     * @returns The x3 attribute value as a number or undefined.
+     * @returns The x3 attribute value as a Big or undefined.
      */
     getX3() {
         let x3 = this.attributes.get(Atom.s_x3);
         if (x3 != undefined) {
-            return parseFloat(x3);
+            return new big_js_1.default(x3);
         }
     }
     /**
@@ -116,12 +121,12 @@ class Atom extends xml_js_1.TagWithAttributes {
         this.attributes.delete(Atom.s_x3);
     }
     /**
-     * @returns The y3 attribute value as a number or undefined.
+     * @returns The y3 attribute value as a Big or undefined.
      */
     getY3() {
         let y3 = this.attributes.get(Atom.s_y3);
         if (y3 != undefined) {
-            return parseFloat(y3);
+            return new big_js_1.default(y3);
         }
     }
     /**
@@ -137,12 +142,12 @@ class Atom extends xml_js_1.TagWithAttributes {
         this.attributes.delete(Atom.s_y3);
     }
     /**
-     * @returns The z3 attribute value as a number or undefined.
+     * @returns The z3 attribute value as a Big or undefined.
      */
     getZ3() {
         let z3 = this.attributes.get(Atom.s_z3);
         if (z3 != undefined) {
-            return parseFloat(z3);
+            return new big_js_1.default(z3);
         }
     }
     /**
@@ -251,9 +256,11 @@ class AtomArray extends xml_js_1.NodeWithNodes {
     getNextAtomID() {
         let i = 1;
         let id = "a" + i.toString();
-        while (this.atoms.has(id)) {
-            i++;
-            id = "a" + i.toString();
+        if (this.atoms.has(id)) {
+            while (this.atoms.has(id)) {
+                i++;
+                id = "a" + i.toString();
+            }
         }
         return id;
     }
@@ -337,25 +344,35 @@ class Bond extends xml_js_1.TagWithAttributes {
      */
     static s_order = "order";
     /**
-     * The atomRefs2 stored for convenience, this is also stored as an attribute.
+     * The order options.
      */
-    atomRefs2;
+    static orderOptions = ["1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6"];
+    /**
+     * A reference to the molecule that the bond is a part of.
+     */
+    molecule;
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes) {
+    constructor(attributes, molecule) {
         super(attributes, Bond.tagName);
-        let atomRefs2 = attributes.get(Bond.s_atomRefs2);
+        this.molecule = molecule;
+    }
+    /**
+     * @returns The atomRefs2.
+     */
+    getAtomRefs2() {
+        let atomRefs2 = this.attributes.get(Bond.s_atomRefs2);
+        let atomRefs = atomRefs2?.split(" ") || [];
         if (atomRefs2 == undefined) {
-            throw new Error(Bond.s_atomRefs2 + ' is undefined!');
+            return "a1 a1";
         }
-        this.atomRefs2 = atomRefs2;
+        return atomRefs2;
     }
     /**
      * @param atomRefs2 The atomRefs2 to set.
      */
     setAtomRefs2(atomRefs2) {
-        this.atomRefs2 = atomRefs2;
         this.attributes.set(Bond.s_atomRefs2, atomRefs2);
     }
     /**
@@ -1599,28 +1616,29 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param extraDOSCMethod The extra method for calculating density of states.
      * @param reservoirSize The reservoir size.
      */
-    constructor(attributes, id, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize) {
+    constructor(attributes, id, 
+    //atoms?: Atom | AtomArray,
+    atoms, 
+    //bonds?: Bond | BondArray,
+    bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
         this.id = id;
         let i = 0;
         // Atoms
-        if (atoms) {
-            this.nodes.set(i, atoms);
-            if (atoms instanceof Atom) {
-                this.index.set(Atom.tagName, i);
-            }
-            else {
-                this.index.set(AtomArray.tagName, i);
-            }
-            i++;
+        if (!atoms) {
+            atoms = new AtomArray(new Map());
         }
+        this.nodes.set(i, atoms);
+        this.index.set(AtomArray.tagName, i);
+        i++;
         // Bonds
-        if (bonds) {
-            this.nodes.set(i, bonds);
-            this.index.set(BondArray.tagName, i);
-            i++;
+        if (!bonds) {
+            bonds = new BondArray(new Map());
         }
+        this.nodes.set(i, bonds);
+        this.index.set(BondArray.tagName, i);
+        i++;
         // Properties
         if (properties) {
             this.nodes.set(i, properties);
@@ -1650,11 +1668,15 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
     }
     /**
-     * Get the description of the molecule.
-     * @returns The description of the molecule, or undefined if it is not set.
+     * Get the description or the id of the molecule.
+     * @returns The description of the molecule, or the id if it is not set.
      */
     getDescription() {
-        return this.attributes.get(Molecule.s_description);
+        let description = this.attributes.get(Molecule.s_description);
+        if (description != undefined) {
+            return description;
+        }
+        return this.id;
     }
     /**
      * Set the description of the molecule.

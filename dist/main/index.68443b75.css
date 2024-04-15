@@ -7,6 +7,10 @@
   min-width: 50px;
 }
 
+.auto-width-flex {
+  flex: 0 auto;
+}
+
 .light-mode {
   color: #202020;
   --button-color: #d0d0d0;

@@ -21,7 +21,7 @@ class BathGas extends xml_js_1.StringNode {
 exports.BathGas = BathGas;
 /**
  * A class for "me:experimentalRate".
- * The attributes must include:
+ * The attributes should include:
  * "ref1" string
  * "ref2" string
  * "refReaction" string
@@ -54,6 +54,7 @@ class ExperimentalRate extends xml_js_1.NumberNode {
      */
     constructor(attributes, value) {
         super(attributes, ExperimentalRate.tagName, value);
+        /*
         if (!this.attributes.has(ExperimentalRate.s_ref1)) {
             console.error("ExperimentalRate.constructor: ref1 attribute is missing.");
         }
@@ -66,6 +67,7 @@ class ExperimentalRate extends xml_js_1.NumberNode {
         if (!this.attributes.has(ExperimentalRate.s_error)) {
             console.error("ExperimentalRate.constructor: error attribute is missing.");
         }
+        */
     }
     /**
      * @returns The ref1 attribute or undefined if there is no ref1 attribute.
@@ -123,7 +125,7 @@ class ExperimentalRate extends xml_js_1.NumberNode {
 exports.ExperimentalRate = ExperimentalRate;
 /**
  * A class for "me:experimentalYield".
- * The attributes must include:
+ * The attributes should include:
  * "ref" string
  * "error" number
  * "yieldTime" number.
@@ -195,7 +197,7 @@ class ExperimentalYield extends xml_js_1.NumberNode {
 exports.ExperimentalYield = ExperimentalYield;
 /**
  * A class for "me:experimentalEigenvalue".
- * The attributes must include:
+ * The attributes should include:
  * EigenvalueID:string
  * error: number
  */
@@ -218,12 +220,14 @@ class ExperimentalEigenvalue extends xml_js_1.NumberNode {
      */
     constructor(attributes, value) {
         super(attributes, ExperimentalEigenvalue.tagName, value);
+        /*
         if (!this.attributes.has(ExperimentalEigenvalue.s_EigenvalueID)) {
             console.error("ExperimentalEigenvalue.constructor: EigenvalueID attribute is missing.");
         }
         if (!this.attributes.has(ExperimentalEigenvalue.s_error)) {
             console.error("ExperimentalEigenvalue.constructor: error attribute is missing.");
         }
+        */
     }
     /**
      * @returns The EigenvalueID attribute.
@@ -689,13 +693,13 @@ class Conditions extends xml_js_1.NodeWithNodes {
         this.id = id;
         this.index = new Map();
         this.bathGasesIndex = new Map();
-        this.bathGases = new Set();
+        this.bathGases = new Map();
         if (bathGases != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
             bathGases.forEach((bathGas) => {
                 this.bathGasesIndex.set(bathGas.value, this.nodes.size);
                 this.addNode(bathGas);
-                this.bathGases.add(bathGas);
+                this.bathGases.set(bathGas, bathGases.size);
             });
         }
         if (pTs != undefined) {
@@ -714,9 +718,14 @@ class Conditions extends xml_js_1.NodeWithNodes {
      */
     addBathGas(bathGas) {
         if (!this.bathGases.has(bathGas)) {
-            this.bathGases.add(bathGas);
+            let index = this.bathGases.size;
+            this.bathGases.set(bathGas, index);
             this.bathGasesIndex.set(bathGas.value, this.nodes.size);
             this.addNode(bathGas);
+            return index;
+        }
+        else {
+            return this.bathGases.get(bathGas);
         }
     }
     /**

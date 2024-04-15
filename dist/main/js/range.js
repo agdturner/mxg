@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RangeNode = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const xml_1 = require("./xml");
 /**
  * An abstract class for a range.
@@ -69,7 +73,7 @@ class RangeNode extends xml_1.NumberNode {
     getLower() {
         let lower = this.attributes.get(RangeNode.s_lower);
         if (lower != undefined) {
-            return parseFloat(lower);
+            return new big_js_1.default(lower);
         }
     }
     /**
@@ -90,7 +94,7 @@ class RangeNode extends xml_1.NumberNode {
     getUpper() {
         let upper = this.attributes.get(RangeNode.s_upper);
         if (upper != undefined) {
-            return parseFloat(upper);
+            return new big_js_1.default(upper);
         }
     }
     /**
@@ -111,7 +115,7 @@ class RangeNode extends xml_1.NumberNode {
     getStepsize() {
         let stepsize = this.attributes.get(RangeNode.s_stepsize);
         if (stepsize != undefined) {
-            return parseFloat(stepsize);
+            return new big_js_1.default(stepsize);
         }
     }
     /**

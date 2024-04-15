@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import { RangeNode } from './range.js';
 import { get } from './util.js';
 import {
@@ -35,16 +36,6 @@ export class Atom extends TagWithAttributes {
     static readonly tagName: string = "atom";
 
     /**
-     * The atoms with 1 to 118 protons inclusive. (source: https://query.wikidata.org/#SELECT%20%3Felement%20%3Fsymbol%20%20%3Fprotons%0AWHERE%0A%7B%0A%20%20%3Felement%20wdt%3AP31%20wd%3AQ11344%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP1086%20%3Fprotons%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP246%20%3Fsymbol%20.%0A%7D%0A%0AORDER%20BY%20%3Fprotons)
-     */
-    static readonly elementTypes: string[] = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar",
-        "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb",
-        "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu",
-        "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
-        "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
-        "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"];
-
-    /**
      * The key for the id attribute.
      */
     static readonly s_id: string = "id";
@@ -70,10 +61,16 @@ export class Atom extends TagWithAttributes {
     static readonly s_z3: string = "z3";
 
     /**
+     * A reference to any molecule that the atom is a part of.
+     */
+    molecule: Molecule;
+
+    /**
      * @param attributes The attributes. If there is no "elementType" key an error will be thrown.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes: Map<string, string>, molecule: Molecule) {
         super(attributes, Atom.tagName);
+        this.molecule = molecule;
     }
 
     /**
@@ -118,19 +115,19 @@ export class Atom extends TagWithAttributes {
     }
 
     /**
-     * @returns The x3 attribute value as a number or undefined.
+     * @returns The x3 attribute value as a Big or undefined.
      */
-    getX3(): number | undefined {
+    getX3(): Big | undefined {
         let x3: string | undefined = this.attributes.get(Atom.s_x3);
         if (x3 != undefined) {
-            return parseFloat(x3);
+            return new Big(x3);
         }
     }
 
     /**
      * @param x3 The x3 attribute value.
      */
-    setX3(x3: number): void {
+    setX3(x3: Big): void {
         this.attributes.set(Atom.s_x3, x3.toString());
     }
 
@@ -142,19 +139,19 @@ export class Atom extends TagWithAttributes {
     }
 
     /**
-     * @returns The y3 attribute value as a number or undefined.
+     * @returns The y3 attribute value as a Big or undefined.
      */
-    getY3(): number | undefined {
+    getY3(): Big | undefined {
         let y3: string | undefined = this.attributes.get(Atom.s_y3);
         if (y3 != undefined) {
-            return parseFloat(y3);
+            return new Big(y3);
         }
     }
 
     /**
      * @param y3 The y3 attribute value.
      */
-    setY3(y3: number): void {
+    setY3(y3: Big): void {
         this.attributes.set(Atom.s_y3, y3.toString());
     }
 
@@ -166,19 +163,19 @@ export class Atom extends TagWithAttributes {
     }
 
     /**
-     * @returns The z3 attribute value as a number or undefined.
+     * @returns The z3 attribute value as a Big or undefined.
      */
-    getZ3(): number | undefined {
+    getZ3(): Big | undefined {
         let z3: string | undefined = this.attributes.get(Atom.s_z3);
         if (z3 != undefined) {
-            return parseFloat(z3);
+            return new Big(z3);
         }
     }
 
     /**
      * @param z3 The z3 attribute value.
      */
-    setZ3(z3: number): void {
+    setZ3(z3: Big): void {
         this.attributes.set("z3", z3.toString());
     }
 
@@ -387,27 +384,35 @@ export class Bond extends TagWithAttributes {
     static readonly orderOptions: string[] = ["1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6"];
 
     /**
-     * The atomRefs2 stored for convenience, this is also stored as an attribute.
+     * A reference to the molecule that the bond is a part of.
      */
-    atomRefs2: string;
+    molecule: Molecule;
 
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>) {
+    constructor(attributes: Map<string, string>, molecule: Molecule) {
         super(attributes, Bond.tagName);
-        let atomRefs2: string | undefined = attributes.get(Bond.s_atomRefs2);
+        this.molecule = molecule;
+    }
+
+    /**
+     * @returns The atomRefs2.
+     */
+    getAtomRefs2(): string {
+        let atomRefs2: string | undefined = this.attributes.get(Bond.s_atomRefs2);
+
+        let atomRefs: string[] = atomRefs2?.split(" ") || [];
         if (atomRefs2 == undefined) {
-            throw new Error(Bond.s_atomRefs2 + ' is undefined!');
+            return "a1 a1";
         }
-        this.atomRefs2 = atomRefs2;
+        return atomRefs2;
     }
 
     /**
      * @param atomRefs2 The atomRefs2 to set.
      */
     setAtomRefs2(atomRefs2: string): void {
-        this.atomRefs2 = atomRefs2;
         this.attributes.set(Bond.s_atomRefs2, atomRefs2);
     }
 
@@ -628,7 +633,7 @@ export class PropertyScalar extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, PropertyScalar.tagName, value);
     }
 
@@ -672,7 +677,7 @@ export class PropertyArray extends NumberArrayNode {
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
      */
-    constructor(attributes: Map<string, string>, values: number[], delimiter?: string) {
+    constructor(attributes: Map<string, string>, values: Big[], delimiter?: string) {
         super(attributes, PropertyArray.tagName, values, delimiter);
     }
 
@@ -729,7 +734,7 @@ export class PropertyMatrix extends NumberArrayNode {
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
      */
-    constructor(attributes: Map<string, string>, values: number[], delimiter?: string) {
+    constructor(attributes: Map<string, string>, values: Big[], delimiter?: string) {
         super(attributes, PropertyArray.tagName, values, delimiter);
     }
 
@@ -816,6 +821,62 @@ export class ZPE extends Property {
      * The dictionary reference.
      */
     static readonly dictRef: string = "me:ZPE";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+        super(attributes, property);
+    }
+
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units: string): void {
+        this.getProperty().updateUnits(units);
+    }
+}
+
+/**
+ * The Heat of Formation at 0K.
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+export class Hf0 extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:Hf0";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+        super(attributes, property);
+    }
+
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units: string): void {
+        this.getProperty().updateUnits(units);
+    }
+}
+
+/**
+ * The Heat of Formation at 298K.
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+export class Hf298 extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:Hf298";
 
     /**
      * @param attributes The attributes.
@@ -1020,7 +1081,7 @@ export class DeltaEDown extends RangeNode {
      * @param attributes The attributes.
      * @param units The units.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, DeltaEDown.tagName, value);
     }
 
@@ -1056,7 +1117,7 @@ export class DeltaEDown2 extends DeltaEDown {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, value);
     }
 }
@@ -1083,7 +1144,7 @@ export class DeltaEDownTExponent extends RangeNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, DeltaEDownTExponent.tagName, value);
     }
 
@@ -1116,7 +1177,7 @@ export class DeltaEDownLinEne extends RangeNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, DeltaEDownLinEne.tagName, value);
     }
 }
@@ -1599,7 +1660,7 @@ export class Periodicity extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Periodicity.tagName, value);
     }
 }
@@ -1733,7 +1794,7 @@ export class ReservoirSize extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ReservoirSize.tagName, value);
     }
 }
@@ -1770,9 +1831,6 @@ export class Molecule extends NodeWithNodes {
      */
     index: Map<string, number>;
 
-    // The molecule ID.
-    id: string;
-
     /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
@@ -1799,7 +1857,7 @@ export class Molecule extends NodeWithNodes {
         reservoirSize?: ReservoirSize) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        this.id = id;
+        this.setID(id);
         let i: number = 0;
         // Atoms
         if (!atoms) {
@@ -1845,6 +1903,20 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
+     * @returns The id of the molecule.
+     */
+    getID(): string {
+        return this.attributes.get(Molecule.s_id) as string;
+    }
+
+    /**
+     * @param id The id of the molecule.
+     */
+    setID(id: string): void {
+        this.attributes.set(Molecule.s_id, id);
+    }
+
+    /**
      * Get the description or the id of the molecule.
      * @returns The description of the molecule, or the id if it is not set.
      */
@@ -1853,7 +1925,7 @@ export class Molecule extends NodeWithNodes {
         if (description != undefined) {
             return description;
         }
-        return this.id;
+        return this.getID();
     }
 
     /**
@@ -2132,7 +2204,7 @@ export class Molecule extends NodeWithNodes {
     /**
      * Get the ZPE value of the molecule.
      */
-    getEnergy(): number {
+    getEnergy(): Big {
         let p: Property | undefined = this.getProperty(ZPE.dictRef);
         if (p == undefined) {
             console.log(this.toString());

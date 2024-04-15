@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { NumberNode } from "./xml";
 
 /**
@@ -40,14 +41,14 @@ export abstract class RangeNode extends NumberNode {
      * @param tagName The tag name.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, tagName: string, value: number) {
+    constructor(attributes: Map<string, string>, tagName: string, value: Big) {
         super(attributes, tagName, value);
     }
 
     /**
      * @param value The value of the Range.
      */
-    setValue(value: number): void {
+    setValue(value: Big): void {
         this.value = value;
     }
 
@@ -75,17 +76,17 @@ export abstract class RangeNode extends NumberNode {
     /**
      * @returns The lower of the Range.
      */
-    getLower(): number | undefined {
+    getLower(): Big | undefined {
         let lower: string | undefined = this.attributes.get(RangeNode.s_lower);
         if (lower != undefined) {
-            return parseFloat(lower);
+            return new Big(lower);
         }
     }
 
     /**
      * @param lower The lower of the Range.
      */
-    setLower(lower: number): void {
+    setLower(lower: Big): void {
         this.attributes.set(RangeNode.s_lower, lower.toString());
     }
 
@@ -99,17 +100,17 @@ export abstract class RangeNode extends NumberNode {
     /**
      * @returns The upper of the Range.
      */
-    getUpper(): number | undefined {
+    getUpper(): Big | undefined {
         let upper: string | undefined = this.attributes.get(RangeNode.s_upper);
         if (upper != undefined) {
-            return parseFloat(upper);
+            return new Big(upper);
         }
     }
 
     /**
      * @param upper The upper of the Range.
      */
-    setUpper(upper: number): void {
+    setUpper(upper: Big): void {
         this.attributes.set(RangeNode.s_upper, upper.toString());
     }
 
@@ -123,17 +124,17 @@ export abstract class RangeNode extends NumberNode {
     /**
      * @returns The stepsize of the Range.
      */
-    getStepsize(): number | undefined {
+    getStepsize(): Big | undefined {
         let stepsize: string | undefined = this.attributes.get(RangeNode.s_stepsize);
         if (stepsize != undefined) {
-            return parseFloat(stepsize);
+            return new Big(stepsize);
         }
     }
 
     /**
      * @param stepsize The stepsize of the Range.
      */
-    setStepsize(stepsize: number): void {
+    setStepsize(stepsize: Big): void {
         this.attributes.set(RangeNode.s_stepsize, stepsize.toString());
     }
 

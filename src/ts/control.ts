@@ -405,7 +405,7 @@ export class FittingIterations extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, FittingIterations.tagName, value);
     }
 }
@@ -473,7 +473,7 @@ export class MarquardtIterations extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, MarquardtIterations.tagName, value);
     }
 }
@@ -492,7 +492,7 @@ export class MarquardtTolerance extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, MarquardtTolerance.tagName, value);
     }
 }
@@ -511,7 +511,7 @@ export class MarquardtDerivDelta extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, MarquardtDerivDelta.tagName, value);
     }
 }
@@ -768,7 +768,7 @@ export class ChebNumTemp extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebNumTemp.tagName, value);
     }
 }
@@ -787,7 +787,7 @@ export class ChebNumConc extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebNumConc.tagName, value);
     }
 }
@@ -806,7 +806,7 @@ export class ChebMaxTemp extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebMaxTemp.tagName, value);
     }
 }
@@ -825,7 +825,7 @@ export class ChebMinTemp extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebMinTemp.tagName, value);
     }
 }
@@ -846,7 +846,7 @@ export class ChebMaxConc extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebMaxConc.tagName, value);
     }
 
@@ -879,7 +879,7 @@ export class ChebMinConc extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebMinConc.tagName, value);
     }
 }
@@ -898,7 +898,7 @@ export class ChebTExSize extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebTExSize.tagName, value);
     }
 }
@@ -917,7 +917,7 @@ export class ChebPExSize extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ChebPExSize.tagName, value);
     }
 }
@@ -1366,7 +1366,7 @@ export class Tmin extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Tmin.tagName, value);
     }
 }
@@ -1385,7 +1385,7 @@ export class Tmid extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Tmid.tagName, value);
     }
 }
@@ -1404,7 +1404,7 @@ export class Tmax extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Tmax.tagName, value);
     }
 }
@@ -1423,7 +1423,7 @@ export class Tstep extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Tmin.tagName, value);
     }
 }
@@ -1628,7 +1628,7 @@ export class SensitivityAnalysisSamples extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, SensitivityAnalysisSamples.tagName, value);
     }
 
@@ -1648,7 +1648,7 @@ export class SensitivityAnalysisOrder extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, SensitivityAnalysisOrder.tagName, value);
     }
 }
@@ -1667,7 +1667,7 @@ export class SensitivityNumVarRedIters extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, SensitivityNumVarRedIters.tagName, value);
     }
 }
@@ -1892,7 +1892,7 @@ export class Eigenvalues extends NumberNode {
      */
     static readonly tagName: string = "me:eigenvalues";
 
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, Eigenvalues.tagName, value);
     }
 }
@@ -1911,7 +1911,7 @@ export class ShortestTimeOfInterest extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ShortestTimeOfInterest.tagName, value);
     }
 }
@@ -1930,7 +1930,7 @@ export class MaximumEvolutionTime extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, MaximumEvolutionTime.tagName, value);
     }
 }
@@ -1949,7 +1949,7 @@ export class AutomaticallySetMaxEne extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, AutomaticallySetMaxEne.tagName, value);
     }
 }
@@ -1968,7 +1968,7 @@ export class DiagramEnergyOffset extends NumberNode {
       * @param attributes The attributes.
       * @param value The value.
       */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, DiagramEnergyOffset.tagName, value);
     }
 }

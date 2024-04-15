@@ -1,3 +1,5 @@
+import Big from 'big.js';
+
 /**
  * Get the value mapped to the key.
  * @param map The map to search in. 
@@ -19,8 +21,11 @@ export function get(map: Map<any, any>, key: any): any {
  * @param parts The parts of the ID.
  * @return A string ID composed of the parts joined by the delimiter.
  */
-export function getID(...parts: string[]): string {
-    let id = parts.join("-");
+export function getID(...parts: any[]): string {
+    // Convert the components to strings.
+    let sparts = parts.map((part) => part.toString());
+    // Join the parts with a hyphen.
+    let id = sparts.join("-");
     // Replace any character that is not a letter (upper or lower case), a digit, a hyphen, or an underscore 
     // with an underscore. 
     let validId = id.replace(/[^a-zA-Z-_0-9]/g, '_');
@@ -44,7 +49,7 @@ export function getID(...parts: string[]): string {
 export function rescale(min: number, range: number, newMin: number, newRange: number, value: number): number {
     // The + 0.0 is to force the division to be a floating point division.
     //return (((value - min) / (range + 0.0)) * (newRange)) + newMin;
-    return ((value - min) * (newRange) / (range + 0.0) ) + newMin;
+    return ((value - min) * (newRange) / (range + 0.0)) + newMin;
 }
 
 /**
@@ -93,13 +98,11 @@ export function setToString(set: Set<any>, delimiter?: string): string {
  * @param {string[]} s The string to convert to a number array.
  * @returns A number array.
  */
-export function toNumberArray(s: string[]): number[] {
-    let r: number[] = [];
+export function toNumberArray(s: string[]): Big[] {
+    let r: Big[] = [];
     for (let i = 0; i < s.length; i++) {
         if (isNumeric(s[i])) {
-            r.push(parseFloat(s[i]));
-        //} else {
-        //    throw new Error(`toNumberArray: ${s[i]} is not a number`);
+            r.push(new Big(s[i]));
         }
     }
     return r;
@@ -109,9 +112,70 @@ export function toNumberArray(s: string[]): number[] {
  * @param s The string to check.
  * @returns true iff s is a number.
  */
-export function isNumeric(s: string) : boolean {
+export function isNumeric(s: string): boolean {
     if (s === "") {
-      return false;
+        return false;
     }
     return !isNaN(Number(s))
+}
+
+/**
+ * For converting a number to a string.
+ * @param n The number to convert to a string.
+ */
+export function numberToString(n: string): string {
+    return bigToString(new Big(n));
+}
+
+/**
+ * For converting a number to a string.
+ * @param n The number to convert to a string.
+ */
+export function bigToString(x: Big): string {
+    if (x.eq(0)) {
+        return "0";
+    }
+    if (x.abs().gte(Number.MAX_SAFE_INTEGER)) {
+        return x.toExponential();
+    }
+    if (x.abs().lt(0.0001)) {
+        return x.toExponential();
+    }
+    // Get the integer and fractional parts.
+    let parts: string[] = x.toFixed().split('.');
+    // Get the integer part.
+    //let integer: string = parts[0];
+    // Get the fractional part.
+    let fractional: string = parts[1];
+    return x.toFixed(fractional.length);
+}
+
+/**
+ * @param x A number to check.
+ * @param y Another number to check.
+ * @returns The maximum of x and y.
+ */
+export function max(x: Big | null, y: Big): Big {
+    if (x == null) {
+        return y;
+    }
+    if (x.lt(y)) {
+        return y;
+    }
+    return x;
+}
+
+/**
+ * @param x A number to check.
+ * @param y Another number to check.
+ * @returns The minimum of x and y.
+ */
+export function min(x: Big | null, y: Big): Big {
+    if (x == null) {
+        return y;
+    }
+    if (x.gt(y)) {
+        return y;
+    }
+    return x;
 }

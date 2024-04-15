@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isNumeric = exports.toNumberArray = exports.setToString = exports.arrayToString = exports.mapToString = exports.rescale = exports.getID = exports.get = void 0;
+exports.min = exports.max = exports.bigToString = exports.numberToString = exports.isNumeric = exports.toNumberArray = exports.setToString = exports.arrayToString = exports.mapToString = exports.rescale = exports.getID = exports.get = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 /**
  * Get the value mapped to the key.
  * @param map The map to search in.
@@ -23,7 +27,10 @@ exports.get = get;
  * @return A string ID composed of the parts joined by the delimiter.
  */
 function getID(...parts) {
-    let id = parts.join("-");
+    // Convert the components to strings.
+    let sparts = parts.map((part) => part.toString());
+    // Join the parts with a hyphen.
+    let id = sparts.join("-");
     // Replace any character that is not a letter (upper or lower case), a digit, a hyphen, or an underscore 
     // with an underscore. 
     let validId = id.replace(/[^a-zA-Z-_0-9]/g, '_');
@@ -118,4 +125,65 @@ function isNumeric(s) {
     return !isNaN(Number(s));
 }
 exports.isNumeric = isNumeric;
+/**
+ * For converting a number to a string.
+ * @param n The number to convert to a string.
+ */
+function numberToString(n) {
+    return bigToString(new big_js_1.default(n));
+}
+exports.numberToString = numberToString;
+/**
+ * For converting a number to a string.
+ * @param n The number to convert to a string.
+ */
+function bigToString(x) {
+    if (x.eq(0)) {
+        return "0";
+    }
+    if (x.abs().gte(Number.MAX_SAFE_INTEGER)) {
+        return x.toExponential();
+    }
+    if (x.abs().lt(0.0001)) {
+        return x.toExponential();
+    }
+    // Get the integer and fractional parts.
+    let parts = x.toFixed().split('.');
+    // Get the integer part.
+    //let integer: string = parts[0];
+    // Get the fractional part.
+    let fractional = parts[1];
+    return x.toFixed(fractional.length);
+}
+exports.bigToString = bigToString;
+/**
+ * @param x A number to check.
+ * @param y Another number to check.
+ * @returns The maximum of x and y.
+ */
+function max(x, y) {
+    if (x == null) {
+        return y;
+    }
+    if (x.lt(y)) {
+        return y;
+    }
+    return x;
+}
+exports.max = max;
+/**
+ * @param x A number to check.
+ * @param y Another number to check.
+ * @returns The minimum of x and y.
+ */
+function min(x, y) {
+    if (x == null) {
+        return y;
+    }
+    if (x.gt(y)) {
+        return y;
+    }
+    return x;
+}
+exports.min = min;
 //# sourceMappingURL=util.js.map

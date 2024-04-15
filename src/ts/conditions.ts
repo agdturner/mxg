@@ -23,7 +23,7 @@ export class BathGas extends StringNode {
 
 /**
  * A class for "me:experimentalRate".
- * The attributes must include:
+ * The attributes should include:
  * "ref1" string
  * "ref2" string
  * "refReaction" string
@@ -60,8 +60,9 @@ export class ExperimentalRate extends NumberNode {
      * @param attributes The attributes. 
      * @param value The value. 
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExperimentalRate.tagName, value);
+        /*
         if (!this.attributes.has(ExperimentalRate.s_ref1)) {
             console.error("ExperimentalRate.constructor: ref1 attribute is missing.");
         }
@@ -74,6 +75,7 @@ export class ExperimentalRate extends NumberNode {
         if (!this.attributes.has(ExperimentalRate.s_error)) {
             console.error("ExperimentalRate.constructor: error attribute is missing.");
         }
+        */
     }
 
     /**
@@ -139,7 +141,7 @@ export class ExperimentalRate extends NumberNode {
 
 /**
  * A class for "me:experimentalYield".
- * The attributes must include:
+ * The attributes should include:
  * "ref" string
  * "error" number
  * "yieldTime" number.
@@ -170,7 +172,7 @@ export class ExperimentalYield extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExperimentalYield.tagName, value);
     }
 
@@ -222,7 +224,7 @@ export class ExperimentalYield extends NumberNode {
 
 /**
  * A class for "me:experimentalEigenvalue".
- * The attributes must include:
+ * The attributes should include:
  * EigenvalueID:string
  * error: number
  */
@@ -247,14 +249,16 @@ export class ExperimentalEigenvalue extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExperimentalEigenvalue.tagName, value);
+        /*
         if (!this.attributes.has(ExperimentalEigenvalue.s_EigenvalueID)) {
             console.error("ExperimentalEigenvalue.constructor: EigenvalueID attribute is missing.");
         }
         if (!this.attributes.has(ExperimentalEigenvalue.s_error)) {
             console.error("ExperimentalEigenvalue.constructor: error attribute is missing.");
         }
+        */
     }
 
     /**
@@ -310,7 +314,7 @@ export class ExcessReactantConc extends NumberNode {
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: number) {
+    constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExcessReactantConc.tagName, value);
     }
 
@@ -756,7 +760,7 @@ export class Conditions extends NodeWithNodes {
     /**
      * The bath gases.
      */
-    bathGases: Set<BathGas>;
+    bathGases: Map<BathGas, number>;
 
     /**
      * @param attributes The attributes.
@@ -768,13 +772,13 @@ export class Conditions extends NodeWithNodes {
         this.id = id;
         this.index = new Map();
         this.bathGasesIndex = new Map();
-        this.bathGases = new Set();
+        this.bathGases = new Map();
         if (bathGases != undefined) {
             this.index.set(BathGas.tagName, this.nodes.size);
             bathGases.forEach((bathGas) => {
                 this.bathGasesIndex.set(bathGas.value, this.nodes.size);
                 this.addNode(bathGas);
-                this.bathGases.add(bathGas);
+                this.bathGases.set(bathGas, bathGases.size);
             });
         }
         if (pTs != undefined) {
@@ -786,18 +790,22 @@ export class Conditions extends NodeWithNodes {
     /**
      * @returns The bath gases.
      */
-    getBathGases(): Set<BathGas> {
+    getBathGases(): Map<BathGas, number> {
         return this.bathGases;
     }
 
     /**
      * @param bathGas The bath gas to add.
      */
-    addBathGas(bathGas: BathGas) {
+    addBathGas(bathGas: BathGas): number {
         if (!this.bathGases.has(bathGas)) {
-            this.bathGases.add(bathGas);
+            let index: number = this.bathGases.size;
+            this.bathGases.set(bathGas, index);
             this.bathGasesIndex.set(bathGas.value, this.nodes.size);
             this.addNode(bathGas);
+            return index;
+        } else {
+            return this.bathGases.get(bathGas) as number;
         }
     }
 

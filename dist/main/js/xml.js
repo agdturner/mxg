@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.StringNode = exports.TagWithAttributes = exports.Tag = exports.getInputString = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const html_1 = require("./html");
 /**
  * Get the attribute of an xml element.
@@ -212,7 +216,18 @@ class NumberNode extends TagWithAttributes {
      * @returns An XML representation.
      */
     toXML(padding) {
-        return getTag(this.value.toString().trim(), this.tagName, this.attributes, padding, false);
+        let stringValue = this.value.toString().trim();
+        let c;
+        if (this.value < new big_js_1.default(0)) {
+            c = 7;
+        }
+        else {
+            c = 6;
+        }
+        if (stringValue.length > c) {
+            stringValue = this.value.toExponential().trim();
+        }
+        return getTag(stringValue, this.tagName, this.attributes, padding, false);
     }
 }
 exports.NumberNode = NumberNode;
@@ -311,15 +326,21 @@ class NodeWithNodes extends TagWithAttributes {
         }
         let s = "";
         if (this.nodes.size > 0) {
+            let i = 0;
             this.nodes.forEach((v) => {
-                if (v instanceof NodeWithNodes) {
-                    s += v.toXML(pad, padding1);
-                }
-                else if (v instanceof TagWithAttributes) {
-                    s += v.toXML(padding1);
+                if (v == undefined) {
+                    console.warn("Node " + i.toString() + " is undefined this.nodes.size = " + this.nodes.size);
                 }
                 else {
-                    s += v.toXML(padding1);
+                    if (v instanceof NodeWithNodes) {
+                        s += v.toXML(pad, padding1);
+                    }
+                    else if (v instanceof TagWithAttributes) {
+                        s += v.toXML(padding1);
+                    }
+                    else {
+                        s += v.toXML(padding1);
+                    }
                 }
             });
             return getTag(s, this.tagName, this.attributes, padding, true);

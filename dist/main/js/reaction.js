@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Reaction = exports.ExcessReactantConc = exports.Tunneling = exports.MesmerILT = exports.MCRCMethod = exports.NInfinity = exports.TInfinity = exports.ActivationEnergy = exports.PreExponential = exports.TransitionState = exports.Product = exports.Reactant = exports.ReactionMolecule = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const xml_js_1 = require("./xml.js");
 /**
  * A reference to a molecule, not to be confused with a Molecule.
@@ -810,7 +814,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
                 throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
             }
             return molecule.getEnergy();
-        }).reduce((a, b) => a + b, 0);
+        }).reduce((a, b) => a.add(b), new big_js_1.default(0));
     }
     /**
      * Returns the total energy of all products.
@@ -824,7 +828,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
                 throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
             }
             return molecule.getEnergy();
-        }).reduce((a, b) => a + b, 0);
+        }).reduce((a, b) => a.add(b), new big_js_1.default(0));
     }
     /**
      * @param tagName The tag name.
