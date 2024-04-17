@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.Molecule = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.Hf298 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
 const big_js_1 = __importDefault(require("big.js"));
 const range_js_1 = require("./range.js");
 const util_js_1 = require("./util.js");
@@ -763,6 +763,56 @@ class ZPE extends Property {
 }
 exports.ZPE = ZPE;
 /**
+ * The Heat of Formation at 0K.
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+class Hf0 extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:Hf0";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units) {
+        this.getProperty().updateUnits(units);
+    }
+}
+exports.Hf0 = Hf0;
+/**
+ * The Heat of Formation at 298K.
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+class Hf298 extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:Hf298";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units) {
+        this.getProperty().updateUnits(units);
+    }
+}
+exports.Hf298 = Hf298;
+/**
  * "me:frequenciesScaleFactor" property.
  */
 class FrequenciesScaleFactor extends Property {
@@ -908,6 +958,26 @@ class PropertyList extends xml_js_1.NodeWithNodes {
         else {
             console.log('Property ' + property.dictRef + ' already exists, updating...');
             this.nodes.set(i, property);
+        }
+    }
+    /**
+     * @param dictRef The dictRef of the property.
+     */
+    removeProperty(dictRef) {
+        let i = this.index.get(dictRef);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(dictRef);
+            let newIndex = new Map();
+            this.index.forEach((value, key) => {
+                if (value > i) {
+                    newIndex.set(key, value - 1);
+                }
+                else {
+                    newIndex.set(key, value);
+                }
+            });
+            this.index = newIndex;
         }
     }
 }
@@ -1226,12 +1296,12 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
         if (angle == undefined) {
             throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
-        this.angle = parseFloat(angle);
+        this.angle = new big_js_1.default(angle);
         let potential = attributes.get(PotentialPoint.s_potential);
         if (potential == undefined) {
             throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
-        this.potential = parseFloat(potential);
+        this.potential = new big_js_1.default(potential);
     }
     /**
      * @returns The angle.
@@ -1261,6 +1331,252 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
     }
 }
 exports.PotentialPoint = PotentialPoint;
+/**
+ * For representing a "me:thermoValue"
+ * T, H, S, G, Cp
+ */
+class ThermoValue extends xml_js_1.TagWithAttributes {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:thermoValue";
+    /**
+     * The key for the T attribute.
+     */
+    static s_T = "T";
+    /**
+     * The key for the H attribute.
+     */
+    static s_H = "H";
+    /**
+     * The key for the S attribute.
+     */
+    static s_S = "S";
+    /**
+     * The key for the G attribute.
+     */
+    static s_G = "G";
+    /**
+     * The key for the Cp attribute.
+     */
+    static s_Cp = "Cp";
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes) {
+        super(attributes, Atom.tagName);
+    }
+    /**
+     * @returns The temperature.
+     */
+    getT() {
+        return new big_js_1.default(this.attributes.get(ThermoValue.s_T));
+    }
+    /**
+     * @param T The temperature.
+     *
+    setT(T: Big): void {
+        this.attributes.set(ThermoValue.s_T, T.toString());
+    }
+
+    /**
+     * @returns The enthalpy.
+     */
+    getH() {
+        return new big_js_1.default(this.attributes.get(ThermoValue.s_H));
+    }
+    /**
+     * @param H The enthalpy.
+     *
+    setH(H: Big): void {
+        this.attributes.set(ThermoValue.s_H, H.toString());
+    }
+
+    /**
+     * @returns The entropy.
+     */
+    getS() {
+        return new big_js_1.default(this.attributes.get(ThermoValue.s_S));
+    }
+    /**
+     * @param S The entropy.
+     *
+    setS(S: Big): void {
+        this.attributes.set(ThermoValue.s_S, S.toString());
+    }
+
+    /**
+     * @returns The Gibbs free energy.
+     */
+    getG() {
+        return new big_js_1.default(this.attributes.get(ThermoValue.s_G));
+    }
+    /**
+     * @param G The Gibbs free energy.
+     *
+    setG(G: Big): void {
+        this.attributes.set(ThermoValue.s_G, G.toString());
+    }
+
+    /**
+     * @returns The heat capacity.
+     */
+    getCp() {
+        return new big_js_1.default(this.attributes.get(ThermoValue.s_Cp));
+    }
+    /**
+     * @param Cp The heat capacity.
+     *
+    setCp(Cp: Big): void {
+        this.attributes.set(ThermoValue.s_Cp, Cp.toString());
+    }
+
+    /**
+     * @returns The ThermoValue as a string array.
+     */
+    toStringArray() {
+        return [this.getT().toString(), this.getH().toString(), this.getS().toString(), this.getG().toString(), this.getCp().toString()];
+    }
+    /**
+     * @returns The ThermoValue as a CSV string.
+     */
+    toCSV() {
+        return this.toStringArray().join(",");
+    }
+}
+exports.ThermoValue = ThermoValue;
+/**
+ * For representing a "me:thermoTable"
+ * attributes:
+ * unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K"
+ */
+class ThermoTable extends xml_js_1.NodeWithNodes {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:thermoTable";
+    /**
+     * The key for the unitsT attribute.
+     */
+    static s_unitsT = "unitsT";
+    /**
+     * The key for the unitsH attribute.
+     */
+    static s_unitsH = "unitsH";
+    /**
+     * The key for the unitsS attribute.
+     */
+    static s_unitsS = "unitsS";
+    /**
+     * The key for the unitsG attribute.
+     */
+    static s_unitsG = "unitsG";
+    /**
+     * The key for the unitsCp attribute.
+     */
+    static s_unitsCp = "unitsCp";
+    /**
+     * The ThermoValues
+     */
+    tvs;
+    /**
+     * @param attributes The attributes.
+     * @param tvs The ThermoValue array.
+     */
+    constructor(attributes, tvs) {
+        super(attributes, ThermoTable.tagName);
+        if (tvs != undefined) {
+            tvs.forEach((tv) => {
+                this.addNode(tv);
+            });
+            this.tvs = tvs;
+        }
+        else {
+            this.tvs = [];
+        }
+    }
+    /**
+     * Retrieves a ThermoValue from the tvs array at a specific index.
+     *
+     * @param i The index of the ThermoValue to return.
+     * @returns The ThermoValue at the given index.
+     * @throws IndexError if i is out of the bounds of the tvs array.
+     * @throws TypeError if tvs is null or undefined.
+     */
+    get(i) {
+        return this.tvs[i];
+    }
+    /**
+     * Set the ThermoValue in t.
+     *
+     * @param i The index of the ThermoValue to set.
+     * @returns The PT pairs.
+     */
+    set(i, tv) {
+        this.nodes.set(i, tv);
+        this.tvs[i] = tv;
+    }
+    /**
+     * Add a ThermoValue.
+     *
+     * @param tv The ThermoValue to add.
+     * @returns The index of this.pTPairs where pTPair is added.
+     */
+    add(tv) {
+        this.addNode(tv);
+        this.tvs.push(tv);
+        return this.nodes.size - 1;
+    }
+    /**
+     * Remove the ThermoValue at the given index.
+     *
+     * @param i The index.
+     */
+    remove(i) {
+        this.nodes.delete(i);
+        this.tvs.splice(i, 1);
+    }
+    /**
+     * Initialise tvs.
+     *
+     * @param tvs The tvs to be set.
+     */
+    init(tvs) {
+        this.clear();
+        tvs.forEach((tv) => {
+            this.addNode(tv);
+            this.tvs.push(tv);
+        });
+    }
+    /**
+     * Clear.
+     */
+    clear() {
+        this.nodes.clear();
+        this.tvs = [];
+    }
+    /**
+     * @returns The ThermoTable header as a string array.
+     */
+    getHeader() {
+        return ["T units(" + (this.attributes.get(ThermoTable.s_unitsT)) + ")",
+            "H(T)-H(0) units(" + (this.attributes.get(ThermoTable.s_unitsH)) + ")",
+            "S(T) units(" + (this.attributes.get(ThermoTable.s_unitsS)) + ")",
+            "G(T) units(" + (this.attributes.get(ThermoTable.s_unitsG)) + ")",
+            "Cp(T) units(" + (this.attributes.get(ThermoTable.s_unitsCp)) + ")"];
+    }
+    /**
+     * @returns The ThermoTable as a CSV string.
+     */
+    toCSV() {
+        let csv = this.getHeader().join(",") + "\n";
+        this.tvs.forEach((tv) => {
+            csv += tv.toCSV() + "\n";
+        });
+        return csv;
+    }
+}
+exports.ThermoTable = ThermoTable;
 /**
  * In the XML, a "me:HinderedRotorPotential" node is a child node of a "me:ExtraDOSCMethod" node.
  * It may have one or more "me:PotentialPoint" child nodes.
@@ -1332,7 +1648,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
         if (expansionSize == undefined) {
             throw new Error(HinderedRotorPotential.s_expansionSize + ' is undefined!');
         }
-        this.expansionSize = parseFloat(expansionSize);
+        this.expansionSize = new big_js_1.default(expansionSize);
         let useSineTerms = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
             this.useSineTerms = false;
@@ -1602,8 +1918,6 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * The index. The keys are the tag names and the values are the node indexes.
      */
     index;
-    // The molecule ID.
-    id;
     /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
@@ -1615,30 +1929,25 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param dOSCMethod The method for calculating density of states.
      * @param extraDOSCMethod The extra method for calculating density of states.
      * @param reservoirSize The reservoir size.
+     * @param tt The thermo table.
      */
-    constructor(attributes, id, 
-    //atoms?: Atom | AtomArray,
-    atoms, 
-    //bonds?: Bond | BondArray,
-    bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize) {
+    constructor(attributes, id, atoms, bonds, properties, energyTransferModel, dOSCMethod, extraDOSCMethod, reservoirSize, tt) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        this.id = id;
+        this.setID(id);
         let i = 0;
         // Atoms
-        if (!atoms) {
-            atoms = new AtomArray(new Map());
+        if (atoms) {
+            this.nodes.set(i, atoms);
+            this.index.set(AtomArray.tagName, i);
+            i++;
         }
-        this.nodes.set(i, atoms);
-        this.index.set(AtomArray.tagName, i);
-        i++;
         // Bonds
-        if (!bonds) {
-            bonds = new BondArray(new Map());
+        if (bonds) {
+            this.nodes.set(i, bonds);
+            this.index.set(BondArray.tagName, i);
+            i++;
         }
-        this.nodes.set(i, bonds);
-        this.index.set(BondArray.tagName, i);
-        i++;
         // Properties
         if (properties) {
             this.nodes.set(i, properties);
@@ -1666,6 +1975,22 @@ class Molecule extends xml_js_1.NodeWithNodes {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
         }
+        if (tt) {
+            this.nodes.set(i, tt);
+            this.index.set(ThermoTable.tagName, i);
+        }
+    }
+    /**
+     * @returns The id of the molecule.
+     */
+    getID() {
+        return this.attributes.get(Molecule.s_id);
+    }
+    /**
+     * @param id The id of the molecule.
+     */
+    setID(id) {
+        this.attributes.set(Molecule.s_id, id);
     }
     /**
      * Get the description or the id of the molecule.
@@ -1676,7 +2001,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
         if (description != undefined) {
             return description;
         }
-        return this.id;
+        return this.getID();
     }
     /**
      * Set the description of the molecule.
@@ -1713,7 +2038,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * and possibly including description and whether active).
      */
     getLabel() {
-        let label = this.id;
+        let label = this.getID();
         let description = this.getDescription();
         if (description != undefined) {
             label += " (" + description + ")";
@@ -1733,25 +2058,16 @@ class Molecule extends xml_js_1.NodeWithNodes {
     /**
      * @returns The properties of the molecule.
      */
-    getProperties() {
+    getPropertyList() {
         let i = this.index.get(PropertyList.tagName);
-        if (i == undefined) {
-            i = this.index.get(Property.tagName);
-            if (i == undefined) {
-                return undefined;
-            }
-            else {
-                return this.nodes.get(i);
-            }
-        }
-        else {
+        if (i != undefined) {
             return this.nodes.get(i);
         }
     }
     /**
      * @param properties The properties.
      */
-    setProperties(properties) {
+    setPropertyList(properties) {
         let i = this.index.get(PropertyList.tagName);
         if (i == undefined) {
             this.index.set(PropertyList.tagName, this.nodes.size);
@@ -1767,35 +2083,17 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @returns The property.
      */
     getProperty(dictRef) {
-        let properties = this.getProperties();
-        if (properties != undefined) {
-            if (properties instanceof PropertyList) {
-                //console.log('PropertyList');
-                return properties.getProperty(dictRef);
-            }
-            else {
-                //console.log('Property');
-                return properties;
-            }
+        let pl = this.getPropertyList();
+        if (pl != undefined) {
+            return pl.getProperty(dictRef);
         }
     }
     /**
      * Set the property.
-     * @param property The property.
+     * @param p The property.
      */
-    setProperty(property) {
-        let properties = this.getProperties();
-        if (properties != undefined) {
-            if (properties instanceof PropertyList) {
-                properties.setProperty(property);
-            }
-            else {
-                this.setProperties(properties);
-            }
-        }
-        else {
-            this.setProperties(property);
-        }
+    setProperty(p) {
+        this.getPropertyList().setProperty(p);
     }
     /**
      * @param atomId The id of the atom.
@@ -1941,6 +2239,32 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
         else {
             this.nodes.set(i, reservoirSize);
+        }
+    }
+    /**
+     * @returns The thermo table of the molecule.
+     */
+    getThermoTable() {
+        let i = this.index.get(ThermoTable.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        else {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * Set the thermo table.
+     * @param tt The thermo table.
+     */
+    setThermoTable(tt) {
+        let i = this.index.get(ThermoTable.tagName);
+        if (i == undefined) {
+            this.index.set(ThermoTable.tagName, this.nodes.size);
+            this.addNode(tt);
+        }
+        else {
+            this.nodes.set(i, tt);
         }
     }
     /**

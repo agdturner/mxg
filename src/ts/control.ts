@@ -1,6 +1,5 @@
-import {
-    Tag, NodeWithNodes, NumberNode, TagWithAttributes, StringNode
-} from "./xml";
+import Big from "big.js";
+import { Tag, NodeWithNodes, NumberNode, TagWithAttributes, StringNode } from "./xml";
 
 /**
  * A class for "me:calculateRateCoefficientsOnly".
@@ -463,7 +462,7 @@ export class CalcMethodFitting extends CalcMethod {
  * A class for "me:MarquardtIterations".
  */
 export class MarquardtIterations extends NumberNode {
-    
+
     /**
      * The tag name.
      */
@@ -1987,39 +1986,39 @@ export class TestMicroRates extends TagWithAttributes {
     /**
      * The minimum temperature.
      */
-    tMin: number;
+    tMin: Big;
 
     /**
      * The maximum temperature.
      */
-    tMax: number;
+    tMax: Big;
 
     /**
      * The temperature step.
      */
-    tStep: number;
+    tStep: Big;
 
     /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, TestMicroRates.tagName);
-        this.tMin = parseFloat(attributes.get("Tmin") as string);
-        this.tMax = parseFloat(attributes.get("Tmax") as string);
-        this.tStep = parseFloat(attributes.get("Tstep") as string);
+        this.tMin = new Big(attributes.get("Tmin") as string);
+        this.tMax = new Big(attributes.get("Tmax") as string);
+        this.tStep = new Big(attributes.get("Tstep") as string);
     }
 
     /**
      * @returns The maximum temperature.
      */
-    getTmin(): number {
+    getTmin(): Big {
         return this.tMin;
     }
 
     /**
      * @param tMin The minimum temperature.
      */
-    setTmin(tMin: number) {
+    setTmin(tMin: Big) {
         this.tMin = tMin;
         this.attributes?.set("Tmin", tMin.toString());
     }
@@ -2027,14 +2026,14 @@ export class TestMicroRates extends TagWithAttributes {
     /**
      * @returns The maximum temperature.
      */
-    getTmax(): number {
+    getTmax(): Big {
         return this.tMax;
     }
 
     /**
      * @param tMax The maximum temperature.
      */
-    setTmax(tMax: number) {
+    setTmax(tMax: Big) {
         this.tMax = tMax;
         this.attributes?.set("Tmax", tMax.toString());
     }
@@ -2042,14 +2041,14 @@ export class TestMicroRates extends TagWithAttributes {
     /**
      * @returns The temperature step.
      */
-    getTstep(): number {
+    getTstep(): Big {
         return this.tStep;
     }
 
     /**
      * @param tStep The temperature step.
      */
-    setTstep(tStep: number) {
+    setTstep(tStep: Big) {
         this.tStep = tStep;
         this.attributes?.set("Tstep", tStep.toString());
     }

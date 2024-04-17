@@ -410,3 +410,31 @@ export function createLabel(textContent: string,
     label.style.fontSize = '1em'; // Set the font size with a relative unit.
     return label;
 }
+
+/**
+ * Create and return a HTMLTableElement.
+ * @param id The id of the HTMLTableElement.
+ * @param margin The margin for the HTMLTableElement.
+ * @returns A HTMLTableElement.
+ */
+export function createTable(id: string,
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLTableElement {
+    let table: HTMLTableElement = document.createElement('table');
+    table.id = id;
+    Object.assign(table.style, margin);
+    return table;
+}
+
+/**
+ * Create and return a HTMLTableRowElement.
+ * @param id The id of the HTMLTableRowElement.
+ * @param margin The margin for the HTMLTableRowElement.
+ * @returns A HTMLTableRowElement.
+ */
+export function addTableRow(table: HTMLTableElement, content: string[]): HTMLTableRowElement {
+    let row: HTMLTableRowElement = table.insertRow();
+    content.forEach(c => {
+        row.insertCell().textContent = c;
+    });
+    return row;
+}

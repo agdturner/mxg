@@ -1,6 +1,5 @@
-import {
-    NodeWithNodes, NumberNode, StringNode
-} from "./xml.js";
+import Big from "big.js";
+import { NodeWithNodes, NumberNode, StringNode } from "./xml.js";
 
 /**
  * A class for "me:bathGas".
@@ -126,15 +125,15 @@ export class ExperimentalRate extends NumberNode {
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
-    getError(): number {
-        return parseFloat(this.attributes.get(ExperimentalRate.s_error) as string);
+    getError(): Big {
+        return new Big(this.attributes.get(ExperimentalRate.s_error) as string);
     }
 
     /**
      * Set the error attribute.
      * @param error The error.
      */
-    setError(error: number) {
+    setError(error: Big) {
         this.attributes.set(ExperimentalRate.s_error, error.toString());
     }
 }
@@ -143,8 +142,8 @@ export class ExperimentalRate extends NumberNode {
  * A class for "me:experimentalYield".
  * The attributes should include:
  * "ref" string
- * "error" number
- * "yieldTime" number.
+ * "error" Big
+ * "yieldTime" Big.
  */
 export class ExperimentalYield extends NumberNode {
 
@@ -194,30 +193,30 @@ export class ExperimentalYield extends NumberNode {
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
-    getError(): number {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_error) as string);
+    getError(): Big {
+        return new Big(this.attributes.get(ExperimentalYield.s_error) as string);
     }
 
     /**
      * Set the error attribute.
      * @param error The error.
      */
-    setError(error: number) {
+    setError(error: Big) {
         this.attributes.set(ExperimentalYield.s_error, error.toString());
     }
 
     /**
      * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
      */
-    getYieldTime(): number {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_yieldTime) as string);
+    getYieldTime(): Big {
+        return new Big(this.attributes.get(ExperimentalYield.s_yieldTime) as string);
     }
 
     /**
      * Set the yieldTime attribute.
      * @param yieldTime The yieldTime.
      */
-    setYieldTime(yieldTime: number) {
+    setYieldTime(yieldTime: Big) {
         this.attributes.set(ExperimentalYield.s_yieldTime, yieldTime.toString());
     }
 }
@@ -279,15 +278,15 @@ export class ExperimentalEigenvalue extends NumberNode {
     /**
      * @returns The error attribute or undefined if there is no error attribute.
      */
-    getError(): number {
-        return parseFloat(this.attributes.get(ExperimentalEigenvalue.s_error) as string);
+    getError(): Big {
+        return new Big(this.attributes.get(ExperimentalEigenvalue.s_error) as string);
     }
 
     /**
      * Set the error attribute.
      * @param error The error.
      */
-    setError(error: number) {
+    setError(error: Big) {
         this.attributes.set(ExperimentalEigenvalue.s_error, error.toString());
     }
 
@@ -339,12 +338,12 @@ export class ExcessReactantConc extends NumberNode {
  * Can there be multiple BathGases and ExperimentRates?
  * The attributes include:
  * units: string
- * P: number
- * T: number
+ * P: Big
+ * T: Big
  * And optionally:
- * percentExcessReactantConc: number
+ * percentExcessReactantConc: Big
  * excessReactantConc: string
- * precision: number
+ * precision: Big
  * bathGas: string
  * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
  * 
@@ -416,40 +415,34 @@ export class PTpair extends NodeWithNodes {
     /**
      * @returns The Pressure.
      */
-    getP(): number {
-        //if (this !== undefined) {
-            let p: string | undefined = this.attributes.get(PTpair.s_P);
-            if (p !== undefined) {
-                return parseFloat(p);
-            }
-        //}
-        return NaN;
+    getP(): Big | undefined {
+        let p: string | undefined = this.attributes.get(PTpair.s_P);
+        if (p !== undefined) {
+            return new Big(p);
+        }
     }
 
     /**
      * Set The Pressure
      */
-    setP(p: number) {
+    setP(p: Big) {
         this.attributes.set(PTpair.s_P, p.toString());
     }
 
     /**
      * @returns The Temperature.
      */
-    getT(): number {
-        //if (this !== undefined) {
-            let t: string | undefined = this.attributes.get(PTpair.s_T);
-            if (t !== undefined) {
-                return parseFloat(t);
-            }
-        //}
-        return NaN;
+    getT(): Big | undefined {
+        let t: string | undefined = this.attributes.get(PTpair.s_T);
+        if (t !== undefined) {
+            return new Big(t);
+        }
     }
 
     /**
      * Set The Temperature.
      */
-    setT(t: number) {
+    setT(t: Big) {
         this.attributes.set(PTpair.s_T, t.toString());
     }
 
@@ -655,7 +648,7 @@ export class PTs extends NodeWithNodes {
     /**
      * The Pressure and Temperature pairs.
      */
-    pTpairs: PTpair[];
+    ptps: PTpair[];
 
     /**
      * @param attributes The attributes.
@@ -667,68 +660,74 @@ export class PTs extends NodeWithNodes {
             pTpairs.forEach((pTpair) => {
                 this.addNode(pTpair);
             });
-            this.pTpairs = pTpairs;
+            this.ptps = pTpairs;
         } else {
-            this.pTpairs = [];
+            this.ptps = [];
         }
     }
 
     /**
+     * Get the PTpair at the given index.
+     * 
      * @param i The index of the PTpair to return. 
      * @returns The PTpair at the given index or undefined if the index is out of range.
      */
-    getPTpair(i: number): PTpair {
-        return this.pTpairs[i];
+    get(i: number): PTpair {
+        return this.ptps[i];
     }
 
     /**
-     * Set the PT at the given index.
+     * Set the PTpair at the given index.
+     * 
      * @param i The index.
      * @returns The PT pairs.
      */
-    setPTpair(i: number, pTpair: PTpair): void {
+    set(i: number, pTpair: PTpair): void {
         this.nodes.set(i, pTpair);
-        this.pTpairs[i] = pTpair;
+        this.ptps[i] = pTpair;
     }
 
     /**
      * Add a PTpair.
+     * 
      * @param pTPair The PTpair to add.
      * @returns The index of this.pTPairs where pTPair is added.
      */
-    addPTpair(pTpair: PTpair): number {
+    add(pTpair: PTpair): number {
         this.addNode(pTpair);
-        this.pTpairs.push(pTpair);
+        this.ptps.push(pTpair);
         return this.nodes.size - 1;
     }
 
     /**
-     * Remove the PT at the given index.
+     * Remove the PTpair at the given index.
+     * 
      * @param i The index.
      */
-    removePTpair(i: number): void {
+    remove(i: number): void {
         this.nodes.delete(i);
-        this.pTpairs.splice(i, 1);
+        this.ptps.splice(i, 1);
     }
 
     /**
-     * Add a PT.
-     * @param pTPair The PT to add.
+     * Initialise.
+     * 
+     * @param pTPair The PTpair to add.
      */
-    setPTpairs(pTpairs: PTpair[]): void {
-        this.nodes.clear();
-        pTpairs.forEach((pTpair) => {
-            this.addNode(pTpair);
-            this.pTpairs.push(pTpair);
+    init(ptps: PTpair[]): void {
+        this.clear();
+        ptps.forEach((ptp) => {
+            this.addNode(ptp);
+            this.ptps.push(ptp);
         });
     }
 
     /**
-     * Remove all PT pairs.
+     * Clear.
      */
-    removePTpairs(): void {
+    clear(): void {
         this.nodes.clear();
-        this.pTpairs = [];
+        this.ptps = [];
     }
 }
 

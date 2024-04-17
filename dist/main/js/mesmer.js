@@ -42,7 +42,7 @@ class MoleculeList extends xml_js_1.NodeWithNodes {
         if (molecules != undefined) {
             molecules.forEach(molecule => {
                 this.nodes.set(this.nodes.size, molecule);
-                this.index.set(molecule.id, this.nodes.size - 1);
+                this.index.set(molecule.getID(), this.nodes.size - 1);
             });
         }
     }
@@ -73,14 +73,15 @@ class MoleculeList extends xml_js_1.NodeWithNodes {
      * @param molecule The molecule.
      */
     addMolecule(molecule) {
-        let index = this.index.get(molecule.id);
+        let mID = molecule.getID();
+        let index = this.index.get(mID);
         if (index !== undefined) {
             this.nodes.set(index, molecule);
-            console.log('Replaced molecule with id ' + molecule.id);
+            console.log('Replaced molecule with id ' + mID);
         }
         else {
             this.nodes.set(this.nodes.size, molecule);
-            this.index.set(molecule.id, this.nodes.size - 1);
+            this.index.set(mID, this.nodes.size - 1);
         }
     }
 }

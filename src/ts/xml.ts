@@ -2,6 +2,7 @@ import Big from "big.js";
 import {
     getSelfClosingTag
 } from "./html";
+import { bigArrayToString } from "./util";
 
 /**
  * Get the attribute of an xml element.
@@ -222,23 +223,27 @@ export class NumberNode extends TagWithAttributes {
     }
 
     /**
+     * Get the value.
+     */
+    getValue(): Big {
+        return this.value;
+    }
+
+    /**
+     * Set the value.
+     * @param value The value.
+     */
+    setValue(value: Big) {
+        this.value = value;
+    }
+
+    /**
      * Get the XML representation.
      * @param padding The padding (Optional).
      * @returns An XML representation.
      */
     override toXML(padding?: string): string {
-        let stringValue = this.value.toString().trim();
-        
-        let c : number;
-        if (this.value < new Big(0)) {
-            c = 7;
-        } else {
-            c = 6;
-        }
-        if (stringValue.length > c) {
-            stringValue = this.value.toExponential().trim();
-        }
-        return getTag(stringValue, this.tagName, this.attributes, padding, false);
+        return getTag(this.value.toString(), this.tagName, this.attributes, padding, false);
     }
 }
 
@@ -255,7 +260,7 @@ export class NumberArrayNode extends TagWithAttributes {
     /**
      * The delimiter of the values.
      */
-    delimiter: string = ",";
+    delimiter: string = " ";
 
     /**
      * @param attributes The attributes.
@@ -269,6 +274,20 @@ export class NumberArrayNode extends TagWithAttributes {
         if (delimiter != undefined) {
             this.delimiter = delimiter;
         }
+    }
+
+    /**
+     * @returns The values.
+     */
+    getValues(): Big[] {
+        return this.values;
+    }
+
+    /**
+     * @returns A string representation.
+     */
+    setValues(values: Big[]) {
+        this.values = values;
     }
 
     /**
@@ -292,7 +311,7 @@ export class NumberArrayNode extends TagWithAttributes {
      * @returns An XML representation.
      */
     toXML(padding?: string): string {
-        return getTag(this.values.toString().replaceAll(",", this.delimiter), this.tagName, this.attributes, padding, false);
+        return getTag(bigArrayToString(this.values, this.delimiter), this.tagName, this.attributes, padding, false);
     }
 }
 

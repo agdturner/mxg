@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SensitivityNumVarRedIters = exports.SensitivityAnalysisOrder = exports.SensitivityAnalysisSamples = exports.CalcMethodThermodynamicTable = exports.Tstep = exports.Tmax = exports.Tmid = exports.Tmin = exports.CalcMethodAnalyticalRepresentation = exports.ChebPExSize = exports.ChebTExSize = exports.ChebMinConc = exports.ChebMaxConc = exports.ChebMinTemp = exports.ChebMaxTemp = exports.ChebNumConc = exports.ChebNumTemp = exports.Precision = exports.Format = exports.UseTraceWeighting = exports.CalcMethodMarquardt = exports.MarquardtDerivDelta = exports.MarquardtTolerance = exports.MarquardtIterations = exports.CalcMethodFitting = exports.FittingIterations = exports.CalcMethodGridSearch = exports.CalcMethodSimpleCalc = exports.CalcMethod = exports.HideInactive = exports.ForceMacroDetailedBalance = exports.UseTheSameCellNumberForAllConditions = exports.TestRateConstant = exports.TestDOS = exports.PrintCrossingCoefficients = exports.PrintTunnelingCoefficients = exports.PrintPhenomenologicalEvolution = exports.PrintSpeciesProfile = exports.PrintReactionOperatorSize = exports.PrintGrainTransitionStateFlux = exports.PrintGrainedSpeciesProfile = exports.PrintTSsos = exports.PrintGrainkfE = exports.PrintGrainkbE = exports.PrintGrainDOS = exports.PrintGrainBoltzmann = exports.PrintReactionOperatorColumnSums = exports.PrintCellTransitionStateFlux = exports.PrintCellDOS = exports.CalculateRateCoefficientsOnly = void 0;
 exports.Control = exports.TestMicroRates = exports.DiagramEnergyOffset = exports.AutomaticallySetMaxEne = exports.MaximumEvolutionTime = exports.ShortestTimeOfInterest = exports.Eigenvalues = exports.CalcMethodSensitivityAnalysis = exports.SensitivityVarRedMethod = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const xml_1 = require("./xml");
 /**
  * A class for "me:calculateRateCoefficientsOnly".
@@ -1812,9 +1816,9 @@ class TestMicroRates extends xml_1.TagWithAttributes {
      */
     constructor(attributes) {
         super(attributes, TestMicroRates.tagName);
-        this.tMin = parseFloat(attributes.get("Tmin"));
-        this.tMax = parseFloat(attributes.get("Tmax"));
-        this.tStep = parseFloat(attributes.get("Tstep"));
+        this.tMin = new big_js_1.default(attributes.get("Tmin"));
+        this.tMax = new big_js_1.default(attributes.get("Tmax"));
+        this.tStep = new big_js_1.default(attributes.get("Tstep"));
     }
     /**
      * @returns The maximum temperature.

@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.remove = void 0;
+exports.addTableRow = exports.createTable = exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.remove = exports.sy_upTriangle = exports.sy_downTriangle = exports.s_collapsible = exports.s_button = void 0;
 const util_1 = require("./util");
-const s_button = "button";
+exports.s_button = "button";
+exports.s_collapsible = "collapsible";
+exports.sy_downTriangle = "\u25BC"; // ▼
+exports.sy_upTriangle = "\u25B2"; // ▲
 /**
  * Remove an element with the given id.
  * @param id The id of the element to remove.
@@ -34,12 +37,12 @@ exports.remove = remove;
  */
 function getCollapsibleDiv(id, divToAddTo, elementToInsertBefore, content, buttonLabel, componentMargin, margin) {
     let div = createDiv(id, margin);
-    let buttonId = (0, util_1.getID)(id, s_button);
-    let button = createButton(`${buttonLabel} ▼`, buttonId, componentMargin);
-    button.className = 'collapsible';
+    let buttonId = (0, util_1.getID)(id, exports.s_button);
+    let button = createButton(buttonLabel + " " + exports.sy_downTriangle, buttonId, componentMargin);
+    button.className = exports.s_collapsible;
     button.addEventListener('click', function () {
         let parts = button.textContent.split(' ');
-        parts[parts.length - 1] = parts[parts.length - 1] === '▼' ? '▲' : '▼';
+        parts[parts.length - 1] = parts[parts.length - 1] === exports.sy_downTriangle ? exports.sy_upTriangle : exports.sy_downTriangle;
         button.textContent = parts.join(' ');
     });
     div.appendChild(button);
@@ -360,6 +363,7 @@ function createFlexDiv(id, margin) {
     let div = createDiv(id, margin);
     div.style.display = 'flex';
     div.style.flexWrap = 'wrap';
+    //div.classList.add('auto-width-flex');
     return div;
 }
 exports.createFlexDiv = createFlexDiv;
@@ -379,4 +383,31 @@ function createLabel(textContent, margin) {
     return label;
 }
 exports.createLabel = createLabel;
+/**
+ * Create and return a HTMLTableElement.
+ * @param id The id of the HTMLTableElement.
+ * @param margin The margin for the HTMLTableElement.
+ * @returns A HTMLTableElement.
+ */
+function createTable(id, margin) {
+    let table = document.createElement('table');
+    table.id = id;
+    Object.assign(table.style, margin);
+    return table;
+}
+exports.createTable = createTable;
+/**
+ * Create and return a HTMLTableRowElement.
+ * @param id The id of the HTMLTableRowElement.
+ * @param margin The margin for the HTMLTableRowElement.
+ * @returns A HTMLTableRowElement.
+ */
+function addTableRow(table, content) {
+    let row = table.insertRow();
+    content.forEach(c => {
+        row.insertCell().textContent = c;
+    });
+    return row;
+}
+exports.addTableRow = addTableRow;
 //# sourceMappingURL=html.js.map

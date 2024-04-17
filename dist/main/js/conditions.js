@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Conditions = exports.PTs = exports.PTpair = exports.ExcessReactantConc = exports.ExperimentalEigenvalue = exports.ExperimentalYield = exports.ExperimentalRate = exports.BathGas = void 0;
+const big_js_1 = __importDefault(require("big.js"));
 const xml_js_1 = require("./xml.js");
 /**
  * A class for "me:bathGas".
@@ -112,7 +116,7 @@ class ExperimentalRate extends xml_js_1.NumberNode {
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        return parseFloat(this.attributes.get(ExperimentalRate.s_error));
+        return new big_js_1.default(this.attributes.get(ExperimentalRate.s_error));
     }
     /**
      * Set the error attribute.
@@ -127,8 +131,8 @@ exports.ExperimentalRate = ExperimentalRate;
  * A class for "me:experimentalYield".
  * The attributes should include:
  * "ref" string
- * "error" number
- * "yieldTime" number.
+ * "error" Big
+ * "yieldTime" Big.
  */
 class ExperimentalYield extends xml_js_1.NumberNode {
     /**
@@ -171,7 +175,7 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_error));
+        return new big_js_1.default(this.attributes.get(ExperimentalYield.s_error));
     }
     /**
      * Set the error attribute.
@@ -184,7 +188,7 @@ class ExperimentalYield extends xml_js_1.NumberNode {
      * @returns The yieldTime attribute or undefined if there is no yieldTime attribute.
      */
     getYieldTime() {
-        return parseFloat(this.attributes.get(ExperimentalYield.s_yieldTime));
+        return new big_js_1.default(this.attributes.get(ExperimentalYield.s_yieldTime));
     }
     /**
      * Set the yieldTime attribute.
@@ -246,7 +250,7 @@ class ExperimentalEigenvalue extends xml_js_1.NumberNode {
      * @returns The error attribute or undefined if there is no error attribute.
      */
     getError() {
-        return parseFloat(this.attributes.get(ExperimentalEigenvalue.s_error));
+        return new big_js_1.default(this.attributes.get(ExperimentalEigenvalue.s_error));
     }
     /**
      * Set the error attribute.
@@ -298,12 +302,12 @@ exports.ExcessReactantConc = ExcessReactantConc;
  * Can there be multiple BathGases and ExperimentRates?
  * The attributes include:
  * units: string
- * P: number
- * T: number
+ * P: Big
+ * T: Big
  * And optionally:
- * percentExcessReactantConc: number
+ * percentExcessReactantConc: Big
  * excessReactantConc: string
- * precision: number
+ * precision: Big
  * bathGas: string
  * If excessReactantConc="true" then the node contains a node of type "me:excessReactantConc".
  *
@@ -366,13 +370,10 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns The Pressure.
      */
     getP() {
-        //if (this !== undefined) {
         let p = this.attributes.get(PTpair.s_P);
         if (p !== undefined) {
-            return parseFloat(p);
+            return new big_js_1.default(p);
         }
-        //}
-        return NaN;
     }
     /**
      * Set The Pressure
@@ -384,13 +385,10 @@ class PTpair extends xml_js_1.NodeWithNodes {
      * @returns The Temperature.
      */
     getT() {
-        //if (this !== undefined) {
         let t = this.attributes.get(PTpair.s_T);
         if (t !== undefined) {
-            return parseFloat(t);
+            return new big_js_1.default(t);
         }
-        //}
-        return NaN;
     }
     /**
      * Set The Temperature.
@@ -588,7 +586,7 @@ class PTs extends xml_js_1.NodeWithNodes {
     /**
      * The Pressure and Temperature pairs.
      */
-    pTpairs;
+    ptps;
     /**
      * @param attributes The attributes.
      * @param pTs The PTs.
@@ -599,63 +597,69 @@ class PTs extends xml_js_1.NodeWithNodes {
             pTpairs.forEach((pTpair) => {
                 this.addNode(pTpair);
             });
-            this.pTpairs = pTpairs;
+            this.ptps = pTpairs;
         }
         else {
-            this.pTpairs = [];
+            this.ptps = [];
         }
     }
     /**
+     * Get the PTpair at the given index.
+     *
      * @param i The index of the PTpair to return.
      * @returns The PTpair at the given index or undefined if the index is out of range.
      */
-    getPTpair(i) {
-        return this.pTpairs[i];
+    get(i) {
+        return this.ptps[i];
     }
     /**
-     * Set the PT at the given index.
+     * Set the PTpair at the given index.
+     *
      * @param i The index.
      * @returns The PT pairs.
      */
-    setPTpair(i, pTpair) {
+    set(i, pTpair) {
         this.nodes.set(i, pTpair);
-        this.pTpairs[i] = pTpair;
+        this.ptps[i] = pTpair;
     }
     /**
      * Add a PTpair.
+     *
      * @param pTPair The PTpair to add.
      * @returns The index of this.pTPairs where pTPair is added.
      */
-    addPTpair(pTpair) {
+    add(pTpair) {
         this.addNode(pTpair);
-        this.pTpairs.push(pTpair);
+        this.ptps.push(pTpair);
         return this.nodes.size - 1;
     }
     /**
-     * Remove the PT at the given index.
+     * Remove the PTpair at the given index.
+     *
      * @param i The index.
      */
-    removePTpair(i) {
+    remove(i) {
         this.nodes.delete(i);
-        this.pTpairs.splice(i, 1);
+        this.ptps.splice(i, 1);
     }
     /**
-     * Add a PT.
-     * @param pTPair The PT to add.
+     * Initialise.
+     *
+     * @param pTPair The PTpair to add.
      */
-    setPTpairs(pTpairs) {
-        this.nodes.clear();
-        pTpairs.forEach((pTpair) => {
-            this.addNode(pTpair);
-            this.pTpairs.push(pTpair);
+    init(ptps) {
+        this.clear();
+        ptps.forEach((ptp) => {
+            this.addNode(ptp);
+            this.ptps.push(ptp);
         });
     }
     /**
-     * Remove all PT pairs.
+     * Clear.
      */
-    removePTpairs() {
+    clear() {
         this.nodes.clear();
-        this.pTpairs = [];
+        this.ptps = [];
     }
 }
 exports.PTs = PTs;

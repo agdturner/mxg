@@ -809,6 +809,13 @@ export class Property extends NodeWithNodes {
         this.nodes.set(0, property);
     }
 
+    /**
+     * Removes the property.
+     */
+    //    removeProperty(): void {
+    //        this.nodes.delete(0);
+    //    }
+
 }
 
 /**
@@ -1055,6 +1062,26 @@ export class PropertyList extends NodeWithNodes {
         } else {
             console.log('Property ' + property.dictRef + ' already exists, updating...');
             this.nodes.set(i, property);
+        }
+    }
+
+    /**
+     * @param dictRef The dictRef of the property.
+     */
+    removeProperty(dictRef: string): void {
+        let i: number | undefined = this.index.get(dictRef);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(dictRef);
+            let newIndex = new Map<string, number>();
+            this.index.forEach((value, key) => {
+                if (value > i!) {
+                    newIndex.set(key, value - 1);
+                } else {
+                    newIndex.set(key, value);
+                }
+            });
+            this.index = newIndex;
         }
     }
 }
@@ -1391,12 +1418,12 @@ export class PotentialPoint extends TagWithAttributes {
     /**
      * The angle stored for convenience, this is also an attribute.
      */
-    angle: number;
+    angle: Big;
 
     /**
      * The potential stored for convenience, this is also an attribute.
      */
-    potential: number;
+    potential: Big;
 
     /**
      * @param attributes The attributes.
@@ -1407,25 +1434,25 @@ export class PotentialPoint extends TagWithAttributes {
         if (angle == undefined) {
             throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
-        this.angle = parseFloat(angle);
+        this.angle = new Big(angle);
         let potential: string | undefined = attributes.get(PotentialPoint.s_potential);
         if (potential == undefined) {
             throw new Error(PotentialPoint.s_potential + ' is undefined!');
         }
-        this.potential = parseFloat(potential);
+        this.potential = new Big(potential);
     }
 
     /**
      * @returns The angle.
      */
-    getAngle(): number {
+    getAngle(): Big {
         return this.angle;
     }
 
     /**
      * @param angle The angle of the PotentialPoint.
      */
-    setAngle(angle: number): void {
+    setAngle(angle: Big): void {
         this.angle = angle;
         this.attributes.set(PotentialPoint.s_angle, angle.toString());
     }
@@ -1433,18 +1460,295 @@ export class PotentialPoint extends TagWithAttributes {
     /**
      * @returns The potential.
      */
-    getPotential(): number {
+    getPotential(): Big {
         return this.potential;
     }
 
     /**
      * @param potential The potential of the PotentialPoint.
      */
-    setPotential(potential: number): void {
+    setPotential(potential: Big): void {
         this.potential = potential;
         this.attributes.set(PotentialPoint.s_potential, potential.toString());
     }
+}
 
+/**
+ * For representing a "me:thermoValue"
+ * T, H, S, G, Cp
+ */
+export class ThermoValue extends TagWithAttributes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:thermoValue"
+
+    /**
+     * The key for the T attribute.
+     */
+    static readonly s_T: string = "T";
+
+    /**
+     * The key for the H attribute.
+     */
+    static readonly s_H: string = "H";
+
+    /**
+     * The key for the S attribute.
+     */
+    static readonly s_S: string = "S"
+
+    /**
+     * The key for the G attribute.
+     */
+    static readonly s_G: string = "G"
+
+    /**
+     * The key for the Cp attribute.
+     */
+    static readonly s_Cp: string = "Cp"
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, Atom.tagName);
+    }
+
+    /**
+     * @returns The temperature.
+     */
+    getT(): Big {
+        return new Big(this.attributes.get(ThermoValue.s_T)!);
+    }
+
+    /**
+     * @param T The temperature.
+     *
+    setT(T: Big): void {
+        this.attributes.set(ThermoValue.s_T, T.toString());
+    }
+
+    /**
+     * @returns The enthalpy.
+     */
+    getH(): Big {
+        return new Big(this.attributes.get(ThermoValue.s_H)!);
+    }
+
+    /**
+     * @param H The enthalpy.
+     *
+    setH(H: Big): void {
+        this.attributes.set(ThermoValue.s_H, H.toString());
+    }
+
+    /**
+     * @returns The entropy.
+     */
+    getS(): Big {
+        return new Big(this.attributes.get(ThermoValue.s_S)!);
+    }
+
+    /**
+     * @param S The entropy.
+     *
+    setS(S: Big): void {
+        this.attributes.set(ThermoValue.s_S, S.toString());
+    }
+
+    /**
+     * @returns The Gibbs free energy.
+     */
+    getG(): Big {
+        return new Big(this.attributes.get(ThermoValue.s_G)!);
+    }
+
+    /**
+     * @param G The Gibbs free energy.
+     *
+    setG(G: Big): void {
+        this.attributes.set(ThermoValue.s_G, G.toString());
+    }
+
+    /**
+     * @returns The heat capacity.
+     */
+    getCp(): Big {
+        return new Big(this.attributes.get(ThermoValue.s_Cp)!);
+    }
+
+    /**
+     * @param Cp The heat capacity.
+     *
+    setCp(Cp: Big): void {
+        this.attributes.set(ThermoValue.s_Cp, Cp.toString());
+    }
+
+    /**
+     * @returns The ThermoValue as a string array.
+     */
+    toStringArray(): string[] {
+        return [this.getT().toString(), this.getH().toString(), this.getS().toString(), this.getG().toString(),
+        this.getCp().toString()];
+    }
+
+    /**
+     * @returns The ThermoValue as a CSV string.
+     */
+    toCSV(): string {
+        //console.log(this.toStringArray());
+        //console.log(this.toStringArray().join(","));
+        return this.toStringArray().join(",");
+    }
+}
+
+/**
+ * For representing a "me:thermoTable"
+ * attributes:
+ * unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K"
+ */
+export class ThermoTable extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:thermoTable"
+
+    /**
+     * The key for the unitsT attribute.
+     */
+    static readonly s_unitsT: string = "unitsT";
+
+    /**
+     * The key for the unitsH attribute.
+     */
+    static readonly s_unitsH: string = "unitsH";
+
+    /**
+     * The key for the unitsS attribute.
+     */
+    static readonly s_unitsS: string = "unitsS";
+
+    /**
+     * The key for the unitsG attribute.
+     */
+    static readonly s_unitsG: string = "unitsG";
+
+    /**
+     * The key for the unitsCp attribute.
+     */
+    static readonly s_unitsCp: string = "unitsCp";
+
+    /**
+     * The ThermoValues
+     */
+    tvs: ThermoValue[]
+
+    /**
+     * @param attributes The attributes.
+     * @param tvs The ThermoValue array.
+     */
+    constructor(attributes: Map<string, string>, tvs?: ThermoValue[]) {
+        super(attributes, ThermoTable.tagName);
+        if (tvs != undefined) {
+            tvs.forEach((tv) => {
+                this.addNode(tv);
+            });
+            this.tvs = tvs;
+        } else {
+            this.tvs = [];
+        }
+    }
+
+    /**
+     * Retrieves a ThermoValue from the tvs array at a specific index.
+     * 
+     * @param i The index of the ThermoValue to return. 
+     * @returns The ThermoValue at the given index.
+     * @throws IndexError if i is out of the bounds of the tvs array.
+     * @throws TypeError if tvs is null or undefined.
+     */
+    get(i: number): ThermoValue {
+        return this.tvs[i];
+    }
+
+    /**
+     * Set the ThermoValue in t.
+     * 
+     * @param i The index of the ThermoValue to set.
+     * @returns The PT pairs.
+     */
+    set(i: number, tv: ThermoValue): void {
+        this.nodes.set(i, tv);
+        this.tvs[i] = tv;
+    }
+
+    /**
+     * Add a ThermoValue.
+     * 
+     * @param tv The ThermoValue to add.
+     * @returns The index of this.pTPairs where pTPair is added.
+     */
+    add(tv: ThermoValue): number {
+        this.addNode(tv);
+        this.tvs.push(tv);
+        return this.nodes.size - 1;
+    }
+
+    /**
+     * Remove the ThermoValue at the given index.
+     * 
+     * @param i The index.
+     */
+    remove(i: number): void {
+        this.nodes.delete(i);
+        this.tvs.splice(i, 1);
+    }
+
+    /**
+     * Initialise tvs.
+     * 
+     * @param tvs The tvs to be set.
+     */
+    init(tvs: ThermoValue[]): void {
+        this.clear();
+        tvs.forEach((tv) => {
+            this.addNode(tv);
+            this.tvs.push(tv);
+        });
+    }
+
+    /**
+     * Clear.
+     */
+    clear(): void {
+        this.nodes.clear();
+        this.tvs = [];
+    }
+
+    /**
+     * @returns The ThermoTable header as a string array.
+     */
+    getHeader(): string[] {
+        return ["T units(" + (this.attributes.get(ThermoTable.s_unitsT)) + ")",
+        "H(T)-H(0) units(" + (this.attributes.get(ThermoTable.s_unitsH)) + ")",
+        "S(T) units(" + (this.attributes.get(ThermoTable.s_unitsS)) + ")",
+        "G(T) units(" + (this.attributes.get(ThermoTable.s_unitsG)) + ")",
+        "Cp(T) units(" + (this.attributes.get(ThermoTable.s_unitsCp)) + ")"];
+    }
+
+    /**
+     * @returns The ThermoTable as a CSV string.
+     */
+    toCSV(): string {
+        let csv: string = this.getHeader().join(",") + "\n";
+        this.tvs.forEach((tv) => {
+            csv += tv.toCSV() + "\n";
+        });
+        return csv;
+    }
 }
 
 /**
@@ -1497,7 +1801,7 @@ export class HinderedRotorPotential extends NodeWithNodes {
     /**
      * The expansionSize stored for convenience, this is also an attribute.
      */
-    expansionSize: number;
+    expansionSize: Big;
 
     /**
      * The useSineTerms stored for convenience, this is also an attribute.
@@ -1529,7 +1833,7 @@ export class HinderedRotorPotential extends NodeWithNodes {
         if (expansionSize == undefined) {
             throw new Error(HinderedRotorPotential.s_expansionSize + ' is undefined!');
         }
-        this.expansionSize = parseFloat(expansionSize);
+        this.expansionSize = new Big(expansionSize);
         let useSineTerms: string | undefined = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
             this.useSineTerms = false;
@@ -1577,14 +1881,14 @@ export class HinderedRotorPotential extends NodeWithNodes {
     /**
      * @returns The expansionSize of the HinderedRotorPotential.
      */
-    getExpansionSize(): number {
+    getExpansionSize(): Big {
         return this.expansionSize;
     }
 
     /**
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */
-    setExpansionSize(expansionSize: number): void {
+    setExpansionSize(expansionSize: Big): void {
         this.expansionSize = expansionSize;
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
@@ -1799,6 +2103,351 @@ export class ReservoirSize extends NumberNode {
     }
 }
 
+/**
+ * In the XML, a "me:description" node is a child node of a "me:densityOfStatesList" node.
+ */
+export class Description extends StringNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:description";
+
+    /**
+     * @param attributes The attributes.
+     * @param description The description.
+     */
+    constructor(attributes: Map<string, string>, description: string) {
+        super(attributes, Description.tagName, description);
+    }
+}
+
+/**
+ * In the XML, a "me:T" node is a child node of a "me:densityOfStates" node. 
+ */
+export class T extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:t";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, T.tagName, value);
+    }
+}
+
+/**
+ * In the XML, a "me:qtot" node is a child node of a "me:densityOfStates" node.
+ */
+export class Qtot extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:qtot";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Qtot.tagName, value);
+    }
+}
+
+/**
+ * In the XML, a "me:sumc" node is a child node of a "me:densityOfStates" node.
+ */
+export class Sumc extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sumc";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Sumc.tagName, value);
+    }
+}
+
+/**
+ * In the XML, a "me:sumg" node is a child node of a "me:densityOfStates" node.
+ */
+export class Sumg extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:sumg";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Sumg.tagName, value);
+    }
+}
+
+/**
+ * In the XML, a "me:densityOfStates" node is a child node of a "me:densityOfStatesList" node.
+ * It is expected to contain the following child nodes:
+ * me:t
+ * me:qtot
+ * me:sumc
+ * me:sumg
+ */
+export class DensityOfStates extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:densityOfStates";
+
+    /**
+     * The index.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, DensityOfStates.tagName);
+        this.index = new Map();
+    }
+
+    /**
+     * @returns The T.
+     */
+    getT(): T | undefined {
+        let i = this.index.get(T.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as T;
+        }
+    }
+
+    /**
+     * Set the T.
+     * @param T The T.
+     */
+    setT(T: T) {
+        let i = this.index.get(T.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, T);
+        } else {
+            this.nodes.set(this.nodes.size, T);
+            this.index.set(T.tagName, this.nodes.size - 1);
+        }
+    }
+
+    /**
+     * @returns The Qtot.
+     */
+    getQtot(): Qtot | undefined {
+        let i = this.index.get(Qtot.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Qtot;
+        }
+    }
+
+    /**
+     * Set the Qtot.
+     * @param Qtot The Qtot.
+     */
+    setQtot(Qtot: Qtot) {
+        let i = this.index.get(Qtot.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, Qtot);
+        } else {
+            this.nodes.set(this.nodes.size, Qtot);
+            this.index.set(Qtot.tagName, this.nodes.size - 1);
+        }
+    }
+
+    /**
+     * @returns The Sumc.
+     */
+    getSumc(): Sumc | undefined {
+        let i = this.index.get(Sumc.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Sumc;
+        }
+    }
+
+    /**
+     * Set the Sumc.
+     * @param Sumc The Sumc.
+     */
+    setSumc(Sumc: Sumc) {
+        let i = this.index.get(Sumc.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, Sumc);
+        } else {
+            this.nodes.set(this.nodes.size, Sumc);
+            this.index.set(Sumc.tagName, this.nodes.size - 1);
+        }
+    }
+
+    /**
+     * @returns The Sumg.
+     */
+    getSumg(): Sumg | undefined {
+        let i = this.index.get(Sumg.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Sumg;
+        }
+    }
+
+    /**
+     * Set the Sumg.
+     * @param Sumg The Sumg.
+     */
+    setSumg(Sumg: Sumg) {
+        let i = this.index.get(Sumg.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, Sumg);
+        } else {
+            this.nodes.set(this.nodes.size, Sumg);
+            this.index.set(Sumg.tagName, this.nodes.size - 1);
+        }
+    }
+}
+
+
+/**
+ * In the XML, a "me:densityOfStatesList" node is a child node of a "molecule" node.
+ * It is expected to contain the following child nodes:
+ * me:description
+ * one or more "me:densityOfStates".
+ * The attributes may include:
+ * "calculated" which appears to be a date and time of calculation e.g. 20240311_090547.
+ */
+export class DensityOfStatesList extends NodeWithNodes {
+
+    /**
+    * The tag name.
+    */
+    static readonly tagName: string = "me:densityOfStatesList";
+
+    /**
+     * The index.
+     * The keys are the tag names and the values are the node indexes.
+     */
+    index: Map<string, number>;
+
+    /**
+     * The dosIndex.
+     * The keys are the densityOfStates indexes and the values are the node indexes.
+     */
+    dosIndex: Map<number, number>;
+
+    /**
+     * @param attributes The attributes.
+     * @param description The description.
+     * @param densityOfStates The densityOfStates.
+     */
+    constructor(attributes: Map<string, string>, description?: Description, densityOfStates?: DensityOfStates[]) {
+        super(attributes, DensityOfStatesList.tagName);
+        this.index = new Map();
+        this.dosIndex = new Map();
+        if (description) {
+            this.nodes.set(this.nodes.size, description);
+            this.index.set(Description.tagName, this.nodes.size - 1);
+        }
+        if (densityOfStates) {
+            let i: number = 0;
+            densityOfStates.forEach(dos => {
+                this.dosIndex.set(i, this.nodes.size);
+                this.nodes.set(this.nodes.size, dos);
+                i++;
+            });
+        }
+    }
+
+    /**
+     * @returns The description.
+     */
+    getDescription(): Description | undefined {
+        let i = this.index.get(Description.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Description;
+        }
+    }
+
+    /**
+     * Set the description.
+     * @param description The description.
+     */
+    setDescription(description: Description) {
+        let i = this.index.get(Description.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, description);
+        } else {
+            this.nodes.set(this.nodes.size, description);
+            this.index.set(Description.tagName, this.nodes.size - 1);
+        }
+    }
+
+    /**
+     * @returns The density of states at the given index.
+     */
+    getDensityOfStates(i: number): DensityOfStates | undefined {
+        let j = this.dosIndex.get(i);
+        if (j != undefined) {
+            return this.nodes.get(j) as DensityOfStates;
+        }
+    }
+
+    /**
+     * Set the density of states at the given index.
+     * @param i The index.
+     * @param dos The density of states.
+     */
+    setDensityOfStates(i: number, dos: DensityOfStates) {
+        let j = this.dosIndex.get(i);
+        if (j != undefined) {
+            this.nodes.set(j, dos);
+        } else {
+            this.nodes.set(this.nodes.size, dos);
+            this.dosIndex.set(i, this.nodes.size - 1);
+        }
+    }
+
+    /**
+     * Add the density of states.
+     * @param dos The density of states.
+     * @returns The index of the density of states added.
+     */
+    addDensityOfStates(dos: DensityOfStates): number {
+        this.nodes.set(this.nodes.size, dos);
+        let i = this.nodes.size - 1;
+        this.dosIndex.set(i, this.nodes.size - 1);
+        return i;
+    }
+
+    /**
+     * Remove the density of states at the given index.
+     * @param i The index.
+     */
+    removeDensityOfStates(i: number) {
+        let j = this.dosIndex.get(i);
+        if (j != undefined) {
+            this.nodes.delete(j);
+        }
+    }
+
+}
+
 
 /**
  * The attributes may include "description" and "active" (and possibly others).
@@ -1842,37 +2491,35 @@ export class Molecule extends NodeWithNodes {
      * @param dOSCMethod The method for calculating density of states.
      * @param extraDOSCMethod The extra method for calculating density of states.
      * @param reservoirSize The reservoir size.
+     * @param tt The thermo table.
      */
     constructor(
         attributes: Map<string, string>,
         id: string,
-        //atoms?: Atom | AtomArray,
         atoms?: AtomArray,
-        //bonds?: Bond | BondArray,
         bonds?: BondArray,
-        properties?: PropertyList | Property,
+        properties?: PropertyList,
         energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod,
         extraDOSCMethod?: ExtraDOSCMethod,
-        reservoirSize?: ReservoirSize) {
+        reservoirSize?: ReservoirSize,
+        tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
         this.setID(id);
         let i: number = 0;
         // Atoms
-        if (!atoms) {
-            atoms = new AtomArray(new Map());
+        if (atoms) {
+            this.nodes.set(i, atoms);
+            this.index.set(AtomArray.tagName, i);
+            i++;
         }
-        this.nodes.set(i, atoms);
-        this.index.set(AtomArray.tagName, i);
-        i++;
         // Bonds
-        if (!bonds) {
-            bonds = new BondArray(new Map());
+        if (bonds) {
+            this.nodes.set(i, bonds);
+            this.index.set(BondArray.tagName, i);
+            i++;
         }
-        this.nodes.set(i, bonds);
-        this.index.set(BondArray.tagName, i);
-        i++;
         // Properties
         if (properties) {
             this.nodes.set(i, properties);
@@ -1899,6 +2546,10 @@ export class Molecule extends NodeWithNodes {
         if (reservoirSize) {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
+        }
+        if (tt) {
+            this.nodes.set(i, tt);
+            this.index.set(ThermoTable.tagName, i);
         }
     }
 
@@ -1965,7 +2616,7 @@ export class Molecule extends NodeWithNodes {
      * and possibly including description and whether active).
      */
     getLabel(): string {
-        let label: string = this.id;
+        let label: string = this.getID();
         let description: string | undefined = this.getDescription();
         if (description != undefined) {
             label += " (" + description + ")";
@@ -1987,16 +2638,9 @@ export class Molecule extends NodeWithNodes {
     /**
      * @returns The properties of the molecule.
      */
-    getProperties(): PropertyList | Property | undefined {
+    getPropertyList(): PropertyList | undefined {
         let i: number | undefined = this.index.get(PropertyList.tagName);
-        if (i == undefined) {
-            i = this.index.get(Property.tagName);
-            if (i == undefined) {
-                return undefined;
-            } else {
-                return this.nodes.get(i) as Property;
-            }
-        } else {
+        if (i != undefined) {
             return this.nodes.get(i) as PropertyList;
         }
     }
@@ -2004,7 +2648,7 @@ export class Molecule extends NodeWithNodes {
     /**
      * @param properties The properties.
      */
-    setProperties(properties: PropertyList | Property) {
+    setPropertyList(properties: PropertyList) {
         let i: number | undefined = this.index.get(PropertyList.tagName);
         if (i == undefined) {
             this.index.set(PropertyList.tagName, this.nodes.size);
@@ -2020,33 +2664,18 @@ export class Molecule extends NodeWithNodes {
      * @returns The property.
      */
     getProperty(dictRef: string): Property | undefined {
-        let properties: PropertyList | Property | undefined = this.getProperties();
-        if (properties != undefined) {
-            if (properties instanceof PropertyList) {
-                //console.log('PropertyList');
-                return properties.getProperty(dictRef);
-            } else {
-                //console.log('Property');
-                return properties;
-            }
+        let pl: PropertyList | undefined = this.getPropertyList();
+        if (pl != undefined) {
+            return pl.getProperty(dictRef);
         }
     }
 
     /**
      * Set the property.
-     * @param property The property.
+     * @param p The property.
      */
-    setProperty(property: Property): void {
-        let properties: PropertyList | Property | undefined = this.getProperties();
-        if (properties != undefined) {
-            if (properties instanceof PropertyList) {
-                properties.setProperty(property);
-            } else {
-                this.setProperties(properties);
-            }
-        } else {
-            this.setProperties(property);
-        }
+    setProperty(p: Property): void {
+        this.getPropertyList()!.setProperty(p);
     }
 
     /**
@@ -2198,6 +2827,32 @@ export class Molecule extends NodeWithNodes {
             this.addNode(reservoirSize);
         } else {
             this.nodes.set(i, reservoirSize);
+        }
+    }
+
+    /**
+     * @returns The thermo table of the molecule.
+     */
+    getThermoTable(): ThermoTable | undefined {
+        let i: number | undefined = this.index.get(ThermoTable.tagName);
+        if (i == undefined) {
+            return undefined;
+        } else {
+            return this.nodes.get(i) as ThermoTable;
+        }
+    }
+
+    /**
+     * Set the thermo table.
+     * @param tt The thermo table.
+     */
+    setThermoTable(tt: ThermoTable) {
+        let i: number | undefined = this.index.get(ThermoTable.tagName);
+        if (i == undefined) {
+            this.index.set(ThermoTable.tagName, this.nodes.size);
+            this.addNode(tt);
+        } else {
+            this.nodes.set(i, tt);
         }
     }
 

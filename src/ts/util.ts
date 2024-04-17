@@ -97,13 +97,12 @@ export function setToString(set: Set<any>, delimiter?: string): string {
  * For converting a string array to a number array.
  * @param {string[]} s The string to convert to a number array.
  * @returns A number array.
+ * @throws An error if any string in the array is not a number.
  */
 export function toNumberArray(s: string[]): Big[] {
     let r: Big[] = [];
     for (let i = 0; i < s.length; i++) {
-        if (isNumeric(s[i])) {
-            r.push(new Big(s[i]));
-        }
+        r.push(new Big(s[i]));
     }
     return r;
 }
@@ -113,41 +112,24 @@ export function toNumberArray(s: string[]): Big[] {
  * @returns true iff s is a number.
  */
 export function isNumeric(s: string): boolean {
-    if (s === "") {
+    try {
+        let x = new Big(s);
+        return true;
+    } catch (e) {
         return false;
     }
-    return !isNaN(Number(s))
 }
 
 /**
- * For converting a number to a string.
- * @param n The number to convert to a string.
+ * For converting a string array to a number array.
+ * @param xs The string to convert to a number array.
+ * @returns A number array.
  */
-export function numberToString(n: string): string {
-    return bigToString(new Big(n));
-}
-
-/**
- * For converting a number to a string.
- * @param n The number to convert to a string.
- */
-export function bigToString(x: Big): string {
-    if (x.eq(0)) {
-        return "0";
+export function bigArrayToString(s: Big[], delimiter?: string): string {
+    if (delimiter == undefined) {
+        delimiter = ' ';
     }
-    if (x.abs().gte(Number.MAX_SAFE_INTEGER)) {
-        return x.toExponential();
-    }
-    if (x.abs().lt(0.0001)) {
-        return x.toExponential();
-    }
-    // Get the integer and fractional parts.
-    let parts: string[] = x.toFixed().split('.');
-    // Get the integer part.
-    //let integer: string = parts[0];
-    // Get the fractional part.
-    let fractional: string = parts[1];
-    return x.toFixed(fractional.length);
+    return s.map((value) => value.toString()).join(delimiter);
 }
 
 /**

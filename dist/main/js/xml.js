@@ -1,11 +1,8 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSingularElement = exports.getAttributes = exports.getTag = exports.getEndTag = exports.getStartTag = exports.NodeWithNodes = exports.NumberArrayNode = exports.NumberNode = exports.StringNode = exports.TagWithAttributes = exports.Tag = exports.getInputString = exports.getNodeValue = exports.getFirstChildNode = exports.getFirstElement = exports.getAttribute = void 0;
-const big_js_1 = __importDefault(require("big.js"));
 const html_1 = require("./html");
+const util_1 = require("./util");
 /**
  * Get the attribute of an xml element.
  * @param xml The xml element to search in.
@@ -211,23 +208,25 @@ class NumberNode extends TagWithAttributes {
         return super.toString() + `, ${this.value.toString()})`;
     }
     /**
+     * Get the value.
+     */
+    getValue() {
+        return this.value;
+    }
+    /**
+     * Set the value.
+     * @param value The value.
+     */
+    setValue(value) {
+        this.value = value;
+    }
+    /**
      * Get the XML representation.
      * @param padding The padding (Optional).
      * @returns An XML representation.
      */
     toXML(padding) {
-        let stringValue = this.value.toString().trim();
-        let c;
-        if (this.value < new big_js_1.default(0)) {
-            c = 7;
-        }
-        else {
-            c = 6;
-        }
-        if (stringValue.length > c) {
-            stringValue = this.value.toExponential().trim();
-        }
-        return getTag(stringValue, this.tagName, this.attributes, padding, false);
+        return getTag(this.value.toString(), this.tagName, this.attributes, padding, false);
     }
 }
 exports.NumberNode = NumberNode;
@@ -242,7 +241,7 @@ class NumberArrayNode extends TagWithAttributes {
     /**
      * The delimiter of the values.
      */
-    delimiter = ",";
+    delimiter = " ";
     /**
      * @param attributes The attributes.
      * @param tagName The tag name.
@@ -255,6 +254,18 @@ class NumberArrayNode extends TagWithAttributes {
         if (delimiter != undefined) {
             this.delimiter = delimiter;
         }
+    }
+    /**
+     * @returns The values.
+     */
+    getValues() {
+        return this.values;
+    }
+    /**
+     * @returns A string representation.
+     */
+    setValues(values) {
+        this.values = values;
     }
     /**
      * @returns A string representation.
@@ -275,7 +286,7 @@ class NumberArrayNode extends TagWithAttributes {
      * @returns An XML representation.
      */
     toXML(padding) {
-        return getTag(this.values.toString().replaceAll(",", this.delimiter), this.tagName, this.attributes, padding, false);
+        return getTag((0, util_1.bigArrayToString)(this.values, this.delimiter), this.tagName, this.attributes, padding, false);
     }
 }
 exports.NumberArrayNode = NumberArrayNode;
