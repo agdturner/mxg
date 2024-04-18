@@ -4,7 +4,7 @@ import { ModelParameters } from "./modelParameters.js";
 import { Molecule } from "./molecule.js";
 import { Reaction } from "./reaction.js";
 import { arrayToString, mapToString } from "./util.js";
-import { NodeWithNodes, StringNode } from "./xml.js";
+import { NodeWithNodes, NumberNode, StringNode } from "./xml.js";
 
 /**
  * The title.
@@ -664,5 +664,43 @@ export class Mesmer extends NodeWithNodes {
             this.index.delete(Control.tagName + controlID);
             this.controlIndex.delete(controlID);
         }
+    }
+}
+
+/**
+ * In the XML, a "me:description" node is a child node of a "me:densityOfStatesList" node.
+ */
+export class Description extends StringNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:description";
+
+    /**
+     * @param attributes The attributes.
+     * @param description The description.
+     */
+    constructor(attributes: Map<string, string>, description: string) {
+        super(attributes, Description.tagName, description);
+    }
+}
+
+/**
+ * In the XML, a "me:T" node is a child node of a "me:densityOfStates" node. 
+ */
+export class T extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:T";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, T.tagName, value);
     }
 }

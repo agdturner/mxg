@@ -4,8 +4,9 @@ import {
 } from './molecule.js';
 
 import {
-    TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode
+    TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode, getAttribute
 } from './xml.js';
+import { Description, T } from './mesmer.js';
 
 /**
  * A reference to a molecule, not to be confused with a Molecule.
@@ -56,7 +57,7 @@ export class ReactionMolecule extends TagWithAttributes {
  * In the XML, a "reactant" node is a child of the "reaction" node and has a child "molecule" node.
  */
 export class Reactant extends NodeWithNodes {
-    
+
     /**
      * The tag name.
      */
@@ -89,7 +90,7 @@ export class Reactant extends NodeWithNodes {
  * In the XML, a "product" node is a child of the "reaction" node and has a child "molecule" node.
  */
 export class Product extends NodeWithNodes {
-    
+
     /**
      * The tag name.
      */
@@ -400,7 +401,7 @@ export class MesmerILT extends MCRCMethod {
  * The "name" attribute is one of: [Eckart, WKB].
  */
 export class Tunneling extends TagWithAttributes {
-    
+
     /**
      * The tag name.
      */
@@ -454,6 +455,329 @@ export class ExcessReactantConc extends NumberNode {
      */
     constructor(attributes: Map<string, string>, value: Big) {
         super(attributes, ExcessReactantConc.tagName, value);
+    }
+}
+
+/**
+ * In the XML, the "me:val" node is a child of a "me:kinf" node.
+ */
+export class Val extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:val";
+
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Val.tagName, value);
+    }
+}
+
+/**
+ * In the XML, the "me:rev" node is a child of a "me:kinf" node.
+ */
+export class Rev extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:rev";
+
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Rev.tagName, value);
+    }
+}
+
+/**
+ * In the XML, the "me:val" node is a child of a "me:kinf" node.
+ */
+export class Keq extends NumberNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:Keq";
+
+    /**
+     * @param attributes The attributes. 
+     * @param value The value of the factor.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, Keq.tagName, value);
+    }
+}
+
+/**
+ * In the XML, the "me:kinf" node is a child of a "me:canonicalRateList" node.
+ */
+export class Kinf extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:kinf";
+
+    /**
+     * The index for the nodes.
+     */
+    index: Map<string, number>;
+
+    /**
+     * @param attributes The attributes.
+     * @param t The t.
+     * @param val The val.
+     * @param rev The rev.
+     * @param Keq The Keq.
+     */
+    constructor(attributes: Map<string, string>, t?: T, val?: Val, rev?: Rev, keq?: Keq) {
+        super(attributes, Kinf.tagName);
+        this.index = new Map();
+        if (t != undefined) {
+            this.index.set(T.tagName, this.nodes.size);
+            this.addNode(t);
+        }
+        if (val != undefined) {
+            this.index.set(Val.tagName, this.nodes.size);
+            this.addNode(val);
+        }
+        if (rev != undefined) {
+            this.index.set(Rev.tagName, this.nodes.size);
+            this.addNode(rev);
+        }
+        if (keq != undefined) {
+            this.index.set(Keq.tagName, this.nodes.size);
+            this.addNode(keq);
+        }
+    }
+
+    /**
+     * @returns The T node or undefined if it does not exist.
+     */
+    getT(): T | undefined {
+        let i: number | undefined = this.index.get(T.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as T;
+    }
+
+    /**
+     * @param t The T node.
+     */
+    setT(t: T): void {
+        let i = this.index.get(T.tagName);
+        if (i == undefined) {
+            this.index.set(T.tagName, this.nodes.size);
+            this.addNode(t);
+        } else {
+            this.nodes.set(i, t);
+        }
+    }
+
+    /**
+     * @returns The Val node or undefined if it does not exist.
+     */
+    getVal(): Val | undefined {
+        let i: number | undefined = this.index.get(Val.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as Val;
+    }
+
+    /**
+     * @param val The Val node.
+     */
+    setVal(val: Val): void {
+        let i = this.index.get(Val.tagName);
+        if (i == undefined) {
+            this.index.set(Val.tagName, this.nodes.size);
+            this.addNode(val);
+        } else {
+            this.nodes.set(i, val);
+        }
+    }
+
+    /**
+     * @returns The Rev node or undefined if it does not exist.
+     */
+    getRev(): Rev | undefined {
+        let i: number | undefined = this.index.get(Rev.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as Rev;
+    }
+
+    /**
+     * @param rev The Rev node.
+     */
+    setRev(rev: Rev): void {
+        let i = this.index.get(Rev.tagName);
+        if (i == undefined) {
+            this.index.set(Rev.tagName, this.nodes.size);
+            this.addNode(rev);
+        } else {
+            this.nodes.set(i, rev);
+        }
+    }
+
+    /**
+     * @returns The Keq node or undefined if it does not exist.
+     */
+    getKeq(): Keq | undefined {
+        let i: number | undefined = this.index.get(Keq.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as Keq;
+    }
+
+    /**
+     * @param keq The Keq node.
+     */
+    setKeq(keq: Keq): void {
+        let i = this.index.get(Keq.tagName);
+        if (i == undefined) {
+            this.index.set(Keq.tagName, this.nodes.size);
+            this.addNode(keq);
+        } else {
+            this.nodes.set(i, keq);
+        }
+    }
+
+    /**
+    * The header.
+    */
+    getHeader(): string[] {
+        let header: string[] = [];
+        header.push("T (" + this.getT()?.attributes.get("units") + ")");
+        header.push("kf (" + this.getVal()?.attributes.get("units") + ")");
+        header.push("krev (" + this.getRev()?.attributes.get("units") + ")");
+        header.push("Keq (" + this.getKeq()?.attributes.get("units") + ")");
+        return header;
+    }
+
+    /**
+     * @returns The Kinf as a string[].
+     */
+    toStringArray() {
+        let t: T = this.getT()!;
+        let val: Val = this.getVal()!;
+        let rev: Rev = this.getRev()!;
+        let keq: Keq = this.getKeq()!;
+        return [t.getValue().toString(), val.getValue().toString(), rev.getValue().toString(), keq.getValue().toString()];
+    }
+
+    /**
+     * @returns The Kinf as a CSV string.
+     */
+    toCSV() {
+        return this.toStringArray().join(",");
+    }
+}
+
+/**
+ * In the XML, the "me:canonicalRateList" node is a child of a "reaction" node.
+ */
+export class CanonicalRateList extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:canonicalRateList";
+
+    /**
+     * The index for the nodes.
+     */
+    index: Map<string, number>;
+
+    /**
+     * The Kinf index. The key is the index of the Kinf node, the value is the index of the Kinf node in the nodes array.
+     */
+    kinfIndex: Map<number, number>;
+
+    /**
+     * @param attributes The attributes.
+     * @param canonicalRate The canonical rate.
+     */
+    constructor(attributes: Map<string, string>, description?: Description, kinfs?: Kinf[]) {
+        super(attributes, CanonicalRateList.tagName);
+        this.index = new Map();
+        this.kinfIndex = new Map();
+        if (description != undefined) {
+            this.index.set(Description.tagName, this.nodes.size);
+            this.addNode(description);
+        }
+        if (kinfs != undefined) {
+            kinfs.forEach(kinf => {
+                this.kinfIndex.set(this.nodes.size, this.nodes.size);
+                this.addNode(kinf);
+            });
+        }
+    }
+
+    /**
+     * @returns The Description node or undefined if it does not exist.
+     */
+    getDescription(): Description | undefined {
+        let i: number | undefined = this.index.get(Description.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i) as Description;
+    }
+
+    /**
+     * @param description The Description node.
+     */
+    setDescription(description: Description): void {
+        let i = this.index.get(Description.tagName);
+        if (i == undefined) {
+            this.index.set(Description.tagName, this.nodes.size);
+            this.addNode(description);
+        } else {
+            this.nodes.set(i, description);
+        }
+    }
+
+    /**
+     * @returns The Kinf nodes.
+     */
+    getKinfs(): Kinf[] {
+        return Array.from(this.kinfIndex.values()).map(index => this.nodes.get(index) as Kinf);
+    }
+
+    /**
+     * @param kinf The Kinf node.
+     */
+    addKinf(kinf: Kinf): void {
+        this.kinfIndex.set(this.kinfIndex.size, this.nodes.size);
+        this.addNode(kinf);
+    }
+
+    /**
+     * @returns The CanonicalRateList as a CSV string.
+     */
+    toCSV(): string {
+        let csv: string = "";
+        let first: boolean = true;
+        this.getKinfs().forEach((k) => {
+            if (first) {
+                first = false;
+                csv += k.getHeader().join(",") + "\n";
+            }
+            csv += k.toCSV() + "\n";
+        });
+        return csv;
     }
 }
 
@@ -515,11 +839,12 @@ export class Reaction extends NodeWithNodes {
      * @param transitionStates The transition states (optional).
      * @param mCRCMethod The MCRCMethod (optional).
      * @param excessReactantConc The excess reactant concentration (optional).
+     * @param canonicalRateList The canonical rate list (optional).
      */
     constructor(attributes: Map<string, string>,
         reactants?: Reactant[], products?: Product[], tunneling?: Tunneling,
         transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
-        excessReactantConc?: ExcessReactantConc) {
+        excessReactantConc?: ExcessReactantConc, canonicalRateList?: CanonicalRateList) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
         this.reactantsIndex = new Map();
@@ -562,6 +887,10 @@ export class Reaction extends NodeWithNodes {
         if (excessReactantConc != undefined) {
             this.index.set(ExcessReactantConc.tagName, this.nodes.size);
             this.addNode(excessReactantConc);
+        }
+        if (canonicalRateList != undefined) {
+            this.index.set(CanonicalRateList.tagName, this.nodes.size);
+            this.addNode(canonicalRateList);
         }
     }
 
@@ -842,6 +1171,34 @@ export class Reaction extends NodeWithNodes {
                 throw new Error("ExcessReactantConc is a map and it is assumed there would be only 1!");
             } else {
                 this.nodes.set(i, excessReactantConc);
+            }
+        }
+    }
+
+    /**
+     * @returns The canonical rate list or undefined if it does not exist.
+     */
+    getCanonicalRateList(): CanonicalRateList | undefined {
+        let i: Map<string, number> | number | undefined = this.index.get(CanonicalRateList.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        return this.nodes.get(i as number) as CanonicalRateList;
+    }
+
+    /**
+     * Set the canonical rate list or create it if it is undefined.
+     */
+    setCanonicalRateList(canonicalRateList: CanonicalRateList): void {
+        let i = this.index.get(CanonicalRateList.tagName);
+        if (i == undefined) {
+            this.index.set(CanonicalRateList.tagName, this.nodes.size);
+            this.addNode(canonicalRateList);
+        } else {
+            if (i instanceof Map) {
+                throw new Error("CanonicalRateList is a map and it is assumed there would be only 1!");
+            } else {
+                this.nodes.set(i, canonicalRateList);
             }
         }
     }

@@ -1,0 +1,1646 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer2.xsl' media='other'?>
+<?xml-stylesheet type='text/xsl' href='../../mesmer1.xsl' media='screen'?>
+<me:mesmer xmlns="http://www.xml-cml.org/schema" xmlns:me="http://www.chem.leeds.ac.uk/mesmer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <me:title>Acetyl O2 association</me:title>
+  <moleculeList convention="">
+    <molecule xmlns="http://www.xml-cml.org/schema" id="acetyl" description="CH_3CO">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">139.5</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">1.573140 0.3155 0.3330</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">110.8594 469.8360 852.9605 955.5673 1049.6839 1359.1474 1454.3118 1459.6421 1930.1084 3014.0596 3104.5876 3110.7727</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">43</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6657" S="162.9331" G="-2.5930" Cp="33.4564" />
+        <me:thermoValue T="40.00" H="1.3565" S="186.7774" G="-6.1146" Cp="35.8836" />
+        <me:thermoValue T="60.00" H="2.0982" S="201.7834" G="-10.0088" Cp="38.1074" />
+        <me:thermoValue T="80.00" H="2.8751" S="212.9483" G="-14.1608" Cp="39.4847" />
+        <me:thermoValue T="100.00" H="3.6755" S="221.8746" G="-18.5120" Cp="40.5358" />
+        <me:thermoValue T="120.00" H="4.4962" S="229.3533" G="-23.0262" Cp="41.5362" />
+        <me:thermoValue T="140.00" H="5.3373" S="235.8337" G="-27.6795" Cp="42.5797" />
+        <me:thermoValue T="160.00" H="6.1999" S="241.5916" G="-32.4547" Cp="43.7014" />
+        <me:thermoValue T="180.00" H="7.0860" S="246.8083" G="-37.3395" Cp="44.9204" />
+        <me:thermoValue T="200.00" H="7.9974" S="251.6088" G="-42.3243" Cp="46.2464" />
+        <me:thermoValue T="220.00" H="8.9365" S="256.0829" G="-47.4017" Cp="47.6801" />
+        <me:thermoValue T="240.00" H="9.9053" S="260.2967" G="-52.5659" Cp="49.2138" />
+        <me:thermoValue T="260.00" H="10.9057" S="264.2994" G="-57.8122" Cp="50.8340" />
+        <me:thermoValue T="280.00" H="11.9391" S="268.1281" G="-63.1367" Cp="52.5239" />
+        <me:thermoValue T="298.15" H="12.9067" S="271.4758" G="-68.0338" Cp="54.1027" />
+        <me:thermoValue T="300.00" H="13.0070" S="271.8110" G="-68.5363" Cp="54.2655" />
+        <me:thermoValue T="320.00" H="14.1100" S="275.3697" G="-74.0083" Cp="56.0411" />
+        <me:thermoValue T="340.00" H="15.2487" S="278.8210" G="-79.5504" Cp="57.8344" />
+        <me:thermoValue T="360.00" H="16.4234" S="282.1776" G="-85.1605" Cp="59.6311" />
+        <me:thermoValue T="380.00" H="17.6339" S="285.4496" G="-90.8369" Cp="61.4191" />
+        <me:thermoValue T="400.00" H="18.8800" S="288.6451" G="-96.5780" Cp="63.1885" />
+        <me:thermoValue T="420.00" H="20.1613" S="291.7704" G="-102.3823" Cp="64.9316" />
+        <me:thermoValue T="440.00" H="21.4771" S="294.8306" G="-108.2484" Cp="66.6426" />
+        <me:thermoValue T="460.00" H="22.8267" S="297.8301" G="-114.1751" Cp="68.3175" />
+        <me:thermoValue T="480.00" H="24.2095" S="300.7724" G="-120.1612" Cp="69.9532" />
+        <me:thermoValue T="500.00" H="25.6246" S="303.6605" G="-126.2056" Cp="71.5482" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="TSabs">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+        <bond atomRefs2="a7 a8" order="2" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">335.06</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.614 0.057 0.056</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">74 103 211 316 406 531 912 965 1014 1110 1325 1379 1409 2151 2278 2797</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:imFreqs">
+          <array units="cm-1">533.0</array>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+    </molecule>
+    <molecule id="O2" description="oxygen">
+      <atomArray>
+        <atom id="a1" elementType="O" />
+        <atom id="a2" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="2" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">0.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">1.44914</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">1665.4292</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">32</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>3</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.5820" S="126.4020" G="-1.9460" Cp="29.1006" />
+        <me:thermoValue T="40.00" H="1.1640" S="146.5730" G="-4.6989" Cp="29.1006" />
+        <me:thermoValue T="60.00" H="1.7460" S="158.3723" G="-7.7563" Cp="29.1006" />
+        <me:thermoValue T="80.00" H="2.3281" S="166.7441" G="-11.0115" Cp="29.1006" />
+        <me:thermoValue T="100.00" H="2.9101" S="173.2377" G="-14.4137" Cp="29.1006" />
+        <me:thermoValue T="120.00" H="3.4921" S="178.5434" G="-17.9331" Cp="29.1006" />
+        <me:thermoValue T="140.00" H="4.0741" S="183.0292" G="-21.5500" Cp="29.1007" />
+        <me:thermoValue T="160.00" H="4.6561" S="186.9151" G="-25.2503" Cp="29.1013" />
+        <me:thermoValue T="180.00" H="5.2382" S="190.3429" G="-29.0236" Cp="29.1035" />
+        <me:thermoValue T="200.00" H="5.8203" S="193.4095" G="-32.8616" Cp="29.1093" />
+        <me:thermoValue T="220.00" H="6.4026" S="196.1844" G="-36.7580" Cp="29.1215" />
+        <me:thermoValue T="240.00" H="6.9852" S="198.7192" G="-40.7074" Cp="29.1436" />
+        <me:thermoValue T="260.00" H="7.5684" S="201.0532" G="-44.7054" Cp="29.1786" />
+        <me:thermoValue T="280.00" H="8.1524" S="203.2173" G="-48.7484" Cp="29.2293" />
+        <me:thermoValue T="298.15" H="8.6835" S="205.0550" G="-52.4536" Cp="29.2904" />
+        <me:thermoValue T="300.00" H="8.7377" S="205.2362" G="-52.8332" Cp="29.2974" />
+        <me:thermoValue T="320.00" H="9.3245" S="207.1296" G="-56.9570" Cp="29.3836" />
+        <me:thermoValue T="340.00" H="9.9132" S="208.9140" G="-61.1176" Cp="29.4878" />
+        <me:thermoValue T="360.00" H="10.5041" S="210.6029" G="-65.3129" Cp="29.6091" />
+        <me:thermoValue T="380.00" H="11.0976" S="212.2073" G="-69.5412" Cp="29.7458" />
+        <me:thermoValue T="400.00" H="11.6940" S="213.7369" G="-73.8007" Cp="29.8963" />
+        <me:thermoValue T="420.00" H="12.2935" S="215.1994" G="-78.0902" Cp="30.0582" />
+        <me:thermoValue T="440.00" H="12.8964" S="216.6016" G="-82.4083" Cp="30.2296" />
+        <me:thermoValue T="460.00" H="13.5028" S="217.9493" G="-86.7539" Cp="30.4082" />
+        <me:thermoValue T="480.00" H="14.1128" S="219.2473" G="-91.1259" Cp="30.5921" />
+        <me:thermoValue T="500.00" H="14.7265" S="220.5000" G="-95.5235" Cp="30.7795" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="OH" description="OH radical">
+      <atomArray>
+        <atom id="a1" elementType="O" />
+        <atom id="a2" elementType="H" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">0.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">19.2438</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">3722.0</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">17</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:eletronicExcitation">
+          <array units="cm-1">139.7</array>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.5820" S="99.4023" G="-1.4060" Cp="29.1006" />
+        <me:thermoValue T="40.00" H="1.1640" S="119.5733" G="-3.6189" Cp="29.1006" />
+        <me:thermoValue T="60.00" H="1.7460" S="131.3726" G="-6.1363" Cp="29.1006" />
+        <me:thermoValue T="80.00" H="2.3281" S="139.7443" G="-8.8515" Cp="29.1006" />
+        <me:thermoValue T="100.00" H="2.9101" S="146.2380" G="-11.7137" Cp="29.1006" />
+        <me:thermoValue T="120.00" H="3.4921" S="151.5436" G="-14.6932" Cp="29.1006" />
+        <me:thermoValue T="140.00" H="4.0741" S="156.0295" G="-17.7700" Cp="29.1006" />
+        <me:thermoValue T="160.00" H="4.6561" S="159.9154" G="-20.9304" Cp="29.1006" />
+        <me:thermoValue T="180.00" H="5.2381" S="163.3429" G="-24.1636" Cp="29.1006" />
+        <me:thermoValue T="200.00" H="5.8201" S="166.4090" G="-27.4617" Cp="29.1006" />
+        <me:thermoValue T="220.00" H="6.4021" S="169.1826" G="-30.8180" Cp="29.1006" />
+        <me:thermoValue T="240.00" H="6.9842" S="171.7146" G="-34.2274" Cp="29.1006" />
+        <me:thermoValue T="260.00" H="7.5662" S="174.0439" G="-37.6853" Cp="29.1006" />
+        <me:thermoValue T="280.00" H="8.1482" S="176.2005" G="-41.1880" Cp="29.1006" />
+        <me:thermoValue T="298.15" H="8.6764" S="178.0283" G="-44.4028" Cp="29.1007" />
+        <me:thermoValue T="300.00" H="8.7302" S="178.2083" G="-44.7323" Cp="29.1007" />
+        <me:thermoValue T="320.00" H="9.3122" S="180.0864" G="-48.3154" Cp="29.1008" />
+        <me:thermoValue T="340.00" H="9.8942" S="181.8506" G="-51.9350" Cp="29.1010" />
+        <me:thermoValue T="360.00" H="10.4762" S="183.5140" G="-55.5888" Cp="29.1014" />
+        <me:thermoValue T="380.00" H="11.0583" S="185.0874" G="-59.2749" Cp="29.1021" />
+        <me:thermoValue T="400.00" H="11.6403" S="186.5802" G="-62.9917" Cp="29.1033" />
+        <me:thermoValue T="420.00" H="12.2224" S="188.0002" G="-66.7377" Cp="29.1052" />
+        <me:thermoValue T="440.00" H="12.8045" S="189.3542" G="-70.5113" Cp="29.1080" />
+        <me:thermoValue T="460.00" H="13.3867" S="190.6482" G="-74.3114" Cp="29.1120" />
+        <me:thermoValue T="480.00" H="13.9690" S="191.8873" G="-78.1369" Cp="29.1175" />
+        <me:thermoValue T="500.00" H="14.5515" S="193.0761" G="-81.9866" Cp="29.1248" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="Int1" description="peroxy acetyl O2 adduct">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+        <bond atomRefs2="a5 a7" order="1" />
+        <bond atomRefs2="a7 a8" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">0.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.1081 0.161 0.3105</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">138.9727 166.6422 324.9740 506.7799 542.6734 550.0846 733.6783 982.3224 1047.8019 1130.4775 1195.2988 1402.4804 1463.1799 1467.7251 1893.8762 3059.8972 3120.2416 3160.5853</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:epsilon">
+          <scalar>473.17</scalar>
+        </property>
+        <property dictRef="me:sigma">
+          <scalar>5.09</scalar>
+        </property>
+      </propertyList>
+      <me:energyTransferModel xsi:type="me:ExponentialDown">
+        <me:deltaEDown units="cm-1">130.0</me:deltaEDown>
+      </me:energyTransferModel>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:DistributionCalcMethod default="true" name="Boltzmann" />
+      <me:densityOfStatesList calculated="20240311_090547">
+        <me:description>Rovibronic partition function calculation at various temperatures. qtot : product of QM partition functions for vibrations (1-D harmonic oscillator) and classical partition functions for rotations.  sumc : cell based partition function. sumg : grain based partition function </me:description>
+        <me:densityOfStates>
+          <me:T>200</me:T>
+          <me:qtot>218488</me:qtot>
+          <me:sumc>218631</me:sumc>
+          <me:sumg>214096</me:sumg>
+        </me:densityOfStates>
+        <me:densityOfStates>
+          <me:T>300</me:T>
+          <me:qtot>964284</me:qtot>
+          <me:sumc>965181</me:sumc>
+          <me:sumg>956086</me:sumg>
+        </me:densityOfStates>
+      </me:densityOfStatesList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6653" S="184.0678" G="-3.0161" Cp="33.3090" />
+        <me:thermoValue T="40.00" H="1.3477" S="207.6325" G="-6.9576" Cp="35.5482" />
+        <me:thermoValue T="60.00" H="2.1002" S="222.8299" G="-11.2696" Cp="39.7409" />
+        <me:thermoValue T="80.00" H="2.9350" S="234.8112" G="-15.8499" Cp="43.6629" />
+        <me:thermoValue T="100.00" H="3.8444" S="244.9427" G="-20.6499" Cp="47.2450" />
+        <me:thermoValue T="120.00" H="4.8242" S="253.8652" G="-25.6396" Cp="50.7354" />
+        <me:thermoValue T="140.00" H="5.8739" S="261.9483" G="-30.7989" Cp="54.2283" />
+        <me:thermoValue T="160.00" H="6.9934" S="269.4176" G="-36.1135" Cp="57.7209" />
+        <me:thermoValue T="180.00" H="8.1825" S="276.4168" G="-41.5725" Cp="61.1908" />
+        <me:thermoValue T="200.00" H="9.4407" S="283.0419" G="-47.1676" Cp="64.6234" />
+        <me:thermoValue T="220.00" H="10.7672" S="289.3605" G="-52.8921" Cp="68.0134" />
+        <me:thermoValue T="240.00" H="12.1610" S="295.4223" G="-58.7404" Cp="71.3594" />
+        <me:thermoValue T="260.00" H="13.6213" S="301.2647" G="-64.7076" Cp="74.6591" />
+        <me:thermoValue T="280.00" H="15.1470" S="306.9167" G="-70.7897" Cp="77.9081" />
+        <me:thermoValue T="298.15" H="16.5874" S="311.9003" G="-76.4056" Cp="80.8071" />
+        <me:thermoValue T="300.00" H="16.7372" S="312.4010" G="-76.9831" Cp="81.0997" />
+        <me:thermoValue T="320.00" H="18.3906" S="317.7353" G="-83.2847" Cp="84.2260" />
+        <me:thermoValue T="340.00" H="20.1057" S="322.9334" G="-89.6916" Cp="87.2788" />
+        <me:thermoValue T="360.00" H="21.8812" S="328.0067" G="-96.2012" Cp="90.2508" />
+        <me:thermoValue T="380.00" H="23.7152" S="332.9640" G="-102.8111" Cp="93.1356" />
+        <me:thermoValue T="400.00" H="25.6060" S="337.8126" G="-109.5191" Cp="95.9286" />
+        <me:thermoValue T="420.00" H="27.5517" S="342.5587" G="-116.3229" Cp="98.6270" />
+        <me:thermoValue T="440.00" H="29.5504" S="347.2072" G="-123.2207" Cp="101.2292" />
+        <me:thermoValue T="460.00" H="31.6002" S="351.7627" G="-130.2106" Cp="103.7352" />
+        <me:thermoValue T="480.00" H="33.6992" S="356.2289" G="-137.2907" Cp="106.1462" />
+        <me:thermoValue T="500.00" H="35.8455" S="360.6093" G="-144.4592" Cp="108.4640" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="TS1" description="TS1a: peroxy -&gt; peroxide">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+        <bond atomRefs2="a5 a7" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">118.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.1132 0.1635 0.3428</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">154.0756 307.2675 490.3402 544.8189 604.1097 684.6515 844.1110 947.0026 1034.5115 1037.5541 1106.2784 1148.9625 1420.1279 1723.3141 1864.7200 3109.0068 3192.0922</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:imFreqs">
+          <scalar units="cm-1">1688.0</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:densityOfStatesList calculated="20240311_090549">
+        <me:description>Rovibronic partition function calculation at various temperatures. qtot : product of QM partition functions for vibrations (1-D harmonic oscillator) and classical partition functions for rotations.  sumc : cell based partition function. sumg : grain based partition function </me:description>
+        <me:densityOfStates>
+          <me:T>200</me:T>
+          <me:qtot>134109</me:qtot>
+          <me:sumc>134003</me:sumc>
+          <me:sumg>131304</me:sumg>
+        </me:densityOfStates>
+        <me:densityOfStates>
+          <me:T>300</me:T>
+          <me:qtot>474744</me:qtot>
+          <me:sumc>474266</me:sumc>
+          <me:sumg>469834</me:sumg>
+        </me:densityOfStates>
+      </me:densityOfStatesList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6652" S="183.3969" G="-3.0027" Cp="33.2758" />
+        <me:thermoValue T="40.00" H="1.3381" S="206.6787" G="-6.9290" Cp="34.3389" />
+        <me:thermoValue T="60.00" H="2.0470" S="221.0188" G="-11.2141" Cp="36.6304" />
+        <me:thermoValue T="80.00" H="2.8046" S="231.8981" G="-15.7473" Cp="39.1393" />
+        <me:thermoValue T="100.00" H="3.6135" S="240.9124" G="-20.4778" Cp="41.7842" />
+        <me:thermoValue T="120.00" H="4.4775" S="248.7808" G="-25.3762" Cp="44.6606" />
+        <me:thermoValue T="140.00" H="5.4017" S="255.8977" G="-30.4240" Cp="47.7989" />
+        <me:thermoValue T="160.00" H="6.3910" S="262.4981" G="-35.6087" Cp="51.1716" />
+        <me:thermoValue T="180.00" H="7.4498" S="268.7291" G="-40.9215" Cp="54.7289" />
+        <me:thermoValue T="200.00" H="8.5810" S="274.6853" G="-46.3560" Cp="58.4169" />
+        <me:thermoValue T="220.00" H="9.7870" S="280.4293" G="-51.9075" Cp="62.1840" />
+        <me:thermoValue T="240.00" H="11.0686" S="286.0028" G="-57.5721" Cp="65.9828" />
+        <me:thermoValue T="260.00" H="12.4262" S="291.4341" G="-63.3467" Cp="69.7715" />
+        <me:thermoValue T="280.00" H="13.8592" S="296.7421" G="-69.2286" Cp="73.5148" />
+        <me:thermoValue T="298.15" H="15.2238" S="301.4633" G="-74.6575" Cp="76.8484" />
+        <me:thermoValue T="300.00" H="15.3663" S="301.9397" G="-75.2156" Cp="77.1840" />
+        <me:thermoValue T="320.00" H="16.9459" S="307.0356" G="-81.3055" Cp="80.7571" />
+        <me:thermoValue T="340.00" H="18.5958" S="312.0360" G="-87.4964" Cp="84.2179" />
+        <me:thermoValue T="360.00" H="20.3138" S="316.9448" G="-93.7863" Cp="87.5553" />
+        <me:thermoValue T="380.00" H="22.0972" S="321.7652" G="-100.1736" Cp="90.7626" />
+        <me:thermoValue T="400.00" H="23.9434" S="326.4994" G="-106.6564" Cp="93.8366" />
+        <me:thermoValue T="420.00" H="25.8498" S="331.1494" G="-113.2330" Cp="96.7766" />
+        <me:thermoValue T="440.00" H="27.8136" S="335.7168" G="-119.9018" Cp="99.5843" />
+        <me:thermoValue T="460.00" H="29.8323" S="340.2030" G="-126.6611" Cp="102.2627" />
+        <me:thermoValue T="480.00" H="31.9033" S="344.6097" G="-133.5094" Cp="104.8161" />
+        <me:thermoValue T="500.00" H="34.0241" S="348.9382" G="-140.4450" Cp="107.2494" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="TS2" description="peroxy -&gt; HO2 + ketene">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a5" order="2" />
+        <bond atomRefs2="a5 a6" order="1" />
+        <bond atomRefs2="a7 a8" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">151.09</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.0902 0.1249 0.3048</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">58.9178 210.6371 351.1485 471.5286 493.1359 549.9057 656.6765 885.5224 1027.6419 1089.9743 1276.4269 1311.1723 1388.6216 1701.6942 2181.6392 3091.2077 3164.8605</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:imFreqs">
+          <scalar units="cm-1">1063.0</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:densityOfStatesList calculated="20240311_090550">
+        <me:description>Rovibronic partition function calculation at various temperatures. qtot : product of QM partition functions for vibrations (1-D harmonic oscillator) and classical partition functions for rotations.  sumc : cell based partition function. sumg : grain based partition function </me:description>
+        <me:densityOfStates>
+          <me:T>200</me:T>
+          <me:qtot>451426</me:qtot>
+          <me:sumc>451325</me:sumc>
+          <me:sumg>442082</me:sumg>
+        </me:densityOfStates>
+        <me:densityOfStates>
+          <me:T>300</me:T>
+          <me:qtot>2.13518e+06</me:qtot>
+          <me:sumc>2.13379e+06</me:sumc>
+          <me:sumg>2.11372e+06</me:sumg>
+        </me:densityOfStates>
+      </me:densityOfStatesList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6760" S="186.6174" G="-3.0564" Cp="35.5549" />
+        <me:thermoValue T="40.00" H="1.4300" S="212.5959" G="-7.0739" Cp="39.3816" />
+        <me:thermoValue T="60.00" H="2.2436" S="229.0553" G="-11.4997" Cp="41.9608" />
+        <me:thermoValue T="80.00" H="3.1097" S="241.4942" G="-16.2099" Cp="44.7014" />
+        <me:thermoValue T="100.00" H="4.0342" S="251.7962" G="-21.1455" Cp="47.8136" />
+        <me:thermoValue T="120.00" H="5.0245" S="260.8148" G="-26.2733" Cp="51.2700" />
+        <me:thermoValue T="140.00" H="6.0863" S="268.9916" G="-31.5725" Cp="54.9344" />
+        <me:thermoValue T="160.00" H="7.2223" S="276.5707" G="-37.0290" Cp="58.6686" />
+        <me:thermoValue T="180.00" H="8.4329" S="283.6956" G="-42.6323" Cp="62.3801" />
+        <me:thermoValue T="200.00" H="9.7171" S="290.4572" G="-48.3744" Cp="66.0214" />
+        <me:thermoValue T="220.00" H="11.0732" S="296.9171" G="-54.2486" Cp="69.5737" />
+        <me:thermoValue T="240.00" H="12.4994" S="303.1197" G="-60.2493" Cp="73.0316" />
+        <me:thermoValue T="260.00" H="13.9938" S="309.0988" G="-66.3719" Cp="76.3944" />
+        <me:thermoValue T="280.00" H="15.5545" S="314.8804" G="-72.6120" Cp="79.6616" />
+        <me:thermoValue T="298.15" H="17.0267" S="319.9737" G="-78.3735" Cp="82.5430" />
+        <me:thermoValue T="300.00" H="17.1796" S="320.4851" G="-78.9659" Cp="82.8322" />
+        <me:thermoValue T="320.00" H="18.8672" S="325.9296" G="-85.4303" Cp="85.9041" />
+        <me:thermoValue T="340.00" H="20.6151" S="331.2272" G="-92.0021" Cp="88.8755" />
+        <me:thermoValue T="360.00" H="22.4215" S="336.3889" G="-98.6785" Cp="91.7445" />
+        <me:thermoValue T="380.00" H="24.2842" S="341.4238" G="-105.4568" Cp="94.5100" />
+        <me:thermoValue T="400.00" H="26.2012" S="346.3397" G="-112.3347" Cp="97.1719" />
+        <me:thermoValue T="420.00" H="28.1704" S="351.1430" G="-119.3097" Cp="99.7308" />
+        <me:thermoValue T="440.00" H="30.1898" S="355.8396" G="-126.3797" Cp="102.1883" />
+        <me:thermoValue T="460.00" H="32.2573" S="360.4345" G="-133.5426" Cp="104.5466" />
+        <me:thermoValue T="480.00" H="34.3710" S="364.9320" G="-140.7964" Cp="106.8086" />
+        <me:thermoValue T="500.00" H="36.5290" S="369.3365" G="-148.1392" Cp="108.9777" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="ketene" description="CH2CO">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="C" />
+        <atom id="a5" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="2" />
+        <bond atomRefs2="a4 a5" order="2" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">115.6</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">9.478 0.344 0.332</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">450 552 593 994 1176 1414 2246 3194 3290</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">42</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>1</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6652" S="149.0350" G="-2.3155" Cp="33.2579" />
+        <me:thermoValue T="40.00" H="1.3303" S="172.0876" G="-5.5532" Cp="33.2581" />
+        <me:thermoValue T="60.00" H="1.9956" S="185.5752" G="-9.1389" Cp="33.2849" />
+        <me:thermoValue T="80.00" H="2.6630" S="195.1735" G="-12.9509" Cp="33.5099" />
+        <me:thermoValue T="100.00" H="3.3390" S="202.7125" G="-16.9323" Cp="34.1696" />
+        <me:thermoValue T="120.00" H="4.0331" S="209.0376" G="-21.0514" Cp="35.3261" />
+        <me:thermoValue T="140.00" H="4.7546" S="214.5953" G="-25.2887" Cp="36.8736" />
+        <me:thermoValue T="160.00" H="5.5097" S="219.6338" G="-29.6317" Cp="38.6601" />
+        <me:thermoValue T="180.00" H="6.3018" S="224.2964" G="-34.0716" Cp="40.5606" />
+        <me:thermoValue T="200.00" H="7.1323" S="228.6699" G="-38.6017" Cp="42.4934" />
+        <me:thermoValue T="220.00" H="8.0014" S="232.8101" G="-43.2168" Cp="44.4113" />
+        <me:thermoValue T="240.00" H="8.9085" S="236.7553" G="-47.9128" Cp="46.2886" />
+        <me:thermoValue T="260.00" H="9.8526" S="240.5327" G="-52.6859" Cp="48.1122" />
+        <me:thermoValue T="280.00" H="10.8326" S="244.1631" G="-57.5331" Cp="49.8752" />
+        <me:thermoValue T="298.15" H="11.7519" S="247.3439" G="-61.9937" Cp="51.4197" />
+        <me:thermoValue T="300.00" H="11.8472" S="247.6625" G="-62.4516" Cp="51.5741" />
+        <me:thermoValue T="320.00" H="12.8951" S="251.0435" G="-67.4388" Cp="53.2076" />
+        <me:thermoValue T="340.00" H="13.9750" S="254.3166" G="-72.4926" Cp="54.7756" />
+        <me:thermoValue T="360.00" H="15.0857" S="257.4903" G="-77.6108" Cp="56.2789" />
+        <me:thermoValue T="380.00" H="16.2258" S="260.5720" G="-82.7916" Cp="57.7190" />
+        <me:thermoValue T="400.00" H="17.3940" S="263.5679" G="-88.0331" Cp="59.0983" />
+        <me:thermoValue T="420.00" H="18.5893" S="266.4835" G="-93.3338" Cp="60.4192" />
+        <me:thermoValue T="440.00" H="19.8104" S="269.3237" G="-98.6920" Cp="61.6849" />
+        <me:thermoValue T="460.00" H="21.0564" S="272.0926" G="-104.1062" Cp="62.8984" />
+        <me:thermoValue T="480.00" H="22.3261" S="274.7943" G="-109.5752" Cp="64.0629" />
+        <me:thermoValue T="500.00" H="23.6186" S="277.4323" G="-115.0976" Cp="65.1816" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="HO2">
+      <atomArray>
+        <atom id="a1" elementType="H" />
+        <atom id="a2" elementType="O" />
+        <atom id="a3" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a2 a3" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">0.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">20.648 1.131 1.072</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">1184 1449 3580</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">42</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>1</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6652" S="135.9771" G="-2.0544" Cp="33.2579" />
+        <me:thermoValue T="40.00" H="1.3303" S="159.0297" G="-5.0309" Cp="33.2579" />
+        <me:thermoValue T="60.00" H="1.9955" S="172.5146" G="-8.3554" Cp="33.2579" />
+        <me:thermoValue T="80.00" H="2.6606" S="182.0823" G="-11.9060" Cp="33.2579" />
+        <me:thermoValue T="100.00" H="3.3258" S="189.5036" G="-15.6246" Cp="33.2580" />
+        <me:thermoValue T="120.00" H="3.9910" S="195.5673" G="-19.4771" Cp="33.2593" />
+        <me:thermoValue T="140.00" H="4.6562" S="200.6946" G="-23.4411" Cp="33.2660" />
+        <me:thermoValue T="160.00" H="5.3217" S="205.1378" G="-27.5004" Cp="33.2869" />
+        <me:thermoValue T="180.00" H="5.9878" S="209.0609" G="-31.6431" Cp="33.3343" />
+        <me:thermoValue T="200.00" H="6.6553" S="212.5771" G="-35.8601" Cp="33.4209" />
+        <me:thermoValue T="220.00" H="7.3250" S="215.7684" G="-40.1440" Cp="33.5570" />
+        <me:thermoValue T="240.00" H="7.9980" S="218.6960" G="-44.4891" Cp="33.7484" />
+        <me:thermoValue T="260.00" H="8.6753" S="221.4068" G="-48.8904" Cp="33.9962" />
+        <me:thermoValue T="280.00" H="9.3582" S="223.9369" G="-53.3441" Cp="34.2977" />
+        <me:thermoValue T="298.15" H="9.9835" S="226.1006" G="-57.4284" Cp="34.6129" />
+        <me:thermoValue T="300.00" H="10.0476" S="226.3148" G="-57.8469" Cp="34.6470" />
+        <me:thermoValue T="320.00" H="10.7443" S="228.5631" G="-62.3959" Cp="35.0367" />
+        <me:thermoValue T="340.00" H="11.4492" S="230.6997" G="-66.9887" Cp="35.4585" />
+        <me:thermoValue T="360.00" H="12.1628" S="232.7390" G="-71.6232" Cp="35.9042" />
+        <me:thermoValue T="380.00" H="12.8855" S="234.6926" G="-76.2977" Cp="36.3664" />
+        <me:thermoValue T="400.00" H="13.6176" S="236.5699" G="-81.0104" Cp="36.8384" />
+        <me:thermoValue T="420.00" H="14.3591" S="238.3788" G="-85.7600" Cp="37.3144" />
+        <me:thermoValue T="440.00" H="15.1101" S="240.1256" G="-90.5451" Cp="37.7897" />
+        <me:thermoValue T="460.00" H="15.8706" S="241.8158" G="-95.3647" Cp="38.2607" />
+        <me:thermoValue T="480.00" H="16.6405" S="243.4540" G="-100.2174" Cp="38.7245" />
+        <me:thermoValue T="500.00" H="17.4196" S="245.0441" G="-105.1025" Cp="39.1789" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="Int2" description="peroxide_isomer_opt">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+        <bond atomRefs2="a5 a7" order="1" />
+        <bond atomRefs2="a7 a8" order="1" />
+        <bond atomRefs2="a8 a4" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">12.33</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.1089 0.1531 0.3768</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">206.2304 322.6668 336.7996 425.9810 499.7561 639.0242 683.9563 768.2432 873.4549 1008.2554 1029.8794 1248.4029 1451.2159 1502.3398 1710.3720 3169.9573 3289.8637 3474.3897</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:epsilon">
+          <scalar>473.17</scalar>
+        </property>
+        <property dictRef="me:sigma">
+          <scalar>5.09</scalar>
+        </property>
+      </propertyList>
+      <me:energyTransferModel xsi:type="me:ExponentialDown">
+        <me:deltaEDown units="cm-1">130.0</me:deltaEDown>
+      </me:energyTransferModel>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:DistributionCalcMethod default="true" name="Boltzmann" />
+      <me:densityOfStatesList calculated="20240311_090549">
+        <me:description>Rovibronic partition function calculation at various temperatures. qtot : product of QM partition functions for vibrations (1-D harmonic oscillator) and classical partition functions for rotations.  sumc : cell based partition function. sumg : grain based partition function </me:description>
+        <me:densityOfStates>
+          <me:T>200</me:T>
+          <me:qtot>130039</me:qtot>
+          <me:sumc>130082</me:sumc>
+          <me:sumg>127506</me:sumg>
+        </me:densityOfStates>
+        <me:densityOfStates>
+          <me:T>300</me:T>
+          <me:qtot>516238</me:qtot>
+          <me:sumc>516428</me:sumc>
+          <me:sumg>511610</me:sumg>
+        </me:densityOfStates>
+      </me:densityOfStatesList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6652" S="183.4362" G="-3.0036" Cp="33.2587" />
+        <me:thermoValue T="40.00" H="1.3320" S="206.5369" G="-6.9295" Cp="33.5755" />
+        <me:thermoValue T="60.00" H="2.0177" S="220.4157" G="-11.2072" Cp="35.2574" />
+        <me:thermoValue T="80.00" H="2.7515" S="230.9499" G="-15.7245" Cp="38.3101" />
+        <me:thermoValue T="100.00" H="3.5557" S="239.9065" G="-20.4349" Cp="42.2103" />
+        <me:thermoValue T="120.00" H="4.4426" S="247.9793" G="-25.3149" Cp="46.5179" />
+        <me:thermoValue T="140.00" H="5.4174" S="255.4840" G="-30.3503" Cp="50.9766" />
+        <me:thermoValue T="160.00" H="6.4818" S="262.5836" G="-35.5316" Cp="55.4555" />
+        <me:thermoValue T="180.00" H="7.6353" S="269.3718" G="-40.8516" Cp="59.8868" />
+        <me:thermoValue T="200.00" H="8.8767" S="275.9073" G="-46.3048" Cp="64.2315" />
+        <me:thermoValue T="220.00" H="10.2039" S="282.2287" G="-51.8865" Cp="68.4652" />
+        <me:thermoValue T="240.00" H="11.6144" S="288.3630" G="-57.5927" Cp="72.5716" />
+        <me:thermoValue T="260.00" H="13.1058" S="294.3294" G="-63.4199" Cp="76.5395" />
+        <me:thermoValue T="280.00" H="14.6751" S="300.1424" G="-69.3648" Cp="80.3617" />
+        <me:thermoValue T="298.15" H="16.1641" S="305.2941" G="-74.8593" Cp="83.7003" />
+        <me:thermoValue T="300.00" H="16.3193" S="305.8129" G="-75.4246" Cp="84.0336" />
+        <me:thermoValue T="320.00" H="18.0354" S="311.3494" G="-81.5964" Cp="87.5528" />
+        <me:thermoValue T="340.00" H="19.8203" S="316.7591" G="-87.8777" Cp="90.9189" />
+        <me:thermoValue T="360.00" H="21.6711" S="322.0476" G="-94.2660" Cp="94.1329" />
+        <me:thermoValue T="380.00" H="23.5847" S="327.2198" G="-100.7589" Cp="97.1972" />
+        <me:thermoValue T="400.00" H="25.5580" S="332.2802" G="-107.3540" Cp="100.1155" />
+        <me:thermoValue T="420.00" H="27.5883" S="337.2326" G="-114.0494" Cp="102.8923" />
+        <me:thermoValue T="440.00" H="29.6728" S="342.0806" G="-120.8427" Cp="105.5330" />
+        <me:thermoValue T="460.00" H="31.8088" S="346.8276" G="-127.7319" Cp="108.0438" />
+        <me:thermoValue T="480.00" H="33.9937" S="351.4768" G="-134.7151" Cp="110.4309" />
+        <me:thermoValue T="500.00" H="36.2253" S="356.0312" G="-141.7903" Cp="112.7012" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="TS3" description="TS peroxide -&gt; lactone + OH">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="H" />
+        <atom id="a5" elementType="C" />
+        <atom id="a6" elementType="O" />
+        <atom id="a7" elementType="O" />
+        <atom id="a8" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a5 a6" order="2" />
+        <bond atomRefs2="a5 a7" order="1" />
+        <bond atomRefs2="a8 a4" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">103.98</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1">0.1001 0.1422 0.3155</array>
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1">156.7840 187.6845 296.4705 320.1151 378.1544 616.3625 634.0759 819.5867 973.3226 1008.5148 1012.6292 1182.8647 1430.4450 1859.9531 3155.9226 3276.3336 3682.5520</array>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">75</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>2</scalar>
+        </property>
+        <property dictRef="me:imFreqs">
+          <scalar units="cm-1">656.0</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:densityOfStatesList calculated="20240311_090550">
+        <me:description>Rovibronic partition function calculation at various temperatures. qtot : product of QM partition functions for vibrations (1-D harmonic oscillator) and classical partition functions for rotations.  sumc : cell based partition function. sumg : grain based partition function </me:description>
+        <me:densityOfStates>
+          <me:T>200</me:T>
+          <me:qtot>246864</me:qtot>
+          <me:sumc>247342</me:sumc>
+          <me:sumg>242162</me:sumg>
+        </me:densityOfStates>
+        <me:densityOfStates>
+          <me:T>300</me:T>
+          <me:qtot>1.24148e+06</me:qtot>
+          <me:sumc>1.24452e+06</me:sumc>
+          <me:sumg>1.23275e+06</me:sumg>
+        </me:densityOfStates>
+      </me:densityOfStatesList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.6652" S="184.8334" G="-3.0315" Cp="33.2756" />
+        <me:thermoValue T="40.00" H="1.3405" S="208.1817" G="-6.9868" Cp="34.7729" />
+        <me:thermoValue T="60.00" H="2.0744" S="223.0033" G="-11.3058" Cp="38.9017" />
+        <me:thermoValue T="80.00" H="2.9026" S="234.8819" G="-15.8879" Cp="43.9789" />
+        <me:thermoValue T="100.00" H="3.8335" S="245.2470" G="-20.6912" Cp="49.0742" />
+        <me:thermoValue T="120.00" H="4.8634" S="254.6222" G="-25.6913" Cp="53.8509" />
+        <me:thermoValue T="140.00" H="5.9851" S="263.2594" G="-30.8712" Cp="58.2686" />
+        <me:thermoValue T="160.00" H="7.1922" S="271.3122" G="-36.2178" Cp="62.3950" />
+        <me:thermoValue T="180.00" H="8.4795" S="278.8890" G="-41.7205" Cp="66.3086" />
+        <me:thermoValue T="200.00" H="9.8435" S="286.0710" G="-47.3707" Cp="70.0658" />
+        <me:thermoValue T="220.00" H="11.2813" S="292.9202" G="-53.1611" Cp="73.6979" />
+        <me:thermoValue T="240.00" H="12.7907" S="299.4844" G="-59.0856" Cp="77.2167" />
+        <me:thermoValue T="260.00" H="14.3693" S="305.8003" G="-65.1388" Cp="80.6230" />
+        <me:thermoValue T="280.00" H="16.0148" S="311.8963" G="-71.3161" Cp="83.9118" />
+        <me:thermoValue T="298.15" H="17.5641" S="317.2565" G="-77.0259" Cp="86.7896" />
+        <me:thermoValue T="300.00" H="17.7249" S="317.7942" G="-77.6134" Cp="87.0770" />
+        <me:thermoValue T="320.00" H="19.4970" S="323.5117" G="-84.0267" Cp="90.1130" />
+        <me:thermoValue T="340.00" H="21.3285" S="329.0625" G="-90.5527" Cp="93.0162" />
+        <me:thermoValue T="360.00" H="23.2168" S="334.4582" G="-97.1882" Cp="95.7853" />
+        <me:thermoValue T="380.00" H="25.1591" S="339.7083" G="-103.9301" Cp="98.4209" />
+        <me:thermoValue T="400.00" H="27.1527" S="344.8208" G="-110.7756" Cp="100.9257" />
+        <me:thermoValue T="420.00" H="29.1952" S="349.8031" G="-117.7220" Cp="103.3038" />
+        <me:thermoValue T="440.00" H="31.2841" S="354.6613" G="-124.7669" Cp="105.5602" />
+        <me:thermoValue T="460.00" H="33.4169" S="359.4013" G="-131.9077" Cp="107.7010" />
+        <me:thermoValue T="480.00" H="35.5914" S="364.0283" G="-139.1422" Cp="109.7324" />
+        <me:thermoValue T="500.00" H="37.8055" S="368.5472" G="-146.4681" Cp="111.6611" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="lactone">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="C" />
+        <atom id="a5" elementType="O" />
+        <atom id="a6" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="1" />
+        <bond atomRefs2="a1 a5" order="1" />
+        <bond atomRefs2="a4 a5" order="1" />
+        <bond atomRefs2="a4 a6" order="2" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">13.0</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1" />
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1" />
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">58</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>1</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.4157" S="103.3346" G="-1.6510" Cp="20.7862" />
+        <me:thermoValue T="40.00" H="0.8314" S="117.7425" G="-3.8783" Cp="20.7862" />
+        <me:thermoValue T="60.00" H="1.2472" S="126.1705" G="-6.3231" Cp="20.7862" />
+        <me:thermoValue T="80.00" H="1.6629" S="132.1503" G="-8.9091" Cp="20.7862" />
+        <me:thermoValue T="100.00" H="2.0786" S="136.7886" G="-11.6002" Cp="20.7862" />
+        <me:thermoValue T="120.00" H="2.4943" S="140.5784" G="-14.3751" Cp="20.7862" />
+        <me:thermoValue T="140.00" H="2.9101" S="143.7826" G="-17.2195" Cp="20.7862" />
+        <me:thermoValue T="160.00" H="3.3258" S="146.5582" G="-20.1235" Cp="20.7862" />
+        <me:thermoValue T="180.00" H="3.7415" S="149.0065" G="-23.0797" Cp="20.7862" />
+        <me:thermoValue T="200.00" H="4.1572" S="151.1965" G="-26.0821" Cp="20.7862" />
+        <me:thermoValue T="220.00" H="4.5730" S="153.1776" G="-29.1261" Cp="20.7862" />
+        <me:thermoValue T="240.00" H="4.9887" S="154.9863" G="-32.2080" Cp="20.7862" />
+        <me:thermoValue T="260.00" H="5.4044" S="156.6500" G="-35.3246" Cp="20.7862" />
+        <me:thermoValue T="280.00" H="5.8201" S="158.1905" G="-38.4732" Cp="20.7862" />
+        <me:thermoValue T="298.15" H="6.1974" S="159.4960" G="-41.3563" Cp="20.7862" />
+        <me:thermoValue T="300.00" H="6.2358" S="159.6246" G="-41.6515" Cp="20.7862" />
+        <me:thermoValue T="320.00" H="6.6516" S="160.9661" G="-44.8576" Cp="20.7862" />
+        <me:thermoValue T="340.00" H="7.0673" S="162.2262" G="-48.0896" Cp="20.7862" />
+        <me:thermoValue T="360.00" H="7.4830" S="163.4143" G="-51.3461" Cp="20.7862" />
+        <me:thermoValue T="380.00" H="7.8987" S="164.5382" G="-54.6258" Cp="20.7862" />
+        <me:thermoValue T="400.00" H="8.3145" S="165.6044" G="-57.9273" Cp="20.7862" />
+        <me:thermoValue T="420.00" H="8.7302" S="166.6185" G="-61.2496" Cp="20.7862" />
+        <me:thermoValue T="440.00" H="9.1459" S="167.5855" G="-64.5917" Cp="20.7862" />
+        <me:thermoValue T="460.00" H="9.5616" S="168.5095" G="-67.9527" Cp="20.7862" />
+        <me:thermoValue T="480.00" H="9.9774" S="169.3941" G="-71.3318" Cp="20.7862" />
+        <me:thermoValue T="500.00" H="10.3931" S="170.2427" G="-74.7283" Cp="20.7862" />
+      </me:thermoTable>
+    </molecule>
+    <molecule id="triplet_C2H2O2" active="false">
+      <atomArray>
+        <atom id="a1" elementType="C" />
+        <atom id="a2" elementType="H" />
+        <atom id="a3" elementType="H" />
+        <atom id="a4" elementType="C" />
+        <atom id="a5" elementType="O" />
+        <atom id="a6" elementType="O" />
+      </atomArray>
+      <bondArray>
+        <bond atomRefs2="a1 a2" order="1" />
+        <bond atomRefs2="a1 a3" order="1" />
+        <bond atomRefs2="a1 a4" order="2" />
+        <bond atomRefs2="a4 a5" order="1" />
+        <bond atomRefs2="a4 a6" order="1" />
+      </bondArray>
+      <propertyList>
+        <property dictRef="me:ZPE">
+          <scalar units="kJ/mol">186.41</scalar>
+        </property>
+        <property dictRef="me:rotConsts">
+          <array units="cm-1" />
+        </property>
+        <property dictRef="me:symmetryNumber">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor">
+          <scalar>0.9854</scalar>
+        </property>
+        <property dictRef="me:vibFreqs">
+          <array units="cm-1" />
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">58</scalar>
+        </property>
+        <property dictRef="me:spinMultiplicity">
+          <scalar>1</scalar>
+        </property>
+      </propertyList>
+      <me:DOSCMethod xsi:type="ClassicalRotors" />
+    </molecule>
+    <molecule id="TS4">
+      <property dictRef="me:ZPE">
+        <scalar units="kJ/mol">128.1</scalar>
+      </property>
+    </molecule>
+    <molecule id="He" spinMultiplicity="1" default="true">
+      <atom elementType="He" id="a1" />
+      <propertyList>
+        <property dictRef="me:epsilon">
+          <scalar>10.2</scalar>
+        </property>
+        <property dictRef="me:sigma">
+          <scalar>2.55</scalar>
+        </property>
+        <property dictRef="me:MW">
+          <scalar units="amu">4.0</scalar>
+        </property>
+        <property dictRef="me:frequenciesScaleFactor" default="true">
+          <scalar>1</scalar>
+        </property>
+        <property dictRef="me:symmetryNumber" default="true">
+          <scalar>1</scalar>
+        </property>
+      </propertyList>
+      <me:thermoTable unitsT="K" unitsH="kJ/mol" unitsS="J/mol/K" unitsG="kJ/mol" unitsCp="J/mol/K">
+        <me:thermoValue T="0.00" H="0.0000" S="0.0000" G="0.0000" Cp="0.0000" />
+        <me:thermoValue T="20.00" H="0.4157" S="69.9834" G="-0.9839" Cp="20.7862" />
+        <me:thermoValue T="40.00" H="0.8314" S="84.3913" G="-2.5442" Cp="20.7862" />
+        <me:thermoValue T="60.00" H="1.2472" S="92.8194" G="-4.3220" Cp="20.7862" />
+        <me:thermoValue T="80.00" H="1.6629" S="98.7992" G="-6.2410" Cp="20.7862" />
+        <me:thermoValue T="100.00" H="2.0786" S="103.4375" G="-8.2651" Cp="20.7862" />
+        <me:thermoValue T="120.00" H="2.4943" S="107.2272" G="-10.3729" Cp="20.7862" />
+        <me:thermoValue T="140.00" H="2.9101" S="110.4314" G="-12.5503" Cp="20.7862" />
+        <me:thermoValue T="160.00" H="3.3258" S="113.2070" G="-14.7873" Cp="20.7862" />
+        <me:thermoValue T="180.00" H="3.7415" S="115.6553" G="-17.0764" Cp="20.7862" />
+        <me:thermoValue T="200.00" H="4.1572" S="117.8453" G="-19.4118" Cp="20.7862" />
+        <me:thermoValue T="220.00" H="4.5730" S="119.8265" G="-21.7889" Cp="20.7862" />
+        <me:thermoValue T="240.00" H="4.9887" S="121.6351" G="-24.2037" Cp="20.7862" />
+        <me:thermoValue T="260.00" H="5.4044" S="123.2989" G="-26.6533" Cp="20.7862" />
+        <me:thermoValue T="280.00" H="5.8201" S="124.8393" G="-29.1349" Cp="20.7862" />
+        <me:thermoValue T="298.15" H="6.1974" S="126.1448" G="-31.4127" Cp="20.7862" />
+        <me:thermoValue T="300.00" H="6.2358" S="126.2734" G="-31.6462" Cp="20.7862" />
+        <me:thermoValue T="320.00" H="6.6516" S="127.6149" G="-34.1852" Cp="20.7862" />
+        <me:thermoValue T="340.00" H="7.0673" S="128.8751" G="-36.7502" Cp="20.7862" />
+        <me:thermoValue T="360.00" H="7.4830" S="130.0632" G="-39.3397" Cp="20.7862" />
+        <me:thermoValue T="380.00" H="7.8987" S="131.1870" G="-41.9523" Cp="20.7862" />
+        <me:thermoValue T="400.00" H="8.3145" S="132.2532" G="-44.5868" Cp="20.7862" />
+        <me:thermoValue T="420.00" H="8.7302" S="133.2674" G="-47.2421" Cp="20.7862" />
+        <me:thermoValue T="440.00" H="9.1459" S="134.2343" G="-49.9172" Cp="20.7862" />
+        <me:thermoValue T="460.00" H="9.5616" S="135.1583" G="-52.6112" Cp="20.7862" />
+        <me:thermoValue T="480.00" H="9.9774" S="136.0430" G="-55.3233" Cp="20.7862" />
+        <me:thermoValue T="500.00" H="10.3931" S="136.8915" G="-58.0527" Cp="20.7862" />
+      </me:thermoTable>
+      <me:DOSCMethod default="true" name="ClassicalRotors" />
+    </molecule>
+  </moleculeList>
+  <reactionList>
+    <reaction id="R1">
+      <reactant>
+        <molecule ref="acetyl" role="deficientReactant" />
+      </reactant>
+      <reactant>
+        <molecule ref="O2" role="excessReactant" />
+      </reactant>
+      <product>
+        <molecule ref="Int1" role="modelled" />
+      </product>
+      <me:MCRCMethod xsi:type="me:MesmerILT">
+        <me:preExponential units="cm3molecule-1s-1">6.00e-12</me:preExponential>
+        <me:activationEnergy units="kJ/mol">0.0</me:activationEnergy>
+        <me:TInfinity>298.0</me:TInfinity>
+        <me:nInfinity>-0.5</me:nInfinity>
+      </me:MCRCMethod>
+      <me:excessReactantConc>2.25E16</me:excessReactantConc>
+      <me:canonicalRateList calculated="20240311_090559">
+        <me:description>Canonical rate coefficients (calculated from microcanonical rate coefficients)</me:description>
+        <me:kinf>
+          <me:T units="K">100</me:T>
+          <me:val units="cm3molecule-1s-1">1.2172e-11</me:val>
+          <me:rev units="s-1">3.13104e-58</me:rev>
+          <me:Keq units="cm3molecule-1">3.88752e+46</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>200</me:T>
+          <me:val>7.6436e-12</me:val>
+          <me:rev>2.13158e-21</me:rev>
+          <me:Keq>3.58589e+09</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>300</me:T>
+          <me:val>6.09866e-12</me:val>
+          <me:rev>4.06664e-09</me:rev>
+          <me:Keq>0.00149968</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>400</me:T>
+          <me:val>5.24046e-12</me:val>
+          <me:rev>0.00512438</me:rev>
+          <me:Keq>1.02265e-09</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>500</me:T>
+          <me:val>4.6702e-12</me:val>
+          <me:rev>21.4169</me:rev>
+          <me:Keq>2.18061e-13</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>600</me:T>
+          <me:val>4.25405e-12</me:val>
+          <me:rev>5158.84</me:rev>
+          <me:Keq>8.24613e-16</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>700</me:T>
+          <me:val>3.93269e-12</me:val>
+          <me:rev>244440</me:rev>
+          <me:Keq>1.60886e-17</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>800</me:T>
+          <me:val>3.67487e-12</me:val>
+          <me:rev>4.21203e+06</me:rev>
+          <me:Keq>8.7247e-19</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>900</me:T>
+          <me:val>3.46214e-12</me:val>
+          <me:rev>3.71246e+07</me:rev>
+          <me:Keq>9.32574e-20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1000</me:T>
+          <me:val>3.28274e-12</me:val>
+          <me:rev>2.05296e+08</me:rev>
+          <me:Keq>1.59903e-20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1100</me:T>
+          <me:val>3.12876e-12</me:val>
+          <me:rev>8.10808e+08</me:rev>
+          <me:Keq>3.85882e-21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1200</me:T>
+          <me:val>2.99471e-12</me:val>
+          <me:rev>2.49258e+09</me:rev>
+          <me:Keq>1.20145e-21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1300</me:T>
+          <me:val>2.87661e-12</me:val>
+          <me:rev>6.32906e+09</me:rev>
+          <me:Keq>4.54508e-22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1400</me:T>
+          <me:val>2.77152e-12</me:val>
+          <me:rev>1.38457e+10</me:rev>
+          <me:Keq>2.00172e-22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1500</me:T>
+          <me:val>2.67719e-12</me:val>
+          <me:rev>2.6912e+10</me:rev>
+          <me:Keq>9.94795e-23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1600</me:T>
+          <me:val>2.5919e-12</me:val>
+          <me:rev>4.75571e+10</me:rev>
+          <me:Keq>5.45008e-23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1700</me:T>
+          <me:val>2.51427e-12</me:val>
+          <me:rev>7.77529e+10</me:rev>
+          <me:Keq>3.23367e-23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1800</me:T>
+          <me:val>2.44317e-12</me:val>
+          <me:rev>1.19211e+11</me:rev>
+          <me:Keq>2.04944e-23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1900</me:T>
+          <me:val>2.37761e-12</me:val>
+          <me:rev>1.73227e+11</me:rev>
+          <me:Keq>1.37254e-23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>2000</me:T>
+          <me:val>2.3167e-12</me:val>
+          <me:rev>2.40575e+11</me:rev>
+          <me:Keq>9.62985e-24</me:Keq>
+        </me:kinf>
+      </me:canonicalRateList>
+    </reaction>
+    <reaction id="R2">
+      <reactant>
+        <molecule ref="Int1" role="modelled" />
+      </reactant>
+      <product>
+        <molecule ref="Int2" role="modelled" />
+      </product>
+      <me:transitionState>
+        <molecule ref="TS1" role="transitionState" />
+      </me:transitionState>
+      <me:tunneling name="Eckart" />
+      <me:MCRCMethod name="RRKM" />
+      <me:canonicalRateList calculated="20240311_090600">
+        <me:description>Canonical rate coefficients (calculated from microcanonical rate coefficients)</me:description>
+        <me:kinf>
+          <me:T units="K">100</me:T>
+          <me:val units="s-1">7.87127e-15</me:val>
+          <me:rev units="s-1">2.61004e-08</me:rev>
+          <me:Keq units="">2.84247e-07</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>200</me:T>
+          <me:val>2.99301e-10</me:val>
+          <me:rev>8.26118e-07</me:rev>
+          <me:Keq>0.00035869</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>300</me:T>
+          <me:val>2.29762e-06</me:val>
+          <me:rev>0.000599555</me:rev>
+          <me:Keq>0.00381628</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>400</me:T>
+          <me:val>0.0118117</me:val>
+          <me:rev>0.9209</me:rev>
+          <me:Keq>0.0127899</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>500</me:T>
+          <me:val>6.16988</me:val>
+          <me:rev>227.287</me:rev>
+          <me:Keq>0.0270854</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>600</me:T>
+          <me:val>515.233</me:val>
+          <me:rev>11320.3</me:rev>
+          <me:Keq>0.0454307</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>700</me:T>
+          <me:val>13328.5</me:val>
+          <me:rev>200267</me:rev>
+          <me:Keq>0.0664503</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>800</me:T>
+          <me:val>160124</me:val>
+          <me:rev>1.7971e+06</me:rev>
+          <me:Keq>0.088981</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>900</me:T>
+          <me:val>1.13778e+06</me:val>
+          <me:rev>1.01344e+07</me:rev>
+          <me:Keq>0.112135</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1000</me:T>
+          <me:val>5.5594e+06</me:val>
+          <me:rev>4.1053e+07</me:rev>
+          <me:Keq>0.135275</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1100</me:T>
+          <me:val>2.06079e+07</me:val>
+          <me:rev>1.30328e+08</me:rev>
+          <me:Keq>0.15797</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1200</me:T>
+          <me:val>6.1946e+07</me:val>
+          <me:rev>3.43952e+08</me:rev>
+          <me:Keq>0.179942</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1300</me:T>
+          <me:val>1.58224e+08</me:val>
+          <me:rev>7.86453e+08</me:rev>
+          <me:Keq>0.201024</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1400</me:T>
+          <me:val>3.5521e+08</me:val>
+          <me:rev>1.60513e+09</me:rev>
+          <me:Keq>0.221129</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1500</me:T>
+          <me:val>7.18636e+08</me:val>
+          <me:rev>2.98942e+09</me:rev>
+          <me:Keq>0.240224</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1600</me:T>
+          <me:val>1.33524e+09</me:val>
+          <me:rev>5.16575e+09</me:rev>
+          <me:Keq>0.258311</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1700</me:T>
+          <me:val>2.31186e+09</me:val>
+          <me:rev>8.38898e+09</me:rev>
+          <me:Keq>0.275414</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1800</me:T>
+          <me:val>3.77263e+09</me:val>
+          <me:rev>1.29314e+10</me:rev>
+          <me:Keq>0.291572</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1900</me:T>
+          <me:val>5.85435e+09</me:val>
+          <me:rev>1.90696e+10</me:rev>
+          <me:Keq>0.306831</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>2000</me:T>
+          <me:val>8.69993e+09</me:val>
+          <me:rev>2.70681e+10</me:rev>
+          <me:Keq>0.321241</me:Keq>
+        </me:kinf>
+      </me:canonicalRateList>
+    </reaction>
+    <reaction id="R6" active="false">
+      <reactant>
+        <molecule ref="Int2" role="modelled" />
+      </reactant>
+      <product>
+        <molecule ref="triplet_C2H2O2" role="sink" />
+      </product>
+      <product>
+        <molecule ref="OH" role="sink" />
+      </product>
+    </reaction>
+    <reaction id="R4">
+      <reactant>
+        <molecule ref="Int1" role="modelled" />
+      </reactant>
+      <product>
+        <molecule ref="ketene" role="sink" />
+      </product>
+      <product>
+        <molecule ref="HO2" role="sink" />
+      </product>
+      <me:transitionState>
+        <molecule ref="TS2" role="transitionState" />
+      </me:transitionState>
+      <me:MCRCMethod name="RRKM" />
+      <me:canonicalRateList calculated="20240311_090600">
+        <me:description>Canonical rate coefficients (calculated from microcanonical rate coefficients)</me:description>
+        <me:kinf>
+          <me:T units="K">100</me:T>
+          <me:val units="s-1">5.37627e-67</me:val>
+          <me:rev units="cm3molecule-1s-1">1.36682e-32</me:rev>
+          <me:Keq units="moleculecm-3">3.93343e-35</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>200</me:T>
+          <me:val>3.11198e-27</me:val>
+          <me:rev>1.19995e-23</me:rev>
+          <me:Keq>0.000259342</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>300</me:T>
+          <me:val>6.95161e-14</me:val>
+          <me:rev>1.32697e-20</me:rev>
+          <me:Keq>5.2387e+06</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>400</me:T>
+          <me:val>3.65055e-07</me:val>
+          <me:rev>5.05081e-19</me:rev>
+          <me:Keq>7.22765e+11</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>500</me:T>
+          <me:val>0.00417101</me:val>
+          <me:rev>4.99745e-18</me:rev>
+          <me:Keq>8.34628e+14</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>600</me:T>
+          <me:val>2.19387</me:val>
+          <me:rev>2.50929e-17</me:rev>
+          <me:Keq>8.74302e+16</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>700</me:T>
+          <me:val>197.25</me:val>
+          <me:rev>8.50643e-17</me:rev>
+          <me:Keq>2.31884e+18</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>800</me:T>
+          <me:val>5853.34</me:val>
+          <me:rev>2.24515e-16</me:rev>
+          <me:Keq>2.6071e+19</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>900</me:T>
+          <me:val>82716.7</me:val>
+          <me:rev>4.99459e-16</me:rev>
+          <me:Keq>1.65613e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1000</me:T>
+          <me:val>694056</me:val>
+          <me:rev>9.8241e-16</me:rev>
+          <me:Keq>7.06483e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1100</me:T>
+          <me:val>3.98065e+06</me:val>
+          <me:rev>1.76187e-15</me:rev>
+          <me:Keq>2.25933e+21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1200</me:T>
+          <me:val>1.71455e+07</me:val>
+          <me:rev>2.94144e-15</me:rev>
+          <me:Keq>5.82896e+21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1300</me:T>
+          <me:val>5.92063e+07</me:val>
+          <me:rev>4.6387e-15</me:rev>
+          <me:Keq>1.27635e+22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1400</me:T>
+          <me:val>1.71765e+08</me:val>
+          <me:rev>6.98403e-15</me:rev>
+          <me:Keq>2.4594e+22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1500</me:T>
+          <me:val>4.33312e+08</me:val>
+          <me:rev>1.01192e-14</me:rev>
+          <me:Keq>4.28206e+22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1600</me:T>
+          <me:val>9.75425e+08</me:val>
+          <me:rev>1.4196e-14</me:rev>
+          <me:Keq>6.87112e+22</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1700</me:T>
+          <me:val>1.99845e+09</me:val>
+          <me:rev>1.93732e-14</me:rev>
+          <me:Keq>1.03155e+23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1800</me:T>
+          <me:val>3.78378e+09</me:val>
+          <me:rev>2.5812e-14</me:rev>
+          <me:Keq>1.4659e+23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1900</me:T>
+          <me:val>6.69948e+09</me:val>
+          <me:rev>3.36663e-14</me:rev>
+          <me:Keq>1.98997e+23</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>2000</me:T>
+          <me:val>1.11953e+10</me:val>
+          <me:rev>4.3068e-14</me:rev>
+          <me:Keq>2.59944e+23</me:Keq>
+        </me:kinf>
+      </me:canonicalRateList>
+    </reaction>
+    <reaction id="R3">
+      <reactant>
+        <molecule ref="Int2" role="modelled" />
+      </reactant>
+      <product>
+        <molecule ref="lactone" role="sink" />
+      </product>
+      <product>
+        <molecule ref="OH" role="sink" />
+      </product>
+      <me:transitionState>
+        <molecule ref="TS3" role="transitionState" />
+      </me:transitionState>
+      <me:MCRCMethod name="RRKM" />
+      <me:canonicalRateList calculated="20240311_090600">
+        <me:description>Canonical rate coefficients (calculated from microcanonical rate coefficients)</me:description>
+        <me:kinf>
+          <me:T units="K">100</me:T>
+          <me:val units="s-1">4.32813e-36</me:val>
+          <me:rev units="cm3molecule-1s-1">4.30811e-57</me:rev>
+          <me:Keq units="moleculecm-3">1.00465e+21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>200</me:T>
+          <me:val>9.4902e-12</me:val>
+          <me:rev>5.07141e-33</me:rev>
+          <me:Keq>1.87131e+21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>300</me:T>
+          <me:val>0.00168466</me:val>
+          <me:rev>1.13117e-24</me:rev>
+          <me:Keq>1.48931e+21</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>400</me:T>
+          <me:val>25.334</me:val>
+          <me:rev>2.90346e-20</me:rev>
+          <me:Keq>8.72546e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>500</me:T>
+          <me:val>8607.55</me:val>
+          <me:rev>1.93005e-17</me:rev>
+          <me:Keq>4.45975e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>600</me:T>
+          <me:val>431944</me:val>
+          <me:rev>2.01377e-15</me:rev>
+          <me:Keq>2.14495e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>700</me:T>
+          <me:val>7.20268e+06</me:val>
+          <me:rev>7.13931e-14</me:rev>
+          <me:Keq>1.00888e+20</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>800</me:T>
+          <me:val>6.00393e+07</me:val>
+          <me:rev>1.26731e-12</me:rev>
+          <me:Keq>4.73756e+19</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>900</me:T>
+          <me:val>3.14375e+08</me:val>
+          <me:rev>1.39946e-11</me:rev>
+          <me:Keq>2.24639e+19</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1000</me:T>
+          <me:val>1.18688e+09</me:val>
+          <me:rev>1.09673e-10</me:rev>
+          <me:Keq>1.0822e+19</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1100</me:T>
+          <me:val>3.5288e+09</me:val>
+          <me:rev>6.64067e-10</me:rev>
+          <me:Keq>5.31392e+18</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1200</me:T>
+          <me:val>8.76529e+09</me:val>
+          <me:rev>3.29078e-09</me:rev>
+          <me:Keq>2.66359e+18</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1300</me:T>
+          <me:val>1.89525e+10</me:val>
+          <me:rev>1.3899e-08</me:rev>
+          <me:Keq>1.36359e+18</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1400</me:T>
+          <me:val>3.67382e+10</me:val>
+          <me:rev>5.15344e-08</me:rev>
+          <me:Keq>7.12887e+17</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1500</me:T>
+          <me:val>6.5242e+10</me:val>
+          <me:rev>1.71493e-07</me:rev>
+          <me:Keq>3.80436e+17</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1600</me:T>
+          <me:val>1.07887e+11</me:val>
+          <me:rev>5.2094e-07</me:rev>
+          <me:Keq>2.07101e+17</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1700</me:T>
+          <me:val>1.68216e+11</me:val>
+          <me:rev>1.46378e-06</me:rev>
+          <me:Keq>1.14919e+17</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1800</me:T>
+          <me:val>2.49708e+11</me:val>
+          <me:rev>3.84485e-06</me:rev>
+          <me:Keq>6.4946e+16</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>1900</me:T>
+          <me:val>3.55609e+11</me:val>
+          <me:rev>9.52065e-06</me:rev>
+          <me:Keq>3.73513e+16</me:Keq>
+        </me:kinf>
+        <me:kinf>
+          <me:T>2000</me:T>
+          <me:val>4.88769e+11</me:val>
+          <me:rev>2.23772e-05</me:rev>
+          <me:Keq>2.18423e+16</me:Keq>
+        </me:kinf>
+      </me:canonicalRateList>
+    </reaction>
+    <reaction id="R5" active="false">
+      <reactant>
+        <molecule ref="Int2" role="modelled" />
+      </reactant>
+      <product>
+        <molecule ref="ketene" role="sink" />
+      </product>
+      <product>
+        <molecule ref="HO2" role="sink" />
+      </product>
+      <me:transitionState>
+        <molecule ref="TS4" role="transitionState" />
+      </me:transitionState>
+    </reaction>
+  </reactionList>
+  <me:conditions>
+    <me:bathGas>He</me:bathGas>
+    <me:PTs>
+      <me:PTpair units="Torr" P="1000.0" T="298." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="100.0" T="298." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="10.0" T="298." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="1.00" T="298." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="1000.0" T="398." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="100.0" T="398." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="10.0" T="398." precision="d" default="true" bathGas="He" group="default" />
+      <me:PTpair units="Torr" P="1.00" T="398." precision="d" default="true" bathGas="He" group="default" />
+    </me:PTs>
+  </me:conditions>
+  <me:modelParameters>
+    <!--Specify grain size directly...-->
+    <me:grainSize units="cm-1">100</me:grainSize>
+    <!--...or by the total number of grains
+        <me:numberOfGrains> 500 </me:numberOfGrains>-->
+    <!--Specify increased energy range
+        <me:maxTemperature>6000</me:maxTemperature>-->
+    <me:energyAboveTheTopHill>25.0</me:energyAboveTheTopHill>
+  </me:modelParameters>
+  <me:control>
+    <me:testDOS />
+    <me:printSpeciesProfile />
+    <me:testMicroRates Tstep="100" default="true" Tmin="100" Tmax="2000" />
+    <me:testRateConstant />
+    <me:printGrainDOS />
+    <me:printCellDOS />
+    <me:printReactionOperatorColumnSums />
+    <me:printTunnellingCoefficients />
+    <me:printGrainkfE />
+    <me:printGrainBoltzmann />
+    <me:printGrainkbE />
+    <me:eigenvalues>10</me:eigenvalues>
+    <!--<me:hideInactive/>-->
+    <me:diagramEnergyOffset ref="R2">0</me:diagramEnergyOffset>
+
+    <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
+  </me:control>
+  <me:control>
+    <me:calcMethod units="kJ/mol" xsi:type="me:ThermodynamicTable">
+      <me:Tmin>0</me:Tmin>
+      <me:Tmid>250</me:Tmid>
+      <me:Tmax>500</me:Tmax>
+      <me:Tstep>20</me:Tstep>
+    </me:calcMethod>
+    <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
+  </me:control>
+</me:mesmer>

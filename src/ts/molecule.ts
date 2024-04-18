@@ -4,6 +4,7 @@ import { get } from './util.js';
 import {
     TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
 } from './xml.js';
+import { Description, T } from './mesmer.js';
 
 
 /**
@@ -1474,6 +1475,66 @@ export class PotentialPoint extends TagWithAttributes {
 }
 
 /**
+ * In the XML, a "me:DistributionCalcMethod" node is a child node of a "molecule" node.
+ * Attributes may include:
+ * default (string)
+ * name (string)
+ */
+export class DistributionCalcMethod  extends TagWithAttributes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:DistributionCalcMethod";
+
+    /**
+     * The key for the default attribute.
+     */
+    static readonly s_default: string = "default";
+
+    /**
+     * The key for the name attribute.
+     */
+    static readonly s_name: string = "name";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, DistributionCalcMethod.tagName);
+    }
+
+    /**
+     * @returns The default.
+     */
+    getDefault(): string | undefined {
+        return this.attributes.get(DistributionCalcMethod.s_default);
+    }
+
+    /**
+     * @param default The default.
+     *
+    setDefault(defaultValue: string): void {
+        this.attributes.set(DistributionCalcMethod.s_default, defaultValue);
+    }
+    */
+
+    /**
+     * @returns The name.
+     */
+    getName(): string | undefined {
+        return this.attributes.get(DistributionCalcMethod.s_name);
+    }
+
+    /**
+     * @param name The name.
+     *
+    setName(name: string): void {
+        this.attributes.set(DistributionCalcMethod.s_name, name);
+    }*/
+}
+
+/**
  * For representing a "me:thermoValue"
  * T, H, S, G, Cp
  */
@@ -1732,11 +1793,11 @@ export class ThermoTable extends NodeWithNodes {
      * @returns The ThermoTable header as a string array.
      */
     getHeader(): string[] {
-        return ["T units(" + (this.attributes.get(ThermoTable.s_unitsT)) + ")",
-        "H(T)-H(0) units(" + (this.attributes.get(ThermoTable.s_unitsH)) + ")",
-        "S(T) units(" + (this.attributes.get(ThermoTable.s_unitsS)) + ")",
-        "G(T) units(" + (this.attributes.get(ThermoTable.s_unitsG)) + ")",
-        "Cp(T) units(" + (this.attributes.get(ThermoTable.s_unitsCp)) + ")"];
+        return ["T (" + (this.attributes.get(ThermoTable.s_unitsT)) + ")",
+        "H(T)-H(0) (" + (this.attributes.get(ThermoTable.s_unitsH)) + ")",
+        "S(T) (" + (this.attributes.get(ThermoTable.s_unitsS)) + ")",
+        "G(T) (" + (this.attributes.get(ThermoTable.s_unitsG)) + ")",
+        "Cp(T) (" + (this.attributes.get(ThermoTable.s_unitsCp)) + ")"];
     }
 
     /**
@@ -2104,44 +2165,6 @@ export class ReservoirSize extends NumberNode {
 }
 
 /**
- * In the XML, a "me:description" node is a child node of a "me:densityOfStatesList" node.
- */
-export class Description extends StringNode {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:description";
-
-    /**
-     * @param attributes The attributes.
-     * @param description The description.
-     */
-    constructor(attributes: Map<string, string>, description: string) {
-        super(attributes, Description.tagName, description);
-    }
-}
-
-/**
- * In the XML, a "me:T" node is a child node of a "me:densityOfStates" node. 
- */
-export class T extends NumberNode {
-
-    /**
-     * The tag name.
-     */
-    static readonly tagName: string = "me:t";
-
-    /**
-     * @param attributes The attributes.
-     * @param value The value.
-     */
-    constructor(attributes: Map<string, string>, value: Big) {
-        super(attributes, T.tagName, value);
-    }
-}
-
-/**
  * In the XML, a "me:qtot" node is a child node of a "me:densityOfStates" node.
  */
 export class Qtot extends NumberNode {
@@ -2212,6 +2235,11 @@ export class DensityOfStates extends NodeWithNodes {
      * The tag name.
      */
     static readonly tagName: string = "me:densityOfStates";
+
+    /**
+     * The header.
+     */
+    static readonly header: string[] = [T.tagName, Qtot.tagName, Sumc.tagName, Sumg.tagName];
 
     /**
      * The index.
@@ -2320,6 +2348,14 @@ export class DensityOfStates extends NodeWithNodes {
             this.nodes.set(this.nodes.size, Sumg);
             this.index.set(Sumg.tagName, this.nodes.size - 1);
         }
+    }
+
+    /**
+     * @returns The density of states as a string array.
+     */
+    toStringArray(): string[] {
+        return [this.getT()!.getValue().toString(), this.getQtot()!.getValue().toString(),
+        this.getSumc()!.getValue().toString(), this.getSumg()!.getValue().toString()];
     }
 }
 
@@ -2446,6 +2482,19 @@ export class DensityOfStatesList extends NodeWithNodes {
         }
     }
 
+    /**
+     * @returns The density of states list as a CSV string.
+     */
+    toCSV(): string {
+        let csv: string = "";
+        let header: string[] = DensityOfStates.header;
+        csv += header.join(",") + "\n";
+        this.nodes.forEach((dos) => {
+            csv += (dos as DensityOfStates).toStringArray().join(",") + "\n";
+        });
+        return csv;
+    }
+
 }
 
 
@@ -2501,6 +2550,7 @@ export class Molecule extends NodeWithNodes {
         properties?: PropertyList,
         energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod,
+        distributionCalcMethod?: DistributionCalcMethod,
         extraDOSCMethod?: ExtraDOSCMethod,
         reservoirSize?: ReservoirSize,
         tt?: ThermoTable) {
@@ -2536,6 +2586,11 @@ export class Molecule extends NodeWithNodes {
         if (dOSCMethod) {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
+        }
+        // DistributionCalcMethod
+        if (distributionCalcMethod) {
+            this.nodes.set(i, distributionCalcMethod);
+            this.index.set(DistributionCalcMethod.tagName, i);
         }
         // ExtraDOSCMethod
         if (extraDOSCMethod) {
@@ -2779,6 +2834,32 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
+     * @returns The distribution calculation method of the molecule.
+     */
+    getDistributionCalcMethod(): DistributionCalcMethod | undefined {
+        let i: number | undefined = this.index.get(DistributionCalcMethod.tagName);
+        if (i == undefined) {
+            return undefined;
+        } else {
+            return this.nodes.get(i) as DistributionCalcMethod;
+        }
+    }
+
+    /**
+     * Set the distribution calculation method.
+     * @param distributionCalcMethod The distribution calculation method.
+     */
+    setDistributionCalcMethod(distributionCalcMethod: DistributionCalcMethod) {
+        let i: number | undefined = this.index.get(DistributionCalcMethod.tagName);
+        if (i == undefined) {
+            this.index.set(DistributionCalcMethod.tagName, this.nodes.size);
+            this.addNode(distributionCalcMethod);
+        } else {
+            this.nodes.set(i, distributionCalcMethod);
+        }
+    }
+
+    /**
      * @returns The extra DOSC method of the molecule.
      */
     getExtraDOSCMethod(): ExtraDOSCMethod | undefined {
@@ -2827,6 +2908,32 @@ export class Molecule extends NodeWithNodes {
             this.addNode(reservoirSize);
         } else {
             this.nodes.set(i, reservoirSize);
+        }
+    }
+
+    /**
+     * @returns The density of states list of the molecule.
+     */
+    getDensityOfStatesList(): DensityOfStatesList | undefined {
+        let i: number | undefined = this.index.get(DensityOfStatesList.tagName);
+        if (i == undefined) {
+            return undefined;
+        } else {
+            return this.nodes.get(i) as DensityOfStatesList;
+        }
+    }
+
+    /**
+     * Set the density of states list.
+     * @param densityOfStatesList The density of states list.
+     */
+    setDensityOfStatesList(densityOfStatesList: DensityOfStatesList) {
+        let i: number | undefined = this.index.get(DensityOfStatesList.tagName);
+        if (i == undefined) {
+            this.index.set(DensityOfStatesList.tagName, this.nodes.size);
+            this.addNode(densityOfStatesList);
+        } else {
+            this.nodes.set(i, densityOfStatesList);
         }
     }
 

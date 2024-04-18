@@ -482,14 +482,14 @@ function parse(xml) {
     let rdDiv = (0, html_js_1.createDiv)(undefined, level1);
     let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, s_Reactions_Diagram, boundary1, level0);
     // Create a pop diagram button in its own div.
-    let popButtonDivId = (0, util_js_1.getID)(rdDivID, 'pop');
+    let bDivId = (0, util_js_1.getID)(rdDivID, html_js_1.s_button + 's');
     //remove(popButtonDivId);
-    let popButtonDiv = (0, html_js_1.createDiv)(popButtonDivId);
-    rdDiv.appendChild(popButtonDiv);
-    let popButtonID = (0, util_js_1.getID)(popButtonDivId, html_js_1.s_button);
+    let bDiv = (0, html_js_1.createDiv)(bDivId);
+    rdDiv.appendChild(bDiv);
+    let pbID = (0, util_js_1.getID)(bDivId, html_js_1.s_button);
     let popOutText = "Pop into a new Window";
-    let popButton = (0, html_js_1.createButton)(popOutText, popButtonID);
-    popButtonDiv.appendChild(popButton);
+    let pb = (0, html_js_1.createButton)(popOutText, pbID);
+    bDiv.appendChild(pb);
     let rdCanvas = document.createElement('canvas');
     rdCanvas.id = rdcID;
     rdDiv.appendChild(rdCanvas);
@@ -499,7 +499,7 @@ function parse(xml) {
     //rdCanvas.style.margin = "1px";
     drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     // Add action listener to the pop diagram button.
-    popButton.addEventListener('click', () => {
+    pb.addEventListener('click', () => {
         if (rdWindow == null) {
             let popWindowRDCanvas = document.createElement('canvas');
             popWindowRDCanvas.id = rdcID;
@@ -507,7 +507,7 @@ function parse(xml) {
             rdWindow.document.body.appendChild(popWindowRDCanvas);
             drawReactionDiagram(popWindowRDCanvas, dark, rd_font, rd_lw, rd_lwc);
             (0, html_js_1.remove)(rdcID, ids);
-            popButton.textContent = "Pop into this Window";
+            pb.textContent = "Pop into this Window";
         }
         else {
             rdCanvas = document.createElement('canvas');
@@ -516,21 +516,10 @@ function parse(xml) {
             drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
             rdWindow.close();
             rdWindow = null;
-            popButton.textContent = popOutText;
+            pb.textContent = popOutText;
         }
     });
-    // Add a save button to save the canvas as an image.
-    let saveButtonID = (0, util_js_1.getID)('saveButton');
-    let saveButton = (0, html_js_1.createButton)("Save as PNG", saveButtonID, boundary1);
-    popButtonDiv.appendChild(saveButton);
-    saveButton.addEventListener('click', () => {
-        let dataURL = rdCanvas.toDataURL();
-        let a = document.createElement('a');
-        a.href = dataURL;
-        let title = mesmer.getTitle()?.value;
-        a.download = (title + s_Reactions_Diagram).replace(/[^a-z0-9]/gi, '_') + ".png";
-        a.click();
-    });
+    addSaveAsPNGButton(rdCanvas, bDiv, null, s_Reactions_Diagram);
     // Conditions.
     let cdlDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addID(conditions_js_1.Conditions.tagName);
@@ -791,7 +780,110 @@ function processMoleculeList(xml) {
             mDiv.appendChild((0, html_js_1.createLabelWithSelect)(molecule_js_1.DOSCMethod.tagName, molecule_js_1.DOSCMethod.xsi_typeOptions, molecule_js_1.DOSCMethod.tagName, doscm.getXsiType(), m.getID(), boundary1, level1));
             moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
         }
-        // Organise ThermoTable.
+        // Organise DistributionCalcMethod. (Output only)
+        let xml_dcms = xml_ms[i].getElementsByTagName(molecule_js_1.DistributionCalcMethod.tagName);
+        if (xml_dcms.length > 0) {
+            if (xml_dcms.length > 1) {
+                throw new Error("Expecting 1 or 0 " + molecule_js_1.DistributionCalcMethod.tagName + " but finding " + xml_dcms.length + "!");
+            }
+            let dcmAttributes = (0, xml_js_1.getAttributes)(xml_dcms[0]);
+            let dcm = new molecule_js_1.DistributionCalcMethod(dcmAttributes);
+            m.setDistributionCalcMethod(dcm);
+            let dcmDivID = (0, util_js_1.getID)(mDivID, molecule_js_1.DistributionCalcMethod.tagName);
+            let dcmDiv = (0, html_js_1.createDiv)((0, util_js_1.getID)(mDivID, molecule_js_1.DistributionCalcMethod.tagName));
+            mDiv.appendChild(dcmDiv);
+            // Create label.
+            dcmDiv.appendChild((0, html_js_1.createLabel)(molecule_js_1.DistributionCalcMethod.tagName + " " + (0, util_js_1.mapToString)(dcmAttributes), level1));
+            moleculeTagNames.delete(molecule_js_1.DistributionCalcMethod.tagName);
+        }
+        // Organise DensityOfStatesList. (Output only)
+        let xml_dosl = xml_ms[i].getElementsByTagName(molecule_js_1.DensityOfStatesList.tagName);
+        if (xml_dosl.length > 0) {
+            if (xml_dosl.length > 1) {
+                throw new Error("Expecting 1 or 0 " + molecule_js_1.DensityOfStatesList.tagName + " but finding " + xml_dosl.length + "!");
+            }
+            let dosl = new molecule_js_1.DensityOfStatesList((0, xml_js_1.getAttributes)(xml_dosl[0]));
+            m.setDensityOfStatesList(dosl);
+            // Create collapsible div.
+            let doslDivID = (0, util_js_1.getID)(mDivID, molecule_js_1.DensityOfStatesList.tagName);
+            let doslDiv = (0, html_js_1.createDiv)(doslDivID);
+            let doslcDivID = (0, util_js_1.getID)(doslDivID, s_container);
+            let doslcDiv = (0, html_js_1.getCollapsibleDiv)(doslcDivID, mDiv, null, doslDiv, molecule_js_1.DensityOfStatesList.tagName, boundary1, level1);
+            let xml_dos = xml_dosl[0].getElementsByTagName(molecule_js_1.DensityOfStates.tagName);
+            // Organise Description.
+            let xml_ds = xml_dosl[0].getElementsByTagName(mesmer_js_1.Description.tagName);
+            if (xml_ds.length > 0) {
+                if (xml_ds.length > 1) {
+                    throw new Error("Expecting 1 or 0 " + mesmer_js_1.Description.tagName + " but finding " + xml_ds.length + "!");
+                }
+                let ds = new mesmer_js_1.Description((0, xml_js_1.getAttributes)(xml_ds[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_ds[0])));
+                dosl.setDescription(ds);
+            }
+            // Organise DensityOfStates.
+            //console.log("xml_dos.length=" + xml_dos.length);
+            if (xml_dos.length == 0) {
+                throw new Error("Expecting 1 or more " + molecule_js_1.DensityOfStates.tagName + " but finding 0!");
+            }
+            else {
+                let t = (0, html_js_1.createTable)((0, util_js_1.getID)(doslDivID, s_table), level1);
+                (0, html_js_1.addTableRow)(t, molecule_js_1.DensityOfStates.header);
+                // Append the table to the div.
+                doslDiv.appendChild(t);
+                for (let j = 0; j < xml_dos.length; j++) {
+                    //console.log("j=" + j);
+                    let dos = new molecule_js_1.DensityOfStates((0, xml_js_1.getAttributes)(xml_dos[j]));
+                    dosl.addDensityOfStates(dos);
+                    let dosDivID = (0, util_js_1.getID)(doslDivID, j);
+                    let dosDiv = (0, html_js_1.createFlexDiv)(dosDivID, level1);
+                    doslDiv.appendChild(dosDiv);
+                    // T.
+                    let xml_t = xml_dos[j].getElementsByTagName(mesmer_js_1.T.tagName);
+                    if (xml_t.length != 1) {
+                        throw new Error("Expecting 1 " + mesmer_js_1.T.tagName + " but finding " + xml_t.length + "!");
+                    }
+                    else {
+                        let t = new mesmer_js_1.T((0, xml_js_1.getAttributes)(xml_t[0]), new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_t[0]))));
+                        dos.setT(t);
+                        //dosDiv.appendChild(createLabel(t.value.toString(), boundary1));
+                    }
+                    // qtot.
+                    let xml_qtot = xml_dos[j].getElementsByTagName(molecule_js_1.Qtot.tagName);
+                    if (xml_qtot.length != 1) {
+                        throw new Error("Expecting 1 " + molecule_js_1.Qtot.tagName + " but finding " + xml_qtot.length + "!");
+                    }
+                    else {
+                        let qtot = new molecule_js_1.Qtot((0, xml_js_1.getAttributes)(xml_qtot[0]), new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_qtot[0]))));
+                        dos.setQtot(qtot);
+                        //dosDiv.appendChild(createLabel(Qtot.tagName + " " + qtot.value.toString(), boundary1));
+                    }
+                    // sumc.
+                    let xml_sumc = xml_dos[j].getElementsByTagName(molecule_js_1.Sumc.tagName);
+                    if (xml_sumc.length != 1) {
+                        throw new Error("Expecting 1 " + molecule_js_1.Sumc.tagName + " but finding " + xml_sumc.length + "!");
+                    }
+                    else {
+                        let sumc = new molecule_js_1.Sumc((0, xml_js_1.getAttributes)(xml_sumc[0]), new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_sumc[0]))));
+                        dos.setSumc(sumc);
+                        //dosDiv.appendChild(createLabel(sumc.value.toString(), boundary1));
+                    }
+                    // sumg.
+                    let xml_sumg = xml_dos[j].getElementsByTagName(molecule_js_1.Sumg.tagName);
+                    if (xml_sumg.length != 1) {
+                        throw new Error("Expecting 1 " + molecule_js_1.Sumg.tagName + " but finding " + xml_sumg.length + "!");
+                    }
+                    else {
+                        let sumg = new molecule_js_1.Sumg((0, xml_js_1.getAttributes)(xml_sumg[0]), new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_sumg[0]))));
+                        dos.setSumg(sumg);
+                        //dosDiv.appendChild(createLabel(sumg.value.toString(), boundary1));
+                    }
+                    (0, html_js_1.addTableRow)(t, dos.toStringArray());
+                    //console.log("dos: " + dos.toString());
+                    addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + molecule_js_1.DensityOfStatesList.tagName);
+                }
+            }
+            moleculeTagNames.delete(molecule_js_1.DensityOfStatesList.tagName);
+        }
+        // Organise ThermoTable. (Output only)
         let tttn = molecule_js_1.ThermoTable.tagName;
         let xml_tts = xml_ms[i].getElementsByTagName(tttn);
         if (xml_tts.length > 0) {
@@ -812,7 +904,6 @@ function processMoleculeList(xml) {
             }
             else {
                 tvs = [];
-                tt.init(tvs);
                 let t = (0, html_js_1.createTable)((0, util_js_1.getID)(ttDivId, s_table), level1);
                 (0, html_js_1.addTableRow)(t, tt.getHeader());
                 for (let j = 0; j < xml_tvs.length; j++) {
@@ -820,42 +911,15 @@ function processMoleculeList(xml) {
                     tvs.push(tv);
                     (0, html_js_1.addTableRow)(t, tv.toStringArray());
                 }
+                // Append the table to the div.
                 ttDiv.appendChild(t);
-                // Add a button to save the table as a CSV file.
-                let saveButtonID = (0, util_js_1.getID)(ttDivId, html_js_1.s_button);
-                let saveButton = (0, html_js_1.createButton)("Save as CSV", saveButtonID, boundary1);
-                ttDiv.appendChild(saveButton);
-                saveButton.addEventListener('click', () => {
-                    let csv = tt.toCSV();
-                    let a = document.createElement('a');
-                    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-                    let title = mesmer.getTitle()?.value;
-                    a.download = title.replace(/[^a-z0-9]/gi, '_') + "_" + mID + "_" + molecule_js_1.ThermoTable.tagName + ".csv";
-                    document.body.appendChild(a); // Append the anchor to the body.
-                    a.click(); // Programmatically click the anchor to trigger the download.
-                    document.body.removeChild(a); // Remove the anchor from the body after triggering the download.
-                });
+                tt.init(tvs);
+                addSaveAsCSVButton(tt.toCSV, ttDiv, t, mID + "_" + molecule_js_1.ThermoTable.tagName);
             }
             m.setThermoTable(tt);
             moleculeTagNames.delete(tvtn);
             moleculeTagNames.delete(tttn);
         }
-        /*
-reactionList
-    reaction
-        me:canonicalRateList
-            me:kinf
-            me:T
-            me:val
-            me:rev
-            me:Keq
-
-control
-  me:ForceMacroDetailedBalance
-
-me:analysis
-  me:rateList
-        */
         // Organise ExtraDOSCMethod.
         let xml_edms = xml_ms[i].getElementsByTagName(molecule_js_1.ExtraDOSCMethod.tagName);
         if (xml_edms.length > 0) {
@@ -1360,7 +1424,7 @@ function processAtomRefs2(molecule, bDiv, bond, margin) {
  */
 function createProperty(pl, xml, plDiv, molecule, boundary, level) {
     let p = new molecule_js_1.Property((0, xml_js_1.getAttributes)(xml));
-    console.log("p.dictRef " + p.dictRef);
+    //console.log("p.dictRef " + p.dictRef);
     if (p.dictRef == molecule_js_1.ZPE.dictRef) {
         processProperty(pl, p, mesmer_js_1.Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
     }
@@ -1368,7 +1432,6 @@ function createProperty(pl, xml, plDiv, molecule, boundary, level) {
         processProperty(pl, p, mesmer_js_1.Mesmer.frequencyUnits, molecule, xml, plDiv, boundary, level);
     }
     else if (p.dictRef == molecule_js_1.VibFreqs.dictRef) {
-        console.log("VibFreqs");
         processProperty(pl, p, undefined, molecule, xml, plDiv, boundary, level);
     }
     else {
@@ -2466,12 +2529,12 @@ function processReactionList(xml) {
                                 let label = reaction_js_1.NInfinity.tagName;
                                 // Create a new div element for the input.
                                 let id = reaction.id + "_" + reaction_js_1.MesmerILT.tagName + "_" + reaction_js_1.NInfinity.tagName;
-                                let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level1, (event) => {
+                                let lwi = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level1, (event) => {
                                     let target = event.target;
                                     setNumberNode(nInfinity, target);
                                 }, inputString, label);
-                                mCRCMethodDiv.appendChild(inputDiv);
-                                let inputElement = inputDiv.querySelector('input');
+                                mCRCMethodDiv.appendChild(lwi);
+                                let inputElement = lwi.querySelector('input');
                                 inputElement.value = inputString;
                                 (0, html_js_1.resizeInputElement)(inputElement);
                                 inputElement.addEventListener('change', (event) => {
@@ -2481,8 +2544,8 @@ function processReactionList(xml) {
                                     console.log("Set " + id + " to " + inputString);
                                     (0, html_js_1.resizeInputElement)(inputElement);
                                 });
-                                addAnyUnits(undefined, nInfinityAttributes, inputDiv, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.NInfinity.tagName, reaction_js_1.NInfinity.tagName, boundary1, level1);
-                                mCRCMethodDiv.appendChild(inputDiv);
+                                addAnyUnits(undefined, nInfinityAttributes, lwi, reaction.id + "_" + reaction_js_1.MesmerILT.xsiType + "_" + reaction_js_1.NInfinity.tagName, reaction_js_1.NInfinity.tagName, boundary1, level1);
+                                mCRCMethodDiv.appendChild(lwi);
                             }
                         }
                     }
@@ -2501,21 +2564,108 @@ function processReactionList(xml) {
                 reaction.setMCRCMethod(mCRCMethod);
             }
         }
-        // Load excessReactantConc
-        let xml_excessReactantConc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
-        if (xml_excessReactantConc.length > 0) {
-            if (xml_excessReactantConc.length > 1) {
-                throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_excessReactantConc.length + "!");
+        // me:excessReactantConc
+        let xml_erc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
+        console.log("n_me:excessReactantConc=" + xml_erc.length);
+        if (xml_erc.length > 0) {
+            if (xml_erc.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_erc.length + "!");
             }
-            let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_excessReactantConc[0])));
-            let excessReactantConc = new reaction_js_1.ExcessReactantConc((0, xml_js_1.getAttributes)(xml_excessReactantConc[0]), value);
-            reaction.setExcessReactantConc(excessReactantConc);
-            let id = reaction.id + "_" + reaction_js_1.ExcessReactantConc.tagName;
-            let inputDiv = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level1, (event) => {
+            let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_erc[0])));
+            let erc = new reaction_js_1.ExcessReactantConc((0, xml_js_1.getAttributes)(xml_erc[0]), value);
+            reaction.setExcessReactantConc(erc);
+            let id = (0, util_js_1.getID)(reaction.id, reaction_js_1.ExcessReactantConc.tagName);
+            let lwi = (0, html_js_1.createLabelWithInput)("number", id, boundary1, level1, (event) => {
                 let target = event.target;
-                setNumberNode(excessReactantConc, target);
+                setNumberNode(erc, target);
             }, value.toExponential(), reaction_js_1.ExcessReactantConc.tagName);
-            reactionDiv.appendChild(inputDiv);
+            reactionDiv.appendChild(lwi);
+        }
+        // me:canonicalRateList
+        let xml_crl = xml_reactions[i].getElementsByTagName(reaction_js_1.CanonicalRateList.tagName);
+        console.log("n_me:canonicalRateList=" + xml_crl.length);
+        if (xml_crl.length > 0) {
+            if (xml_crl.length > 1) {
+                throw new Error("Expecting 1 " + reaction_js_1.CanonicalRateList.tagName + " but finding " + xml_crl.length + "!");
+            }
+            let clr_attributes = (0, xml_js_1.getAttributes)(xml_crl[0]);
+            let crl = new reaction_js_1.CanonicalRateList(clr_attributes);
+            reaction.setCanonicalRateList(crl);
+            // Create a new collapsible div for the canonicalRateList.
+            let crlDivID = (0, util_js_1.getID)(reaction.id, reaction_js_1.CanonicalRateList.tagName);
+            let crlDiv = (0, html_js_1.createDiv)(crlDivID);
+            let crlcDivID = (0, util_js_1.getID)(crlDivID, s_container);
+            let crlcDiv = (0, html_js_1.getCollapsibleDiv)(crlcDivID, reactionDiv, null, crlDiv, reaction_js_1.CanonicalRateList.tagName, boundary1, level1);
+            reactionDiv.appendChild(crlcDiv);
+            //let id = getID(reaction.id, CanonicalRateList.tagName);
+            // me:description.
+            let xml_d = xml_crl[0].getElementsByTagName(mesmer_js_1.Description.tagName);
+            console.log("xml_d.length=" + xml_d.length);
+            if (xml_d.length > 0) {
+                if (xml_d.length > 1) {
+                    throw new Error("Expecting 1 " + mesmer_js_1.Description.tagName + " but finding " + xml_d.length + "!");
+                }
+                let description = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_d[0]));
+                console.log("description=" + description);
+                crl.setDescription(new mesmer_js_1.Description((0, xml_js_1.getAttributes)(xml_d[0]), description));
+                let l = (0, html_js_1.createLabel)(description + "(" + (0, util_js_1.mapToString)(clr_attributes) + ")", level1);
+                crlDiv.appendChild(l);
+            }
+            // me:kinf.
+            let xml_k = xml_crl[0].getElementsByTagName(reaction_js_1.Kinf.tagName);
+            console.log("xml_k.length=" + xml_k.length);
+            if (xml_k.length > 0) {
+                // Create a table for the kinf.
+                let t = (0, html_js_1.createTable)((0, util_js_1.getID)(crlDiv, s_table), level1);
+                crlDiv.appendChild(t);
+                (0, html_js_1.addTableRow)(t, reaction_js_1.Kinf.header);
+                for (let j = 0; j < xml_k.length; j++) {
+                    let k = new reaction_js_1.Kinf((0, xml_js_1.getAttributes)(xml_k[j]));
+                    crl.addKinf(k);
+                    // T.
+                    let xml_T = xml_k[j].getElementsByTagName(mesmer_js_1.T.tagName);
+                    console.log("xml_T.length=" + xml_T.length);
+                    if (xml_T.length > 0) {
+                        if (xml_T.length > 1) {
+                            throw new Error("Expecting 1 " + mesmer_js_1.T.tagName + " but finding " + xml_T.length + "!");
+                        }
+                        let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_T[0])));
+                        k.setT(new mesmer_js_1.T((0, xml_js_1.getAttributes)(xml_T[0]), value));
+                    }
+                    // Val.
+                    let xml_Val = xml_k[j].getElementsByTagName(reaction_js_1.Val.tagName);
+                    console.log("xml_Val.length=" + xml_Val.length);
+                    if (xml_Val.length > 0) {
+                        if (xml_Val.length > 1) {
+                            throw new Error("Expecting 1 " + reaction_js_1.Val.tagName + " but finding " + xml_Val.length + "!");
+                        }
+                        let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_Val[0])));
+                        k.setVal(new reaction_js_1.Val((0, xml_js_1.getAttributes)(xml_Val[0]), value));
+                    }
+                    // Rev.
+                    let xml_Rev = xml_k[j].getElementsByTagName(reaction_js_1.Rev.tagName);
+                    console.log("xml_Rev.length=" + xml_Rev.length);
+                    if (xml_Rev.length > 0) {
+                        if (xml_Rev.length > 1) {
+                            throw new Error("Expecting 1 " + reaction_js_1.Rev.tagName + " but finding " + xml_Rev.length + "!");
+                        }
+                        let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_Rev[0])));
+                        k.setRev(new reaction_js_1.Rev((0, xml_js_1.getAttributes)(xml_Rev[0]), value));
+                    }
+                    // Keq.
+                    let xml_Keq = xml_k[j].getElementsByTagName(reaction_js_1.Keq.tagName);
+                    console.log("xml_Keq.length=" + xml_Keq.length);
+                    if (xml_Keq.length > 0) {
+                        if (xml_Keq.length > 1) {
+                            throw new Error("Expecting 1 " + reaction_js_1.Keq.tagName + " but finding " + xml_Keq.length + "!");
+                        }
+                        let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_Keq[0])));
+                        k.setKeq(new reaction_js_1.Keq((0, xml_js_1.getAttributes)(xml_Keq[0]), value));
+                    }
+                    (0, html_js_1.addTableRow)(t, k.toStringArray());
+                }
+                addSaveAsCSVButton(crl.toCSV, crlDiv, t, reaction.id + "_" + reaction_js_1.CanonicalRateList.tagName);
+            }
         }
     }
     return reactionListDiv;
@@ -4706,7 +4856,23 @@ function drawReactionDiagram(canvas, dark, font, lw, lwc) {
     }
 }
 /**
- * Save to XML file.
+ * For saving data to a file.
+ *
+ * @param data The data.
+ * @param dataType The data type.
+ * @param filename The filename.
+ * @param isDataURL A boolean indicating whether the data is a data URL.
+ */
+function saveDataAsFile(data, dataType, filename, isDataURL = false) {
+    let a = document.createElement('a');
+    a.href = isDataURL ? data : `data:${dataType};charset=utf-8,` + encodeURIComponent(data);
+    a.download = filename;
+    document.body.appendChild(a); // Append the anchor to the body.
+    a.click(); // Programmatically click the anchor to trigger the download.
+    document.body.removeChild(a); // Remove the anchor from the body after triggering the download.
+}
+/**
+ * Save the Mesmer object as XML.
  */
 function saveXML() {
     if (mesmer == null) {
@@ -4716,21 +4882,57 @@ function saveXML() {
     else {
         console.log("saveXML");
         const pad = "  ";
-        // Create a Blob object from the data
-        let blob = new Blob([mesmer_js_1.Mesmer.header, mesmer.toXML(pad, "")], { type: "text/plain" });
-        // Create a new object URL for the blob
-        let url = URL.createObjectURL(blob);
-        // Create a new 'a' element
-        let a = document.createElement("a");
-        // Set the href and download attributes for the 'a' element
-        a.href = url;
+        let xmlData = mesmer_js_1.Mesmer.header + mesmer.toXML(pad, "");
         let title = mesmer.getTitle()?.value;
-        a.download = title.replace(/[^a-z0-9]/gi, '_') + ".xml";
-        // Append the 'a' element to the body and click it to start the download
-        document.body.appendChild(a);
-        a.click();
-        // Remove the 'a' element after the download starts
-        document.body.removeChild(a);
+        saveDataAsFile(xmlData, 'text/xml', getFilename(title) + ".xml");
     }
+}
+/**
+ * Convert name into a filename.
+ */
+function getFilename(name) {
+    return name.replace(/[^a-z0-9]/gi, '_');
+}
+/**
+ * Create and append a Save as PNG button.
+ *
+ * @param canvas The canvas to save as an image.
+ * @param divToAddTo The div to add the button to.
+ * @param elementToInsertBefore The element to insert before.
+ * @param name The name to be appended to the file.
+ */
+function addSaveAsPNGButton(canvas, divToAddTo, elementToInsertBefore, name) {
+    // Add a save button to save the canvas as an image.
+    let saveButtonID = (0, util_js_1.getID)('saveButton');
+    let saveButton = (0, html_js_1.createButton)("Save as PNG", saveButtonID, boundary1);
+    if (elementToInsertBefore != null) {
+        divToAddTo.insertBefore(saveButton, elementToInsertBefore);
+    }
+    else {
+        divToAddTo.appendChild(saveButton);
+    }
+    saveButton.addEventListener('click', () => {
+        let dataURL = canvas.toDataURL();
+        let title = mesmer.getTitle()?.value;
+        saveDataAsFile(dataURL, 'image/png', getFilename(title + "_" + name) + ".png", true);
+    });
+}
+/**
+ * Create and append a Save as CSV button.
+ *
+ * @param toCSV The function to convert to CSV.
+ * @param divToAddTo The div to add the button to.
+ * @param elementToInsertBefore The element to insert before.
+ * @param name The name to be appended to the file.
+ */
+function addSaveAsCSVButton(toCSV, divToAddTo, elementToInsertBefore, name) {
+    let bID = (0, util_js_1.getID)(divToAddTo.id, html_js_1.s_button, s_save);
+    let b = (0, html_js_1.createButton)("Save as CSV", bID, level1);
+    divToAddTo.insertBefore(b, elementToInsertBefore);
+    b.addEventListener('click', () => {
+        let csv = toCSV();
+        let title = mesmer.getTitle()?.value;
+        saveDataAsFile(csv, 'text/csv', getFilename(title + "_" + name) + ".csv");
+    });
 }
 //# sourceMappingURL=app.js.map

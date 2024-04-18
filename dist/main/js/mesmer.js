@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Mesmer = exports.ControlList = exports.ConditionsList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
+exports.T = exports.Description = exports.Mesmer = exports.ControlList = exports.ConditionsList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
 const conditions_js_1 = require("./conditions.js");
 const control_js_1 = require("./control.js");
 const modelParameters_js_1 = require("./modelParameters.js");
@@ -618,4 +618,38 @@ class Mesmer extends xml_js_1.NodeWithNodes {
     }
 }
 exports.Mesmer = Mesmer;
+/**
+ * In the XML, a "me:description" node is a child node of a "me:densityOfStatesList" node.
+ */
+class Description extends xml_js_1.StringNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:description";
+    /**
+     * @param attributes The attributes.
+     * @param description The description.
+     */
+    constructor(attributes, description) {
+        super(attributes, Description.tagName, description);
+    }
+}
+exports.Description = Description;
+/**
+ * In the XML, a "me:T" node is a child node of a "me:densityOfStates" node.
+ */
+class T extends xml_js_1.NumberNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:T";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, T.tagName, value);
+    }
+}
+exports.T = T;
 //# sourceMappingURL=mesmer.js.map
