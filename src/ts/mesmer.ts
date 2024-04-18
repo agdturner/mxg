@@ -1,5 +1,7 @@
+import { Analysis } from "./analysis.js";
 import { Conditions } from "./conditions.js";
 import { Control } from "./control.js";
+import { MetadataList } from "./metadata.js";
 import { ModelParameters } from "./modelParameters.js";
 import { Molecule } from "./molecule.js";
 import { Reaction } from "./reaction.js";
@@ -398,7 +400,8 @@ export class Mesmer extends NodeWithNodes {
      * @param controls The controls.
      */
     constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
-        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[]) {
+        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[], metadataList?: MetadataList, 
+        analysis?: Analysis) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
         let colors = ["White", "Red", "DarkGrey", "Blue", "Green", "Yellow", "Orange", "Brown"];
@@ -452,6 +455,14 @@ export class Mesmer extends NodeWithNodes {
                 this.controlIndex.set(control.id, this.nodes.size);
                 this.addNode(control);
             });
+        }
+        if (metadataList != undefined) {
+            this.index.set(MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+        if (analysis != undefined) {
+            this.index.set(Analysis.tagName, this.nodes.size);
+            this.addNode(analysis);
         }
     }
 
@@ -663,6 +674,32 @@ export class Mesmer extends NodeWithNodes {
             this.nodes.delete(i);
             this.index.delete(Control.tagName + controlID);
             this.controlIndex.delete(controlID);
+        }
+    }
+
+    /**
+     * @param metadataList The metadata list.
+     */
+    setMetadataList(metadataList: MetadataList) {
+        let i: number | undefined = this.index.get(MetadataList.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, metadataList);
+        } else {
+            this.index.set(MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+    }
+    
+    /**
+     * @param analysis The analysis.
+     */
+    setAnalysis(analysis: Analysis) {
+        let i: number | undefined = this.index.get(Analysis.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, analysis);
+        } else {
+            this.index.set(Analysis.tagName, this.nodes.size);
+            this.addNode(analysis);
         }
     }
 }

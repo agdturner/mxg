@@ -322,7 +322,7 @@ export class HideInactive extends Tag {
 
 /**
  * A class for "me:calcMethod".
- * Expected to have an attribute "xsi_type" with one of the following values:
+ * Expected to have an attribute "xsi_type" or "name" with one of the following values:
  * "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis",
  * "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt", "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis".
  */

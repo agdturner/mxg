@@ -8,10 +8,12 @@ import {
     NumberArrayNode, NumberNode
 } from './xml.js';
 
-import { Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, AtomArray, BondArray,
+import {
+    Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, AtomArray, BondArray,
     PropertyList, PropertyScalar, PropertyArray, ExtraDOSCMethod, BondRef, HinderedRotorPotential,
-    PotentialPoint, Periodicity, ReservoirSize, ZPE, RotConsts, PropertyMatrix, VibFreqs, ThermoTable, 
-    ThermoValue, DensityOfStatesList, DensityOfStates, Qtot, Sumc, Sumg, DistributionCalcMethod } from './molecule.js';
+    PotentialPoint, Periodicity, ReservoirSize, ZPE, RotConsts, PropertyMatrix, VibFreqs, ThermoTable,
+    ThermoValue, DensityOfStatesList, DensityOfStates, Qtot, Sumc, Sumg, DistributionCalcMethod
+} from './molecule.js';
 
 import {
     Reaction, TransitionState, ReactionMolecule, Reactant, Product, MCRCMethod, MesmerILT,
@@ -20,7 +22,8 @@ import {
 
 import { arrayToString, toNumberArray } from './util.js';
 
-import { createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement,
+import {
+    createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement,
     resizeSelectElement, createFlexDiv, createButton, remove, createLabel, createInput, createLabelWithSelect,
     createDiv,
     createLabelWithTextArea,
@@ -58,6 +61,8 @@ import {
 
 import { Mesmer, MoleculeList, ReactionList, Title, T, Description } from './mesmer.js';
 import Big from 'big.js';
+import { Analysis } from './analysis.js';
+import { MetadataList } from './metadata.js';
 
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 
@@ -173,6 +178,8 @@ const reactionsDiagramDivID = 'reactionsDiagram';
 const conditionsDivID = 'conditions';
 const modelParametersDivID = 'modelParameters';
 const controlDivID = 'control';
+const metadataListDivID = 'metadataList';
+const analysisDivID = 'analysis';
 const xmlDivID = 'xml';
 const welcomeDivID = 'welcome';
 
@@ -625,6 +632,24 @@ function parse(xml: XMLDocument) {
     // Create collapsible content.
     let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, clDiv, null, processControl(xml),
         "ControlList", boundary1, level0);
+
+    // MetadataList.
+    let mDiv: HTMLDivElement = document.getElementById(metadataListDivID) as HTMLDivElement;
+    let mDivID: string = addID(MetadataList.tagName);
+    // Remove any existing mDivID HTMLDivElement.
+    remove(mDivID, ids);
+    // Create collapsible content.
+    let mcDiv: HTMLDivElement = getCollapsibleDiv(mDivID, mDiv, null, processMetadataList(xml),
+        MetadataList.tagName, boundary1, level0);
+
+    // Analysis.
+    let aDiv: HTMLDivElement = document.getElementById(analysisDivID) as HTMLDivElement;
+    let aDivID: string = addID(Analysis.tagName);
+    // Remove any existing aDivID HTMLDivElement.
+    remove(aDivID, ids);
+    // Create collapsible content.
+    let acDiv: HTMLDivElement = getCollapsibleDiv(aDivID, aDiv, null, processAnalysis(xml),
+        Analysis.tagName, boundary1, level0);
 }
 
 /**
@@ -2728,7 +2753,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
         }
         // me:excessReactantConc
         let xml_erc = xml_reactions[i].getElementsByTagName(ExcessReactantConc.tagName);
-        console.log("n_me:excessReactantConc=" + xml_erc.length);
+        //console.log("n_me:excessReactantConc=" + xml_erc.length);
         if (xml_erc.length > 0) {
             if (xml_erc.length > 1) {
                 throw new Error("Expecting 1 " + ExcessReactantConc.tagName + " but finding " + xml_erc.length + "!");
@@ -2746,7 +2771,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
         }
         // me:canonicalRateList
         let xml_crl = xml_reactions[i].getElementsByTagName(CanonicalRateList.tagName);
-        console.log("n_me:canonicalRateList=" + xml_crl.length);
+        //console.log("n_me:canonicalRateList=" + xml_crl.length);
         if (xml_crl.length > 0) {
             if (xml_crl.length > 1) {
                 throw new Error("Expecting 1 " + CanonicalRateList.tagName + " but finding " + xml_crl.length + "!");
@@ -2763,20 +2788,20 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             //let id = getID(reaction.id, CanonicalRateList.tagName);
             // me:description.
             let xml_d: HTMLCollectionOf<Element> = xml_crl[0].getElementsByTagName(Description.tagName);
-            console.log("xml_d.length=" + xml_d.length);
+            //console.log("xml_d.length=" + xml_d.length);
             if (xml_d.length > 0) {
                 if (xml_d.length > 1) {
                     throw new Error("Expecting 1 " + Description.tagName + " but finding " + xml_d.length + "!");
                 }
                 let description: string = getNodeValue(getFirstChildNode(xml_d[0]));
-                console.log("description=" + description);
+                //console.log("description=" + description);
                 crl.setDescription(new Description(getAttributes(xml_d[0]), description));
                 let l: HTMLLabelElement = createLabel(description + " (" + mapToString(clr_attributes) + ")", level1);
                 crlDiv.appendChild(l);
-            }        
+            }
             // me:kinf.
             let xml_k: HTMLCollectionOf<Element> = xml_crl[0].getElementsByTagName(Kinf.tagName);
-            console.log("xml_k.length=" + xml_k.length);
+            //console.log("xml_k.length=" + xml_k.length);
             if (xml_k.length > 0) {
                 // Create a table for the kinf.
                 let t: HTMLTableElement = createTable(getID(crlDiv, s_table), level1);
@@ -2786,7 +2811,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                     crl.addKinf(k);
                     // T.
                     let xml_T: HTMLCollectionOf<Element> = xml_k[j].getElementsByTagName(T.tagName);
-                    console.log("xml_T.length=" + xml_T.length);
+                    //console.log("xml_T.length=" + xml_T.length);
                     if (xml_T.length > 0) {
                         if (xml_T.length > 1) {
                             throw new Error("Expecting 1 " + T.tagName + " but finding " + xml_T.length + "!");
@@ -2796,7 +2821,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                     }
                     // Val.
                     let xml_Val: HTMLCollectionOf<Element> = xml_k[j].getElementsByTagName(Val.tagName);
-                    console.log("xml_Val.length=" + xml_Val.length);
+                    //console.log("xml_Val.length=" + xml_Val.length);
                     if (xml_Val.length > 0) {
                         if (xml_Val.length > 1) {
                             throw new Error("Expecting 1 " + Val.tagName + " but finding " + xml_Val.length + "!");
@@ -2806,7 +2831,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                     }
                     // Rev.
                     let xml_Rev: HTMLCollectionOf<Element> = xml_k[j].getElementsByTagName(Rev.tagName);
-                    console.log("xml_Rev.length=" + xml_Rev.length);
+                    //console.log("xml_Rev.length=" + xml_Rev.length);
                     if (xml_Rev.length > 0) {
                         if (xml_Rev.length > 1) {
                             throw new Error("Expecting 1 " + Rev.tagName + " but finding " + xml_Rev.length + "!");
@@ -2816,7 +2841,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                     }
                     // Keq.
                     let xml_Keq: HTMLCollectionOf<Element> = xml_k[j].getElementsByTagName(Keq.tagName);
-                    console.log("xml_Keq.length=" + xml_Keq.length);
+                    //console.log("xml_Keq.length=" + xml_Keq.length);
                     if (xml_Keq.length > 0) {
                         if (xml_Keq.length > 1) {
                             throw new Error("Expecting 1 " + Keq.tagName + " but finding " + xml_Keq.length + "!");
@@ -2833,7 +2858,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 addSaveAsCSVButton(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + CanonicalRateList.tagName, boundary1);
             }
         }
-        
+
     }
     return reactionListDiv;
 }
@@ -3967,6 +3992,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
     // Get the XML "me:control" element.
     let xml_controls: HTMLCollectionOf<Element> = xml.getElementsByTagName(Control.tagName);
     for (let i = 0; i < xml_controls.length; i++) {
+        //console.log("Control " + i);
         let xml_control: Element = xml_controls[i];
         // Create a collapsible divfor the control.
         let cDivID: string = getID(Control.tagName, i.toString());
@@ -4000,7 +4026,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
             let fdb_attributes: Map<string, string> = getAttributes(xml_fdb[0]);
 
             let s: string = getNodeValue(getFirstChildNode(xml_fdb[0]));
-            console.log("ForceMacroDetailedBalance: " + s);
+            //console.log("ForceMacroDetailedBalance: " + s);
             // Maybe there is no value for the ForceMacroDetailedBalance?
 
             let fdb: ForceMacroDetailedBalance = new ForceMacroDetailedBalance(fdb_attributes, s);
@@ -4250,6 +4276,7 @@ function handleControl(control: Control, controlDiv: HTMLDivElement, index: numb
  */
 function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: number, xml_control: Element | null,
     level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+    //console.log("handleCalcMethod " + (xml_control == null));
     let div: HTMLDivElement = createFlexDiv(undefined, level);
     controlDiv.appendChild(div);
     let tagName: string = CalcMethod.tagName;
@@ -4268,9 +4295,10 @@ function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: numbe
     let divCmDetailsSelectId = getID(divCmDetailsId, "select");
     let cm: CalcMethod;
     let first: boolean = true;
-
-    if (xml_control) {
+    if (xml_control != null) {
+        //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagNameNS("http://www.chem.leeds.ac.uk/mesmer", "calcMethod");
         let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
+        //console.log("xml.length " + xml.length);
         if (xml.length > 0) {
             if (xml.length > 1) {
                 throw new Error("More than one CalcMethod element.");
@@ -4481,6 +4509,7 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
 function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollectionOf<Element>, options: string[],
     attributes: Map<string, string>, tagName: string, xsi_type: string,
     divCmDetailsId: string, divCmDetailsSelectId: string): CalcMethod {
+    //console.log("getCalcMethod");
     let cm: CalcMethod;
     // Create the select element.
     let select: HTMLSelectElement = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId,
@@ -4493,6 +4522,7 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
     divCmDetails.id = divCmDetailsId;
     divCm.appendChild(divCmDetails);
     if (xsi_type == CalcMethodSimpleCalc.xsi_type || xsi_type == CalcMethodSimpleCalc.xsi_type2) {
+        //console.log("CalcMethodSimpleCalc");
         cm = new CalcMethodSimpleCalc(attributes);
     } else if (xsi_type == CalcMethodGridSearch.xsi_type || xsi_type == CalcMethodGridSearch.xsi_type2) {
         cm = new CalcMethodGridSearch(attributes);
@@ -4609,7 +4639,16 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
         processElement(xml, SensitivityVarRedMethod, cmsa.setSensitivityVarRedMethod.bind(cmsa));
         processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
     } else {
-        throw new Error("Unknown xsi:type: " + xsi_type);
+        // If there is a name attribute instead, try this in place of the xsi:type.
+        let name: string | undefined = attributes.get("name");
+        if (name != undefined && name !== xsi_type) {
+            attributes.set("xsi:type", name);
+            console.warn(`Using name attribute as xsi:type: ${name}`);
+            return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId,
+                divCmDetailsSelectId);
+        } else {
+            throw new Error(`Unable to determine calculation method for xsi_type: ${xsi_type}`);
+        }
     }
     return cm;
 }
@@ -4858,6 +4897,30 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, op
         resizeSelectElement(target);
     });
     return select;
+}
+
+/**
+ * Parses xml to initialise metadataList.
+ * @param xml The XML document.
+ */
+function processMetadataList(xml: XMLDocument): HTMLDivElement {
+    console.log(MetadataList.tagName);
+    let metadataListDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    let xml_metadataList: Element = getSingularElement(xml, MetadataList.tagName);
+    let metadataList: MetadataList = new MetadataList(getAttributes(xml_metadataList));
+    mesmer.setMetadataList(metadataList);
+}
+
+/**
+ * Parses xml to initialise analysis.
+ * @param xml The XML document.
+ */
+function processAnalysis(xml: XMLDocument): HTMLDivElement {
+    console.log(Analysis.tagName);
+    let analysisDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    let xml_analysis: Element = getSingularElement(xml, Analysis.tagName);
+    let analysis: Analysis = new Analysis(getAttributes(xml_analysis));
+    mesmer.setAnalysis(analysis);
 }
 
 /**
@@ -5147,7 +5210,7 @@ function saveXML() {
 /**
  * Convert name into a filename.
  */
-function getFilename(name: string) : string {
+function getFilename(name: string): string {
     return name.replace(/[^a-z0-9]/gi, '_');
 }
 

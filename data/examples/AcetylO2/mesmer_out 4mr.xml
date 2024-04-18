@@ -1631,7 +1631,7 @@
     <me:eigenvalues>10</me:eigenvalues>
     <!--<me:hideInactive/>-->
     <me:diagramEnergyOffset ref="R2">0</me:diagramEnergyOffset>
-
+    <me:calcMethod default="true" name="simpleCalc" />
     <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
   </me:control>
   <me:control>

@@ -604,6 +604,8 @@ var _controlJs = require("./control.js");
 var _mesmerJs = require("./mesmer.js");
 var _bigJs = require("big.js");
 var _bigJsDefault = parcelHelpers.interopDefault(_bigJs);
+var _analysisJs = require("./analysis.js");
+var _metadataJs = require("./metadata.js");
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 /**
  * MXG.
@@ -711,6 +713,8 @@ const reactionsDiagramDivID = "reactionsDiagram";
 const conditionsDivID = "conditions";
 const modelParametersDivID = "modelParameters";
 const controlDivID = "control";
+const metadataListDivID = "metadataList";
+const analysisDivID = "analysis";
 const xmlDivID = "xml";
 const welcomeDivID = "welcome";
 // For dark/light mode.
@@ -1077,6 +1081,20 @@ let rdWindow;
     (0, _htmlJs.remove)(clDivID, ids);
     // Create collapsible content.
     let controlcDiv = (0, _htmlJs.getCollapsibleDiv)(clDivID, clDiv, null, processControl(xml), "ControlList", boundary1, level0);
+    // MetadataList.
+    let mDiv = document.getElementById(metadataListDivID);
+    let mDivID = addID((0, _metadataJs.MetadataList).tagName);
+    // Remove any existing mDivID HTMLDivElement.
+    (0, _htmlJs.remove)(mDivID, ids);
+    // Create collapsible content.
+    let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mDivID, mDiv, null, processMetadataList(xml), (0, _metadataJs.MetadataList).tagName, boundary1, level0);
+    // Analysis.
+    let aDiv = document.getElementById(analysisDivID);
+    let aDivID = addID((0, _analysisJs.Analysis).tagName);
+    // Remove any existing aDivID HTMLDivElement.
+    (0, _htmlJs.remove)(aDivID, ids);
+    // Create collapsible content.
+    let acDiv = (0, _htmlJs.getCollapsibleDiv)(aDivID, aDiv, null, processAnalysis(xml), (0, _analysisJs.Analysis).tagName, boundary1, level0);
 }
 /**
  * Parse XML and create HTMLDivElement for molecules.
@@ -2927,7 +2945,7 @@ function setNumberNode(node, input) {
         }
         // me:excessReactantConc
         let xml_erc = xml_reactions[i].getElementsByTagName((0, _reactionJs.ExcessReactantConc).tagName);
-        console.log("n_me:excessReactantConc=" + xml_erc.length);
+        //console.log("n_me:excessReactantConc=" + xml_erc.length);
         if (xml_erc.length > 0) {
             if (xml_erc.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.ExcessReactantConc).tagName + " but finding " + xml_erc.length + "!");
             let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_erc[0])));
@@ -2942,7 +2960,7 @@ function setNumberNode(node, input) {
         }
         // me:canonicalRateList
         let xml_crl = xml_reactions[i].getElementsByTagName((0, _reactionJs.CanonicalRateList).tagName);
-        console.log("n_me:canonicalRateList=" + xml_crl.length);
+        //console.log("n_me:canonicalRateList=" + xml_crl.length);
         if (xml_crl.length > 0) {
             if (xml_crl.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.CanonicalRateList).tagName + " but finding " + xml_crl.length + "!");
             let clr_attributes = (0, _xmlJs.getAttributes)(xml_crl[0]);
@@ -2957,18 +2975,18 @@ function setNumberNode(node, input) {
             //let id = getID(reaction.id, CanonicalRateList.tagName);
             // me:description.
             let xml_d = xml_crl[0].getElementsByTagName((0, _mesmerJs.Description).tagName);
-            console.log("xml_d.length=" + xml_d.length);
+            //console.log("xml_d.length=" + xml_d.length);
             if (xml_d.length > 0) {
                 if (xml_d.length > 1) throw new Error("Expecting 1 " + (0, _mesmerJs.Description).tagName + " but finding " + xml_d.length + "!");
                 let description = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_d[0]));
-                console.log("description=" + description);
+                //console.log("description=" + description);
                 crl.setDescription(new (0, _mesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), description));
                 let l = (0, _htmlJs.createLabel)(description + " (" + (0, _utilJs.mapToString)(clr_attributes) + ")", level1);
                 crlDiv.appendChild(l);
             }
             // me:kinf.
             let xml_k = xml_crl[0].getElementsByTagName((0, _reactionJs.Kinf).tagName);
-            console.log("xml_k.length=" + xml_k.length);
+            //console.log("xml_k.length=" + xml_k.length);
             if (xml_k.length > 0) {
                 // Create a table for the kinf.
                 let t = (0, _htmlJs.createTable)((0, _utilJs.getID)(crlDiv, s_table), level1);
@@ -2978,7 +2996,7 @@ function setNumberNode(node, input) {
                     crl.addKinf(k);
                     // T.
                     let xml_T = xml_k[j].getElementsByTagName((0, _mesmerJs.T).tagName);
-                    console.log("xml_T.length=" + xml_T.length);
+                    //console.log("xml_T.length=" + xml_T.length);
                     if (xml_T.length > 0) {
                         if (xml_T.length > 1) throw new Error("Expecting 1 " + (0, _mesmerJs.T).tagName + " but finding " + xml_T.length + "!");
                         let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_T[0])));
@@ -2986,7 +3004,7 @@ function setNumberNode(node, input) {
                     }
                     // Val.
                     let xml_Val = xml_k[j].getElementsByTagName((0, _reactionJs.Val).tagName);
-                    console.log("xml_Val.length=" + xml_Val.length);
+                    //console.log("xml_Val.length=" + xml_Val.length);
                     if (xml_Val.length > 0) {
                         if (xml_Val.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Val).tagName + " but finding " + xml_Val.length + "!");
                         let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Val[0])));
@@ -2994,7 +3012,7 @@ function setNumberNode(node, input) {
                     }
                     // Rev.
                     let xml_Rev = xml_k[j].getElementsByTagName((0, _reactionJs.Rev).tagName);
-                    console.log("xml_Rev.length=" + xml_Rev.length);
+                    //console.log("xml_Rev.length=" + xml_Rev.length);
                     if (xml_Rev.length > 0) {
                         if (xml_Rev.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Rev).tagName + " but finding " + xml_Rev.length + "!");
                         let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Rev[0])));
@@ -3002,7 +3020,7 @@ function setNumberNode(node, input) {
                     }
                     // Keq.
                     let xml_Keq = xml_k[j].getElementsByTagName((0, _reactionJs.Keq).tagName);
-                    console.log("xml_Keq.length=" + xml_Keq.length);
+                    //console.log("xml_Keq.length=" + xml_Keq.length);
                     if (xml_Keq.length > 0) {
                         if (xml_Keq.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Keq).tagName + " but finding " + xml_Keq.length + "!");
                         let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Keq[0])));
@@ -4010,6 +4028,7 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
     // Get the XML "me:control" element.
     let xml_controls = xml.getElementsByTagName((0, _controlJs.Control).tagName);
     for(let i = 0; i < xml_controls.length; i++){
+        //console.log("Control " + i);
         let xml_control = xml_controls[i];
         // Create a collapsible divfor the control.
         let cDivID = (0, _utilJs.getID)((0, _controlJs.Control).tagName, i.toString());
@@ -4043,7 +4062,7 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
         if (xml_fdb.length == 1) {
             let fdb_attributes = (0, _xmlJs.getAttributes)(xml_fdb[0]);
             let s = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_fdb[0]));
-            console.log("ForceMacroDetailedBalance: " + s);
+            //console.log("ForceMacroDetailedBalance: " + s);
             // Maybe there is no value for the ForceMacroDetailedBalance?
             let fdb = new (0, _controlJs.ForceMacroDetailedBalance)(fdb_attributes, s);
             control.setForceMacroDetailedBalance(fdb);
@@ -4354,6 +4373,7 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
  * @param xml_control The xml control. 
  * @param level The level.
  */ function handleCalcMethod(control, controlDiv, i, xml_control, level) {
+    //console.log("handleCalcMethod " + (xml_control == null));
     let div = (0, _htmlJs.createFlexDiv)(undefined, level);
     controlDiv.appendChild(div);
     let tagName = (0, _controlJs.CalcMethod).tagName;
@@ -4372,8 +4392,10 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
     let divCmDetailsSelectId = (0, _utilJs.getID)(divCmDetailsId, "select");
     let cm;
     let first = true;
-    if (xml_control) {
+    if (xml_control != null) {
+        //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagNameNS("http://www.chem.leeds.ac.uk/mesmer", "calcMethod");
         let xml = xml_control.getElementsByTagName(tagName);
+        //console.log("xml.length " + xml.length);
         if (xml.length > 0) {
             if (xml.length > 1) throw new Error("More than one CalcMethod element.");
             let attributes = (0, _xmlJs.getAttributes)(xml[0]);
@@ -4562,6 +4584,7 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
  * @param divCmDetailsSelectId The div cm details select id.
  * @returns The CalcMethod.
  */ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId) {
+    //console.log("getCalcMethod");
     let cm;
     // Create the select element.
     let select = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
@@ -4572,7 +4595,8 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
     let divCmDetails = (0, _htmlJs.createFlexDiv)(undefined, boundary1);
     divCmDetails.id = divCmDetailsId;
     divCm.appendChild(divCmDetails);
-    if (xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type || xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type2) cm = new (0, _controlJs.CalcMethodSimpleCalc)(attributes);
+    if (xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type || xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type2) //console.log("CalcMethodSimpleCalc");
+    cm = new (0, _controlJs.CalcMethodSimpleCalc)(attributes);
     else if (xsi_type == (0, _controlJs.CalcMethodGridSearch).xsi_type || xsi_type == (0, _controlJs.CalcMethodGridSearch).xsi_type2) cm = new (0, _controlJs.CalcMethodGridSearch)(attributes);
     else if (xsi_type == (0, _controlJs.CalcMethodFitting).xsi_type || xsi_type == (0, _controlJs.CalcMethodFitting).xsi_type2) {
         let cmf = new (0, _controlJs.CalcMethodFitting)(attributes);
@@ -4672,7 +4696,15 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
         processElement(xml, (0, _controlJs.SensitivityNumVarRedIters), cmsa.setSensitivityNumVarRedIters.bind(cmsa));
         processElement(xml, (0, _controlJs.SensitivityVarRedMethod), cmsa.setSensitivityVarRedMethod.bind(cmsa));
         processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
-    } else throw new Error("Unknown xsi:type: " + xsi_type);
+    } else {
+        // If there is a name attribute instead, try this in place of the xsi:type.
+        let name = attributes.get("name");
+        if (name != undefined && name !== xsi_type) {
+            attributes.set("xsi:type", name);
+            console.warn(`Using name attribute as xsi:type: ${name}`);
+            return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId, divCmDetailsSelectId);
+        } else throw new Error(`Unable to determine calculation method for xsi_type: ${xsi_type}`);
+    }
     return cm;
 }
 /**
@@ -4886,6 +4918,26 @@ function handleEvent(element, tagName) {
         (0, _htmlJs.resizeSelectElement)(target);
     });
     return select;
+}
+/**
+ * Parses xml to initialise metadataList.
+ * @param xml The XML document.
+ */ function processMetadataList(xml) {
+    console.log((0, _metadataJs.MetadataList).tagName);
+    let metadataListDiv = (0, _htmlJs.createDiv)(undefined, boundary1);
+    let xml_metadataList = (0, _xmlJs.getSingularElement)(xml, (0, _metadataJs.MetadataList).tagName);
+    let metadataList = new (0, _metadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_metadataList));
+    mesmer.setMetadataList(metadataList);
+}
+/**
+ * Parses xml to initialise analysis.
+ * @param xml The XML document.
+ */ function processAnalysis(xml) {
+    console.log((0, _analysisJs.Analysis).tagName);
+    let analysisDiv = (0, _htmlJs.createDiv)(undefined, boundary1);
+    let xml_analysis = (0, _xmlJs.getSingularElement)(xml, (0, _analysisJs.Analysis).tagName);
+    let analysis = new (0, _analysisJs.Analysis)((0, _xmlJs.getAttributes)(xml_analysis));
+    mesmer.setAnalysis(analysis);
 }
 /**
  * Create a diagram.
@@ -5210,7 +5262,7 @@ function handleEvent(element, tagName) {
     });
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./analysis.js":"53wyH","./metadata.js":"aKNnu"}],"f0Rnl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -9190,8 +9242,10 @@ parcelHelpers.defineInteropFlag(exports);
 /**
  * In the XML, a "me:T" node is a child node of a "me:densityOfStates" node. 
  */ parcelHelpers.export(exports, "T", ()=>T);
+var _analysisJs = require("./analysis.js");
 var _conditionsJs = require("./conditions.js");
 var _controlJs = require("./control.js");
+var _metadataJs = require("./metadata.js");
 var _modelParametersJs = require("./modelParameters.js");
 var _utilJs = require("./util.js");
 var _xmlJs = require("./xml.js");
@@ -9611,7 +9665,7 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
      * @param conditions The conditions.
      * @param modelParameters The model parameters.
      * @param controls The controls.
-     */ constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameters, controls){
+     */ constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameters, controls, metadataList, analysis){
         super(attributes, Mesmer.tagName);
         let elements = [
             "H",
@@ -9714,6 +9768,14 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
             this.controlIndex.set(control.id, this.nodes.size);
             this.addNode(control);
         });
+        if (metadataList != undefined) {
+            this.index.set((0, _metadataJs.MetadataList).tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+        if (analysis != undefined) {
+            this.index.set((0, _analysisJs.Analysis).tagName, this.nodes.size);
+            this.addNode(analysis);
+        }
     }
     /**
      * @returns The title.
@@ -9872,6 +9934,26 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
             this.controlIndex.delete(controlID);
         }
     }
+    /**
+     * @param metadataList The metadata list.
+     */ setMetadataList(metadataList) {
+        let i = this.index.get((0, _metadataJs.MetadataList).tagName);
+        if (i != undefined) this.nodes.set(i, metadataList);
+        else {
+            this.index.set((0, _metadataJs.MetadataList).tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+    }
+    /**
+     * @param analysis The analysis.
+     */ setAnalysis(analysis) {
+        let i = this.index.get((0, _analysisJs.Analysis).tagName);
+        if (i != undefined) this.nodes.set(i, analysis);
+        else {
+            this.index.set((0, _analysisJs.Analysis).tagName, this.nodes.size);
+            this.addNode(analysis);
+        }
+    }
 }
 class Description extends (0, _xmlJs.StringNode) {
     static{
@@ -9900,7 +9982,7 @@ class T extends (0, _xmlJs.NumberNode) {
     }
 }
 
-},{"./conditions.js":"aksKl","./control.js":"Qx5gu","./modelParameters.js":"kQHfz","./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aksKl":[function(require,module,exports) {
+},{"./conditions.js":"aksKl","./control.js":"Qx5gu","./modelParameters.js":"kQHfz","./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./analysis.js":"53wyH","./metadata.js":"aKNnu"}],"aksKl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -10624,7 +10706,7 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "HideInactive", ()=>HideInactive);
 /**
  * A class for "me:calcMethod".
- * Expected to have an attribute "xsi_type" with one of the following values:
+ * Expected to have an attribute "xsi_type" or "name" with one of the following values:
  * "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis",
  * "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt", "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis".
  */ parcelHelpers.export(exports, "CalcMethod", ()=>CalcMethod);
@@ -13173,6 +13255,395 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(MaxTemperature.tagName);
+        }
+    }
+}
+
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"53wyH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * In the XML, the "me:eigenvalue" element is a child of the "me:eigenvalueList" element.
+ */ parcelHelpers.export(exports, "Eigenvalue", ()=>Eigenvalue);
+/**
+ * In the XML, the "me:eigenvalueList" element is a child of the "analysis" element.
+ * , and the rateList tag is a child of the analysis tag.
+ */ parcelHelpers.export(exports, "EigenvalueList", ()=>EigenvalueList);
+/**
+ * In the XML, the "me:pop" element is a child of the "population" element.
+ * Attributes include:
+ * ref
+ */ parcelHelpers.export(exports, "Pop", ()=>Pop);
+/**
+ * In the XML, the "me:population" element is a child of the "populationList" element.
+ * Attributes include:
+ * time, logTime
+ * Child elements include:
+ * me:pop
+ */ parcelHelpers.export(exports, "Population", ()=>Population);
+/**
+ * In the XML, the "me:populationList" element is a child of the "analysis" element.
+ * Attributes include:
+ * Child elements include:
+ * me:population
+ */ parcelHelpers.export(exports, "PopulationList", ()=>PopulationList);
+/**
+ * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
+ * Attributes include:
+ * ref
+ */ parcelHelpers.export(exports, "FirstOrderLoss", ()=>FirstOrderLoss);
+/**
+ * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
+ * Attributes include:
+ * fromRef, toRef, reactionType
+ */ parcelHelpers.export(exports, "FirstOrderRate", ()=>FirstOrderRate);
+/**
+ * In the XML, the "me:rateList" element is a child of the "analysis" element.
+ * Attributes include:
+ * T, conc, bathGas, units
+ * Child elements include:
+ * me:firstOrderLoss
+ * me:firstOrderRate
+ */ parcelHelpers.export(exports, "RateList", ()=>RateList);
+/**
+ * In the XML, the "me:analysis" element is a child of the "me:mesmer" element.
+ * Attributes include:
+ * calculated
+ * Child elements include:
+ * me:description
+ * And one or more sets of: 
+ *  me:eigenvalueList
+ *  me:populationList
+ *  me:rateList
+ */ parcelHelpers.export(exports, "Analysis", ()=>Analysis);
+var _xmlJs = require("./xml.js");
+class Eigenvalue extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:eigenvalue";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Eigenvalue.tagName, value);
+    }
+}
+class EigenvalueList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:eigenvalueList";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, eigenvalues){
+        super(attributes, EigenvalueList.tagName);
+    }
+}
+class Pop extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:pop";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, Pop.tagName, value);
+    }
+}
+class Population extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:population";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, pops){
+        super(attributes, Population.tagName);
+    }
+}
+class PopulationList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:populationList";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, populations){
+        super(attributes, PopulationList.tagName);
+    }
+}
+class FirstOrderLoss extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:firstOrderLoss";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, FirstOrderLoss.tagName, value);
+    }
+}
+class FirstOrderRate extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:firstOrderRate";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, FirstOrderLoss.tagName, value);
+    }
+}
+class RateList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:rateList";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, firstOrderLosses, firstOrderRates){
+        super(attributes, Analysis.tagName);
+    }
+}
+class Analysis extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:analysis";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, description, eigenvalueLists, populationLists, rateLists){
+        super(attributes, Analysis.tagName);
+    }
+}
+
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aKNnu":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * DC Title.
+ */ parcelHelpers.export(exports, "Title", ()=>Title);
+/**
+ * DC Source.
+ */ parcelHelpers.export(exports, "Source", ()=>Source);
+/**
+ * DC Creator.
+ */ parcelHelpers.export(exports, "Creator", ()=>Creator);
+/**
+ * DC Date.
+ */ parcelHelpers.export(exports, "Date", ()=>Date);
+/**
+ * DC Contributor.
+ */ parcelHelpers.export(exports, "Contributor", ()=>Contributor);
+/**
+ * In the XML, the "metadata" element is a child of the "mesmer" element.
+ * Attributes include:
+ * xmlns:dc
+ * Child elements include:
+ * dc:title
+ * dc:source
+ * dc:creator
+ * dc:date
+ * dc:contributor
+ */ parcelHelpers.export(exports, "MetadataList", ()=>MetadataList);
+var _xmlJs = require("./xml.js");
+class Title extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "dc:title";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Title.tagName, value);
+    }
+}
+class Source extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "dc:source";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Source.tagName, value);
+    }
+}
+class Creator extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "dc:creator";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Creator.tagName, value);
+    }
+}
+class Date extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "dc:date";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Date.tagName, value);
+    }
+}
+class Contributor extends (0, _xmlJs.StringNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "dc:contributor";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, value){
+        super(attributes, Contributor.tagName, value);
+    }
+}
+class MetadataList extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "metadataList";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, title, source, creator, date, contributor){
+        super(attributes, MetadataList.tagName);
+        this.index = new Map();
+        if (title) {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
+        }
+        if (source) {
+            this.index.set(Source.tagName, this.nodes.size);
+            this.addNode(source);
+        }
+        if (creator) {
+            this.index.set(Creator.tagName, this.nodes.size);
+            this.addNode(creator);
+        }
+        if (date) {
+            this.index.set(Date.tagName, this.nodes.size);
+            this.addNode(date);
+        }
+        if (contributor) {
+            this.index.set(Contributor.tagName, this.nodes.size);
+            this.addNode(contributor);
+        }
+    }
+    /**
+     * Get the title.
+     */ getTitle() {
+        if (this.index.has(Title.tagName)) {
+            let i = this.index.get(Title.tagName);
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param title The title.
+     */ setTitle(title) {
+        if (this.index.has(Title.tagName)) {
+            let i = this.index.get(Title.tagName);
+            this.nodes.set(i, title);
+        } else {
+            this.index.set(Title.tagName, this.nodes.size);
+            this.addNode(title);
+        }
+    }
+    /**
+     * Get the source.
+     */ getSource() {
+        if (this.index.has(Source.tagName)) {
+            let i = this.index.get(Source.tagName);
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param source The source.
+     */ setSource(source) {
+        if (this.index.has(Source.tagName)) {
+            let i = this.index.get(Source.tagName);
+            this.nodes.set(i, source);
+        } else {
+            this.index.set(Source.tagName, this.nodes.size);
+            this.addNode(source);
+        }
+    }
+    /**
+     * Get the creator.
+     */ getCreator() {
+        if (this.index.has(Creator.tagName)) {
+            let i = this.index.get(Creator.tagName);
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param creator The creator.
+     */ setCreator(creator) {
+        if (this.index.has(Creator.tagName)) {
+            let i = this.index.get(Creator.tagName);
+            this.nodes.set(i, creator);
+        } else {
+            this.index.set(Creator.tagName, this.nodes.size);
+            this.addNode(creator);
+        }
+    }
+    /**
+     * Get the date.
+     */ getDate() {
+        if (this.index.has(Date.tagName)) {
+            let i = this.index.get(Date.tagName);
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param date The date.
+     */ setDate(date) {
+        if (this.index.has(Date.tagName)) {
+            let i = this.index.get(Date.tagName);
+            this.nodes.set(i, date);
+        } else {
+            this.index.set(Date.tagName, this.nodes.size);
+            this.addNode(date);
+        }
+    }
+    /**
+     * Get the contributor.
+     */ getContributor() {
+        if (this.index.has(Contributor.tagName)) {
+            let i = this.index.get(Contributor.tagName);
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * @param contributor The contributor.
+     */ setContributor(contributor) {
+        if (this.index.has(Contributor.tagName)) {
+            let i = this.index.get(Contributor.tagName);
+            this.nodes.set(i, contributor);
+        } else {
+            this.index.set(Contributor.tagName, this.nodes.size);
+            this.addNode(contributor);
         }
     }
 }

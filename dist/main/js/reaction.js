@@ -472,10 +472,6 @@ class Kinf extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:kinf";
     /**
-     * The header.
-     */
-    static header = [mesmer_js_1.T.tagName + " (K)", Val.tagName + " (s-1)", Rev.tagName + " (s-1)", Keq.tagName];
-    /**
      * The index for the nodes.
      */
     index;
@@ -599,6 +595,17 @@ class Kinf extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+    * The header.
+    */
+    getHeader() {
+        let header = [];
+        header.push("T (" + this.getT()?.attributes.get("units") + ")");
+        header.push("kf (" + this.getVal()?.attributes.get("units") + ")");
+        header.push("krev (" + this.getRev()?.attributes.get("units") + ")");
+        header.push("Keq (" + this.getKeq()?.attributes.get("units") + ")");
+        return header;
+    }
+    /**
      * @returns The Kinf as a string[].
      */
     toStringArray() {
@@ -691,8 +698,13 @@ class CanonicalRateList extends xml_js_1.NodeWithNodes {
      * @returns The CanonicalRateList as a CSV string.
      */
     toCSV() {
-        let csv = Kinf.header.join(",") + "\n";
+        let csv = "";
+        let first = true;
         this.getKinfs().forEach((k) => {
+            if (first) {
+                first = false;
+                csv += k.getHeader().join(",") + "\n";
+            }
             csv += k.toCSV() + "\n";
         });
         return csv;

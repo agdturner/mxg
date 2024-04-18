@@ -878,7 +878,7 @@ function processMoleculeList(xml) {
                     }
                     (0, html_js_1.addTableRow)(t, dos.toStringArray());
                     //console.log("dos: " + dos.toString());
-                    addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + molecule_js_1.DensityOfStatesList.tagName);
+                    addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + molecule_js_1.DensityOfStatesList.tagName, level1);
                 }
             }
             moleculeTagNames.delete(molecule_js_1.DensityOfStatesList.tagName);
@@ -914,7 +914,7 @@ function processMoleculeList(xml) {
                 // Append the table to the div.
                 ttDiv.appendChild(t);
                 tt.init(tvs);
-                addSaveAsCSVButton(tt.toCSV, ttDiv, t, mID + "_" + molecule_js_1.ThermoTable.tagName);
+                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, mID + "_" + molecule_js_1.ThermoTable.tagName, level1);
             }
             m.setThermoTable(tt);
             moleculeTagNames.delete(tvtn);
@@ -2608,7 +2608,7 @@ function processReactionList(xml) {
                 let description = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_d[0]));
                 console.log("description=" + description);
                 crl.setDescription(new mesmer_js_1.Description((0, xml_js_1.getAttributes)(xml_d[0]), description));
-                let l = (0, html_js_1.createLabel)(description + "(" + (0, util_js_1.mapToString)(clr_attributes) + ")", level1);
+                let l = (0, html_js_1.createLabel)(description + " (" + (0, util_js_1.mapToString)(clr_attributes) + ")", level1);
                 crlDiv.appendChild(l);
             }
             // me:kinf.
@@ -2618,7 +2618,6 @@ function processReactionList(xml) {
                 // Create a table for the kinf.
                 let t = (0, html_js_1.createTable)((0, util_js_1.getID)(crlDiv, s_table), level1);
                 crlDiv.appendChild(t);
-                (0, html_js_1.addTableRow)(t, reaction_js_1.Kinf.header);
                 for (let j = 0; j < xml_k.length; j++) {
                     let k = new reaction_js_1.Kinf((0, xml_js_1.getAttributes)(xml_k[j]));
                     crl.addKinf(k);
@@ -2662,9 +2661,13 @@ function processReactionList(xml) {
                         let value = new big_js_1.default((0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_Keq[0])));
                         k.setKeq(new reaction_js_1.Keq((0, xml_js_1.getAttributes)(xml_Keq[0]), value));
                     }
+                    if (j == 0) {
+                        // It maybe that only the first kinf contains unit details!
+                        (0, html_js_1.addTableRow)(t, k.getHeader());
+                    }
                     (0, html_js_1.addTableRow)(t, k.toStringArray());
                 }
-                addSaveAsCSVButton(crl.toCSV, crlDiv, t, reaction.id + "_" + reaction_js_1.CanonicalRateList.tagName);
+                addSaveAsCSVButton(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + reaction_js_1.CanonicalRateList.tagName, boundary1);
             }
         }
     }
@@ -3738,6 +3741,7 @@ function processControl(xml) {
     // Get the XML "me:control" element.
     let xml_controls = xml.getElementsByTagName(control_js_1.Control.tagName);
     for (let i = 0; i < xml_controls.length; i++) {
+        console.log("Control " + i);
         let xml_control = xml_controls[i];
         // Create a collapsible divfor the control.
         let cDivID = (0, util_js_1.getID)(control_js_1.Control.tagName, i.toString());
@@ -3764,6 +3768,20 @@ function processControl(xml) {
         getControlItems(control).forEach(item => {
             handleControl(control, cDiv, i, onOffControls, xml_control, level1, item.class, item.setMethod, item.removeMethod, true);
         });
+        // me:ForceMacroDetailedBalance
+        let xml_fdb = xml_control.getElementsByTagName(control_js_1.ForceMacroDetailedBalance.tagName);
+        if (xml_fdb.length == 1) {
+            let fdb_attributes = (0, xml_js_1.getAttributes)(xml_fdb[0]);
+            let s = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_fdb[0]));
+            console.log("ForceMacroDetailedBalance: " + s);
+            // Maybe there is no value for the ForceMacroDetailedBalance?
+            let fdb = new control_js_1.ForceMacroDetailedBalance(fdb_attributes, s);
+            control.setForceMacroDetailedBalance(fdb);
+            let fdbDiv = (0, html_js_1.createFlexDiv)(undefined, level1);
+            cDiv.appendChild(fdbDiv);
+            let fdbl = (0, html_js_1.createLabel)(control_js_1.ForceMacroDetailedBalance.tagName + " " + (0, util_js_1.mapToString)(fdb_attributes) + " " + s, boundary1);
+            fdbDiv.appendChild(fdbl);
+        }
         // Add a remove control button.
         let removeButton = addRemoveButton(cDiv, level1, mesmer.removeControl.bind(mesmer), i);
         removeButton.addEventListener('click', (event) => {
@@ -3995,6 +4013,7 @@ function handleControl(control, controlDiv, index, onOffControls, xml_control, l
  * @param level The level.
  */
 function handleCalcMethod(control, controlDiv, i, xml_control, level) {
+    console.log("handleCalcMethod " + (xml_control == null));
     let div = (0, html_js_1.createFlexDiv)(undefined, level);
     controlDiv.appendChild(div);
     let tagName = control_js_1.CalcMethod.tagName;
@@ -4013,8 +4032,10 @@ function handleCalcMethod(control, controlDiv, i, xml_control, level) {
     let divCmDetailsSelectId = (0, util_js_1.getID)(divCmDetailsId, "select");
     let cm;
     let first = true;
-    if (xml_control) {
-        let xml = xml_control.getElementsByTagName(tagName);
+    if (xml_control != null) {
+        let xml = xml_control.getElementsByTagNameNS("http://www.chem.leeds.ac.uk/mesmer", "calcMethod");
+        //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
+        console.log("xml.length " + xml.length);
         if (xml.length > 0) {
             if (xml.length > 1) {
                 throw new Error("More than one CalcMethod element.");
@@ -4224,6 +4245,7 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
  * @returns The CalcMethod.
  */
 function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId) {
+    console.log("getCalcMethod");
     let cm;
     // Create the select element.
     let select = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
@@ -4235,6 +4257,7 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
     divCmDetails.id = divCmDetailsId;
     divCm.appendChild(divCmDetails);
     if (xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type || xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
+        console.log("CalcMethodSimpleCalc");
         cm = new control_js_1.CalcMethodSimpleCalc(attributes);
     }
     else if (xsi_type == control_js_1.CalcMethodGridSearch.xsi_type || xsi_type == control_js_1.CalcMethodGridSearch.xsi_type2) {
@@ -4282,14 +4305,16 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
     else if (xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type || xsi_type == control_js_1.CalcMethodAnalyticalRepresentation.xsi_type2) {
         let cmar = new control_js_1.CalcMethodAnalyticalRepresentation(attributes);
         cm = cmar;
-        function processElement(xml, ClassConstructor, setterMethod) {
+        function processElement(xml, ClassConstructor, setterMethod, isNumber) {
             let tagName = ClassConstructor.tagName;
             let elementXml = xml[0].getElementsByTagName(tagName);
             if (elementXml.length > 0) {
                 if (elementXml.length == 1) {
                     let value = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(elementXml[0]));
-                    if (value != undefined) {
-                        value = new big_js_1.default(value);
+                    if (isNumber) {
+                        if (value != undefined) {
+                            value = new big_js_1.default(value);
+                        }
                     }
                     let instance = new ClassConstructor((0, xml_js_1.getAttributes)(elementXml[0]), value);
                     setterMethod(instance);
@@ -4299,16 +4324,16 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
                 }
             }
         }
-        processElement(xml, control_js_1.Format, cmar.setFormat.bind(cmar));
-        processElement(xml, control_js_1.Precision, cmar.setPrecision.bind(cmar));
-        processElement(xml, control_js_1.ChebNumTemp, cmar.setChebNumTemp.bind(cmar));
-        processElement(xml, control_js_1.ChebNumConc, cmar.setChebNumConc.bind(cmar));
-        processElement(xml, control_js_1.ChebMaxTemp, cmar.setChebMaxTemp.bind(cmar));
-        processElement(xml, control_js_1.ChebMinTemp, cmar.setChebMinTemp.bind(cmar));
-        processElement(xml, control_js_1.ChebMaxConc, cmar.setChebMaxConc.bind(cmar));
-        processElement(xml, control_js_1.ChebMinConc, cmar.setChebMinConc.bind(cmar));
-        processElement(xml, control_js_1.ChebTExSize, cmar.setChebTExSize.bind(cmar));
-        processElement(xml, control_js_1.ChebPExSize, cmar.setChebPExSize.bind(cmar));
+        processElement(xml, control_js_1.Format, cmar.setFormat.bind(cmar), true);
+        processElement(xml, control_js_1.Precision, cmar.setPrecision.bind(cmar), false);
+        processElement(xml, control_js_1.ChebNumTemp, cmar.setChebNumTemp.bind(cmar), true);
+        processElement(xml, control_js_1.ChebNumConc, cmar.setChebNumConc.bind(cmar), true);
+        processElement(xml, control_js_1.ChebMaxTemp, cmar.setChebMaxTemp.bind(cmar), true);
+        processElement(xml, control_js_1.ChebMinTemp, cmar.setChebMinTemp.bind(cmar), true);
+        processElement(xml, control_js_1.ChebMaxConc, cmar.setChebMaxConc.bind(cmar), true);
+        processElement(xml, control_js_1.ChebMinConc, cmar.setChebMinConc.bind(cmar), true);
+        processElement(xml, control_js_1.ChebTExSize, cmar.setChebTExSize.bind(cmar), true);
+        processElement(xml, control_js_1.ChebPExSize, cmar.setChebPExSize.bind(cmar), true);
         processCalcMethodAnalyticalRepresentation(divCmDetails, cmar);
     }
     else if (xsi_type == control_js_1.CalcMethodThermodynamicTable.xsi_type || xsi_type == control_js_1.CalcMethodThermodynamicTable.xsi_type2) {
@@ -4361,7 +4386,15 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
         processCalcMethodSensitivityAnalysis(divCmDetails, cmsa);
     }
     else {
-        throw new Error("Unknown xsi:type: " + xsi_type);
+        // If there is a name attribute instead, try this in place of the xsi:type.
+        let name = attributes.get("name");
+        if (name != undefined && name !== xsi_type) {
+            attributes.set("xsi:type", name);
+            return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId, divCmDetailsSelectId);
+        }
+        else {
+            throw new Error(`Unable to determine calculation method for xsi_type: ${xsi_type}`);
+        }
     }
     return cm;
 }
@@ -4925,9 +4958,9 @@ function addSaveAsPNGButton(canvas, divToAddTo, elementToInsertBefore, name) {
  * @param elementToInsertBefore The element to insert before.
  * @param name The name to be appended to the file.
  */
-function addSaveAsCSVButton(toCSV, divToAddTo, elementToInsertBefore, name) {
+function addSaveAsCSVButton(toCSV, divToAddTo, elementToInsertBefore, name, margin) {
     let bID = (0, util_js_1.getID)(divToAddTo.id, html_js_1.s_button, s_save);
-    let b = (0, html_js_1.createButton)("Save as CSV", bID, level1);
+    let b = (0, html_js_1.createButton)("Save as CSV", bID, margin);
     divToAddTo.insertBefore(b, elementToInsertBefore);
     b.addEventListener('click', () => {
         let csv = toCSV();

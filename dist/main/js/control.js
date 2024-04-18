@@ -255,15 +255,18 @@ class UseTheSameCellNumberForAllConditions extends xml_1.Tag {
 }
 exports.UseTheSameCellNumberForAllConditions = UseTheSameCellNumberForAllConditions;
 /**
- * A class for "me:ForceMacroDetailedBalance".
+ * A class for "me:useTheSameGrainNumberForAllConditions.
  */
-class ForceMacroDetailedBalance extends xml_1.Tag {
+class ForceMacroDetailedBalance extends xml_1.StringNode {
     /**
      * The tag name.
      */
     static tagName = "me:ForceMacroDetailedBalance";
-    constructor() {
-        super(ForceMacroDetailedBalance.tagName);
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, value) {
+        super(attributes, ForceMacroDetailedBalance.tagName, value);
     }
 }
 exports.ForceMacroDetailedBalance = ForceMacroDetailedBalance;
@@ -282,7 +285,7 @@ class HideInactive extends xml_1.Tag {
 exports.HideInactive = HideInactive;
 /**
  * A class for "me:calcMethod".
- * Expected to have an attribute "xsi_type" with one of the following values:
+ * Expected to have an attribute "xsi_type" or "name" with one of the following values:
  * "simpleCalc", "gridSearch", "fitting", "marquardt", "analyticalRepresentation", "ThermodynamicTable", "sensitivityAnalysis",
  * "me:simpleCalc", "me:gridSearch", "me:fitting", "me:marquardt", "me:analyticalRepresentation", "me:ThermodynamicTable", "me:sensitivityAnalysis".
  */
