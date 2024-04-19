@@ -1,189 +1,137 @@
-
-import { Description } from './mesmer.js';
-import { NodeWithNodes, NumberNode } from './xml.js';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Analysis = exports.RateList = exports.FirstOrderRate = exports.FirstOrderLoss = exports.PopulationList = exports.Population = exports.Pop = exports.EigenvalueList = exports.Eigenvalue = void 0;
+const mesmer_js_1 = require("./mesmer.js");
+const xml_js_1 = require("./xml.js");
 /**
  * In the XML, the "me:eigenvalue" element is a child of the "me:eigenvalueList" element.
  */
-export class Eigenvalue extends NumberNode {
-
+class Eigenvalue extends xml_js_1.NumberNode {
     /**
      * Tag name.
      */
-    public static tagName = 'me:eigenvalue';
-
+    static tagName = 'me:eigenvalue';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: Big) {
+    constructor(attributes, value) {
         super(attributes, Eigenvalue.tagName, value);
     }
 }
-
+exports.Eigenvalue = Eigenvalue;
 /**
  * In the XML, the "me:eigenvalueList" element is a child of the "analysis" element.
- * Attributes include:
- * number
- * selection
- * Child nodes include:
- * me:eigenvalue
+ * , and the rateList tag is a child of the analysis tag.
  */
-export class EigenvalueList extends NodeWithNodes {
-
+class EigenvalueList extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'me:eigenvalueList'
-
+    static tagName = 'me:eigenvalueList';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, eigenvalues?: Eigenvalue[]) {
+    constructor(attributes, eigenvalues) {
         super(attributes, EigenvalueList.tagName);
-        if (eigenvalues) {
-            eigenvalues.forEach((eigenvalue) => {
-                this.addNode(eigenvalue);
-            });
-        }
     }
-
-    /**
-     * Add an eigenvalue.
-     */
-    public addEigenvalue(e: Eigenvalue): void {
-        this.addNode(e);
-    }
-
 }
-
+exports.EigenvalueList = EigenvalueList;
 /**
  * In the XML, the "me:pop" element is a child of the "population" element.
  * Attributes include:
- * ref (A reference to the species (molecule).)
+ * ref
  */
-export class Pop extends NumberNode {
-
+class Pop extends xml_js_1.NumberNode {
     /**
      * Tag name.
      */
-    public static tagName = 'me:pop';
-
+    static tagName = 'me:pop';
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: Big) {
+    constructor(attributes, value) {
         super(attributes, Pop.tagName, value);
     }
 }
-
+exports.Pop = Pop;
 /**
  * In the XML, the "me:population" element is a child of the "populationList" element.
  * Attributes include:
- * time
- * logTime
+ * time, logTime
  * Child elements include:
  * me:pop
  */
-export class Population extends NodeWithNodes {
-
+class Population extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'me:population';
-
+    static tagName = 'me:population';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, pops?: Pop[]) {
+    constructor(attributes, pops) {
         super(attributes, Population.tagName);
     }
-
-    /**
-     * Add a pop.
-     */
-    public addPop(p: Pop): void {
-        this.addNode(p);
-    }
 }
-
+exports.Population = Population;
 /**
  * In the XML, the "me:populationList" element is a child of the "analysis" element.
  * Attributes include:
- * T (Temperature)
- * conc (Concentration)
  * Child elements include:
  * me:population
  */
-export class PopulationList extends NodeWithNodes {
-
+class PopulationList extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'me:populationList';
-
+    static tagName = 'me:populationList';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, populations?: Population[]) {
+    constructor(attributes, populations) {
         super(attributes, PopulationList.tagName);
-        if (populations) {
-            populations.forEach((population) => {
-                this.addNode(population);
-            });
-        }
-    }
-
-    /**
-     * Add a population.
-     */
-    public addPopulation(p: Population): void {
-        this.addNode(p);
     }
 }
-
+exports.PopulationList = PopulationList;
 /**
  * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
  * Attributes include:
  * ref
  */
-export class FirstOrderLoss extends NumberNode {
-
+class FirstOrderLoss extends xml_js_1.NumberNode {
     /**
      * Tag name.
      */
-    public static tagName = 'me:firstOrderLoss';
-
+    static tagName = 'me:firstOrderLoss';
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: Big) {
+    constructor(attributes, value) {
         super(attributes, FirstOrderLoss.tagName, value);
     }
 }
-
+exports.FirstOrderLoss = FirstOrderLoss;
 /**
  * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
  * Attributes include:
  * fromRef, toRef, reactionType
  */
-export class FirstOrderRate extends NumberNode {
-
+class FirstOrderRate extends xml_js_1.NumberNode {
     /**
      * Tag name.
      */
-    public static tagName = 'me:firstOrderRate';
-
+    static tagName = 'me:firstOrderRate';
     /**
      * @param attributes The attributes.
      * @param value The value.
      */
-    constructor(attributes: Map<string, string>, value: Big) {
+    constructor(attributes, value) {
         super(attributes, FirstOrderLoss.tagName, value);
     }
 }
-
+exports.FirstOrderRate = FirstOrderRate;
 /**
  * In the XML, the "me:rateList" element is a child of the "analysis" element.
  * Attributes include:
@@ -192,83 +140,59 @@ export class FirstOrderRate extends NumberNode {
  * me:firstOrderLoss
  * me:firstOrderRate
  */
-export class RateList extends NodeWithNodes {
-
+class RateList extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'me:rateList';
-    
+    static tagName = 'me:rateList';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, firstOrderLosses?: FirstOrderLoss[], firstOrderRates?: FirstOrderRate[]) {
+    constructor(attributes, firstOrderLosses, firstOrderRates) {
         super(attributes, Analysis.tagName);
     }
 }
-
+exports.RateList = RateList;
 /**
  * In the XML, the "me:analysis" element is a child of the "me:mesmer" element.
  * Attributes include:
  * calculated
  * Child elements include:
  * me:description
- * And one or more sets of: 
+ * And one or more sets of:
  *  me:eigenvalueList
  *  me:populationList
  *  me:rateList
  */
-export class Analysis extends NodeWithNodes {
-
+class Analysis extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'me:analysis';
-
+    static tagName = 'me:analysis';
     /**
      * The index.
      */
-    index: Map<string, number | Map<number, number>>;
-
+    index;
     /**
      * The EigenvalueList index.
      */
-    elIndex: Map<number, number>;
-
-    /**
-     * The EigenvalueList.
-     */
-    els: EigenvalueList[]
-
+    elIndex;
     /**
      * The PopulationList index.
      */
-    plIndex: Map<number, number>;
-
-    /**
-     * The PopulationList.
-     */
-    pls: PopulationList[];
-
+    plIndex;
     /**
      * The RateList index.
      */
-    rlIndex: Map<number, number>;
-
-    /**
-     * The RateList.
-     */
-    rls: RateList[];
-
+    rlIndex;
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, description?: Description, els?: EigenvalueList[], 
-        pls?: PopulationList[], rls?: RateList[]) {
+    constructor(attributes, description, els, pls, rls) {
         super(attributes, Analysis.tagName);
         this.index = new Map();
         if (description) {
-            this.index.set(Description.tagName, this.nodes.size);
+            this.index.set(mesmer_js_1.Description.tagName, this.nodes.size);
             this.addNode(description);
         }
         this.elIndex = new Map();
@@ -278,9 +202,6 @@ export class Analysis extends NodeWithNodes {
                 this.elIndex.set(this.elIndex.size, this.nodes.size);
                 this.addNode(el);
             });
-            this.els = els;
-        } else {
-            this.els = [];
         }
         this.plIndex = new Map();
         if (pls) {
@@ -289,9 +210,6 @@ export class Analysis extends NodeWithNodes {
                 this.plIndex.set(this.plIndex.size, this.nodes.size);
                 this.addNode(pl);
             });
-            this.pls = pls;
-        } else {
-            this.pls = [];
         }
         this.rlIndex = new Map();
         if (rls) {
@@ -300,59 +218,96 @@ export class Analysis extends NodeWithNodes {
                 this.rlIndex.set(this.rlIndex.size, this.nodes.size);
                 this.addNode(rl);
             });
-            this.rls = rls;
-        } else {
-            this.rls = [];
         }
     }
-
     /**
      * Get the description.
      */
-    public getDescription(): Description | undefined {
-        if (this.index.has(Description.tagName)) {
-            let i: number = this.index.get(Description.tagName)! as number;
-            return this.nodes.get(i) as Description;
+    getDescription() {
+        if (this.index.has(mesmer_js_1.Description.tagName)) {
+            let i = this.index.get(mesmer_js_1.Description.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param description The description.
      */
-    setDescription(description: Description) {
-        if (this.index.has(Description.tagName)) {
-            let i: number = this.index.get(Description.tagName)! as number;
+    setDescription(description) {
+        if (this.index.has(mesmer_js_1.Description.tagName)) {
+            let i = this.index.get(mesmer_js_1.Description.tagName);
             this.nodes.set(i, description);
-        } else {
-            this.index.set(Description.tagName, this.nodes.size);
+        }
+        else {
+            this.index.set(mesmer_js_1.Description.tagName, this.nodes.size);
             this.addNode(description);
         }
     }
-
+    /**
+     * Get the eigenvalue list.
+     */
+    getEigenvalueList() {
+        if (this.index.has(EigenvalueList.tagName)) {
+            let i = this.index.get(EigenvalueList.tagName);
+            return this.nodes.get(i);
+        }
+    }
     /**
      * @param eigenvalueList The eigenvalue list.
      */
-    addEigenvalueList(eigenvalueList: EigenvalueList) {
-        this.elIndex.set(this.elIndex.size, this.nodes.size);
-        this.addNode(eigenvalueList);
-        this.els.push(eigenvalueList);
+    setEigenvalueList(eigenvalueList) {
+        if (this.index.has(EigenvalueList.tagName)) {
+            let i = this.index.get(EigenvalueList.tagName);
+            this.nodes.set(i, eigenvalueList);
+        }
+        else {
+            this.index.set(EigenvalueList.tagName, this.nodes.size);
+            this.addNode(eigenvalueList);
+        }
     }
-
+    /**
+     * Get the population list.
+     */
+    getPopulationList() {
+        if (this.index.has(PopulationList.tagName)) {
+            let i = this.index.get(PopulationList.tagName);
+            return this.nodes.get(i);
+        }
+    }
     /**
      * @param populationList The population list.
      */
-    addPopulationList(populationList: PopulationList) {
-        this.plIndex.set(this.plIndex.size, this.nodes.size);
-        this.addNode(populationList);
-        this.pls.push(populationList);
+    setPopulationList(populationList) {
+        if (this.index.has(PopulationList.tagName)) {
+            let i = this.index.get(PopulationList.tagName);
+            this.nodes.set(i, populationList);
+        }
+        else {
+            this.index.set(PopulationList.tagName, this.nodes.size);
+            this.addNode(populationList);
+        }
     }
-
+    /**
+     * Get the rate list.
+     */
+    getRateList() {
+        if (this.index.has(RateList.tagName)) {
+            let i = this.index.get(RateList.tagName);
+            return this.nodes.get(i);
+        }
+    }
     /**
      * @param rateList The rate list.
      */
-    addRateList(rateList: RateList) {
-        this.rlIndex.set(this.rlIndex.size, this.nodes.size);
-        this.addNode(rateList);
-        this.rls.push(rateList);
+    setRateList(rateList) {
+        if (this.index.has(RateList.tagName)) {
+            let i = this.index.get(RateList.tagName);
+            this.nodes.set(i, rateList);
+        }
+        else {
+            this.index.set(RateList.tagName, this.nodes.size);
+            this.addNode(rateList);
+        }
     }
 }
+exports.Analysis = Analysis;
+//# sourceMappingURL=analysis.js.map

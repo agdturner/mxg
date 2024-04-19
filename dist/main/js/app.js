@@ -17,6 +17,8 @@ const modelParameters_js_1 = require("./modelParameters.js");
 const control_js_1 = require("./control.js");
 const mesmer_js_1 = require("./mesmer.js");
 const big_js_1 = __importDefault(require("big.js"));
+const analysis_js_1 = require("./analysis.js");
+const metadata_js_1 = require("./metadata.js");
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 /**
  * MXG.
@@ -119,6 +121,8 @@ const reactionsDiagramDivID = 'reactionsDiagram';
 const conditionsDivID = 'conditions';
 const modelParametersDivID = 'modelParameters';
 const controlDivID = 'control';
+const metadataListDivID = 'metadataList';
+const analysisDivID = 'analysis';
 const xmlDivID = 'xml';
 const welcomeDivID = 'welcome';
 // For dark/light mode.
@@ -541,6 +545,20 @@ function parse(xml) {
     (0, html_js_1.remove)(clDivID, ids);
     // Create collapsible content.
     let controlcDiv = (0, html_js_1.getCollapsibleDiv)(clDivID, clDiv, null, processControl(xml), "ControlList", boundary1, level0);
+    // MetadataList.
+    let mDiv = document.getElementById(metadataListDivID);
+    let mDivID = addID(metadata_js_1.MetadataList.tagName);
+    // Remove any existing mDivID HTMLDivElement.
+    (0, html_js_1.remove)(mDivID, ids);
+    // Create collapsible content.
+    let mcDiv = (0, html_js_1.getCollapsibleDiv)(mDivID, mDiv, null, processMetadataList(xml), metadata_js_1.MetadataList.tagName, boundary1, level0);
+    // Analysis.
+    let aDiv = document.getElementById(analysisDivID);
+    let aDivID = addID(analysis_js_1.Analysis.tagName);
+    // Remove any existing aDivID HTMLDivElement.
+    (0, html_js_1.remove)(aDivID, ids);
+    // Create collapsible content.
+    let acDiv = (0, html_js_1.getCollapsibleDiv)(aDivID, aDiv, null, processAnalysis(xml), analysis_js_1.Analysis.tagName, boundary1, level0);
 }
 /**
  * Parse XML and create HTMLDivElement for molecules.
@@ -2566,7 +2584,7 @@ function processReactionList(xml) {
         }
         // me:excessReactantConc
         let xml_erc = xml_reactions[i].getElementsByTagName(reaction_js_1.ExcessReactantConc.tagName);
-        console.log("n_me:excessReactantConc=" + xml_erc.length);
+        //console.log("n_me:excessReactantConc=" + xml_erc.length);
         if (xml_erc.length > 0) {
             if (xml_erc.length > 1) {
                 throw new Error("Expecting 1 " + reaction_js_1.ExcessReactantConc.tagName + " but finding " + xml_erc.length + "!");
@@ -2583,7 +2601,7 @@ function processReactionList(xml) {
         }
         // me:canonicalRateList
         let xml_crl = xml_reactions[i].getElementsByTagName(reaction_js_1.CanonicalRateList.tagName);
-        console.log("n_me:canonicalRateList=" + xml_crl.length);
+        //console.log("n_me:canonicalRateList=" + xml_crl.length);
         if (xml_crl.length > 0) {
             if (xml_crl.length > 1) {
                 throw new Error("Expecting 1 " + reaction_js_1.CanonicalRateList.tagName + " but finding " + xml_crl.length + "!");
@@ -2600,20 +2618,20 @@ function processReactionList(xml) {
             //let id = getID(reaction.id, CanonicalRateList.tagName);
             // me:description.
             let xml_d = xml_crl[0].getElementsByTagName(mesmer_js_1.Description.tagName);
-            console.log("xml_d.length=" + xml_d.length);
+            //console.log("xml_d.length=" + xml_d.length);
             if (xml_d.length > 0) {
                 if (xml_d.length > 1) {
                     throw new Error("Expecting 1 " + mesmer_js_1.Description.tagName + " but finding " + xml_d.length + "!");
                 }
                 let description = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_d[0]));
-                console.log("description=" + description);
+                //console.log("description=" + description);
                 crl.setDescription(new mesmer_js_1.Description((0, xml_js_1.getAttributes)(xml_d[0]), description));
                 let l = (0, html_js_1.createLabel)(description + " (" + (0, util_js_1.mapToString)(clr_attributes) + ")", level1);
                 crlDiv.appendChild(l);
             }
             // me:kinf.
             let xml_k = xml_crl[0].getElementsByTagName(reaction_js_1.Kinf.tagName);
-            console.log("xml_k.length=" + xml_k.length);
+            //console.log("xml_k.length=" + xml_k.length);
             if (xml_k.length > 0) {
                 // Create a table for the kinf.
                 let t = (0, html_js_1.createTable)((0, util_js_1.getID)(crlDiv, s_table), level1);
@@ -2623,7 +2641,7 @@ function processReactionList(xml) {
                     crl.addKinf(k);
                     // T.
                     let xml_T = xml_k[j].getElementsByTagName(mesmer_js_1.T.tagName);
-                    console.log("xml_T.length=" + xml_T.length);
+                    //console.log("xml_T.length=" + xml_T.length);
                     if (xml_T.length > 0) {
                         if (xml_T.length > 1) {
                             throw new Error("Expecting 1 " + mesmer_js_1.T.tagName + " but finding " + xml_T.length + "!");
@@ -2633,7 +2651,7 @@ function processReactionList(xml) {
                     }
                     // Val.
                     let xml_Val = xml_k[j].getElementsByTagName(reaction_js_1.Val.tagName);
-                    console.log("xml_Val.length=" + xml_Val.length);
+                    //console.log("xml_Val.length=" + xml_Val.length);
                     if (xml_Val.length > 0) {
                         if (xml_Val.length > 1) {
                             throw new Error("Expecting 1 " + reaction_js_1.Val.tagName + " but finding " + xml_Val.length + "!");
@@ -2643,7 +2661,7 @@ function processReactionList(xml) {
                     }
                     // Rev.
                     let xml_Rev = xml_k[j].getElementsByTagName(reaction_js_1.Rev.tagName);
-                    console.log("xml_Rev.length=" + xml_Rev.length);
+                    //console.log("xml_Rev.length=" + xml_Rev.length);
                     if (xml_Rev.length > 0) {
                         if (xml_Rev.length > 1) {
                             throw new Error("Expecting 1 " + reaction_js_1.Rev.tagName + " but finding " + xml_Rev.length + "!");
@@ -2653,7 +2671,7 @@ function processReactionList(xml) {
                     }
                     // Keq.
                     let xml_Keq = xml_k[j].getElementsByTagName(reaction_js_1.Keq.tagName);
-                    console.log("xml_Keq.length=" + xml_Keq.length);
+                    //console.log("xml_Keq.length=" + xml_Keq.length);
                     if (xml_Keq.length > 0) {
                         if (xml_Keq.length > 1) {
                             throw new Error("Expecting 1 " + reaction_js_1.Keq.tagName + " but finding " + xml_Keq.length + "!");
@@ -3741,7 +3759,7 @@ function processControl(xml) {
     // Get the XML "me:control" element.
     let xml_controls = xml.getElementsByTagName(control_js_1.Control.tagName);
     for (let i = 0; i < xml_controls.length; i++) {
-        console.log("Control " + i);
+        //console.log("Control " + i);
         let xml_control = xml_controls[i];
         // Create a collapsible divfor the control.
         let cDivID = (0, util_js_1.getID)(control_js_1.Control.tagName, i.toString());
@@ -3773,7 +3791,7 @@ function processControl(xml) {
         if (xml_fdb.length == 1) {
             let fdb_attributes = (0, xml_js_1.getAttributes)(xml_fdb[0]);
             let s = (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_fdb[0]));
-            console.log("ForceMacroDetailedBalance: " + s);
+            //console.log("ForceMacroDetailedBalance: " + s);
             // Maybe there is no value for the ForceMacroDetailedBalance?
             let fdb = new control_js_1.ForceMacroDetailedBalance(fdb_attributes, s);
             control.setForceMacroDetailedBalance(fdb);
@@ -4013,7 +4031,7 @@ function handleControl(control, controlDiv, index, onOffControls, xml_control, l
  * @param level The level.
  */
 function handleCalcMethod(control, controlDiv, i, xml_control, level) {
-    console.log("handleCalcMethod " + (xml_control == null));
+    //console.log("handleCalcMethod " + (xml_control == null));
     let div = (0, html_js_1.createFlexDiv)(undefined, level);
     controlDiv.appendChild(div);
     let tagName = control_js_1.CalcMethod.tagName;
@@ -4033,9 +4051,9 @@ function handleCalcMethod(control, controlDiv, i, xml_control, level) {
     let cm;
     let first = true;
     if (xml_control != null) {
-        let xml = xml_control.getElementsByTagNameNS("http://www.chem.leeds.ac.uk/mesmer", "calcMethod");
-        //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
-        console.log("xml.length " + xml.length);
+        //let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagNameNS("http://www.chem.leeds.ac.uk/mesmer", "calcMethod");
+        let xml = xml_control.getElementsByTagName(tagName);
+        //console.log("xml.length " + xml.length);
         if (xml.length > 0) {
             if (xml.length > 1) {
                 throw new Error("More than one CalcMethod element.");
@@ -4245,7 +4263,7 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
  * @returns The CalcMethod.
  */
 function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId) {
-    console.log("getCalcMethod");
+    //console.log("getCalcMethod");
     let cm;
     // Create the select element.
     let select = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
@@ -4257,7 +4275,7 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
     divCmDetails.id = divCmDetailsId;
     divCm.appendChild(divCmDetails);
     if (xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type || xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
-        console.log("CalcMethodSimpleCalc");
+        //console.log("CalcMethodSimpleCalc");
         cm = new control_js_1.CalcMethodSimpleCalc(attributes);
     }
     else if (xsi_type == control_js_1.CalcMethodGridSearch.xsi_type || xsi_type == control_js_1.CalcMethodGridSearch.xsi_type2) {
@@ -4390,6 +4408,7 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
         let name = attributes.get("name");
         if (name != undefined && name !== xsi_type) {
             attributes.set("xsi:type", name);
+            console.warn(`Using name attribute as xsi:type: ${name}`);
             return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId, divCmDetailsSelectId);
         }
         else {
@@ -4636,6 +4655,51 @@ function createSelectElementCalcMethod(control, div, options, tagName, value, di
         (0, html_js_1.resizeSelectElement)(target);
     });
     return select;
+}
+/**
+ * Parses xml to initialise metadataList.
+ * @param xml The XML document.
+ */
+function processMetadataList(xml) {
+    console.log(metadata_js_1.MetadataList.tagName);
+    let mlDiv = (0, html_js_1.createDiv)(undefined, boundary1);
+    let xml_ml = (0, xml_js_1.getSingularElement)(xml, metadata_js_1.MetadataList.tagName);
+    let ml = new metadata_js_1.MetadataList((0, xml_js_1.getAttributes)(xml_ml));
+    mesmer.setMetadataList(ml);
+    function handleElement(tagName, constructor, setter) {
+        let xml_elements = xml_ml.getElementsByTagName(tagName);
+        if (xml_elements.length > 0) {
+            if (xml_elements.length == 1) {
+                let s = (0, xml_js_1.getFirstChildNode)(xml_elements[0])?.nodeValue ?? "";
+                let n = new constructor((0, xml_js_1.getAttributes)(xml_elements[0]), s);
+                let cDiv = (0, html_js_1.createDiv)(undefined, boundary1);
+                mlDiv.appendChild(cDiv);
+                cDiv.appendChild((0, html_js_1.createLabel)(n.tagName + " " + s, boundary1));
+                console.log(n.tagName + " " + s);
+                setter.call(ml, n);
+            }
+            else {
+                throw new Error(`More than one ${tagName} element.`);
+            }
+        }
+    }
+    handleElement(metadata_js_1.DCSource.tagName, metadata_js_1.DCSource, ml.setSource);
+    handleElement(metadata_js_1.DCCreator.tagName, metadata_js_1.DCCreator, ml.setCreator);
+    handleElement(metadata_js_1.DCDate.tagName, metadata_js_1.DCDate, ml.setDate);
+    handleElement(metadata_js_1.DCContributor.tagName, metadata_js_1.DCContributor, ml.setContributor);
+    return mlDiv;
+}
+/**
+ * Parses xml to initialise analysis.
+ * @param xml The XML document.
+ */
+function processAnalysis(xml) {
+    console.log(analysis_js_1.Analysis.tagName);
+    let aDiv = (0, html_js_1.createDiv)(undefined, boundary1);
+    let xml_a = (0, xml_js_1.getSingularElement)(xml, analysis_js_1.Analysis.tagName);
+    let a = new analysis_js_1.Analysis((0, xml_js_1.getAttributes)(xml_a));
+    mesmer.setAnalysis(a);
+    return aDiv;
 }
 /**
  * Create a diagram.

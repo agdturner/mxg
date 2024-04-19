@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.T = exports.Description = exports.Mesmer = exports.ControlList = exports.ConditionsList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
+const analysis_js_1 = require("./analysis.js");
 const conditions_js_1 = require("./conditions.js");
 const control_js_1 = require("./control.js");
+const metadata_js_1 = require("./metadata.js");
 const modelParameters_js_1 = require("./modelParameters.js");
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
@@ -359,7 +361,7 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      * @param modelParameters The model parameters.
      * @param controls The controls.
      */
-    constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameters, controls) {
+    constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameters, controls, metadataList, analysis) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
         let colors = ["White", "Red", "DarkGrey", "Blue", "Green", "Yellow", "Orange", "Brown"];
@@ -413,6 +415,14 @@ class Mesmer extends xml_js_1.NodeWithNodes {
                 this.controlIndex.set(control.id, this.nodes.size);
                 this.addNode(control);
             });
+        }
+        if (metadataList != undefined) {
+            this.index.set(metadata_js_1.MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+        if (analysis != undefined) {
+            this.index.set(analysis_js_1.Analysis.tagName, this.nodes.size);
+            this.addNode(analysis);
         }
     }
     /**
@@ -614,6 +624,32 @@ class Mesmer extends xml_js_1.NodeWithNodes {
             this.nodes.delete(i);
             this.index.delete(control_js_1.Control.tagName + controlID);
             this.controlIndex.delete(controlID);
+        }
+    }
+    /**
+     * @param metadataList The metadata list.
+     */
+    setMetadataList(metadataList) {
+        let i = this.index.get(metadata_js_1.MetadataList.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, metadataList);
+        }
+        else {
+            this.index.set(metadata_js_1.MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+    }
+    /**
+     * @param analysis The analysis.
+     */
+    setAnalysis(analysis) {
+        let i = this.index.get(analysis_js_1.Analysis.tagName);
+        if (i != undefined) {
+            this.nodes.set(i, analysis);
+        }
+        else {
+            this.index.set(analysis_js_1.Analysis.tagName, this.nodes.size);
+            this.addNode(analysis);
         }
     }
 }

@@ -1,95 +1,87 @@
-import { NodeWithNodes, StringNode } from './xml.js';
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MetadataList = exports.DCContributor = exports.DCDate = exports.DCCreator = exports.DCSource = exports.DCTitle = void 0;
+const xml_js_1 = require("./xml.js");
 /**
  * DC Title.
  */
-export class DCTitle extends StringNode {
-
+class DCTitle extends xml_js_1.StringNode {
     /**
      * Tag name.
      */
-    public static tagName = 'dc:title';
-
+    static tagName = 'dc:title';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: string) {
+    constructor(attributes, value) {
         super(attributes, DCTitle.tagName, value);
     }
 }
-
+exports.DCTitle = DCTitle;
 /**
  * DC Source.
  */
-export class DCSource extends StringNode {
-
+class DCSource extends xml_js_1.StringNode {
     /**
      * Tag name.
      */
-    public static tagName = 'dc:source';
-
+    static tagName = 'dc:source';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: string) {
+    constructor(attributes, value) {
         super(attributes, DCSource.tagName, value);
     }
 }
-
+exports.DCSource = DCSource;
 /**
  * DC Creator.
  */
-export class DCCreator extends StringNode {
-
+class DCCreator extends xml_js_1.StringNode {
     /**
      * Tag name.
      */
-    public static tagName = 'dc:creator';
-
+    static tagName = 'dc:creator';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: string) {
+    constructor(attributes, value) {
         super(attributes, DCCreator.tagName, value);
     }
 }
-
+exports.DCCreator = DCCreator;
 /**
  * DC Date.
  */
-export class DCDate extends StringNode {
-
+class DCDate extends xml_js_1.StringNode {
     /**
      * Tag name.
      */
-    public static tagName = 'dc:date';
-
+    static tagName = 'dc:date';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: string) {
+    constructor(attributes, value) {
         super(attributes, DCDate.tagName, value);
     }
 }
-
+exports.DCDate = DCDate;
 /**
  * DC Contributor.
  */
-export class DCContributor extends StringNode {
-
+class DCContributor extends xml_js_1.StringNode {
     /**
      * Tag name.
      */
-    public static tagName = 'dc:contributor';
-
+    static tagName = 'dc:contributor';
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, value: string) {
+    constructor(attributes, value) {
         super(attributes, DCContributor.tagName, value);
     }
 }
-
+exports.DCContributor = DCContributor;
 /**
  * In the XML, the "metadata" element is a child of the "mesmer" element.
  * Attributes include:
@@ -101,25 +93,21 @@ export class DCContributor extends StringNode {
  * dc:date
  * dc:contributor
  */
-export class MetadataList extends NodeWithNodes {
-
+class MetadataList extends xml_js_1.NodeWithNodes {
     /**
      * Tag name.
      */
-    public static tagName = 'metadataList';
-
+    static tagName = 'metadataList';
     /**
      * To look up nodes by type.
      */
-    index: Map<string, number>;
-
+    index;
     /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, title?: DCTitle, source?: DCSource, creator?: DCCreator, date?: DCDate, 
-        contributor?: DCContributor) {
+    constructor(attributes, title, source, creator, date, contributor) {
         super(attributes, MetadataList.tagName);
-        this.index = new Map<string, number>();
+        this.index = new Map();
         if (title) {
             this.index.set(DCTitle.tagName, this.nodes.size);
             this.addNode(title);
@@ -141,119 +129,116 @@ export class MetadataList extends NodeWithNodes {
             this.addNode(contributor);
         }
     }
-
     /**
      * Get the title.
      */
-    public getTitle(): DCTitle | undefined {
+    getTitle() {
         if (this.index.has(DCTitle.tagName)) {
-            let i: number = this.index.get(DCTitle.tagName)!;
-            return this.nodes.get(i) as DCTitle;
+            let i = this.index.get(DCTitle.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param title The title.
      */
-    setTitle(title: DCTitle) {
+    setTitle(title) {
         if (this.index.has(DCTitle.tagName)) {
-            let i: number = this.index.get(DCTitle.tagName)!;
+            let i = this.index.get(DCTitle.tagName);
             this.nodes.set(i, title);
-        } else {
+        }
+        else {
             this.index.set(DCTitle.tagName, this.nodes.size);
             this.addNode(title);
         }
     }
-
     /**
      * Get the source.
      */
-    public getSource(): DCSource | undefined {
+    getSource() {
         if (this.index.has(DCSource.tagName)) {
-            let i: number = this.index.get(DCSource.tagName)!;
-            return this.nodes.get(i) as DCSource;
+            let i = this.index.get(DCSource.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param source The source.
      */
-    setSource(source: DCSource) {
+    setSource(source) {
         if (this.index.has(DCSource.tagName)) {
-            let i: number = this.index.get(DCSource.tagName)!;
+            let i = this.index.get(DCSource.tagName);
             this.nodes.set(i, source);
-        } else {
+        }
+        else {
             this.index.set(DCSource.tagName, this.nodes.size);
             this.addNode(source);
         }
     }
-
     /**
      * Get the creator.
      */
-    public getCreator(): DCCreator | undefined {
+    getCreator() {
         if (this.index.has(DCCreator.tagName)) {
-            let i: number = this.index.get(DCCreator.tagName)!;
-            return this.nodes.get(i) as DCCreator;
+            let i = this.index.get(DCCreator.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param creator The creator.
      */
-    setCreator(creator: DCCreator) {
+    setCreator(creator) {
         if (this.index.has(DCCreator.tagName)) {
-            let i: number = this.index.get(DCCreator.tagName)!;
+            let i = this.index.get(DCCreator.tagName);
             this.nodes.set(i, creator);
-        } else {
+        }
+        else {
             this.index.set(DCCreator.tagName, this.nodes.size);
             this.addNode(creator);
         }
     }
-
     /**
      * Get the date.
      */
-    public getDate(): DCDate | undefined {
+    getDate() {
         if (this.index.has(DCDate.tagName)) {
-            let i: number = this.index.get(DCDate.tagName)!;
-            return this.nodes.get(i) as DCDate;
+            let i = this.index.get(DCDate.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param date The date.
      */
-    setDate(date: DCDate) {
+    setDate(date) {
         if (this.index.has(DCDate.tagName)) {
-            let i: number = this.index.get(DCDate.tagName)!;
+            let i = this.index.get(DCDate.tagName);
             this.nodes.set(i, date);
-        } else {
+        }
+        else {
             this.index.set(DCDate.tagName, this.nodes.size);
             this.addNode(date);
         }
     }
-
     /**
      * Get the contributor.
      */
-    public getContributor(): DCContributor | undefined {
+    getContributor() {
         if (this.index.has(DCContributor.tagName)) {
-            let i: number = this.index.get(DCContributor.tagName)!;
-            return this.nodes.get(i) as DCContributor;
+            let i = this.index.get(DCContributor.tagName);
+            return this.nodes.get(i);
         }
     }
-
     /**
      * @param contributor The contributor.
      */
-    setContributor(contributor: DCContributor) {
+    setContributor(contributor) {
         if (this.index.has(DCContributor.tagName)) {
-            let i: number = this.index.get(DCContributor.tagName)!;
+            let i = this.index.get(DCContributor.tagName);
             this.nodes.set(i, contributor);
-        } else {
+        }
+        else {
             this.index.set(DCContributor.tagName, this.nodes.size);
             this.addNode(contributor);
         }
     }
 }
+exports.MetadataList = MetadataList;
+//# sourceMappingURL=metadata.js.map
