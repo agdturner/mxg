@@ -704,6 +704,7 @@ const s_save = "save";
 const s_Select = "Select";
 const s_selectOption = "Select an option (use keys to cycle through options)...";
 const s_table = "table";
+const s_graph = "graph";
 // HTML IDs
 const menuDivID = "menu";
 const titleDivID = "title";
@@ -5041,7 +5042,15 @@ function handleEvent(element, tagName) {
                 ref_pop.set(ref, p);
             }
         }
-        // Create Tables
+        // Create graph.
+        let graphDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_graph), boundary1);
+        pDiv.appendChild(graphDiv);
+        let canvas = document.createElement("canvas");
+        graphDiv.appendChild(canvas);
+        // Create an scatter plot.
+        let scatterPlot = new ScatterPlot(canvas, t_ref_pop);
+        scatterPlot.draw();
+        // Create Table.
         let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_table), boundary1);
         pDiv.appendChild(tableDiv);
         let tab = (0, _htmlJs.createTable)((0, _utilJs.getID)(plDivID, s_table), boundary1);
@@ -5059,6 +5068,129 @@ function handleEvent(element, tagName) {
         addSaveAsCSVButton(()=>tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
     }
     return aDiv;
+}
+class ScatterPlot {
+    constructor(canvas, data){
+        this.canvas = canvas;
+        this.data = data;
+        // Create a new scatter plot.
+        this.draw();
+    }
+    /**
+     * Draw the scatter plot.
+     */ draw() {
+        const ctx = this.canvas.getContext("2d");
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear the canvas.
+        let width = this.canvas.width;
+        let height = this.canvas.height;
+        let margin = 20;
+        let x0 = margin;
+        let y0 = height - margin;
+        let x1 = width - margin;
+        let y1 = margin;
+        let xMin = Number.MAX_VALUE;
+        let xMax = Number.MIN_VALUE;
+        //let yMin: number = Number.MAX_VALUE;
+        //let yMax: number = Number.MIN_VALUE;
+        let yMin = 0;
+        let yMax = 1;
+        this.data.forEach((ref_pop, x)=>{
+            let logx = Math.log10(x.toNumber());
+            xMin = Math.min(xMin, logx);
+            xMax = Math.max(xMax, logx);
+        /*
+            ref_pop.forEach((p, ref) => {
+                yMin = Math.min(yMin, p.toNumber());
+                yMax = Math.max(yMax, p.toNumber());
+            });
+            */ });
+        let xScale = (x1 - x0) / (xMax - xMin);
+        let yScale = (y1 - y0) / (yMax - yMin);
+        // Draw x-axis.
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y0);
+        ctx.stroke();
+        // Draw y-axis.
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x0, y1);
+        ctx.stroke();
+        // Define an array of colors for different styles
+        let colors = [
+            "red",
+            "green",
+            "blue",
+            "yellow",
+            "purple",
+            "orange",
+            "black"
+        ];
+        // Draw data points.
+        this.data.forEach((ref_pop, x)=>{
+            // Define a reference id for each color
+            let i = 0;
+            ref_pop.forEach((p, ref)=>{
+                let logx = Math.log10(x.toNumber());
+                let xPixel = x0 + (logx - xMin) * xScale;
+                let pn = p.toNumber();
+                if (pn < 1) {
+                    let yPixel = y0 + (pn - yMin) * yScale;
+                    if (yPixel > 0) {
+                        ctx.beginPath();
+                        ctx.arc(xPixel, yPixel, 2, 0, 2 * Math.PI); // Points
+                        // Use the ref index to select a color
+                        ctx.fillStyle = colors[i % colors.length];
+                        ctx.fill();
+                    }
+                }
+                i++;
+            });
+        });
+        // Draw x-axis labels.
+        ctx.font = "10px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "black";
+        let xLabel = "log10(time/secs)";
+        ctx.fillText(xLabel, x0 + (x1 - x0) / 2, y0 + margin / 2);
+        // Draw y-axis labels.
+        ctx.save();
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        let yLabel = "fractional population";
+        ctx.fillText(yLabel, -y0 - (y1 - y0) / 2, x0 - margin);
+        ctx.restore();
+        // Draw x-axis ticks.
+        let xTicks = 10;
+        let xTickSpacing = (x1 - x0) / xTicks;
+        for(let i = 0; i < xTicks; i++){
+            let xTick = x0 + i * xTickSpacing;
+            ctx.beginPath();
+            ctx.moveTo(xTick, y0);
+            ctx.lineTo(xTick, y0 + 5);
+            ctx.stroke();
+        }
+        // Draw x-axis tick labels.
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        for(let i = 0; i < xTicks; i++){
+            let xTick = x0 + i * xTickSpacing;
+            let xValue = xMin + i * (xMax - xMin) / xTicks;
+            ctx.fillText(xValue.toFixed(1), xTick, y0 + 5);
+        }
+        // Draw y-axis ticks.
+        let yTicks = 10;
+        let yTickSpacing = (y1 - y0) / yTicks;
+        for(let i = 0; i < yTicks; i++){
+            let yTick = y0 - i * yTickSpacing;
+            ctx.beginPath();
+            ctx.moveTo(x0, yTick);
+            ctx.lineTo(x0 - 5, yTick);
+            ctx.stroke();
+        }
+    }
 }
 /**
  * Convert an HTMLTableElement to a CSV string.
@@ -5401,7 +5533,7 @@ function handleEvent(element, tagName) {
     });
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./canvas.js":"hoJRr"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**

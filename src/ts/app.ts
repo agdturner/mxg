@@ -168,6 +168,7 @@ const s_save: string = "save";
 const s_Select: string = "Select";
 const s_selectOption: string = "Select an option (use keys to cycle through options)...";
 const s_table: string = "table";
+const s_graph: string = "graph";
 
 // HTML IDs
 const menuDivID = 'menu';
@@ -641,7 +642,7 @@ function parse(xml: XMLDocument) {
     // Create collapsible content.
     let mcDiv: HTMLDivElement = getCollapsibleDiv(mDivID, mDiv, null, processMetadataList(xml),
         MetadataList.tagName, boundary1, level0);
-    
+
     // Analysis.
     let aDiv: HTMLDivElement = document.getElementById(analysisDivID) as HTMLDivElement;
     let aDivID: string = addID(Analysis.tagName);
@@ -5003,7 +5004,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
 
             let T: Big = pl_attributes.get("T") != undefined ? new Big(pl_attributes.get("T") as string) : big0;
             let conc: Big = pl_attributes.get("conc") != undefined ? new Big(pl_attributes.get("conc") as string) : big0;
-                    
+
             let pl: PopulationList = new PopulationList(pl_attributes);
             let labelText: string = pl.tagName + " " + i.toString() + " " + mapToString(pl_attributes);
             let plDivID: string = getID(aDiv.id, PopulationList.tagName, i.toString());
@@ -5016,7 +5017,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
 
             // "me:population".
             //let lt_ref_pop : Map<Big, Map<string, Big>> = new Map(); // Change to calculate the log of the time when creating the plots.
-            let t_ref_pop : Map<Big, Map<string, Big>> = new Map(); 
+            let t_ref_pop: Map<Big, Map<string, Big>> = new Map();
             let refs: string[] = [];
             refs.push("time");
 
@@ -5024,7 +5025,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
             if (xml_pn.length > 0) {
                 for (let j: number = 0; j < xml_pn.length; j++) {
                     let pn_attributes: Map<string, string> = getAttributes(xml_pn[j]);
-                    
+
                     let population: Population = new Population(pn_attributes, []);
                     pl.addPopulation(population);
 
@@ -5032,7 +5033,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     //let lt: Big = pn_attributes.get("logTime") != undefined ? new Big(pn_attributes.get("logTime") as string) : big0; 
 
                     let ref_pop: Map<string, Big> = new Map();
-                    
+
                     //lt_ref_pop.set(lt, ref_pop);
                     t_ref_pop.set(t, ref_pop);
 
@@ -5052,8 +5053,16 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     }
                 }
             }
+            // Create graph.
+            let graphDiv: HTMLDivElement = createDiv(getID(pDivID, s_graph), boundary1);
+            pDiv.appendChild(graphDiv);
+            let canvas: HTMLCanvasElement = document.createElement('canvas') as HTMLCanvasElement;
+            graphDiv.appendChild(canvas);
+            // Create an scatter plot.
+            let scatterPlot: ScatterPlot = new ScatterPlot(canvas, t_ref_pop);
+            scatterPlot.draw();
 
-            // Create Tables
+            // Create Table.
             let tableDiv: HTMLDivElement = createDiv(getID(pDivID, s_table), boundary1);
             pDiv.appendChild(tableDiv);
             let tab = createTable(getID(plDivID, s_table), boundary1);
@@ -5073,6 +5082,130 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
     }
     return aDiv;
 }
+
+class ScatterPlot {
+
+    private canvas: HTMLCanvasElement;
+    private data: Map<Big, Map<string, Big>>;
+
+    constructor(canvas: HTMLCanvasElement, data: Map<Big, Map<string, Big>>) {
+        this.canvas = canvas;
+        this.data = data;
+        // Create a new scatter plot.
+        this.draw();
+    }
+
+    /**
+     * Draw the scatter plot.
+     */
+    draw(): void {
+        const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear the canvas.
+        let width: number = this.canvas.width;
+        let height: number = this.canvas.height;
+        let margin: number = 20;
+        let x0: number = margin;
+        let y0: number = height - margin;
+        let x1: number = width - margin;
+        let y1: number = margin;
+        let xMin: number = Number.MAX_VALUE;
+        let xMax: number = Number.MIN_VALUE;
+        //let yMin: number = Number.MAX_VALUE;
+        //let yMax: number = Number.MIN_VALUE;
+        let yMin: number = 0;
+        let yMax: number = 1;
+        this.data.forEach((ref_pop, x) => {
+            let logx = Math.log10(x.toNumber());
+            xMin = Math.min(xMin, logx);
+            xMax = Math.max(xMax, logx);
+            /*
+            ref_pop.forEach((p, ref) => {
+                yMin = Math.min(yMin, p.toNumber());
+                yMax = Math.max(yMax, p.toNumber());
+            });
+            */
+        });
+        let xScale: number = (x1 - x0) / (xMax - xMin);
+        let yScale: number = (y1 - y0) / (yMax - yMin);
+        // Draw x-axis.
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y0);
+        ctx.stroke();
+        // Draw y-axis.
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x0, y1);
+        ctx.stroke();
+        // Define an array of colors for different styles
+        let colors = ["red", "green", "blue", "yellow", "purple", "orange", "black"];
+        // Draw data points.
+        this.data.forEach((ref_pop, x) => {
+            // Define a reference id for each color
+            let i: number = 0;
+            ref_pop.forEach((p, ref) => {
+                let logx = Math.log10(x.toNumber());
+                let xPixel: number = x0 + ((logx - xMin) * xScale);
+                let pn: number = p.toNumber();
+                if (pn < 1) {
+                    let yPixel: number = y0 + ((pn - yMin) * yScale);
+                    if (yPixel > 0) {
+                        ctx.beginPath();
+                        ctx.arc(xPixel, yPixel, 2, 0, 2 * Math.PI); // Points
+                        // Use the ref index to select a color
+                        ctx.fillStyle = colors[i % colors.length];
+                        ctx.fill();
+                    }
+                }
+                i++;
+            });
+        });
+        // Draw x-axis labels.
+        ctx.font = "10px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "black";
+        let xLabel: string = "log10(time/secs)";
+        ctx.fillText(xLabel, x0 + (x1 - x0) / 2, y0 + margin / 2);
+        // Draw y-axis labels.
+        ctx.save();
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        let yLabel: string = "fractional population";
+        ctx.fillText(yLabel, -y0 - (y1 - y0) / 2, x0 - margin);
+        ctx.restore();
+        // Draw x-axis ticks.
+        let xTicks: number = 10;
+        let xTickSpacing: number = (x1 - x0) / xTicks;
+        for (let i: number = 0; i < xTicks; i++) {
+            let xTick: number = x0 + i * xTickSpacing;
+            ctx.beginPath();
+            ctx.moveTo(xTick, y0);
+            ctx.lineTo(xTick, y0 + 5);
+            ctx.stroke();
+        }
+        // Draw x-axis tick labels.
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        for (let i: number = 0; i < xTicks; i++) {
+            let xTick: number = x0 + i * xTickSpacing;
+            let xValue: number = xMin + i * (xMax - xMin) / xTicks;
+            ctx.fillText(xValue.toFixed(1), xTick, y0 + 5);
+        }
+        // Draw y-axis ticks.
+        let yTicks: number = 10;
+        let yTickSpacing: number = (y1 - y0) / yTicks;
+        for (let i: number = 0; i < yTicks; i++) {
+            let yTick: number = y0 - i * yTickSpacing;
+            ctx.beginPath();
+            ctx.moveTo(x0, yTick);
+            ctx.lineTo(x0 - 5, yTick);
+            ctx.stroke();
+        }
+    }
+}
+
 
 /**
  * Convert an HTMLTableElement to a CSV string.
