@@ -140,6 +140,7 @@ export class PopulationList extends NodeWithNodes {
     public addPopulation(p: Population): void {
         this.addNode(p);
     }
+
 }
 
 /**

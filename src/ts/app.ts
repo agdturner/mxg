@@ -4938,7 +4938,8 @@ function processMetadataList(xml: XMLDocument): HTMLDivElement {
  */
 function processAnalysis(xml: XMLDocument): HTMLDivElement {
     console.log(Analysis.tagName);
-    let aDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    let aDivID: string = getID(Analysis.tagName);
+    let aDiv: HTMLDivElement = createDiv(aDivID, boundary1);
     let xml_a: Element = getSingularElement(xml, Analysis.tagName);
     let a: Analysis = new Analysis(getAttributes(xml_a));
     mesmer.setAnalysis(a);
@@ -4948,7 +4949,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
         if (xml_d.length == 1) {
             let s: string = getFirstChildNode(xml_d[0])?.nodeValue ?? "";
             let d: Description = new Description(getAttributes(xml_d[0]), s);
-            let dDiv: HTMLDivElement = createDiv(undefined, level1);
+            let dDiv: HTMLDivElement = createDiv(getID(aDivID, Description.tagName), level1);
             aDiv.appendChild(dDiv);
             dDiv.appendChild(createLabel(d.tagName + " " + s, boundary1));
             a.setDescription(d);
@@ -4958,15 +4959,22 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
     }
     // "me:eigenvalueList".
     let xml_el: HTMLCollectionOf<Element> = xml_a.getElementsByTagName(EigenvalueList.tagName);
+    // Create a new collapsible div for the EigenvalueLists.
+    let elDivID = getID(aDiv, EigenvalueList.tagName);
+    let elDiv: HTMLDivElement = createDiv(elDivID, level1);
+    let elcDiv: HTMLDivElement = getCollapsibleDiv(elDivID, aDiv, null, elDiv,
+        EigenvalueList.tagName + "s", boundary1, level1);
     if (xml_el.length > 0) {
         for (let i: number = 0; i < xml_el.length; i++) {
             let el_attributes: Map<string, string> = getAttributes(xml_el[i]);
             let el: EigenvalueList = new EigenvalueList(el_attributes);
             let labelText: string = el.tagName + " " + i.toString() + " " + mapToString(el_attributes);
-            let elDivID: string = getID(aDiv.id, EigenvalueList.tagName, i.toString());
-            let elDiv: HTMLDivElement = createDiv(elDivID, level1);
-            aDiv.appendChild(elDiv);
-            elDiv.appendChild(createLabel(labelText, boundary1));
+            // Create a new collapsible div for the EigenvalueList.
+            let eDivID: string = getID(elDiv.id, i.toString());
+            let eDiv: HTMLDivElement = createDiv(elDivID, level1);
+            let ecDiv: HTMLDivElement = getCollapsibleDiv(eDivID, elDiv, null, eDiv,
+                labelText, boundary1, level0);
+            //eDiv.appendChild(createLabel(labelText, boundary1));
             a.addEigenvalueList(el);
             // "me:eigenvalue".
             let evs: Big[] = [];
@@ -4978,11 +4986,16 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     el.addEigenvalue(new Eigenvalue(getAttributes(xml_ei[j]), ev));
                 }
             }
-            elDiv.appendChild(createLabel(arrayToString(evs, ", "), boundary1));
+            eDiv.appendChild(createLabel(arrayToString(evs, ", "), boundary1));
         }
     }
     // "me:populationList".
     let xml_pl: HTMLCollectionOf<Element> = xml_a.getElementsByTagName(PopulationList.tagName);
+    // Create a new collapsible div for the PopulationLists.
+    let plDivID = getID(aDiv, PopulationList.tagName);
+    let plDiv: HTMLDivElement = createDiv(plDivID, level1);
+    let plcDiv: HTMLDivElement = getCollapsibleDiv(plDivID, aDiv, null, plDiv,
+        PopulationList.tagName + "s", boundary1, level1);
     if (xml_pl.length > 0) {
         // Create a new collapsible div for the PopulationList.
         for (let i: number = 0; i < xml_pl.length; i++) {
@@ -4994,9 +5007,11 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
             let pl: PopulationList = new PopulationList(pl_attributes);
             let labelText: string = pl.tagName + " " + i.toString() + " " + mapToString(pl_attributes);
             let plDivID: string = getID(aDiv.id, PopulationList.tagName, i.toString());
-            let plDiv: HTMLDivElement = createDiv(plDivID, level1);
-            aDiv.appendChild(plDiv);
-            plDiv.appendChild(createLabel(labelText, boundary1));
+            // Create a new collapsible div for the EigenvalueList.
+            let pDivID: string = getID(plDivID, i.toString());
+            let pDiv: HTMLDivElement = createDiv(plDivID, level1);
+            let pcDiv: HTMLDivElement = getCollapsibleDiv(pDivID, plDiv, null, pDiv,
+                labelText, boundary1, level0);
             a.addPopulationList(pl);
 
             // "me:population".
@@ -5039,8 +5054,8 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
             }
 
             // Create Tables
-            let tableDiv: HTMLDivElement = createDiv(undefined, level1);
-            plDiv.appendChild(tableDiv);
+            let tableDiv: HTMLDivElement = createDiv(getID(pDivID, s_table), boundary1);
+            pDiv.appendChild(tableDiv);
             let tab = createTable(getID(plDivID, s_table), boundary1);
             addTableRow(tab, refs);
             t_ref_pop.forEach((ref_pop, t) => {
@@ -5052,11 +5067,31 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                 addTableRow(tab, row);
             });
             tableDiv.appendChild(tab);
-
-
+            // Insert a save as csv button.
+            addSaveAsCSVButton(() => tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
         }
     }
     return aDiv;
+}
+
+/**
+ * Convert an HTMLTableElement to a CSV string.
+ */
+function tableToCSV(t: HTMLTableElement): string {
+    let csv: string = "";
+    let rows: HTMLCollectionOf<HTMLTableRowElement> = t.rows;
+    for (let i: number = 0; i < rows.length; i++) {
+        let row: HTMLTableRowElement = rows[i];
+        let cells: HTMLCollectionOf<HTMLTableCellElement> = row.cells;
+        for (let j: number = 0; j < cells.length; j++) {
+            csv += cells[j].textContent;
+            if (j < cells.length - 1) {
+                csv += ",";
+            }
+        }
+        csv += "\n";
+    }
+    return csv;
 }
 
 /**
@@ -5390,6 +5425,8 @@ function addSaveAsCSVButton(toCSV: Function, divToAddTo: HTMLElement, elementToI
     b.addEventListener('click', () => {
         let csv: string = toCSV();
         let title: string = mesmer.getTitle()?.value as string;
-        saveDataAsFile(csv, 'text/csv', getFilename(title + "_" + name) + ".csv");
+        let fn: string = getFilename(title + "_" + name) + ".csv";
+        saveDataAsFile(csv, 'text/csv', fn);
+        console.log("Saved " + fn);
     });
 }

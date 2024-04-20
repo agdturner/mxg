@@ -4953,7 +4953,8 @@ function handleEvent(element, tagName) {
  * @param xml The XML document.
  */ function processAnalysis(xml) {
     console.log((0, _analysisJs.Analysis).tagName);
-    let aDiv = (0, _htmlJs.createDiv)(undefined, boundary1);
+    let aDivID = (0, _utilJs.getID)((0, _analysisJs.Analysis).tagName);
+    let aDiv = (0, _htmlJs.createDiv)(aDivID, boundary1);
     let xml_a = (0, _xmlJs.getSingularElement)(xml, (0, _analysisJs.Analysis).tagName);
     let a = new (0, _analysisJs.Analysis)((0, _xmlJs.getAttributes)(xml_a));
     mesmer.setAnalysis(a);
@@ -4963,7 +4964,7 @@ function handleEvent(element, tagName) {
         if (xml_d.length == 1) {
             let s = (0, _xmlJs.getFirstChildNode)(xml_d[0])?.nodeValue ?? "";
             let d = new (0, _mesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), s);
-            let dDiv = (0, _htmlJs.createDiv)(undefined, level1);
+            let dDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(aDivID, (0, _mesmerJs.Description).tagName), level1);
             aDiv.appendChild(dDiv);
             dDiv.appendChild((0, _htmlJs.createLabel)(d.tagName + " " + s, boundary1));
             a.setDescription(d);
@@ -4971,14 +4972,19 @@ function handleEvent(element, tagName) {
     }
     // "me:eigenvalueList".
     let xml_el = xml_a.getElementsByTagName((0, _analysisJs.EigenvalueList).tagName);
+    // Create a new collapsible div for the EigenvalueLists.
+    let elDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.EigenvalueList).tagName);
+    let elDiv = (0, _htmlJs.createDiv)(elDivID, level1);
+    let elcDiv = (0, _htmlJs.getCollapsibleDiv)(elDivID, aDiv, null, elDiv, (0, _analysisJs.EigenvalueList).tagName + "s", boundary1, level1);
     if (xml_el.length > 0) for(let i = 0; i < xml_el.length; i++){
         let el_attributes = (0, _xmlJs.getAttributes)(xml_el[i]);
         let el = new (0, _analysisJs.EigenvalueList)(el_attributes);
         let labelText = el.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(el_attributes);
-        let elDivID = (0, _utilJs.getID)(aDiv.id, (0, _analysisJs.EigenvalueList).tagName, i.toString());
-        let elDiv = (0, _htmlJs.createDiv)(elDivID, level1);
-        aDiv.appendChild(elDiv);
-        elDiv.appendChild((0, _htmlJs.createLabel)(labelText, boundary1));
+        // Create a new collapsible div for the EigenvalueList.
+        let eDivID = (0, _utilJs.getID)(elDiv.id, i.toString());
+        let eDiv = (0, _htmlJs.createDiv)(elDivID, level1);
+        let ecDiv = (0, _htmlJs.getCollapsibleDiv)(eDivID, elDiv, null, eDiv, labelText, boundary1, level0);
+        //eDiv.appendChild(createLabel(labelText, boundary1));
         a.addEigenvalueList(el);
         // "me:eigenvalue".
         let evs = [];
@@ -4988,10 +4994,14 @@ function handleEvent(element, tagName) {
             evs.push(ev);
             el.addEigenvalue(new (0, _analysisJs.Eigenvalue)((0, _xmlJs.getAttributes)(xml_ei[j]), ev));
         }
-        elDiv.appendChild((0, _htmlJs.createLabel)((0, _utilJs.arrayToString)(evs, ", "), boundary1));
+        eDiv.appendChild((0, _htmlJs.createLabel)((0, _utilJs.arrayToString)(evs, ", "), boundary1));
     }
     // "me:populationList".
     let xml_pl = xml_a.getElementsByTagName((0, _analysisJs.PopulationList).tagName);
+    // Create a new collapsible div for the PopulationLists.
+    let plDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.PopulationList).tagName);
+    let plDiv = (0, _htmlJs.createDiv)(plDivID, level1);
+    let plcDiv = (0, _htmlJs.getCollapsibleDiv)(plDivID, aDiv, null, plDiv, (0, _analysisJs.PopulationList).tagName + "s", boundary1, level1);
     if (xml_pl.length > 0) // Create a new collapsible div for the PopulationList.
     for(let i = 0; i < xml_pl.length; i++){
         let pl_attributes = (0, _xmlJs.getAttributes)(xml_pl[i]);
@@ -5000,9 +5010,10 @@ function handleEvent(element, tagName) {
         let pl = new (0, _analysisJs.PopulationList)(pl_attributes);
         let labelText = pl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(pl_attributes);
         let plDivID = (0, _utilJs.getID)(aDiv.id, (0, _analysisJs.PopulationList).tagName, i.toString());
-        let plDiv = (0, _htmlJs.createDiv)(plDivID, level1);
-        aDiv.appendChild(plDiv);
-        plDiv.appendChild((0, _htmlJs.createLabel)(labelText, boundary1));
+        // Create a new collapsible div for the EigenvalueList.
+        let pDivID = (0, _utilJs.getID)(plDivID, i.toString());
+        let pDiv = (0, _htmlJs.createDiv)(plDivID, level1);
+        let pcDiv = (0, _htmlJs.getCollapsibleDiv)(pDivID, plDiv, null, pDiv, labelText, boundary1, level0);
         a.addPopulationList(pl);
         // "me:population".
         //let lt_ref_pop : Map<Big, Map<string, Big>> = new Map(); // Change to calculate the log of the time when creating the plots.
@@ -5031,8 +5042,8 @@ function handleEvent(element, tagName) {
             }
         }
         // Create Tables
-        let tableDiv = (0, _htmlJs.createDiv)(undefined, level1);
-        plDiv.appendChild(tableDiv);
+        let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_table), boundary1);
+        pDiv.appendChild(tableDiv);
         let tab = (0, _htmlJs.createTable)((0, _utilJs.getID)(plDivID, s_table), boundary1);
         (0, _htmlJs.addTableRow)(tab, refs);
         t_ref_pop.forEach((ref_pop, t)=>{
@@ -5044,8 +5055,26 @@ function handleEvent(element, tagName) {
             (0, _htmlJs.addTableRow)(tab, row);
         });
         tableDiv.appendChild(tab);
+        // Insert a save as csv button.
+        addSaveAsCSVButton(()=>tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
     }
     return aDiv;
+}
+/**
+ * Convert an HTMLTableElement to a CSV string.
+ */ function tableToCSV(t) {
+    let csv = "";
+    let rows = t.rows;
+    for(let i = 0; i < rows.length; i++){
+        let row = rows[i];
+        let cells = row.cells;
+        for(let j = 0; j < cells.length; j++){
+            csv += cells[j].textContent;
+            if (j < cells.length - 1) csv += ",";
+        }
+        csv += "\n";
+    }
+    return csv;
 }
 /**
  * Create a diagram.
@@ -5366,11 +5395,13 @@ function handleEvent(element, tagName) {
     b.addEventListener("click", ()=>{
         let csv = toCSV();
         let title = mesmer.getTitle()?.value;
-        saveDataAsFile(csv, "text/csv", getFilename(title + "_" + name) + ".csv");
+        let fn = getFilename(title + "_" + name) + ".csv";
+        saveDataAsFile(csv, "text/csv", fn);
+        console.log("Saved " + fn);
     });
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./canvas.js":"hoJRr"}],"f0Rnl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
