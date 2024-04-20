@@ -744,6 +744,7 @@ console.log("dark=" + dark);
 /**
  * The Mesmer ids.
  */ let ids = new Set();
+let scatterPlots;
 /**
  * Add an id to the set of ids.
  * @param parts The parts of the id.
@@ -763,6 +764,7 @@ let rd_lw = 4;
 let rd_lwc = 2;
 let rd_font = "1em SensSerif";
 let rdWindow;
+let sp_font = "2em SensSerif";
 /**
  * Once the DOM is loaded, add a load button.
  */ document.addEventListener("DOMContentLoaded", ()=>{
@@ -800,6 +802,7 @@ let rdWindow;
         if (rdWindow != null) //let fontSize = parseInt(getComputedStyle(popWindow.document.body).fontSize);
         rdWindow.document.body.style.fontSize = fontSize + 1 + "px";
         redrawReactionsDiagram();
+        redrawScatterPlots();
     });
     menuDiv.appendChild(increaseFontSizeButton);
     // Create button to increase the font size.
@@ -882,7 +885,7 @@ let rdWindow;
     p8.appendChild(document.createTextNode("."));
 });
 /**
- *  Redraw the reactions diagram.
+ * Redraw the reactions diagram.
  */ function redrawReactionsDiagram() {
     if (rdWindow == null) {
         let rdCanvas = document.getElementById(rdcID);
@@ -893,15 +896,23 @@ let rdWindow;
     }
 }
 /**
+ * Redraw any scatterplots.
+ */ function redrawScatterPlots() {
+    scatterPlots.forEach((scatterPlot)=>{
+        scatterPlot.draw(sp_font);
+    });
+}
+/**
  * Prompts the user for a MESMER XML file, initiates the parsing of the chosen file, and 
  * creates a save button for saving a new XML file.
  */ function load() {
-    // Before loading a new file, remove any existing content.
+    // Before loading a new file, remove any existing content and initialise any data containers.
     ids.forEach((id)=>{
         (0, _htmlJs.remove)(id, ids);
     });
     if (molecules != null) molecules.clear();
     if (reactions != null) reactions.clear();
+    scatterPlots = [];
     // Create a file input element to prompt the user to select a file.
     let input = document.createElement("input");
     input.type = "file";
@@ -5048,8 +5059,12 @@ function handleEvent(element, tagName) {
         let canvas = document.createElement("canvas");
         graphDiv.appendChild(canvas);
         // Create an scatter plot.
-        let scatterPlot = new ScatterPlot(canvas, t_ref_pop);
-        scatterPlot.draw();
+        let scatterPlot = new ScatterPlot(canvas, t_ref_pop, sp_font);
+        // Add the scatter plot to the collection.
+        scatterPlots.push(scatterPlot);
+        //scatterPlot.draw();
+        // Add a save to PNG button.
+        addSaveAsPNGButton(canvas, pDiv, graphDiv, labelText);
         // Create Table.
         let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_table), boundary1);
         pDiv.appendChild(tableDiv);
@@ -5069,41 +5084,65 @@ function handleEvent(element, tagName) {
     }
     return aDiv;
 }
-class ScatterPlot {
-    constructor(canvas, data){
+/**
+ * A class for creating a scatter plot.
+ */ class ScatterPlot {
+    constructor(canvas, data, font){
         this.canvas = canvas;
         this.data = data;
         // Create a new scatter plot.
-        this.draw();
+        this.draw(font);
     }
     /**
      * Draw the scatter plot.
-     */ draw() {
+     */ draw(font) {
+        this.canvas.width = 800; // Set the width of the canvas
+        this.canvas.height = 400; // Set the height of the canvas
         const ctx = this.canvas.getContext("2d");
+        //const ctx: CanvasRenderingContext2D = this.canvas.getContext("2d") as CanvasRenderingContext2D;        
+        ctx.font = font;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear the canvas.
         let width = this.canvas.width;
         let height = this.canvas.height;
-        let margin = 20;
-        let x0 = margin;
-        let y0 = height - margin;
-        let x1 = width - margin;
-        let y1 = margin;
         let xMin = Number.MAX_VALUE;
         let xMax = Number.MIN_VALUE;
         //let yMin: number = Number.MAX_VALUE;
         //let yMax: number = Number.MIN_VALUE;
         let yMin = 0;
         let yMax = 1;
+        let maxRefWidth = 0;
         this.data.forEach((ref_pop, x)=>{
             let logx = Math.log10(x.toNumber());
             xMin = Math.min(xMin, logx);
             xMax = Math.max(xMax, logx);
+            ref_pop.forEach((p, ref)=>{
+                maxRefWidth = Math.max(maxRefWidth, ctx.measureText(ref).width);
+            });
         /*
             ref_pop.forEach((p, ref) => {
                 yMin = Math.min(yMin, p.toNumber());
                 yMax = Math.max(yMax, p.toNumber());
             });
             */ });
+        // Calculate the width of the largest tick label
+        let yTicks = 2;
+        let yTickSpacing = 1;
+        let maxTickLabelWidth = 0;
+        for(let i = 0; i < yTicks; i++){
+            let yTick = 1 - i * yTickSpacing;
+            let tickLabelWidth = ctx.measureText(yTick.toString()).width;
+            maxTickLabelWidth = Math.max(maxTickLabelWidth, tickLabelWidth);
+        }
+        // Calculate the height of the largest tick label
+        let metrics = ctx.measureText("0");
+        let th = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        let xmargin = th * 4;
+        // Set the margin based on the width of the largest tick label
+        let ymargin = maxTickLabelWidth + th + 20; // Add 20 for some extra space
+        let x0 = ymargin;
+        let y0 = height - (ymargin + th * 3);
+        let x1 = width - (xmargin + maxRefWidth + 20);
+        let y1 = xmargin;
         let xScale = (x1 - x0) / (xMax - xMin);
         let yScale = (y1 - y0) / (yMax - yMin);
         // Draw x-axis.
@@ -5121,11 +5160,15 @@ class ScatterPlot {
             "red",
             "green",
             "blue",
-            "yellow",
-            "purple",
             "orange",
+            "purple",
+            "grey",
+            "cyan",
+            "magenta",
+            "yellow",
             "black"
         ];
+        let refToColor = new Map();
         // Draw data points.
         this.data.forEach((ref_pop, x)=>{
             // Define a reference id for each color
@@ -5140,7 +5183,9 @@ class ScatterPlot {
                         ctx.beginPath();
                         ctx.arc(xPixel, yPixel, 2, 0, 2 * Math.PI); // Points
                         // Use the ref index to select a color
-                        ctx.fillStyle = colors[i % colors.length];
+                        let color = colors[i % colors.length];
+                        refToColor.set(ref, color);
+                        ctx.fillStyle = color;
                         ctx.fill();
                     }
                 }
@@ -5148,41 +5193,40 @@ class ScatterPlot {
             });
         });
         // Draw x-axis labels.
-        ctx.font = "10px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = "black";
         let xLabel = "log10(time/secs)";
-        ctx.fillText(xLabel, x0 + (x1 - x0) / 2, y0 + margin / 2);
+        ctx.fillText(xLabel, x0 + (x1 - x0) / 2, y0 + xmargin / 2);
         // Draw y-axis labels.
         ctx.save();
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         let yLabel = "fractional population";
-        ctx.fillText(yLabel, -y0 - (y1 - y0) / 2, x0 - margin);
+        ctx.fillText(yLabel, -y0 - (y1 - y0) / 2, x0 - ymargin);
         ctx.restore();
         // Draw x-axis ticks.
-        let xTicks = 10;
-        let xTickSpacing = (x1 - x0) / xTicks;
-        for(let i = 0; i < xTicks; i++){
-            let xTick = x0 + i * xTickSpacing;
+        let xrange = xMax - xMin;
+        //console.log("xrange=" + xrange);
+        let orderOfMagnitude = Math.floor(Math.log10(xrange));
+        //console.log("orderOfMagnitude=" + orderOfMagnitude);
+        let xTickSpacing = Math.abs(Math.ceil(xrange / Math.pow(10, orderOfMagnitude)));
+        console.log("xTickSpacing=" + xTickSpacing);
+        let i = Math.ceil(xMin / xTickSpacing);
+        let xTick = i * xTickSpacing;
+        // Draw x-axis ticks > 0.
+        while(xTick < xMax){
+            console.log("xTick=" + xTick);
+            let xPixel = x0 + (xTick - xMin) * xScale; // Convert xTick to pixel scale
             ctx.beginPath();
-            ctx.moveTo(xTick, y0);
-            ctx.lineTo(xTick, y0 + 5);
+            ctx.moveTo(xPixel, y0);
+            ctx.lineTo(xPixel, y0 + 5);
             ctx.stroke();
-        }
-        // Draw x-axis tick labels.
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        for(let i = 0; i < xTicks; i++){
-            let xTick = x0 + i * xTickSpacing;
-            let xValue = xMin + i * (xMax - xMin) / xTicks;
-            ctx.fillText(xValue.toFixed(1), xTick, y0 + 5);
+            ctx.fillText(xTick.toString(), xPixel, y0 + 5);
+            xTick += xTickSpacing;
         }
         // Draw y-axis ticks.
-        let yTicks = 10;
-        let yTickSpacing = (y1 - y0) / yTicks;
         for(let i = 0; i < yTicks; i++){
             let yTick = y0 - i * yTickSpacing;
             ctx.beginPath();
@@ -5190,6 +5234,28 @@ class ScatterPlot {
             ctx.lineTo(x0 - 5, yTick);
             ctx.stroke();
         }
+        // Add a legend.
+        // Calculate the maxiimum text height of a ref.
+        let maxth = 0;
+        refToColor.forEach((color, ref)=>{
+            let metrics = ctx.measureText(ref);
+            let th = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+            maxth = Math.max(maxth, th);
+        });
+        // Calculate the position of the legend.
+        let legendX = x1 + 20; // Position the legend 20 pixels to the right of the graph
+        let legendY = y1; // Position the legend at the top of the graph
+        let legendYSpacing = maxth; // Adjust as needed
+        // Draw a legend for each ref.
+        i = 0;
+        refToColor.forEach((color, ref)=>{
+            let legendYPos = legendY + i * legendYSpacing;
+            ctx.fillStyle = color;
+            ctx.fillRect(legendX, legendYPos, maxth / 2, maxth / 2); // Draw a small rectangle of the ref's color
+            ctx.fillStyle = "black";
+            ctx.fillText(ref, legendX + th + ctx.measureText(ref).width / 2, legendYPos - maxth / 2); // Draw the ref's name
+            i++;
+        });
     }
 }
 /**
