@@ -1600,7 +1600,10 @@ let sp_font = "2em SensSerif";
     addMoleculeButton.addEventListener("click", ()=>{
         // Ask the user to specify the molecule ID.
         let moleculeId = prompt("Please enter a name for the molecule", "Kr");
+        if (moleculeId == null) return;
         let molecule = new (0, _moleculeJs.Molecule)(new Map(), moleculeId);
+        molecule.setAtoms(new (0, _moleculeJs.AtomArray)(new Map()));
+        molecule.setBonds(new (0, _moleculeJs.BondArray)(new Map()));
         molecules.set(moleculeId, molecule);
         let moleculeDivID = (0, _utilJs.getID)((0, _moleculeJs.Molecule).tagName, molecules.size);
         let moleculeDiv = (0, _htmlJs.createDiv)(moleculeDivID);
@@ -4937,27 +4940,30 @@ function handleEvent(element, tagName) {
  */ function processMetadataList(xml) {
     console.log((0, _metadataJs.MetadataList).tagName);
     let mlDiv = (0, _htmlJs.createDiv)(undefined, boundary1);
-    let xml_ml = (0, _xmlJs.getSingularElement)(xml, (0, _metadataJs.MetadataList).tagName);
-    let ml = new (0, _metadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_ml));
-    mesmer.setMetadataList(ml);
-    function handleElement(tagName, constructor, setter) {
-        let xml_elements = xml_ml.getElementsByTagName(tagName);
-        if (xml_elements.length > 0) {
-            if (xml_elements.length == 1) {
-                let s = (0, _xmlJs.getFirstChildNode)(xml_elements[0])?.nodeValue ?? "";
-                let n = new constructor((0, _xmlJs.getAttributes)(xml_elements[0]), s);
-                let cDiv = (0, _htmlJs.createDiv)(undefined, level1);
-                mlDiv.appendChild(cDiv);
-                cDiv.appendChild((0, _htmlJs.createLabel)(n.tagName + " " + s, boundary1));
-                //console.log(n.tagName + " " + s);
-                setter.call(ml, n);
-            } else throw new Error(`More than one ${tagName} element.`);
+    let xml_mls = xml.getElementsByTagName((0, _metadataJs.MetadataList).tagName);
+    if (xml_mls.length > 0) {
+        if (xml_mls.length > 1) throw new Error("More than one MetadataList element.");
+        let ml = new (0, _metadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_mls[0]));
+        mesmer.setMetadataList(ml);
+        function handleElement(tagName, constructor, setter) {
+            let xml_elements = xml_mls[0].getElementsByTagName(tagName);
+            if (xml_elements.length > 0) {
+                if (xml_elements.length == 1) {
+                    let s = (0, _xmlJs.getFirstChildNode)(xml_elements[0])?.nodeValue ?? "";
+                    let n = new constructor((0, _xmlJs.getAttributes)(xml_elements[0]), s);
+                    let cDiv = (0, _htmlJs.createDiv)(undefined, level1);
+                    mlDiv.appendChild(cDiv);
+                    cDiv.appendChild((0, _htmlJs.createLabel)(n.tagName + " " + s, boundary1));
+                    //console.log(n.tagName + " " + s);
+                    setter.call(ml, n);
+                } else throw new Error(`More than one ${tagName} element.`);
+            }
         }
+        handleElement((0, _metadataJs.DCSource).tagName, (0, _metadataJs.DCSource), ml.setSource);
+        handleElement((0, _metadataJs.DCCreator).tagName, (0, _metadataJs.DCCreator), ml.setCreator);
+        handleElement((0, _metadataJs.DCDate).tagName, (0, _metadataJs.DCDate), ml.setDate);
+        handleElement((0, _metadataJs.DCContributor).tagName, (0, _metadataJs.DCContributor), ml.setContributor);
     }
-    handleElement((0, _metadataJs.DCSource).tagName, (0, _metadataJs.DCSource), ml.setSource);
-    handleElement((0, _metadataJs.DCCreator).tagName, (0, _metadataJs.DCCreator), ml.setCreator);
-    handleElement((0, _metadataJs.DCDate).tagName, (0, _metadataJs.DCDate), ml.setDate);
-    handleElement((0, _metadataJs.DCContributor).tagName, (0, _metadataJs.DCContributor), ml.setContributor);
     return mlDiv;
 }
 /**
@@ -4967,120 +4973,123 @@ function handleEvent(element, tagName) {
     console.log((0, _analysisJs.Analysis).tagName);
     let aDivID = (0, _utilJs.getID)((0, _analysisJs.Analysis).tagName);
     let aDiv = (0, _htmlJs.createDiv)(aDivID, boundary1);
-    let xml_a = (0, _xmlJs.getSingularElement)(xml, (0, _analysisJs.Analysis).tagName);
-    let a = new (0, _analysisJs.Analysis)((0, _xmlJs.getAttributes)(xml_a));
-    mesmer.setAnalysis(a);
-    // "me:description".
-    let xml_d = xml_a.getElementsByTagName((0, _mesmerJs.Description).tagName);
-    if (xml_d.length > 0) {
-        if (xml_d.length == 1) {
-            let s = (0, _xmlJs.getFirstChildNode)(xml_d[0])?.nodeValue ?? "";
-            let d = new (0, _mesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), s);
-            let dDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(aDivID, (0, _mesmerJs.Description).tagName), level1);
-            aDiv.appendChild(dDiv);
-            dDiv.appendChild((0, _htmlJs.createLabel)(d.tagName + " " + s, boundary1));
-            a.setDescription(d);
-        } else throw new Error("More than one Description element.");
-    }
-    // "me:eigenvalueList".
-    let xml_el = xml_a.getElementsByTagName((0, _analysisJs.EigenvalueList).tagName);
-    // Create a new collapsible div for the EigenvalueLists.
-    let elDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.EigenvalueList).tagName);
-    let elDiv = (0, _htmlJs.createDiv)(elDivID, level1);
-    let elcDiv = (0, _htmlJs.getCollapsibleDiv)(elDivID, aDiv, null, elDiv, (0, _analysisJs.EigenvalueList).tagName + "s", boundary1, level1);
-    if (xml_el.length > 0) for(let i = 0; i < xml_el.length; i++){
-        let el_attributes = (0, _xmlJs.getAttributes)(xml_el[i]);
-        let el = new (0, _analysisJs.EigenvalueList)(el_attributes);
-        let labelText = el.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(el_attributes);
-        // Create a new collapsible div for the EigenvalueList.
-        let eDivID = (0, _utilJs.getID)(elDiv.id, i.toString());
-        let eDiv = (0, _htmlJs.createDiv)(elDivID, level1);
-        let ecDiv = (0, _htmlJs.getCollapsibleDiv)(eDivID, elDiv, null, eDiv, labelText, boundary1, level0);
-        //eDiv.appendChild(createLabel(labelText, boundary1));
-        a.addEigenvalueList(el);
-        // "me:eigenvalue".
-        let evs = [];
-        let xml_ei = xml_el[i].getElementsByTagName((0, _analysisJs.Eigenvalue).tagName);
-        if (xml_ei.length > 0) for(let j = 0; j < xml_ei.length; j++){
-            let ev = new (0, _bigJsDefault.default)((0, _xmlJs.getFirstChildNode)(xml_ei[j])?.nodeValue);
-            evs.push(ev);
-            el.addEigenvalue(new (0, _analysisJs.Eigenvalue)((0, _xmlJs.getAttributes)(xml_ei[j]), ev));
+    let xml_as = xml.getElementsByTagName((0, _analysisJs.Analysis).tagName);
+    if (xml_as.length > 0) {
+        if (xml_as.length > 1) throw new Error("More than one Analysis element.");
+        let a = new (0, _analysisJs.Analysis)((0, _xmlJs.getAttributes)(xml_as[0]));
+        mesmer.setAnalysis(a);
+        // "me:description".
+        let xml_d = xml_as[0].getElementsByTagName((0, _mesmerJs.Description).tagName);
+        if (xml_d.length > 0) {
+            if (xml_d.length == 1) {
+                let s = (0, _xmlJs.getFirstChildNode)(xml_d[0])?.nodeValue ?? "";
+                let d = new (0, _mesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), s);
+                let dDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(aDivID, (0, _mesmerJs.Description).tagName), level1);
+                aDiv.appendChild(dDiv);
+                dDiv.appendChild((0, _htmlJs.createLabel)(d.tagName + " " + s, boundary1));
+                a.setDescription(d);
+            } else throw new Error("More than one Description element.");
         }
-        eDiv.appendChild((0, _htmlJs.createLabel)((0, _utilJs.arrayToString)(evs, ", "), boundary1));
-    }
-    // "me:populationList".
-    let xml_pl = xml_a.getElementsByTagName((0, _analysisJs.PopulationList).tagName);
-    // Create a new collapsible div for the PopulationLists.
-    let plDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.PopulationList).tagName);
-    let plDiv = (0, _htmlJs.createDiv)(plDivID, level1);
-    let plcDiv = (0, _htmlJs.getCollapsibleDiv)(plDivID, aDiv, null, plDiv, (0, _analysisJs.PopulationList).tagName + "s", boundary1, level1);
-    if (xml_pl.length > 0) // Create a new collapsible div for the PopulationList.
-    for(let i = 0; i < xml_pl.length; i++){
-        let pl_attributes = (0, _xmlJs.getAttributes)(xml_pl[i]);
-        let T = pl_attributes.get("T") != undefined ? new (0, _bigJsDefault.default)(pl_attributes.get("T")) : big0;
-        let conc = pl_attributes.get("conc") != undefined ? new (0, _bigJsDefault.default)(pl_attributes.get("conc")) : big0;
-        let pl = new (0, _analysisJs.PopulationList)(pl_attributes);
-        let labelText = pl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(pl_attributes);
-        let plDivID = (0, _utilJs.getID)(aDiv.id, (0, _analysisJs.PopulationList).tagName, i.toString());
-        // Create a new collapsible div for the EigenvalueList.
-        let pDivID = (0, _utilJs.getID)(plDivID, i.toString());
-        let pDiv = (0, _htmlJs.createDiv)(plDivID, level1);
-        let pcDiv = (0, _htmlJs.getCollapsibleDiv)(pDivID, plDiv, null, pDiv, labelText, boundary1, level0);
-        a.addPopulationList(pl);
-        // "me:population".
-        //let lt_ref_pop : Map<Big, Map<string, Big>> = new Map(); // Change to calculate the log of the time when creating the plots.
-        let t_ref_pop = new Map();
-        let refs = [];
-        refs.push("time");
-        let xml_pn = xml_pl[i].getElementsByTagName((0, _analysisJs.Population).tagName);
-        if (xml_pn.length > 0) for(let j = 0; j < xml_pn.length; j++){
-            let pn_attributes = (0, _xmlJs.getAttributes)(xml_pn[j]);
-            let population = new (0, _analysisJs.Population)(pn_attributes, []);
-            pl.addPopulation(population);
-            let t = pn_attributes.get("time") != undefined ? new (0, _bigJsDefault.default)(pn_attributes.get("time")) : big0;
-            //let lt: Big = pn_attributes.get("logTime") != undefined ? new Big(pn_attributes.get("logTime") as string) : big0; 
-            let ref_pop = new Map();
-            //lt_ref_pop.set(lt, ref_pop);
-            t_ref_pop.set(t, ref_pop);
-            let xml_pop = xml_pn[j].getElementsByTagName((0, _analysisJs.Pop).tagName);
-            if (xml_pop.length > 0) for(let k = 0; k < xml_pop.length; k++){
-                let pop_attributes = (0, _xmlJs.getAttributes)(xml_pop[k]);
-                let ref = pop_attributes.get("ref");
-                if (j == 0) refs.push(ref);
-                let p = new (0, _bigJsDefault.default)((0, _xmlJs.getFirstChildNode)(xml_pop[k])?.nodeValue);
-                let pop = new (0, _analysisJs.Pop)(pop_attributes, p);
-                population.addPop(pop);
-                ref_pop.set(ref, p);
+        // "me:eigenvalueList".
+        let xml_el = xml_as[0].getElementsByTagName((0, _analysisJs.EigenvalueList).tagName);
+        // Create a new collapsible div for the EigenvalueLists.
+        let elDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.EigenvalueList).tagName);
+        let elDiv = (0, _htmlJs.createDiv)(elDivID, level1);
+        let elcDiv = (0, _htmlJs.getCollapsibleDiv)(elDivID, aDiv, null, elDiv, (0, _analysisJs.EigenvalueList).tagName + "s", boundary1, level1);
+        if (xml_el.length > 0) for(let i = 0; i < xml_el.length; i++){
+            let el_attributes = (0, _xmlJs.getAttributes)(xml_el[i]);
+            let el = new (0, _analysisJs.EigenvalueList)(el_attributes);
+            let labelText = el.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(el_attributes);
+            // Create a new collapsible div for the EigenvalueList.
+            let eDivID = (0, _utilJs.getID)(elDiv.id, i.toString());
+            let eDiv = (0, _htmlJs.createDiv)(elDivID, level1);
+            let ecDiv = (0, _htmlJs.getCollapsibleDiv)(eDivID, elDiv, null, eDiv, labelText, boundary1, level0);
+            //eDiv.appendChild(createLabel(labelText, boundary1));
+            a.addEigenvalueList(el);
+            // "me:eigenvalue".
+            let evs = [];
+            let xml_ei = xml_el[i].getElementsByTagName((0, _analysisJs.Eigenvalue).tagName);
+            if (xml_ei.length > 0) for(let j = 0; j < xml_ei.length; j++){
+                let ev = new (0, _bigJsDefault.default)((0, _xmlJs.getFirstChildNode)(xml_ei[j])?.nodeValue);
+                evs.push(ev);
+                el.addEigenvalue(new (0, _analysisJs.Eigenvalue)((0, _xmlJs.getAttributes)(xml_ei[j]), ev));
             }
+            eDiv.appendChild((0, _htmlJs.createLabel)((0, _utilJs.arrayToString)(evs, ", "), boundary1));
         }
-        // Create graph.
-        let graphDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_graph), boundary1);
-        pDiv.appendChild(graphDiv);
-        let canvas = document.createElement("canvas");
-        graphDiv.appendChild(canvas);
-        // Create an scatter plot.
-        let scatterPlot = new ScatterPlot(canvas, t_ref_pop, sp_font);
-        // Add the scatter plot to the collection.
-        scatterPlots.push(scatterPlot);
-        //scatterPlot.draw();
-        // Add a save to PNG button.
-        addSaveAsPNGButton(canvas, pDiv, graphDiv, labelText);
-        // Create Table.
-        let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_table), boundary1);
-        pDiv.appendChild(tableDiv);
-        let tab = (0, _htmlJs.createTable)((0, _utilJs.getID)(plDivID, s_table), boundary1);
-        (0, _htmlJs.addTableRow)(tab, refs);
-        t_ref_pop.forEach((ref_pop, t)=>{
-            let row = [];
-            row.push(t.toString());
-            ref_pop.forEach((p, ref)=>{
-                row.push(p.toString());
+        // "me:populationList".
+        let xml_pl = xml_as[0].getElementsByTagName((0, _analysisJs.PopulationList).tagName);
+        // Create a new collapsible div for the PopulationLists.
+        let plDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.PopulationList).tagName);
+        let plDiv = (0, _htmlJs.createDiv)(plDivID, level1);
+        let plcDiv = (0, _htmlJs.getCollapsibleDiv)(plDivID, aDiv, null, plDiv, (0, _analysisJs.PopulationList).tagName + "s", boundary1, level1);
+        if (xml_pl.length > 0) // Create a new collapsible div for the PopulationList.
+        for(let i = 0; i < xml_pl.length; i++){
+            let pl_attributes = (0, _xmlJs.getAttributes)(xml_pl[i]);
+            let T = pl_attributes.get("T") != undefined ? new (0, _bigJsDefault.default)(pl_attributes.get("T")) : big0;
+            let conc = pl_attributes.get("conc") != undefined ? new (0, _bigJsDefault.default)(pl_attributes.get("conc")) : big0;
+            let pl = new (0, _analysisJs.PopulationList)(pl_attributes);
+            let labelText = pl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(pl_attributes);
+            let plDivID = (0, _utilJs.getID)(aDiv.id, (0, _analysisJs.PopulationList).tagName, i.toString());
+            // Create a new collapsible div for the EigenvalueList.
+            let pDivID = (0, _utilJs.getID)(plDivID, i.toString());
+            let pDiv = (0, _htmlJs.createDiv)(plDivID, level1);
+            let pcDiv = (0, _htmlJs.getCollapsibleDiv)(pDivID, plDiv, null, pDiv, labelText, boundary1, level0);
+            a.addPopulationList(pl);
+            // "me:population".
+            //let lt_ref_pop : Map<Big, Map<string, Big>> = new Map(); // Change to calculate the log of the time when creating the plots.
+            let t_ref_pop = new Map();
+            let refs = [];
+            refs.push("time");
+            let xml_pn = xml_pl[i].getElementsByTagName((0, _analysisJs.Population).tagName);
+            if (xml_pn.length > 0) for(let j = 0; j < xml_pn.length; j++){
+                let pn_attributes = (0, _xmlJs.getAttributes)(xml_pn[j]);
+                let population = new (0, _analysisJs.Population)(pn_attributes, []);
+                pl.addPopulation(population);
+                let t = pn_attributes.get("time") != undefined ? new (0, _bigJsDefault.default)(pn_attributes.get("time")) : big0;
+                //let lt: Big = pn_attributes.get("logTime") != undefined ? new Big(pn_attributes.get("logTime") as string) : big0; 
+                let ref_pop = new Map();
+                //lt_ref_pop.set(lt, ref_pop);
+                t_ref_pop.set(t, ref_pop);
+                let xml_pop = xml_pn[j].getElementsByTagName((0, _analysisJs.Pop).tagName);
+                if (xml_pop.length > 0) for(let k = 0; k < xml_pop.length; k++){
+                    let pop_attributes = (0, _xmlJs.getAttributes)(xml_pop[k]);
+                    let ref = pop_attributes.get("ref");
+                    if (j == 0) refs.push(ref);
+                    let p = new (0, _bigJsDefault.default)((0, _xmlJs.getFirstChildNode)(xml_pop[k])?.nodeValue);
+                    let pop = new (0, _analysisJs.Pop)(pop_attributes, p);
+                    population.addPop(pop);
+                    ref_pop.set(ref, p);
+                }
+            }
+            // Create graph.
+            let graphDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_graph), boundary1);
+            pDiv.appendChild(graphDiv);
+            let canvas = document.createElement("canvas");
+            graphDiv.appendChild(canvas);
+            // Create an scatter plot.
+            let scatterPlot = new ScatterPlot(canvas, t_ref_pop, sp_font);
+            // Add the scatter plot to the collection.
+            scatterPlots.push(scatterPlot);
+            //scatterPlot.draw();
+            // Add a save to PNG button.
+            addSaveAsPNGButton(canvas, pDiv, graphDiv, labelText);
+            // Create Table.
+            let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(pDivID, s_table), boundary1);
+            pDiv.appendChild(tableDiv);
+            let tab = (0, _htmlJs.createTable)((0, _utilJs.getID)(plDivID, s_table), boundary1);
+            (0, _htmlJs.addTableRow)(tab, refs);
+            t_ref_pop.forEach((ref_pop, t)=>{
+                let row = [];
+                row.push(t.toString());
+                ref_pop.forEach((p, ref)=>{
+                    row.push(p.toString());
+                });
+                (0, _htmlJs.addTableRow)(tab, row);
             });
-            (0, _htmlJs.addTableRow)(tab, row);
-        });
-        tableDiv.appendChild(tab);
-        // Insert a save as csv button.
-        addSaveAsCSVButton(()=>tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
+            tableDiv.appendChild(tab);
+            // Insert a save as csv button.
+            addSaveAsCSVButton(()=>tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
+        }
     }
     return aDiv;
 }
@@ -5165,7 +5174,11 @@ function handleEvent(element, tagName) {
             "grey",
             "cyan",
             "magenta",
+            "lightblue",
+            "lightgreen",
+            "pink",
             "yellow",
+            "brown",
             "black"
         ];
         let refToColor = new Map();
@@ -5599,7 +5612,7 @@ function handleEvent(element, tagName) {
     });
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./canvas.js":"hoJRr"}],"f0Rnl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
