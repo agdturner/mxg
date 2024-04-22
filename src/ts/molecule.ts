@@ -5,7 +5,7 @@ import {
     TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
 } from './xml.js';
 import { Description, T } from './mesmer.js';
-
+import { MetadataList } from './metadata.js';
 
 /**
  * Atom data.
@@ -660,6 +660,25 @@ export class PropertyScalar extends NumberNode {
 /**
  * The attributes may contain "units".
  * In the XML, an "array" node is a child of a "property" node.
+ * The "property" nodes of a PropertyArray may be a "scalar", "array", or "matrix" type.
+ * The different kinds of "property" nodes are listed below from Table 1 of the Mesmer User Manual:
+ * dictRef, value, units, Inserted from defaults.xml if absent
+ * "me:ZPE", scalar, Mesmer.energyUnits, No
+ * "me:Hf0", scalar, Mesmer.energyUnits, No
+ * "me:HfAT0", scalar, Mesmer.energyUnits, No 
+ * "me:Hf298", scalar, Mesmer.energyUnits, No
+ * "me:rotConsts", array, Mesmer.frequencyUnits, No
+ * "me:symmetryNumber", scalar, No units, Yes (1)
+ * "me:TSOpticalSymmetryNumber", scalar, No units, Yes (1)
+ * "me:frequenciesScaleFactor", scalar, No units, Yes (1.0)
+ * "me:vibFreqs", array, cm-1, No
+ * "me:MW", scalar, amu, No
+ * "me:spinMultiplicity", scalar, No units, Yes (1)
+ * "me:epsilon", scalar, K (fixed), Yes (50)
+ * "me:sigma", scalar, Å (fixed), Yes (5)
+ * "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2, No
+ * "me:EinsteinAij", array, s-1 (fixed), No
+ * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 export class PropertyArray extends NumberArrayNode {
 
@@ -2545,6 +2564,7 @@ export class Molecule extends NodeWithNodes {
     constructor(
         attributes: Map<string, string>,
         id: string,
+        metadataList?: MetadataList,
         atoms?: AtomArray,
         bonds?: BondArray,
         properties?: PropertyList,
@@ -2558,6 +2578,12 @@ export class Molecule extends NodeWithNodes {
         this.index = new Map();
         this.setID(id);
         let i: number = 0;
+        // MetadataList
+        if (metadataList) {
+            this.nodes.set(i, metadataList);
+            this.index.set(MetadataList.tagName, i);
+            i++;
+        }
         // Atoms
         if (atoms) {
             this.nodes.set(i, atoms);
@@ -2684,10 +2710,27 @@ export class Molecule extends NodeWithNodes {
     }
 
     /**
-     * @returns A comma and space separated string of the attributes of the molecule.
+     * @returns The metadata list of the molecule.
      */
-    getAttributesAsString(): string {
-        return Array.from(this.attributes, ([key, value]) => `${key}=\"${value}\"`).join(', ');
+    getMetadataList(): MetadataList | undefined {
+        let i: number | undefined = this.index.get(MetadataList.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MetadataList;
+        }
+    }
+
+    /**
+     * Set the metadata list.
+     * @param metadataList The metadata list.
+     */
+    setMetadataList(metadataList: MetadataList) {
+        let i: number | undefined = this.index.get(MetadataList.tagName);
+        if (i == undefined) {
+            this.index.set(MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        } else {
+            this.nodes.set(i, metadataList);
+        }
     }
 
     /**

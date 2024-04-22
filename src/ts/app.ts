@@ -62,7 +62,9 @@ import {
 import { Mesmer, MoleculeList, ReactionList, Title, T, Description } from './mesmer.js';
 import Big from 'big.js';
 import { Analysis, Eigenvalue, EigenvalueList, Pop, Population, PopulationList } from './analysis.js';
-import { DCCreator, MetadataList, DCSource, DCDate, DCContributor } from './metadata.js';
+import { DCCreator, MetadataList, DCSource, DCDate, DCContributor, Metadata } from './metadata.js';
+import { Defaults } from './defaults.js';
+import { LibraryMolecules } from './librarymols.js';
 
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 
@@ -208,6 +210,16 @@ console.log("dark=" + dark);
 let mesmer: Mesmer;
 
 /**
+ * For the defaults loaded from defaults.xml.
+ */
+let defaults: Defaults;
+
+/**
+ * Library Molecules loaded from a file.
+ */
+let lms: LibraryMolecules;
+
+/**
  * A map of molecules with Molecule ID as key and Molecule as value.
  */
 let molecules: Map<string, Molecule>;
@@ -276,14 +288,30 @@ document.addEventListener('DOMContentLoaded', () => {
     menuDiv.style.border = '1px solid black';
     menuDiv.style.backgroundColor = 'lightgrey';
 
+    // Create Load Molecule Library button.
+    let s_Load_molecule_library: string = 'Load Molecule Library';
+    let lmlb: HTMLButtonElement = createButton(s_Load_molecule_library, getID(s_Load_molecule_library), boundary1);
+    lmlb.addEventListener('click', (event: MouseEvent) => {
+        lms = new LibraryMolecules();
+    });
+    menuDiv.appendChild(lmlb);
+
+    // Create Load defaults button.
+    let s_Load_default_xml: string = 'Load default.xml';
+    console.log(s_Load_default_xml);
+    let ldb: HTMLButtonElement = createButton(s_Load_default_xml, getID(s_Load_default_xml), boundary1);
+    ldb.addEventListener('click', (event: MouseEvent) => {
+        defaults = new Defaults();
+    });
+    menuDiv.appendChild(ldb);
+    
     // Create Load button.
     let s_Load: string = 'Load';
-    let loadButton = createButton(s_Load, getID(s_Load), boundary1);
-    loadButton.addEventListener('click', (event: MouseEvent) => {
+    let lb = createButton(s_Load, getID(s_Load), boundary1);
+    lb.addEventListener('click', (event: MouseEvent) => {
         load();
-        loadButton.textContent = s_Load;
     });
-    menuDiv.appendChild(loadButton);
+    menuDiv.appendChild(lb);
     // Create style/theme option buttons.
     // Create button to increase the font size.
     let s_Increase_fontsize: string = 'Increase fontsize';
@@ -378,32 +406,37 @@ document.addEventListener('DOMContentLoaded', () => {
     p5.appendChild(document.createTextNode('A MESMER data file is expected to contain the following child elements of the parent \
         "me:mesmer" element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a \
         child element is missing or there are multiple "me:title", "moleculeList", "reactionList", or "me:modelParameters" elements, a \
-        warning alert message should appear. The "me:title" value is presented in an input alongside a label. The input can be used to \
-        change the value which is also used to compose filenames. Other elements are presented as buttons and initially hidden \
-        HTMLDivElements that are made visible by actioning the buttons. These buttons contain a triangular symbol which indicates a \
-        collapsed (triangle orientated with a point down: ' + sy_downTriangle + ') or expanded (triangle with a point up: '
-        + sy_upTriangle + '.'));
+        warning alert message should appear. If the file is a MESMER output data file, it is expected to also contain \
+        "me:metadataList" and "me:analysis" child elements.'));
     // p6.
     let p6 = document.createElement('p');
     wDiv.appendChild(p6);
-    p6.textContent = ' The Reaction Diagram button expands/collapses a well diagram for the reactions. This diagram should redraw if \
-        any "me:ZPE" property value of a molecule is changed. The diagram can be opened in a new Window and saved to a PNG format file.';
+    p6.appendChild(document.createTextNode('The "me:title" value is presented in an input alongside an associated label. The input \
+        can be used to change the value which is also used to compose filenames for files saved from MXG. Other elements are \
+        presented via buttons which contain a triangular symbol. A triangle orientated with a point down: ' + sy_downTriangle + 
+        ' can be actioned to show more elements. A triangle orientated with a point up: ' + sy_upTriangle + ' can be actioned to \
+        hide those elements.'));
     // p7.
     let p7 = document.createElement('p');
     wDiv.appendChild(p7);
-    p7.textContent = 'MXG uses 3DMol.js under a BSD-3-Clause licence to visualise molecules with coordinates. For details of \
-    3DMol.js please see the GitHub repository: ';
-    p7.appendChild(t3Dmol_a);
-    p7.appendChild(document.createTextNode('. If you use the 3DMol.js visualisations, please cite: Nicholas Rego and David Koes \
-    3Dmol.js: molecular visualization with WebGL Bioinformatics (2015) 31 (8): 1322-1324 '));
-    p7.appendChild(t3Dmol_citation_a);
-    p7.appendChild(document.createTextNode('.'));
+    p6.textContent = ' The Reaction Diagram button expands/collapses a well diagram for the reactions. This diagram should redraw if \
+        any "me:ZPE" property value of a molecule is changed. The diagram can be opened in a new Window and saved to a PNG format file.';
     // p8.
     let p8 = document.createElement('p');
     wDiv.appendChild(p8);
-    p8.textContent = 'MXG uses Big.js under an MIT licence to handle numbers. For details of Big.js please see the GitHub repository: ';
-    p8.appendChild(bigjs_a);
+    p8.textContent = 'MXG uses 3DMol.js under a BSD-3-Clause licence to visualise molecules with coordinates. For details of \
+    3DMol.js please see the GitHub repository: ';
+    p8.appendChild(t3Dmol_a);
+    p8.appendChild(document.createTextNode('. If you use the 3DMol.js visualisations, please cite: Nicholas Rego and David Koes \
+    3Dmol.js: molecular visualization with WebGL Bioinformatics (2015) 31 (8): 1322-1324 '));
+    p8.appendChild(t3Dmol_citation_a);
     p8.appendChild(document.createTextNode('.'));
+    // p9.
+    let p9 = document.createElement('p');
+    wDiv.appendChild(p9);
+    p9.textContent = 'MXG uses Big.js under an MIT licence to handle numbers. For details of Big.js please see the GitHub repository: ';
+    p9.appendChild(bigjs_a);
+    p9.appendChild(document.createTextNode('.'));
 });
 
 
@@ -701,16 +734,14 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
     console.log("Number of molecules=" + xml_msl);
     //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
     for (let i = 0; i < xml_msl; i++) {
+        // Create a new Molecule.
         let mDivID: string = getID(Molecule.tagName, i);
         let mDiv: HTMLDivElement = createDiv(mDivID);
-        // Set attributes.
         let attributes: Map<string, string> = getAttributes(xml_ms[i]);
-        // Get the molecule id.
         let mID: string | undefined = attributes.get(Molecule.s_id);
         if (mID == undefined) {
             throw new Error(Molecule.s_id + ' is undefined');
         }
-        // Create molecule.
         let m = new Molecule(attributes, mID);
         molecules.set(mID, m);
         // Create collapsible Molecule HTMLDivElement.
@@ -741,6 +772,36 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         // Description
         mDiv.appendChild(processDescription(getID(m.getID(), s_description), m.getDescription.bind(m),
             m.setDescription.bind(m), boundary1, level1));
+
+        // Init metadataList.
+        //console.log("Init metadataList.");
+        let xml_mls: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(MetadataList.tagName);
+        if (xml_mls.length > 0) {
+            if (xml_mls.length > 1) {
+                throw new Error("Expecting 1 or 0 " + MetadataList.tagName + " but finding " + xml_mls.length + "!");
+            }
+            // Create collapsible MetadataList HTMLDivElement.
+            let mlDivID: string = getID(mDivID, MetadataList.tagName);
+            let mlDiv: HTMLDivElement = createDiv(mlDivID);
+            let mlcDivID = getID(mlDivID, s_container);
+            let mlcDiv: HTMLDivElement = getCollapsibleDiv(mlcDivID, mDiv, null, mlDiv, MetadataList.tagName, boundary1, level1);
+            let xml_ml: Element = xml_mls[0];
+            let xml_ms: HTMLCollectionOf<Element> = xml_ml.getElementsByTagName(Metadata.tagName);
+            let ml: MetadataList = new MetadataList(getAttributes(xml_mls[0]));
+            m.setMetadataList(ml);
+            for (let j = 0; j < xml_ms.length; j++) {
+                // Create a new Metadata.
+                let md: Metadata = new Metadata(getAttributes(xml_ms[j]));
+                ml.addMetadata(md);
+                let mdID: string = m.getID();
+                let mdDivID = getID(mlDivID, j);
+                let mdDiv = createFlexDiv(mdDivID, level1);
+                mlDiv.appendChild(mdDiv);
+                mdDiv.appendChild(createLabel(mdID, boundary1));
+            }
+            moleculeTagNames.delete(MetadataList.tagName);
+        }
+
         // Init atoms.
         //console.log("Init atoms.");
         // There can be an individual atom not in an atom array, or an atom array.
@@ -1276,12 +1337,10 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         let plDiv: HTMLDivElement = createDiv(plDivID);
         let plcDivID = getID(plDivID, s_container);
         let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, moleculeDiv, null, plDiv, PropertyList.tagName, boundary1, level1);
-        // More code to add here...
+        // Add code to add propertyArray...
     });
     return mlDiv;
 }
-
-
 
 /**
  * Adds a button to edit the molecule ID.
@@ -1387,8 +1446,10 @@ function addDescription(div: HTMLDivElement, id: string, value: string | undefin
 }
 
 /**
- * Creates and returns a button for adding a new atom div to the atomArrayDiv. The atom div added
- * will have: label (atom id); (editable details); and a remove button.
+ * 
+ * Creates and returns a button for adding a new atom. This will add a new atom div to the atomArrayDiv. The atom div added
+ * will have: label (atom id); editable details (elementType, x3, y3, z3); and a remove button. Select elements that allow 
+ * for selecting atoms are updated so options reflect any added or removed atoms.
  * 
  * @param molecule The molecule.
  * @param aaDiv The atom array div.
@@ -1484,8 +1545,9 @@ function addOptionByClassName(className: string, optionToAdd: string): void {
 }
 
 /**
- * Creates and returns a button for adding a new bond div to the bondArrayDiv. The bond div added
- * will have: label (bond id); editable details (atomRefs2 and order); and, remove and refresh buttons.
+ * Creates and returns a button for adding a new bond. This will add a new bond div to the bondArrayDiv. The bond div added
+ * will have: label (bond id); editable details (atomRefs2 and order); and a remove button. Select elements that allow for 
+ * selecting bonds are updated so options reflect any added or removed bonds.
  * 
  * @param molecule The molecule.
  * @param bondArrayDiv The bond array div.

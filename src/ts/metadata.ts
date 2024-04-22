@@ -1,7 +1,42 @@
 import { NodeWithNodes, StringNode } from './xml.js';
 
 /**
- * DC Title.
+ * Metadata.
+ * In the XML, the "metadata" element is a child of the "metadataList" element.
+ * For example:
+ * <metadataList>
+ *  <metadata name="dc:description" content="Experimental data for OH (Hydroxyl radical)"/>
+ *  <metadata name="dc:source" content="http://cccbdb.nist.gov/"/>
+ *  <metadata name="dc:contributor" content="Dr Reaction Kinetics"/>
+ *  <metadata name="dc:date" content="20240311_090547"/>
+ * </metadataList>
+ */
+export class Metadata extends NodeWithNodes {
+
+    /**
+     * Tag name.
+     */
+    public static tagName = 'metadata';
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, Metadata.tagName);
+    }
+}
+
+/**
+ * DCTitle.
+ * In the XML, the "dc:title" element is a child of the "metadataList" element.
+ * For example:
+ * <metadataList xmlns:dc="http://purl.org/dc/elements/1.1/">
+ *  <dc:title>Title</dc:title>
+ *  <dc:source>file.xml</dc:source>
+ *  <dc:creator>Mesmer v7.0</dc:creator>
+ *  <dc:date>20240311_090547</dc:date>
+ *  <dc:contributor>Dr Reaction Kinetics</dc:contributor>
+ * </metadataList>
  */
 export class DCTitle extends StringNode {
 
@@ -114,12 +149,18 @@ export class MetadataList extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
+     * To look up metadata nodes by index.
+     */
+    metadataIndex: Map<number, number>;
+
+    /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>, title?: DCTitle, source?: DCSource, creator?: DCCreator, date?: DCDate, 
         contributor?: DCContributor) {
         super(attributes, MetadataList.tagName);
         this.index = new Map<string, number>();
+        this.metadataIndex = new Map<number, number>();
         if (title) {
             this.index.set(DCTitle.tagName, this.nodes.size);
             this.addNode(title);
@@ -168,7 +209,7 @@ export class MetadataList extends NodeWithNodes {
     /**
      * Get the source.
      */
-    public getSource(): DCSource | undefined {
+    getSource(): DCSource | undefined {
         if (this.index.has(DCSource.tagName)) {
             let i: number = this.index.get(DCSource.tagName)!;
             return this.nodes.get(i) as DCSource;
@@ -191,7 +232,7 @@ export class MetadataList extends NodeWithNodes {
     /**
      * Get the creator.
      */
-    public getCreator(): DCCreator | undefined {
+    getCreator(): DCCreator | undefined {
         if (this.index.has(DCCreator.tagName)) {
             let i: number = this.index.get(DCCreator.tagName)!;
             return this.nodes.get(i) as DCCreator;
@@ -214,7 +255,7 @@ export class MetadataList extends NodeWithNodes {
     /**
      * Get the date.
      */
-    public getDate(): DCDate | undefined {
+    getDate(): DCDate | undefined {
         if (this.index.has(DCDate.tagName)) {
             let i: number = this.index.get(DCDate.tagName)!;
             return this.nodes.get(i) as DCDate;
@@ -237,7 +278,7 @@ export class MetadataList extends NodeWithNodes {
     /**
      * Get the contributor.
      */
-    public getContributor(): DCContributor | undefined {
+    getContributor(): DCContributor | undefined {
         if (this.index.has(DCContributor.tagName)) {
             let i: number = this.index.get(DCContributor.tagName)!;
             return this.nodes.get(i) as DCContributor;
@@ -255,5 +296,14 @@ export class MetadataList extends NodeWithNodes {
             this.index.set(DCContributor.tagName, this.nodes.size);
             this.addNode(contributor);
         }
+    }
+
+    /**
+     * Add metadata.
+     * @param metadata The metadata.
+     */
+    addMetadata(metadata: Metadata) {
+        this.metadataIndex.set(this.metadataIndex.size, this.nodes.size);
+        this.addNode(metadata);
     }
 }

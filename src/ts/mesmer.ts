@@ -328,7 +328,7 @@ export class Mesmer extends NodeWithNodes {
     /**
      * Energy units.
      */
-    static readonly energyUnits: string[] = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
+    static readonly energyUnits: string[] = ["kJ/mol", "kJ per mol", "cm-1", "wavenumber", "kcal/mol", "kcal per mol", "Hartree", "au"];
 
     /**
      * Frequency units.

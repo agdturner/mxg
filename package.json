@@ -45,6 +45,7 @@
     "@parcel/packager-raw-url": "^2.11.0",
     "@parcel/transformer-webmanifest": "^2.11.0",
     "@types/big.js": "^6.2.2",
+    "@types/node": "^20.12.7",
     "3dmol": "^2.1.0",
     "big.js": "^6.2.1",
     "parcel": "^2.11.0",
