@@ -94,6 +94,22 @@ export class MoleculeList extends NodeWithNodes {
             this.index.set(mID, this.nodes.size - 1);
         }
     }
+
+    /**
+     * Update a molecule id.
+     * @param oldId The old id.
+     * @param newId The new id.
+     */
+    /*
+    updateMoleculeId(oldId: string, newId: string) {
+        let i: number | undefined = this.index.get(oldId);
+        if (i != undefined) {
+            let molecule = this.nodes.get(i) as Molecule;
+            molecule.setID(newId);
+            this.index.delete(oldId);
+            this.index.set(newId, i);
+        }
+    }*/
 }
 
 /**
@@ -339,12 +355,12 @@ export class Mesmer extends NodeWithNodes {
      * The atoms with 1 to 118 protons inclusive. (source: https://query.wikidata.org/#SELECT%20%3Felement%20%3Fsymbol%20%20%3Fprotons%0AWHERE%0A%7B%0A%20%20%3Felement%20wdt%3AP31%20wd%3AQ11344%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP1086%20%3Fprotons%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP246%20%3Fsymbol%20.%0A%7D%0A%0AORDER%20BY%20%3Fprotons)
      */
     static readonly elementTypes: string[] = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar",
-    "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb",
-    "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu",
-    "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
-    "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
-    "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"];
-    
+        "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb",
+        "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu",
+        "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At",
+        "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
+        "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"];
+
     /**
      * Atomic mass map for atoms. The keys are element symbols, the values are the atomic mass according to a periodic table.
      * (This is initialised in the constructor.)
@@ -400,7 +416,7 @@ export class Mesmer extends NodeWithNodes {
      * @param controls The controls.
      */
     constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
-        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[], metadataList?: MetadataList, 
+        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[], metadataList?: MetadataList,
         analysis?: Analysis) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
@@ -469,7 +485,7 @@ export class Mesmer extends NodeWithNodes {
     /**
      * @returns The title.
      */
-    getTitle() {
+    getTitle(): Title | undefined {
         let i: number | undefined = this.index.get(Title.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as Title;
@@ -480,7 +496,7 @@ export class Mesmer extends NodeWithNodes {
      * Set the title.
      * @param title The title.
      */
-    setTitle(title: Title) {
+    setTitle(title: Title): void {
         let i: number | undefined = this.index.get(Title.tagName);
         if (i != undefined) {
             this.nodes.set(i, title);
@@ -493,7 +509,7 @@ export class Mesmer extends NodeWithNodes {
     /**
      * @returns The molecule list.
      */
-    getMoleculeList() {
+    getMoleculeList(): MoleculeList | undefined {
         let i: number | undefined = this.index.get(MoleculeList.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as MoleculeList;
@@ -504,7 +520,7 @@ export class Mesmer extends NodeWithNodes {
      * Set the molecule list.
      * @param moleculeList The molecule list.
      */
-    setMoleculeList(moleculeList: MoleculeList) {
+    setMoleculeList(moleculeList: MoleculeList): void {
         let i: number | undefined = this.index.get(MoleculeList.tagName);
         if (i != undefined) {
             this.nodes.set(i, moleculeList);
@@ -517,7 +533,7 @@ export class Mesmer extends NodeWithNodes {
     /**
      * @returns The reaction list.
      */
-    getReactionList() {
+    getReactionList(): ReactionList | undefined {
         let i: number | undefined = this.index.get(ReactionList.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as ReactionList;
@@ -528,7 +544,7 @@ export class Mesmer extends NodeWithNodes {
      * Set the reaction list.
      * @param reactionList The reaction list.
      */
-    setReactionList(reactionList: ReactionList) {
+    setReactionList(reactionList: ReactionList): void {
         let i: number | undefined = this.index.get(ReactionList.tagName);
         if (i != undefined) {
             this.nodes.set(i, reactionList);
@@ -542,7 +558,7 @@ export class Mesmer extends NodeWithNodes {
      * Add a Conditions.
      * @param conditions The Conditions.
      */
-    addConditions(conditions: Conditions) {
+    addConditions(conditions: Conditions): void {
         let id = Conditions.tagName + conditions.id;
         let i: number | undefined = this.index.get(id);
         if (i != undefined) {
@@ -558,11 +574,32 @@ export class Mesmer extends NodeWithNodes {
      * @param conditionsID The id of the conditions.
      * @returns The conditions for the conditionsID.
      */
-    getConditions(conditionsID: number) {
+    getConditions(conditionsID: number): Conditions | undefined {
         let i: number | undefined = this.conditionsIndex.get(conditionsID);
         if (i != undefined) {
             return this.nodes.get(i) as Conditions;
-        }        
+        }
+    }
+
+    /**
+     * @returns The conditions as a Conditions[].
+     */
+    getConditionss(): Conditions[] {
+        let conditionss: Conditions[] = [];
+        this.conditionsIndex.forEach((index, conditionsID) => {
+            conditionss.push(this.nodes.get(index) as Conditions);
+        });
+        return conditionss;
+    }
+
+    /**
+     * Set the conditions.
+     * @param conditionss The Conditions[].
+     */
+    setConditionss(conditionss: Conditions[]) {
+        conditionss.forEach(conditions => {
+            this.addConditions(conditions);
+        });
     }
 
     /**
@@ -577,11 +614,11 @@ export class Mesmer extends NodeWithNodes {
             if (key > id) {
                 return id;
             }
-            id ++;
+            id++;
         });
         return id;
     }
-    
+
     /**
      * Remove a conditions.
      * @param conditionsID The id of the conditions to remove.
@@ -594,7 +631,7 @@ export class Mesmer extends NodeWithNodes {
             this.conditionsIndex.delete(conditionsID);
         }
     }
-    
+
     /**
      * @returns The model parameters.
      */
@@ -618,7 +655,7 @@ export class Mesmer extends NodeWithNodes {
             this.addNode(modelParameters);
         }
     }
-    
+
     /**
      * Add a Control.
      * @param control The Control.
@@ -646,6 +683,27 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
+     * @returns The controls.
+     */
+    getControls(): Control[] {
+        let controls: Control[] = [];
+        this.controlIndex.forEach((index, controlID) => {
+            controls.push(this.nodes.get(index) as Control);
+        });
+        return controls;
+    }
+
+    /**
+     * Set the controls.
+     * @param controls The controls.
+     */
+    setControls(controls: Control[]) {
+        controls.forEach(control => {
+            this.addControl(control);
+        });
+    }
+
+    /**
      * @returns The next control id.
      */
     getNextControlID(): number {
@@ -657,7 +715,7 @@ export class Mesmer extends NodeWithNodes {
             if (key > id) {
                 return id;
             }
-            id ++;
+            id++;
         });
         return id;
     }
@@ -678,6 +736,16 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
+     * @returns The metadata list.
+     */
+    getMetadataList(): MetadataList | undefined {
+        let i: number | undefined = this.index.get(MetadataList.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as MetadataList;
+        }
+    }
+
+    /**
      * @param metadataList The metadata list.
      */
     setMetadataList(metadataList: MetadataList) {
@@ -687,6 +755,16 @@ export class Mesmer extends NodeWithNodes {
         } else {
             this.index.set(MetadataList.tagName, this.nodes.size);
             this.addNode(metadataList);
+        }
+    }
+
+    /**
+     * @returns The analysis.
+     */
+    getAnalysis(): Analysis | undefined {
+        let i: number | undefined = this.index.get(Analysis.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i) as Analysis;
         }
     }
     

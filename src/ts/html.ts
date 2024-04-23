@@ -269,6 +269,7 @@ export function resizeTextAreaElement(ta: HTMLTextAreaElement, minSize?: number)
  * 
  * @param options The options.
  * @param name The name for the select.
+ * @param value The value for the select.
  * @param id id + "_" + name will be the select element ID.
  * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.

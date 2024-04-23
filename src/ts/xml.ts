@@ -461,7 +461,7 @@ export function getAttributes(element: Element): Map<string, string> {
     attributeNames.forEach(function (attributeName) {
         let attributeValue: string | null = element.getAttribute(attributeName);
         if (attributeValue != null) {
-            attributes.set(attributeName, attributeValue);
+            attributes.set(attributeName.trim(), attributeValue.trim());
             //console.log("attributeName=" + attributeName + " attributeValue=" + attributeValue);
         }
     });

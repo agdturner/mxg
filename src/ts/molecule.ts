@@ -88,14 +88,14 @@ export class Atom extends TagWithAttributes {
     /**
      * @returns The id.
      */
-    getId(): string | undefined {
+    getID(): string | undefined {
         return this.attributes.get(Atom.s_id);
     }
 
     /**
      * @param id The id.
      */
-    setId(id: string): void {
+    setID(id: string): void {
         this.attributes.set(Atom.s_id, id);
     }
 
@@ -245,25 +245,28 @@ export class AtomArray extends NodeWithNodes {
      * @param atom The atom to add.
      * @returns The id of the atom.
      */
-    addAtom(atom: Atom): string {
+    addAtom(atom: Atom, aID?: string): string {
         //console.log('Adding atom...');
-        let id: string | undefined = atom.getId();
-        if (id == undefined) {
-            id = this.getNextAtomID();
-            atom.setId(id);
-        } else {
-            if (this.atoms.has(id)) {
-                let newID: string = this.getNextAtomID();
-                console.warn('Atom with id ' + id + ' already exists, adding with id ' + newID);
-                atom.setId(newID);
-                id = newID;
+        if (aID == undefined) {
+            let id: string | undefined = atom.getID();
+            if (id == undefined) {
+                id = this.getNextAtomID();
+                atom.setID(id);
+            } else {
+                if (this.atoms.has(id)) {
+                    let newID: string = this.getNextAtomID();
+                    console.warn('Atom with id ' + id + ' already exists, adding with id ' + newID);
+                    atom.setID(newID);
+                    id = newID;
+                }
             }
+            aID = id;
         }
         //console.log('Atom id: ' + id);
-        this.index.set(id, this.nodes.size);
-        this.reverseIndex.set(this.nodes.size, id);
+        this.index.set(aID, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, aID);
         this.nodes.set(this.nodes.size, atom);
-        this.atoms.set(id, atom);
+        this.atoms.set(aID, atom);
         /*
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
@@ -275,7 +278,7 @@ export class AtomArray extends NodeWithNodes {
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
         */
-        return id;
+        return aID;
     }
 
     /**
@@ -418,14 +421,14 @@ export class Bond extends TagWithAttributes {
     /**
      * @returns The id.
      */
-    getId(): string | undefined {
+    getID(): string | undefined {
         return this.attributes.get(Bond.s_id);
     }
 
     /**
      * @param id The id to set the attribute value referred to by "id".
      */
-    setId(id: string): void {
+    setID(id: string): void {
         this.attributes.set(Bond.s_id, id);
     }
 
@@ -512,26 +515,30 @@ export class BondArray extends NodeWithNodes {
     /**
      * Adds a bond to the array.
      * @param bond The bond to add.
+     * @param bID The id of the bond to add if it already exists.
+     * @returns The id of the bond.
      */
-    addBond(bond: Bond): string {
-        //console.log('Add ' + bond.tagName + '...');
-        let id: string | undefined = bond.getId();
-        if (id == undefined) {
-            id = this.getNextBondID();
-            bond.setId(id);
-        } else {
-            if (this.bonds.has(id)) {
-                let newID: string = this.getNextBondID();
-                console.log('Bond with id ' + id + ' already exists, adding with id ' + newID);
-                bond.setId(newID);
-                id = newID;
+    addBond(bond: Bond, bID?: string): string {
+        if (bID == undefined) {
+            let id: string | undefined = bond.getID();
+            if (id == undefined) {
+                id = this.getNextBondID();
+                bond.setID(id);
+            } else {
+                if (this.bonds.has(id)) {
+                    let newID: string = this.getNextBondID();
+                    console.log('Bond with id ' + id + ' already exists, adding with id ' + newID);
+                    bond.setID(newID);
+                    id = newID;
+                }
             }
+            bID = id;
         }
         //console.log('Bond id: ' + id);
-        this.index.set(id, this.nodes.size);
-        this.reverseIndex.set(this.nodes.size, id);
+        this.index.set(bID, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, bID);
         this.nodes.set(this.nodes.size, bond);
-        this.bonds.set(id, bond);
+        this.bonds.set(bID, bond);
         /*
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
@@ -543,7 +550,7 @@ export class BondArray extends NodeWithNodes {
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
         */
-        return id;
+        return bID;
     }
 
     /**

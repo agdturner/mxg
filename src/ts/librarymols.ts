@@ -3,6 +3,8 @@ import { Description, MoleculeList, T } from "./mesmer";
 import { Metadata, MetadataList } from "./metadata";
 import { Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList, DistributionCalcMethod, EnergyTransferModel, Molecule, Property, PropertyList, Qtot, Sumc, Sumg } from "./molecule";
 import { getAttributes, getFirstChildNode, getNodeValue, getSingularElement } from "./xml";
+import { getID } from "./util";
+import { createFlexDiv } from "./html";
 
 export class LibraryMolecules {
 
@@ -111,10 +113,6 @@ export class LibraryMolecules {
             if (mID == undefined) {
                 throw new Error(Molecule.s_id + ' is undefined');
             }
-            let m = new Molecule(attributes, mID);
-            this.molecules.set(mID, m);
-            // Create a set of molecule tag names.
-            let moleculeTagNames: Set<string> = new Set();
             let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
             //console.log("cns.length=" + cns.length);
             // Check if there are any child elements. If not, then this molecule is an alias.
@@ -127,6 +125,10 @@ export class LibraryMolecules {
                 this.alias.set(ref, mID);
                 continue;
             }
+            let m = new Molecule(attributes, mID);
+            this.molecules.set(mID, m);
+            // Create a set of molecule tag names.
+            let moleculeTagNames: Set<string> = new Set();
             //cns.forEach(function (cn) {
             for (let j = 0; j < cns.length; j++) {
                 let cn: ChildNode = cns[j];
@@ -142,7 +144,6 @@ export class LibraryMolecules {
                 }
                 //console.log(cn.nodeName);
             }
-
             // Init metadataList.
             //console.log("Init metadataList.");
             let xml_mls: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(MetadataList.tagName);
@@ -151,11 +152,11 @@ export class LibraryMolecules {
                     throw new Error("Expecting 1 or 0 " + MetadataList.tagName + " but finding " + xml_mls.length + "!");
                 }
                 let ml: MetadataList = new MetadataList(getAttributes(xml_mls[0]));
-                let xml_ms: HTMLCollectionOf<Element> = xml_ml.getElementsByTagName(Metadata.tagName);
+                m.setMetadataList(ml);
+                let xml_ms: HTMLCollectionOf<Element> = xml_mls[0].getElementsByTagName(Metadata.tagName);
                 for (let j = 0; j < xml_ms.length; j++) {
                     // Create a new Metadata.
                     let md: Metadata = new Metadata(getAttributes(xml_ms[j]));
-                    let mdID: string = m.getID();
                     ml.addMetadata(md);
                 }
                 moleculeTagNames.delete(MetadataList.tagName);
@@ -177,10 +178,7 @@ export class LibraryMolecules {
                 let aa: AtomArray = new AtomArray(getAttributes(xml_aa));
                 m.setAtoms(aa);
                 for (let j = 0; j < xml_as.length; j++) {
-                    //console.log("j=" + j);
-                    // Create a new Atom.
-                    let a: Atom = new Atom(getAttributes(xml_as[j]), m);
-                    let aID: string = aa.addAtom(a);
+                    aa.addAtom(new Atom(getAttributes(xml_as[j]), m));
                 }
                 moleculeTagNames.delete(AtomArray.tagName);
             } else {
@@ -197,9 +195,6 @@ export class LibraryMolecules {
             //console.log("atomsNode=" + atomsNode);
             moleculeTagNames.delete(Atom.tagName);
             // Init bonds.
-            let ba: BondArray = new BondArray(new Map()); // This will be replaced if there is an BondArray.=
-            // Function to be used to remove a bond.
-            let removeBond = (id: string) => m.getBonds().removeBond(id);
             // There can be an individual bond not in a bond array, or a bond array.
             // There may be only 1 bond in a BondArray.
             let xml_bas: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(BondArray.tagName);
@@ -208,11 +203,9 @@ export class LibraryMolecules {
                     throw new Error("Expecting 1 or 0 " + BondArray.tagName + " but finding " + xml_bas.length + "!");
                 }
                 let xml_bs: HTMLCollectionOf<Element> = xml_bas[0].getElementsByTagName(Bond.tagName);
-                ba = new BondArray(getAttributes(xml_bas[0]));
+                let ba: BondArray = new BondArray(getAttributes(xml_bas[0]));
                 for (let j = 0; j < xml_bs.length; j++) {
-                    // Create a new Bond.
-                    let b: Bond = new Bond(getAttributes(xml_bs[j]), m);
-                    let bID: string = ba.addBond(b);
+                    ba.addBond(new Bond(getAttributes(xml_bs[j]), m));
                 }
                 m.setBonds(ba);
                 moleculeTagNames.delete(BondArray.tagName);
@@ -222,7 +215,7 @@ export class LibraryMolecules {
                     if (xml_bonds.length > 1) {
                         throw new Error("Expecting 1 " + Bond.tagName + " but finding " + xml_bonds.length + ". Should these be in a " + BondArray.tagName + "?");
                     }
-                    ba = new BondArray(new Map());
+                    let ba: BondArray = new BondArray(new Map());
                     ba.addBond(new Bond(getAttributes(xml_bonds[0]), m));
                     m.setBonds(ba);
                 }

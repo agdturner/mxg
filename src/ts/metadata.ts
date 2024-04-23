@@ -24,6 +24,17 @@ export class Metadata extends NodeWithNodes {
     constructor(attributes: Map<string, string>) {
         super(attributes, Metadata.tagName);
     }
+
+    /**
+     * Get string for label.
+     */
+    public getLabelText(): string {
+        let label: string = '';
+        this.attributes.forEach((value: string, key: string) => {
+            label += key + ': ' + value + ' ';
+        });
+        return label;
+    }
 }
 
 /**
@@ -305,5 +316,17 @@ export class MetadataList extends NodeWithNodes {
     addMetadata(metadata: Metadata) {
         this.metadataIndex.set(this.metadataIndex.size, this.nodes.size);
         this.addNode(metadata);
+    }
+
+    /**
+     * Get metadata.
+     */
+    getMetadata(): Metadata[] {
+        let metadata: Metadata[] = [];
+        for (let i: number = 0; i < this.metadataIndex.size; i++) {
+            let j: number = this.metadataIndex.get(i)!;
+            metadata.push(this.nodes.get(j) as Metadata);
+        }
+        return metadata;
     }
 }
