@@ -160,6 +160,7 @@ const sy_deselected: string = " \u2717"; // ✗
 // Strings.
 const s_Add_sy_add: string = "Add " + sy_add;
 const s_Add_from_spreadsheet: string = "Add from spreadsheet " + sy_add;
+const s_Add_from_library: string = "Add from library " + sy_add;
 const s_container = "s_container";
 const s_description: string = "description";
 const s_Input: string = "Input";
@@ -817,8 +818,8 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         if (xml_aas.length == 1) {
             let xml_aa = xml_aas[0];
             let xml_as: HTMLCollectionOf<Element> = xml_aa.getElementsByTagName(Atom.tagName);
-            if (xml_as.length < 2) {
-                throw new Error("Expecting 2 or more atoms in " + AtomArray.tagName + ", but finding " + xml_as.length + "!");
+            if (xml_as.length == 0) {
+                throw new Error("Expecting 1 or more atoms in " + AtomArray.tagName + ", but finding 0!");
             }
             let aa: AtomArray = new AtomArray(getAttributes(xml_aa));
             m.setAtoms(aa);
@@ -1339,6 +1340,15 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, moleculeDiv, null, plDiv, PropertyList.tagName, boundary1, level1);
         // Add code to add propertyArray...
     });
+    // Create add from library button.
+    let addFromLibraryButton: HTMLButtonElement = createButton(s_Add_from_library, undefined, level1);
+    // Add event listener for the button.
+    addFromLibraryButton.addEventListener('click', () => {
+        // Create a select element to select a libraryMolecule.
+        let select: HTMLSelectElement = createSelectElement(Arrays.from(LibraryMolecules.keys()), "Select molecule", undefined, level1);
+        select.classList.add(Molecule.tagName);
+
+    mlDiv.appendChild(addFromLibraryButton);
     return mlDiv;
 }
 

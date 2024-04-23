@@ -1,9 +1,7 @@
 import Big from 'big.js';
 import { RangeNode } from './range.js';
 import { get } from './util.js';
-import {
-    TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode
-} from './xml.js';
+import { TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode } from './xml.js';
 import { Description, T } from './mesmer.js';
 import { MetadataList } from './metadata.js';
 
@@ -806,7 +804,21 @@ export class Property extends NodeWithNodes {
         super(attributes, Property.tagName);
         let dictRef: string | undefined = attributes.get(Property.s_dictRef);
         if (dictRef == undefined) {
-            throw new Error(Property.s_dictRef + ' is undefined!');
+            // If there is no dictRef, then try setting this from the "title" attribute.
+            let title: string | undefined = attributes.get("title");
+            if (title == undefined) {
+                throw new Error(Property.s_dictRef + ' and title are undefined!');
+            } else {
+                if (title == "MW") {
+                    dictRef = "me:MW";
+                } else if (title == "Hf298") {
+                    dictRef = "me:Hf298";
+                } else if (title == "Hf0") {
+                    dictRef = "me:Hf0";
+                } else {
+                    throw new Error('Title not recognised!');
+                }
+            }
         }
         this.dictRef = dictRef;
         if (property) {
@@ -1499,7 +1511,7 @@ export class PotentialPoint extends TagWithAttributes {
  * default (string)
  * name (string)
  */
-export class DistributionCalcMethod  extends TagWithAttributes {
+export class DistributionCalcMethod extends TagWithAttributes {
 
     /**
      * The tag name.

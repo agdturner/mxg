@@ -1231,7 +1231,7 @@ let sp_font = "2em SensSerif";
         if (xml_aas.length == 1) {
             let xml_aa = xml_aas[0];
             let xml_as = xml_aa.getElementsByTagName((0, _moleculeJs.Atom).tagName);
-            if (xml_as.length < 2) throw new Error("Expecting 2 or more atoms in " + (0, _moleculeJs.AtomArray).tagName + ", but finding " + xml_as.length + "!");
+            if (xml_as.length == 0) throw new Error("Expecting 1 or more atoms in " + (0, _moleculeJs.AtomArray).tagName + ", but finding 0!");
             let aa = new (0, _moleculeJs.AtomArray)((0, _xmlJs.getAttributes)(xml_aa));
             m.setAtoms(aa);
             for(let j = 0; j < xml_as.length; j++){
@@ -7992,7 +7992,17 @@ class Property extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, property){
         super(attributes, Property.tagName);
         let dictRef = attributes.get(Property.s_dictRef);
-        if (dictRef == undefined) throw new Error(Property.s_dictRef + " is undefined!");
+        if (dictRef == undefined) {
+            // If there is no dictRef, then try setting this from the "title" attribute.
+            let title = attributes.get("title");
+            if (title == undefined) throw new Error(Property.s_dictRef + " and title are undefined!");
+            else {
+                if (title == "MW") dictRef = "me:MW";
+                else if (title == "Hf298") dictRef = "me:Hf298";
+                else if (title == "Hf0") dictRef = "me:Hf0";
+                else throw new Error("Title not recognised!");
+            }
+        }
         this.dictRef = dictRef;
         if (property) this.nodes.set(0, property);
     }
@@ -15449,6 +15459,9 @@ class LibraryMolecules {
     /**
      * @param defaults The defaults.
      */ constructor(){
+        /**
+     * The aliases.
+     */ this.alias = new Map();
         this.molecules = new Map();
         this.readFile();
     }
@@ -15482,7 +15495,7 @@ class LibraryMolecules {
                         } else {
                             // All chunks have been read
                             contents = contents.trim();
-                            console.log("contents " + contents);
+                            //console.log('contents ' + contents);
                             let parser = new DOMParser();
                             let xml = parser.parseFromString(contents, "text/xml");
                             self.parse(xml);
@@ -15508,7 +15521,7 @@ class LibraryMolecules {
             mlTagNames.add(node.nodeName);
         });
         if (mlTagNames.size != 1) {
-            if (!(mlTagNames.size == 2 && mlTagNames.has("#text"))) {
+            if (!(mlTagNames.size >= 2 && mlTagNames.has("#text")) || !(mlTagNames.size == 3 && mlTagNames.has("#comment"))) {
                 console.error("moleculeListTagNames:");
                 mlTagNames.forEach((x)=>console.error(x));
                 throw new Error("Additional tag names in moleculeList:");
@@ -15521,9 +15534,11 @@ class LibraryMolecules {
         console.log("Number of molecules=" + xml_msl);
         //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
         for(let i = 0; i < xml_msl; i++){
+            console.log("i=" + i);
             // Create a new Molecule.
             let attributes = (0, _xml.getAttributes)(xml_ms[i]);
             let mID = attributes.get((0, _molecule.Molecule).s_id);
+            console.log("mID=" + mID);
             if (mID == undefined) throw new Error((0, _molecule.Molecule).s_id + " is undefined");
             let m = new (0, _molecule.Molecule)(attributes, mID);
             this.molecules.set(mID, m);
@@ -15531,6 +15546,14 @@ class LibraryMolecules {
             let moleculeTagNames = new Set();
             let cns = xml_ms[i].childNodes;
             //console.log("cns.length=" + cns.length);
+            // Check if there are any child elements. If not, then this molecule is an alias.
+            if (cns.length == 0) {
+                console.log("This molecule is an alias.");
+                let ref = attributes.get("ref");
+                if (ref == undefined) throw new Error("ref is undefined");
+                this.alias.set(ref, mID);
+                continue;
+            }
             //cns.forEach(function (cn) {
             for(let j = 0; j < cns.length; j++){
                 let cn = cns[j];
@@ -15563,7 +15586,7 @@ class LibraryMolecules {
             if (xml_aas.length == 1) {
                 let xml_aa = xml_aas[0];
                 let xml_as = xml_aa.getElementsByTagName((0, _molecule.Atom).tagName);
-                if (xml_as.length < 2) throw new Error("Expecting 2 or more atoms in " + (0, _molecule.AtomArray).tagName + ", but finding " + xml_as.length + "!");
+                if (xml_as.length == 0) throw new Error("Expecting 1 or more atoms in " + (0, _molecule.AtomArray).tagName + ", but finding 0!");
                 let aa = new (0, _molecule.AtomArray)((0, _xml.getAttributes)(xml_aa));
                 m.setAtoms(aa);
                 for(let j = 0; j < xml_as.length; j++){

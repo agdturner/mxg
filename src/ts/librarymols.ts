@@ -12,6 +12,11 @@ export class LibraryMolecules {
     molecules: Map<string, Molecule>;
 
     /**
+     * The aliases.
+     */
+    alias = new Map<string, string>();
+
+    /**
      * @param defaults The defaults.
      */
     constructor() {
@@ -54,7 +59,7 @@ export class LibraryMolecules {
                         } else {
                             // All chunks have been read
                             contents = contents.trim();
-                            console.log('contents ' + contents);
+                            //console.log('contents ' + contents);
                             let parser = new DOMParser();
                             let xml: Document = parser.parseFromString(contents, "text/xml");
                             self.parse(xml);
@@ -82,7 +87,8 @@ export class LibraryMolecules {
             mlTagNames.add(node.nodeName);
         });
         if (mlTagNames.size != 1) {
-            if (!(mlTagNames.size == 2 && mlTagNames.has("#text"))) {
+            if (!(mlTagNames.size >= 2 && mlTagNames.has("#text")) ||
+                !(mlTagNames.size == 3 && mlTagNames.has('#comment'))) {
                 console.error("moleculeListTagNames:");
                 mlTagNames.forEach(x => console.error(x));
                 throw new Error("Additional tag names in moleculeList:");
@@ -97,9 +103,11 @@ export class LibraryMolecules {
         console.log("Number of molecules=" + xml_msl);
         //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
         for (let i = 0; i < xml_msl; i++) {
+            console.log("i=" + i);
             // Create a new Molecule.
             let attributes: Map<string, string> = getAttributes(xml_ms[i]);
             let mID: string | undefined = attributes.get(Molecule.s_id);
+            console.log("mID=" + mID);
             if (mID == undefined) {
                 throw new Error(Molecule.s_id + ' is undefined');
             }
@@ -109,6 +117,16 @@ export class LibraryMolecules {
             let moleculeTagNames: Set<string> = new Set();
             let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
             //console.log("cns.length=" + cns.length);
+            // Check if there are any child elements. If not, then this molecule is an alias.
+            if (cns.length == 0) {
+                console.log("This molecule is an alias.");
+                let ref: string | undefined = attributes.get("ref");
+                if (ref == undefined) {
+                    throw new Error("ref is undefined");
+                }
+                this.alias.set(ref, mID);
+                continue;
+            }
             //cns.forEach(function (cn) {
             for (let j = 0; j < cns.length; j++) {
                 let cn: ChildNode = cns[j];
@@ -153,8 +171,8 @@ export class LibraryMolecules {
             if (xml_aas.length == 1) {
                 let xml_aa = xml_aas[0];
                 let xml_as: HTMLCollectionOf<Element> = xml_aa.getElementsByTagName(Atom.tagName);
-                if (xml_as.length < 2) {
-                    throw new Error("Expecting 2 or more atoms in " + AtomArray.tagName + ", but finding " + xml_as.length + "!");
+                if (xml_as.length == 0) {
+                    throw new Error("Expecting 1 or more atoms in " + AtomArray.tagName + ", but finding 0!");
                 }
                 let aa: AtomArray = new AtomArray(getAttributes(xml_aa));
                 m.setAtoms(aa);
