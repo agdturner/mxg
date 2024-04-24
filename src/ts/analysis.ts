@@ -199,12 +199,84 @@ export class RateList extends NodeWithNodes {
      * Tag name.
      */
     public static tagName = 'me:rateList';
+
+    /**
+     * The index.
+     */
+    index: Map<string, number>;
     
+    /**
+     * The first order loss index.
+     */
+    folIndex: Map<number, number>;
+
+    /**
+     * The first order losses.
+     */
+    fols: FirstOrderLoss[];
+
+    /**
+     * The first order rate index.
+     */
+    forIndex: Map<number, number>;
+
+    /**
+     * The first order rates.
+     */
+    fors: FirstOrderRate[];
+
     /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>, firstOrderLosses?: FirstOrderLoss[], firstOrderRates?: FirstOrderRate[]) {
         super(attributes, Analysis.tagName);
+        this.index = new Map();
+        this.folIndex = new Map();
+        if (firstOrderLosses) {
+            let i: number = 0;
+            firstOrderLosses.forEach((fol) => {
+                this.index.set(FirstOrderLoss.tagName + i.toString(), this.nodes.size);
+                this.folIndex.set(this.folIndex.size, this.nodes.size);
+                this.addNode(fol);
+                i++;
+            });
+            this.fols = firstOrderLosses;
+        } else {
+            this.fols = [];
+        }
+        this.forIndex = new Map();
+        if (firstOrderRates) {
+            let i: number = 0;
+            firstOrderRates.forEach((forr) => {
+                this.index.set(FirstOrderRate.tagName + i.toString(), this.nodes.size);
+                this.forIndex.set(this.forIndex.size, this.nodes.size);
+                this.addNode(forr);
+                i++;
+            });
+            this.fors = firstOrderRates;
+        } else {
+            this.fors = [];
+        }
+    }
+
+    /**
+     * Add a first order loss.
+     */
+    public addFirstOrderLoss(f: FirstOrderLoss): void {
+        this.folIndex.set(this.folIndex.size, this.nodes.size);
+        this.index.set(FirstOrderLoss.tagName + this.folIndex.size.toString(), this.nodes.size);
+        this.fols.push(f);
+        this.addNode(f);
+    }
+
+    /**
+     * Add a first order rate.
+     */
+    public addFirstOrderRate(f: FirstOrderRate): void {
+        this.forIndex.set(this.forIndex.size, this.nodes.size);
+        this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
+        this.fors.push(f);
+        this.addNode(f);
     }
 }
 

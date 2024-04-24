@@ -623,7 +623,8 @@ mxgDataExamples_a.href = mxgDataExamples_url;
 mxgDataExamples_a.textContent = mxgDataExamples_url;
 /**
  * MESMER.
- */ let mesmer_url = "https://sourceforge.net/projects/mesmer/";
+ */ //let mesmer_url: string = "https://sourceforge.net/projects/mesmer/";
+let mesmer_url = "https://github.com/MESMER-kinetics/MESMER-code";
 let mesmer_a = document.createElement("a");
 mesmer_a.href = mesmer_url;
 mesmer_a.textContent = mesmer_url;
@@ -861,7 +862,7 @@ let sp_font = "2em SensSerif";
     // p1.
     let p1 = document.createElement("p");
     wDiv.appendChild(p1);
-    p1.appendChild(document.createTextNode("Welcome to MXG - a free and open source program to assist in creating, editing and         visualising MESMER program data. The main MXG development repository is: "));
+    p1.appendChild(document.createTextNode("Welcome to MXG - a free and open source program to assist in creating, editing and         visualising MESMER program data. The current MXG development repository is: "));
     p1.appendChild(mxg_a);
     p1.appendChild(document.createTextNode(". Details of MESMER - the Master Equation Solver for Multi Energy-well Reactions         can be found at: "));
     p1.appendChild(mesmer_a);
@@ -877,7 +878,7 @@ let sp_font = "2em SensSerif";
     // p3.
     let p3 = document.createElement("p");
     wDiv.appendChild(p3);
-    p3.textContent = "The Menu contains 6 buttons including the Create and Load buttons which are the two ways to begin. The Create button         is to start afresh and allows you to specify the title and input components for a MESMER data input file. Buttons for doing this         will appear below the Menu. The Load button is for loading an existing MESMER data file.  If the loaded file is a MESMER output         file, output components will be presented after the input components. The Save button is for saving a new MESMER data file. The         saved file should have the same content as any loaded file except: it will contain no comments or blank lines, values will be         trimmed of white space, and some numbers may be output in a different style (there should be no loss of precision). The saved file         should reflect any changes made via the interface. Between the Load and Save buttons are buttons to increase or decrease the         font size and to change between a light and dark theme. In addition to increasing or decreasing the font size of text elements,         the fontsize buttons will also redraw diagrams with a larger or smaller fontsize respectively.";
+    p3.textContent = "The Menu contains 7 buttons. The Load MESMER File button is for loading an existing MESMER data file. If the loaded         file is a MESMER output file, output components will be presented as well as the input components. The Save To MESMER File button         is for saving a new MESMER data file. The saved file should have the same content as any loaded file except: it will contain no         comments or extra white space, values will be trimmed of white space, and some numbers may be output in a different style (albeit         with no loss of precision). The saved file should also reflect any changes made via the interface. There are two additional Load         buttons. The LoadMolecule Library button allows for loading an XML file containing molecules which can then be selected for         inclusion via the interface moleculeList Add from library button. The Load Defaults button is for loading a defaults file which is         for initialising variables with specific default values. Between the Load and Save buttons are buttons to increase or decrease the         font size and to change between a light and dark theme. In addition to increasing or decreasing the font size of text elements,         the fontsize buttons also redraws the reaction diagram and any species plots with a larger or smaller fontsize respectively.";
     // p4.
     let p4 = document.createElement("p");
     wDiv.appendChild(p4);
@@ -887,7 +888,7 @@ let sp_font = "2em SensSerif";
     // p5.
     let p5 = document.createElement("p");
     wDiv.appendChild(p5);
-    p5.appendChild(document.createTextNode('A MESMER data file is expected to contain the following child elements of the parent         "me:mesmer" element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a         child element is missing or there are multiple "me:title", "moleculeList", "reactionList", or "me:modelParameters" elements, a         warning alert message should appear. If the file is a MESMER output data file, it is expected to also contain         "me:metadataList" and "me:analysis" child elements.'));
+    p5.appendChild(document.createTextNode('A MESMER data file is expected to contain the following child elements of the parent         "me:mesmer" element: "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control". If a         child element is missing or there are multiple "me:title", "moleculeList", "reactionList", or "me:modelParameters" elements, a         warning alert message should appear. If the file is a MESMER output data file, there should also be "me:metadataList"         and "me:analysis" child elements.'));
     // p6.
     let p6 = document.createElement("p");
     wDiv.appendChild(p6);
@@ -895,13 +896,13 @@ let sp_font = "2em SensSerif";
     // p7.
     let p7 = document.createElement("p");
     wDiv.appendChild(p7);
-    p6.textContent = ' The Reaction Diagram button expands/collapses a well diagram for the reactions. This diagram should redraw if         any "me:ZPE" property value of a molecule is changed. The diagram can be opened in a new Window and saved to a PNG format file.';
+    p6.textContent = ' The Reaction Diagram button shows/hides a well diagram which is redrawn if any molecule "me:ZPE" property value         is changed. The diagram can be opened in a new Window and saved to a PNG format file.';
     // p8.
     let p8 = document.createElement("p");
     wDiv.appendChild(p8);
-    p8.textContent = "MXG uses 3DMol.js under a BSD-3-Clause licence to visualise molecules with coordinates. For details of     3DMol.js please see the GitHub repository: ";
+    p8.textContent = "MXG uses 3DMol.js under a BSD-3-Clause licence to visualise molecules with coordinates. For details of         3DMol.js please see the GitHub repository: ";
     p8.appendChild(t3Dmol_a);
-    p8.appendChild(document.createTextNode(". If you use the 3DMol.js visualisations, please cite: Nicholas Rego and David Koes     3Dmol.js: molecular visualization with WebGL Bioinformatics (2015) 31 (8): 1322-1324 "));
+    p8.appendChild(document.createTextNode(". If you use the 3DMol.js visualisations, please cite: Nicholas Rego and David Koes         3Dmol.js: molecular visualization with WebGL Bioinformatics (2015) 31 (8): 1322-1324 "));
     p8.appendChild(t3Dmol_citation_a);
     p8.appendChild(document.createTextNode("."));
     // p9.
@@ -910,6 +911,10 @@ let sp_font = "2em SensSerif";
     p9.textContent = "MXG uses Big.js under an MIT licence to handle numbers. For details of Big.js please see the GitHub repository: ";
     p9.appendChild(bigjs_a);
     p9.appendChild(document.createTextNode("."));
+    // p10.
+    let p10 = document.createElement("p");
+    wDiv.appendChild(p10);
+    p10.textContent = "MXG is a work in progress and not currently recommended for general use, a community release is scheduled at the end of April.         The intention is to allow users to create MESMER files from scratch, but currently the only user pathway is to begin by loading an         existing MESMER file.";
 });
 /**
  * Redraw the reactions diagram.
@@ -1411,9 +1416,9 @@ let sp_font = "2em SensSerif";
                     //dosDiv.appendChild(createLabel(sumg.value.toString(), boundary1));
                     }
                     (0, _htmlJs.addTableRow)(t, dos.toStringArray());
-                    //console.log("dos: " + dos.toString());
-                    addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + (0, _moleculeJs.DensityOfStatesList).tagName, level1);
+                //console.log("dos: " + dos.toString());
                 }
+                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + (0, _moleculeJs.DensityOfStatesList).tagName, level1);
             }
             moleculeTagNames.delete((0, _moleculeJs.DensityOfStatesList).tagName);
         }
@@ -2406,9 +2411,9 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
                 }
             });
         });
-        console.log("molecule.getBonds().bonds.size " + molecule.getBonds().bonds.size);
+        //console.log("molecule.getBonds().bonds.size " + molecule.getBonds().bonds.size);
         molecule.getBonds().bonds.forEach(function(bond) {
-            console.log("bond.atomRefs2 " + bond.getAtomRefs2());
+            //console.log("bond.atomRefs2 " + bond.getAtomRefs2());
             let ids = bond.getAtomRefs2().split(" ");
             let aa = molecule.getAtoms();
             let a0 = aa.getAtom(ids[0]);
@@ -3135,8 +3140,10 @@ function setNumberNode(node, input) {
                 let description = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_d[0]));
                 //console.log("description=" + description);
                 crl.setDescription(new (0, _mesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), description));
-                let l = (0, _htmlJs.createLabel)(description + " (" + (0, _utilJs.mapToString)(clr_attributes) + ")", level1);
-                crlDiv.appendChild(l);
+                let l = (0, _htmlJs.createLabel)(description + " (" + (0, _utilJs.mapToString)(clr_attributes) + ")", boundary1);
+                let ldiv = (0, _htmlJs.createDiv)(undefined, level1);
+                ldiv.appendChild(l);
+                crlDiv.appendChild(ldiv);
             }
             // me:kinf.
             let xml_k = xml_crl[0].getElementsByTagName((0, _reactionJs.Kinf).tagName);
@@ -3184,7 +3191,7 @@ function setNumberNode(node, input) {
                     (0, _htmlJs.addTableRow)(t, k.getHeader());
                     (0, _htmlJs.addTableRow)(t, k.toStringArray());
                 }
-                addSaveAsCSVButton(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _reactionJs.CanonicalRateList).tagName, boundary1);
+                addSaveAsCSVButton(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _reactionJs.CanonicalRateList).tagName, level1);
             }
         }
     }
@@ -3257,7 +3264,7 @@ function setNumberNode(node, input) {
             let attributes = (0, _xmlJs.getAttributes)(xml_bathGases[i]);
             let moleculeID = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_bathGases[i]));
             let bathGas = new (0, _conditionsJs.BathGas)(attributes, moleculeID);
-            console.log("bathGas" + bathGas.toString());
+            //console.log("bathGas " + bathGas.toString());
             let bathGasIndex = conditions.addBathGas(bathGas);
             let id = (0, _utilJs.getID)(bsDivID, bathGasIndex.toString());
             let div = (0, _htmlJs.createFlexDiv)(id, level1);
@@ -3308,7 +3315,7 @@ function setNumberNode(node, input) {
                 pTs = new (0, _conditionsJs.PTs)(attributes);
                 for(let i = 0; i < xml_PTpairs.length; i++){
                     let pTpairAttributes = (0, _xmlJs.getAttributes)(xml_PTpairs[i]);
-                    console.log("pTpairAttributes=" + (0, _utilJs.mapToString)(pTpairAttributes));
+                    //console.log("pTpairAttributes=" + mapToString(pTpairAttributes));
                     let pTpair = new (0, _conditionsJs.PTpair)(pTpairAttributes);
                     pTs.add(pTpair);
                     // BathGas.
@@ -4588,8 +4595,8 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
             // Remove any existing div.
             //remove(divCmId);
             (0, _htmlJs.remove)(divCmDetailsId);
-            console.log("remove(divCmDetailsSelectId) " + divCmDetailsSelectId);
-            console.log("button.textContent " + button.textContent);
+            //console.log("remove(divCmDetailsSelectId) " + divCmDetailsSelectId);
+            //console.log("button.textContent " + button.textContent);
             (0, _htmlJs.remove)(divCmDetailsSelectId);
             button.textContent = buttonTextContentDeselected;
             button.classList.toggle(s_optionOn);
@@ -5229,6 +5236,83 @@ function handleEvent(element, tagName) {
             // Insert a save as csv button.
             addSaveAsCSVButton(()=>tableToCSV(tab), pDiv, tableDiv, labelText, boundary1);
         }
+        // me:rateList.
+        let xml_rl = xml_as[0].getElementsByTagName((0, _analysisJs.RateList).tagName);
+        // Create a new collapsible div for the RateLists.
+        let rlDivID = (0, _utilJs.getID)(aDiv, (0, _analysisJs.RateList).tagName);
+        let rlDiv = (0, _htmlJs.createDiv)(rlDivID, level1);
+        let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, aDiv, null, rlDiv, (0, _analysisJs.RateList).tagName + "s", boundary1, level1);
+        if (xml_rl.length > 0) {
+            // Create Table.
+            let tableDiv = (0, _htmlJs.createDiv)((0, _utilJs.getID)(rlDivID, s_table), boundary1);
+            rlDiv.appendChild(tableDiv);
+            let tab = (0, _htmlJs.createTable)((0, _utilJs.getID)(plDivID, s_table), boundary1);
+            // Table Header
+            let th = [
+                "T",
+                "conc"
+            ];
+            for(let i = 0; i < xml_rl.length; i++){
+                let rl_attributes = (0, _xmlJs.getAttributes)(xml_rl[i]);
+                let values = [];
+                values.push(rl_attributes.get("T"));
+                values.push(rl_attributes.get("conc"));
+                /*if (i == 0) {
+                    Array.from(rl_attributes.keys()).forEach((key) => {
+                        refs.push(key);
+                    });
+                }*/ let rl = new (0, _analysisJs.RateList)(rl_attributes);
+                a.addRateList(rl);
+                /*
+                let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rl_attributes);
+                let rlDivID: string = getID(aDiv.id, RateList.tagName, i.toString());
+                // Create a new collapsible div for the RateList.
+                let rDivID: string = getID(rlDivID, i.toString());
+                let rDiv: HTMLDivElement = createDiv(rlDivID, level1);
+                let rcDiv: HTMLDivElement = getCollapsibleDiv(rDivID, rlDiv, null, rDiv,
+                    labelText, boundary1, level0);
+                */ // "me:firstOrderRate".
+                let xml_for = xml_rl[i].getElementsByTagName((0, _analysisJs.FirstOrderRate).tagName);
+                if (xml_for.length > 0) {
+                    console.log("me:firstOrderRate length " + xml_for.length);
+                    for(let j = 0; j < xml_for.length; j++){
+                        let forate_attributes = (0, _xmlJs.getAttributes)(xml_for[j]);
+                        if (i == 0) {
+                            let fromRef = forate_attributes.get("fromRef");
+                            let toRef = forate_attributes.get("toRef");
+                            th.push(fromRef + "->" + toRef);
+                        }
+                        let s = ((0, _xmlJs.getFirstChildNode)(xml_for[j])?.nodeValue ?? "").trim();
+                        values.push(s);
+                        let forate = new (0, _analysisJs.FirstOrderRate)(forate_attributes, new (0, _bigJsDefault.default)(s));
+                        rl.addFirstOrderRate(forate);
+                    }
+                }
+                // "me:firstOrderLoss".
+                let xml_fol = xml_rl[i].getElementsByTagName((0, _analysisJs.FirstOrderLoss).tagName);
+                if (xml_fol.length > 0) {
+                    console.log("me:firstOrderLoss length " + xml_fol.length);
+                    for(let j = 0; j < xml_fol.length; j++){
+                        let fol_attributes = (0, _xmlJs.getAttributes)(xml_fol[j]);
+                        if (i == 0) Array.from(fol_attributes.values()).forEach((v)=>{
+                            th.push("loss of " + v);
+                        });
+                        let s = ((0, _xmlJs.getFirstChildNode)(xml_fol[j])?.nodeValue ?? "").trim();
+                        values.push(s);
+                        let fol = new (0, _analysisJs.FirstOrderLoss)(fol_attributes, new (0, _bigJsDefault.default)(s));
+                        rl.addFirstOrderLoss(fol);
+                    }
+                }
+                if (i == 0) (0, _htmlJs.addTableRow)(tab, th);
+                (0, _htmlJs.addTableRow)(tab, values);
+            //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));
+            //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(values.join(","), boundary1)));
+            }
+            //console.log(refs);
+            tableDiv.appendChild(tab);
+            // Insert a save as csv button.
+            addSaveAsCSVButton(()=>tableToCSV(tab), rlDiv, tableDiv, "Bartis-Widom Phenomenological Rate Coefficients", boundary1);
+        }
     }
     return aDiv;
 }
@@ -5364,12 +5448,12 @@ function handleEvent(element, tagName) {
         let orderOfMagnitude = Math.floor(Math.log10(xrange));
         //console.log("orderOfMagnitude=" + orderOfMagnitude);
         let xTickSpacing = Math.abs(Math.ceil(xrange / Math.pow(10, orderOfMagnitude)));
-        console.log("xTickSpacing=" + xTickSpacing);
+        //console.log("xTickSpacing=" + xTickSpacing);
         let i = Math.ceil(xMin / xTickSpacing);
         let xTick = i * xTickSpacing;
         // Draw x-axis ticks > 0.
         while(xTick < xMax){
-            console.log("xTick=" + xTick);
+            //console.log("xTick=" + xTick);
             let xPixel = x0 + (xTick - xMin) * xScale; // Convert xTick to pixel scale
             ctx.beginPath();
             ctx.moveTo(xPixel, y0);
@@ -10779,6 +10863,45 @@ class RateList extends (0, _xmlJs.NodeWithNodes) {
      * @param attributes The attributes.
      */ constructor(attributes, firstOrderLosses, firstOrderRates){
         super(attributes, Analysis.tagName);
+        this.index = new Map();
+        this.folIndex = new Map();
+        if (firstOrderLosses) {
+            let i = 0;
+            firstOrderLosses.forEach((fol)=>{
+                this.index.set(FirstOrderLoss.tagName + i.toString(), this.nodes.size);
+                this.folIndex.set(this.folIndex.size, this.nodes.size);
+                this.addNode(fol);
+                i++;
+            });
+            this.fols = firstOrderLosses;
+        } else this.fols = [];
+        this.forIndex = new Map();
+        if (firstOrderRates) {
+            let i = 0;
+            firstOrderRates.forEach((forr)=>{
+                this.index.set(FirstOrderRate.tagName + i.toString(), this.nodes.size);
+                this.forIndex.set(this.forIndex.size, this.nodes.size);
+                this.addNode(forr);
+                i++;
+            });
+            this.fors = firstOrderRates;
+        } else this.fors = [];
+    }
+    /**
+     * Add a first order loss.
+     */ addFirstOrderLoss(f) {
+        this.folIndex.set(this.folIndex.size, this.nodes.size);
+        this.index.set(FirstOrderLoss.tagName + this.folIndex.size.toString(), this.nodes.size);
+        this.fols.push(f);
+        this.addNode(f);
+    }
+    /**
+     * Add a first order rate.
+     */ addFirstOrderRate(f) {
+        this.forIndex.set(this.forIndex.size, this.nodes.size);
+        this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
+        this.fors.push(f);
+        this.addNode(f);
     }
 }
 class Analysis extends (0, _xmlJs.NodeWithNodes) {
