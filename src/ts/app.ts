@@ -208,7 +208,7 @@ function addID(...parts: (string | number)[]): string {
         throw new Error(validID + " already exists!");
     }
     allIDs.add(validID);
-    console.log("addID: \"" + validID + "\"");
+    //console.log("addID: \"" + validID + "\"");
     return validID;
 }
 
@@ -4336,7 +4336,8 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         let mpcDiv: HTMLDivElement = getCollapsibleDiv(mpcDivID, mpsDiv, null, mpDiv,
             ModelParameters.tagName + " " + i.toString(), boundary1, level1);
         let mp: ModelParameters = addModelParameters(getAttributes(xml_mps[i]), i);
-        setGrainSize(mp, xml_mps[i], mpDiv);
+        processGrainSize(mp, xml_mps[i], mpDiv);
+        //setGrainSize(mp, xml_mps[i], mpDiv);
         processModelParametersN(mp, xml_mps[i], mpDiv, AutomaticallySetMaxEne,
             mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne);
         processModelParametersN(mp, xml_mps[i], mpDiv, EnergyAboveTheTopHill,
@@ -4369,10 +4370,10 @@ function addModelParameters(attributes: Map<string, string>, i: number): ModelPa
  * @param mps The model parameters.
  * @param xml_mps The XML model parameters.
  * @param mpsDiv The model parameters div.
- 
+ */
 function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv: HTMLDivElement) {
     let tagName: string = GrainSize.tagName;
-    let id: string = addID(mpsDiv.id, tagName);
+    let id: string = modelParametersIDs.addID(mpsDiv.id, tagName);
     let div: HTMLDivElement = createFlexDiv(id, level1);
     mpsDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
@@ -4381,7 +4382,7 @@ function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv:
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     div.appendChild(button);
-    let idi: string = addID(id, s_input);
+    let idi: string = modelParametersIDs.addID(mpsDiv.id, tagName, s_input);
     let gs: GrainSize;
     let valueString: string;
     if (xml_mps != null) {
@@ -4412,7 +4413,7 @@ function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv:
         } else {
             mps.removeGrainSize();
             document.getElementById(idi)?.remove();
-            document.getElementById(addID(idi, s_units))?.remove();
+            document.getElementById(getID(idi, s_units))?.remove();
             button.textContent = buttonTextContentDeselected;
         }
         button.classList.toggle(s_optionOn)
@@ -4427,8 +4428,10 @@ function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv:
  */
 function setGrainSize(mps: ModelParameters, xml_mps: Element, mpsDiv: HTMLDivElement) {
     let tagName: string = GrainSize.tagName;
+    
     let div: HTMLDivElement = addGrainSize(mps, mpsDiv);
-
+    
+    
     // Save the current display style of the div
     let originalDisplay = div.style.display;
     // Make the div visible
@@ -4436,7 +4439,10 @@ function setGrainSize(mps: ModelParameters, xml_mps: Element, mpsDiv: HTMLDivEle
     let input: HTMLInputElement = div.querySelector('input') as HTMLInputElement;
     // restore the original display style
     div.style.display = originalDisplay;
+    
 
+    //let input: HTMLInputElement = document.getElementById(getID(mpsDiv.id, tagName, s_input)) as HTMLInputElement;
+    
     let xml: HTMLCollectionOf<Element> = xml_mps.getElementsByTagName(tagName);
     if (xml.length > 0) {
         if (xml.length > 1) {
@@ -4472,9 +4478,6 @@ function addGrainSize(mps: ModelParameters, mpsDiv: HTMLDivElement): HTMLDivElem
     div.appendChild(button);
     let idi: string = modelParametersIDs.addID(mpsDiv.id, tagName, s_input);
     let gs: GrainSize;
-    let valueString: string;
-    gs = getDefaultGrainsize(tagName);
-    mps.setGrainSize(gs);
     button.textContent = buttonTextContentDeselected;
     button.classList.toggle(s_optionOn);
     // Add event listener for the button.
@@ -4482,17 +4485,21 @@ function addGrainSize(mps: ModelParameters, mpsDiv: HTMLDivElement): HTMLDivElem
         // Check if the GrainSize already exists
         if (!mps.index.has(GrainSize.tagName)) {
             console.log("Adding GrainSize input");
-            createInputModelParameters(mps, div, gs, idi, valueString, mps.setGrainSize, Mesmer.energyUnits);
+            gs = getDefaultGrainsize(tagName);
+            mps.setGrainSize(gs);
+            createInputModelParameters(mps, div, gs, idi, gs.value.toString(), mps.setGrainSize, Mesmer.energyUnits);
             button.textContent = buttonTextContentSelected;
         } else {
+            console.log("Removing GrainSize input");
             mps.removeGrainSize();
             document.getElementById(idi)?.remove();
-            document.getElementById(addRID(idi, s_units))?.remove();
+            document.getElementById(getID(idi, s_units))?.remove();
             button.textContent = buttonTextContentDeselected;
         }
         button.classList.toggle(s_optionOn)
         button.classList.toggle(s_optionOff);
     });
+    //button.click();
     return div;
 }
 
@@ -4509,7 +4516,7 @@ function getDefaultGrainsize(tagName: string): GrainSize {
         attributes = defaults.attributess.get(tagName) ?? new Map();
     } else {
         console.log(tagName + " set using hardcoded default.");
-        value = new Big("100");
+        value = new Big(101);
         attributes = new Map();
         attributes.set(s_units, "cm-1");
     }
@@ -4599,7 +4606,7 @@ function createInputModelParameters(mps: ModelParameters, div: HTMLDivElement, e
     });
     input.value = valueString;
     resizeInputElement(input);
-    addAnyUnits(units, element.attributes, div, input, addRID(id, s_units), element.constructor.tagName, boundary1, boundary1);
+    addAnyUnits(units, element.attributes, div, input, getID(id, s_units), element.constructor.tagName, boundary1, boundary1);
 }
 
 /**
