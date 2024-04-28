@@ -669,12 +669,13 @@ export class Kinf extends NodeWithNodes {
     /**
      * @returns The Kinf as a string[].
      */
-    toStringArray() {
+    toStringArray(): string[] {
         let t: T = this.getT()!;
         let val: Val = this.getVal()!;
         let rev: Rev = this.getRev()!;
         let keq: Keq = this.getKeq()!;
-        return [t.getValue().toString(), val.getValue().toString(), rev.getValue().toString(), keq.getValue().toString()];
+        //return [t.getValue().toString(), val.getValue().toString(), rev.getValue().toString(), keq.getValue().toString()];
+        return [t.value.toString(), val.value.toString(), rev.value.toString(), keq.value.toString()];
     }
 
     /**

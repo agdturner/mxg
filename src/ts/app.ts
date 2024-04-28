@@ -10,9 +10,9 @@ import {
 
 import {
     Molecule, Atom, Bond, EnergyTransferModel, DeltaEDown, DOSCMethod, Property, AtomArray, BondArray, PropertyList,
-    PropertyScalar, PropertyArray, PropertyMatrix, ExtraDOSCMethod, BondRef, HinderedRotorPotential, PotentialPoint,
-    Periodicity, ReservoirSize, ZPE, RotConsts, VibFreqs, ThermoTable, ThermoValue, DensityOfStatesList,
-    DensityOfStates, Qtot, Sumc, Sumg, DistributionCalcMethod, Hf0
+    PropertyScalarString, PropertyScalarNumber, PropertyArray, PropertyMatrix, ExtraDOSCMethod, BondRef,
+    HinderedRotorPotential, PotentialPoint, Periodicity, ReservoirSize, ZPE, RotConsts, VibFreqs, ThermoTable,
+    ThermoValue, DensityOfStatesList, DensityOfStates, Qtot, Sumc, Sumg, DistributionCalcMethod, Hf0, Hf298, HfAT0, MW, SymmetryNumber, TSOpticalSymmetryNumber, FrequenciesScaleFactor, SpinMultiplicity, Epsilon, Sigma, EinsteinAij, EinsteinBij, Hessian
 } from './molecule.js';
 
 import {
@@ -59,6 +59,11 @@ import { Defaults } from './defaults.js';
 import { LibraryMolecules } from './librarymols.js';
 
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
+
+/**
+ * The filename of the MESMER XML file.
+ */
+let filename: string;
 
 /**
  * MXG.
@@ -197,7 +202,7 @@ const rIDs: Set<string> = new Set<string>();
  * Add an ID to the set of IDs.
  * @param parts The parts of the ID.
  */
-function addID(...parts: any[]): string {
+function addID(...parts: (string | number)[]): string {
     let validID: string = getID(...parts);
     if (allIDs.has(validID)) {
         throw new Error(validID + " already exists!");
@@ -211,7 +216,7 @@ function addID(...parts: any[]): string {
  * Add an ID to the set of IDs.
  * @param parts The parts of the ID.
  */
-function addRID(...parts: any[]): string {
+function addRID(...parts: (string | number)[]): string {
     let validID: string = addID(...parts);
     rIDs.add(validID);
     return validID;
@@ -224,16 +229,9 @@ function addRID(...parts: any[]): string {
 function remove(id: string) {
     let e: HTMLElement | null = document.getElementById(id);
     if (e != null) {
-        e.querySelectorAll('*').forEach((element) => {
-            remove(element.id);
-        })
         e.remove();
     }
-    if (rIDs.has(id)) {
-        rIDs.delete(id);
-    } else {
-        console.warn("ID " + id + " not in rIDs");  
-    }
+    rIDs.delete(id);
     allIDs.delete(id);
 }
 
@@ -268,6 +266,61 @@ let darkModePreference = await db.get('keyval', 'darkMode');
 dark = (darkModePreference === 'true');
 console.log("dark=" + dark);
 */
+
+/**
+ * For ID management.
+ */
+class IDManager {
+    private ids: Map<string, Set<string>> = new Map();
+
+    /**
+     * Adds an ID to the map.
+     * @param iD The key ID.
+     * @param parts The parts of the ID to be created.
+     * @returns The ID created.
+     */
+    addID(iD: string, ...parts: (string | number)[]): string {
+        let id: string = addRID(iD, ...parts);
+        if (!this.ids.has(iD)) {
+            this.ids.set(iD, new Set());
+        }
+        this.ids.get(iD)?.add(id);
+        return id;
+    }
+
+    removeID(iD: string): void {
+        rIDs.delete(iD);
+        allIDs.delete(iD);
+    }
+
+    /**
+     * Removes the IDs.
+     * @param iD The ID key for the IDs to remove.
+     */
+    removeIDs(iD: string): void {
+        this.ids.get(iD)!.forEach(id => {
+            console.log("remove id " + id);
+            rIDs.delete(id);
+            allIDs.delete(id);
+        });
+        this.ids.delete(iD);
+    }
+}
+
+/**
+ * For conditions ID management.
+ */
+let conditionsIDs = new IDManager();
+
+/**
+ * For modelParameters ID management.
+ */
+let modelParametersIDs = new IDManager();
+
+/**
+ * For control ID management.
+ */
+let controlIDs = new IDManager();
 
 /**
  * For mesmer.
@@ -436,48 +489,56 @@ document.addEventListener('DOMContentLoaded', () => {
     // p2.
     let p2 = document.createElement('p');
     wDiv.appendChild(p2);
-    p2.appendChild(document.createTextNode('MXG has been developed by a team based at '));
+    p2.appendChild(document.createTextNode('MXG is being developed by a team based at '));
     p2.appendChild(uol_a);
     p2.appendChild(document.createTextNode(' funded by '));
     p2.appendChild(epsrc_a);
-    p2.appendChild(document.createTextNode('.'));
+    p2.appendChild(document.createTextNode('. MXG is a work in progress. Developers are reporting known issues and testing and \
+        documenting the program ahead of a version 1.0 community supported release. Whilst the program may have some utility \
+        as is and may save MESMER users some time for specific usage scenarios, there are other usage scenarios that it is \
+        currently not suitable for. Like MESMER itself, MXG development aims to be driven in part by users helping to document \
+        issues, help prioritise feature requests, and submitting patches and pull requests as is normal for openly developed \
+        research software.'));
     //p2.appendChild(document.createTextNode(' Work was carried out under the follwoing grants (...).'));
     // p3.
     let p3 = document.createElement('p');
     wDiv.appendChild(p3);
-    p3.appendChild(document.createTextNode('MXG requires a standard compliant Web browser and installed as a \
-        Progressive Web App (PWA) can be used offline. PWA installation varies by Web browser/device. For guidance \
-        please see the MXG main development repository README: '));
+    p3.appendChild(document.createTextNode('MXG runs on on the latest Firefox, Chrome, Edge or Safari Web browsers. It can \
+        be used offline if installed as a Progressive Web App (PWA). PWA installation varies by Web browser and device, it \
+        should only require user permission and is effectively a form of Web browser bookmark. For guidance please see the \
+        MXG main development repository README: '));
     p3.appendChild(mxg_a.cloneNode(true));
-    p3.appendChild(document.createTextNode('.'));
+    p3.appendChild(document.createTextNode('. MXG may work on small screen devices, but it is recommended to use a device \
+        with at least a standard laptop sized screen.'));
     // p4.
     let p4 = document.createElement('p');
     wDiv.appendChild(p4);
     p4.appendChild(document.createTextNode('The Menu contains 7 buttons. The Load MESMER File button is for loading a \
         MESMER XML data file with a "me:mesmer" tag containing: "me:title", "moleculeList", "reactionList", \
         "me:conditions", "me:modelParameters", and "me:control" tags containing further details. A MESMER XML output \
-        data file will also have "me:metadataList" and \
-        "me:analysis" tags as children of the "me:mesmer" tag. Additional output is located in "moleculeList" and \
-        "reactionList" tags. The Load Molecules button is for loading molecule data which can be selected, modified and \
-        included in a saved file. The Load Defaults button is to load default values. Whilst not necessary, loading \
-        defaults can be convenient as often similar values and the same units as defaults are wanted. The Save MESMER File \
-        button is for saving a new MESMER XML data file. The file will be saved to the Web browser downloads location. The \
-        saved file will contain no comments or extra white space, values will be trimmed of white space, numbers will be \
-        output in a particular format (decimals - where numbers with more than 8 digits are output in an scientific \
-        format). There will be: a single "atomArray" tag containing all "atom" tags; a single "bondArray" tag containing \
-        any "bond" tags; and, a single "propertyList" tag containing all "property" tags for each "molecule" tag in the \
-        "moleculeList". The saved file will reflect what is specified via the interface. Between the Load and Save buttons \
-        are buttons to increase or decrease the fontsize and to change between a light and dark theme. In addition to \
-        increasing or decreasing the fontsize of text elements, the fontsize buttons can be actioned to redraw the reaction \
-        diagram and any species plots with a larger or smaller fontsize respectively.'));
+        data file will also have "me:metadataList" and "me:analysis" tags as children of the "me:mesmer" tag. Additional \
+        output is located in "moleculeList" and "reactionList" tags. The Load Molecules button is for loading molecule \
+        data for selection, modification and for inclusion in saved MESMER files. The Load Defaults button is to load \
+        default values. Whilst not necessary, loading defaults is for convenience, as often similar values and the same \
+        units as defaults are wanted for specified variables. The Save MESMER File button is for saving a new MESMER XML \
+        data file. The file should be saved to the Web browser downloads location. It should contain no comments or extra \
+        white space between XML tags with the exception of new lines, tag values should be trimmed of white space, \
+        numbers should be output in a particular format (decimals - where numbers with more than 8 digits are output in \
+        scientific notation format). There should be: a single "atomArray" tag containing all "atom" tags (each atom \
+        should have a unique id attribute); a single "bondArray" tag containing any "bond" tags (each bond should have a \
+        unique id attribute); and, a single "propertyList" tag containing all "property" tags for each "molecule" tag in \
+        the "moleculeList". The saved file should reflect what is specified via the interface. Between the Load and Save \
+        buttons are buttons to increase or decrease the fontsize and to change between a light and dark theme. In \
+        addition to increasing or decreasing the fontsize of text elements, the fontsize buttons can be actioned to \
+        redraw the reaction diagram and any species plots with a larger or smaller fontsize respectively.'));
     // p5.
     let p5 = document.createElement('p');
     wDiv.appendChild(p5);
     p5.appendChild(document.createTextNode('The "me:title" value is presented in an input alongside an associated label. \
         The input can be used to change the value which is also used to compose filenames for files saved from MXG. \
-        Detailsare presented via buttons which contain a triangular symbol. A triangle orientated with a point down: '
-        + sy_downTriangle + ' can be actioned to show more details if there are any. A triangle orientated with a point up: '
-        + sy_upTriangle + ' can be actioned to hide those details again.'));
+        Details are presented via buttons which contain a triangular symbol. A triangle orientated with a point down: '
+        + sy_downTriangle + ' can be actioned to show more details (if there are any). A triangle orientated with a point \
+        up: ' + sy_upTriangle + ' can be actioned to hide those details again.'));
     // p6.
     let p6 = document.createElement('p');
     wDiv.appendChild(p6);
@@ -500,11 +561,6 @@ document.addEventListener('DOMContentLoaded', () => {
         repository: ';
     p8.appendChild(bigjs_a);
     p8.appendChild(document.createTextNode('.'));
-    // p9.
-    let p9 = document.createElement('p');
-    wDiv.appendChild(p9);
-    p9.textContent = 'MXG is a work in progress and not currently recommended for general use, a community supported release \
-        is coming soon...';
 });
 
 /**
@@ -555,7 +611,7 @@ function load() {
             let file: File | null = input.files[0];
             //console.log("file=" + file);
             console.log(file.name);
-            let inputFilename: string = file.name;
+            filename = file.name;
             let reader = new FileReader();
             let chunkSize = 1024 * 1024; // 1MB
             let start = 0;
@@ -574,7 +630,7 @@ function load() {
                     } else {
                         // All chunks have been read
                         contents = contents.trim();
-                        displayXML(inputFilename, contents);
+                        displayXML(filename, contents);
                         let parser = new DOMParser();
                         let xml = parser.parseFromString(contents, "text/xml");
                         parse(xml);
@@ -603,27 +659,35 @@ function parse(xml: XMLDocument) {
 
     // Title.
     let xml_title: HTMLCollectionOf<Element> = xml.getElementsByTagName(Title.tagName) as HTMLCollectionOf<Element>;
-    if (xml_title.length != 1) {
-        throw new Error('Multiple ' + Title.tagName + ' tags found');
+    let title: string;
+    let attributes: Map<string, string>;
+    if (xml_title.length > 0) {
+        if (xml_title.length > 1) {
+            console.warn('Multiple ' + Title.tagName + ' tags found, using the first.');
+        }
+        title = (xml_title[0].childNodes[0].nodeValue as string).trim();
+        attributes = getAttributes(xml_title[0]);
     } else {
-        let title: string = (xml_title[0].childNodes[0].nodeValue as string).trim();
-        let titleNode: Title = new Title(getAttributes(xml_title[0]), title);
-        mesmer.setTitle(titleNode);
-        let titleDiv: HTMLDivElement = document.getElementById(titleDivID) as HTMLDivElement;
-        let lwiId: string = addRID('titleDiv');
-        // Remove any existing lwiId HTMLDivElement.
-        remove(lwiId);
-        // Create input element.
-        let lwi: HTMLDivElement = createLabelWithInput("text", addRID(lwiId, s_input), boundary1, level0,
-            (event: Event) => {
-                let target = event.target as HTMLInputElement;
-                titleNode.value = target.value;
-                console.log(titleNode.tagName + " changed to " + titleNode.value);
-                resizeInputElement(target);
-            }, title, Title.tagName);
-        lwi.id = lwiId;
-        titleDiv.appendChild(lwi);
+        title = filename
+        console.warn('No ' + Title.tagName + ' tag found, using the filename: ' + filename + ' as the title.');
+        attributes = new Map<string, string>();
     }
+    let titleNode: Title = new Title(attributes, title);
+    mesmer.setTitle(titleNode);
+    let titleDiv: HTMLDivElement = document.getElementById(titleDivID) as HTMLDivElement;
+    let lwiId: string = addRID('titleDiv');
+    // Remove any existing lwiId HTMLDivElement.
+    remove(lwiId);
+    // Create input element.
+    let lwi: HTMLDivElement = createLabelWithInput("text", addRID(lwiId, s_input), boundary1, level0,
+        (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            titleNode.value = target.value;
+            console.log(titleNode.tagName + " changed to " + titleNode.value);
+            resizeInputElement(target);
+        }, title, Title.tagName);
+    lwi.id = lwiId;
+    titleDiv.appendChild(lwi);
 
     // Molecules.
     let mlDiv: HTMLDivElement = document.getElementById(moleculesDivID) as HTMLDivElement;
@@ -895,7 +959,18 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         }
         let xml_bs: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(Bond.tagName);
         for (let j = 0; j < xml_bs.length; j++) {
-            baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
+            // Load those bonds that have an id attribute first.
+            let b_attributes: Map<string, string> = getAttributes(xml_bs[j]);
+            if (b_attributes.has(Bond.s_id)) {
+                baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
+            }
+        }
+        // Load those bonds that do not have an id attribute.
+        for (let j = 0; j < xml_bs.length; j++) {
+            let b_attributes: Map<string, string> = getAttributes(xml_bs[j]);
+            if (!b_attributes.has(Bond.s_id)) {
+                baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
+            }
         }
         baDiv.appendChild(getAddBondButton(m, mID, baDiv, Bond.tagName, boundary1, level1));
         moleculeTagNames.delete(Bond.tagName);
@@ -955,10 +1030,13 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 }
                 let s_attributes: Map<string, string> = new Map();
                 s_attributes.set("units", "kJ/mol");
-                let ps: PropertyScalar = new PropertyScalar(s_attributes, value);
+                let ps: PropertyScalarNumber = new PropertyScalarNumber(s_attributes, value);
                 let p: Property = new Hf0(attributes, ps);
+
+                let iDs: Set<string> = new Set();
+
                 //attributes.set(Hf0.s_units, "kJ/mol");
-                addPropertyScalar(s_attributes, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
+                addPropertyScalarNumber(s_attributes, iDs, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
                 pl.setProperty(p);
                 /*
                 } else if (dictRef == "me:ZPE") {
@@ -1006,7 +1084,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let dcm = new DistributionCalcMethod(dcmAttributes);
             m.setDistributionCalcMethod(dcm);
             let dcmDivID: string = addRID(mDivID, DistributionCalcMethod.tagName);
-            let dcmDiv: HTMLDivElement = createDiv(addRID(mDivID, DistributionCalcMethod.tagName));
+            let dcmDiv: HTMLDivElement = createDiv(dcmDivID);
             mDiv.appendChild(dcmDiv);
             // Create label.
             dcmDiv.appendChild(createLabel(DistributionCalcMethod.tagName + " " + mapToString(dcmAttributes), level1));
@@ -1197,7 +1275,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
 
                     // Load PotentialPoints.
                     // Create collapsible HinderedRotorPotential PotentialPoint HTMLDivElement.
-                    let ppsDivID: string = addRID(mDivID, HinderedRotorPotential.tagName, PotentialPoint.tagName);
+                    let ppsDivID: string = addRID(hrpDivID, PotentialPoint.tagName);
                     let ppsDiv: HTMLDivElement = createDiv(ppsDivID);
                     let ppscDivID = addRID(ppsDivID, s_container);
                     let ppscDiv: HTMLDivElement = getCollapsibleDiv(ppscDivID, mDiv, null, ppsDiv,
@@ -1209,7 +1287,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     for (let k = 0; k < xml_pps.length; k++) {
                         let pp: PotentialPoint = new PotentialPoint(getAttributes(xml_pps[k]));
                         pps.push(pp);
-                        let ppDivID = addRID(ppsDivID, PotentialPoint.tagName, k);
+                        let ppDivID = addRID(ppsDivID, k);
                         let ppDiv: HTMLDivElement = createFlexDiv(ppDivID, level1);
                         ppsDiv.appendChild(ppDiv);
                         let l: HTMLLabelElement = createLabel(PotentialPoint.tagName + " " + k, boundary1);
@@ -1317,10 +1395,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             moleculeTagNames.forEach(x => console.warn(x));
             //throw new Error("Unexpected tags in molecule.");
         }
-        // Create a molstar molecule visualisation
-        let molstarDiv: HTMLDivElement = document.createElement("div");
-        molstarDiv.id = addRID(m.getID(), "molstar");
-        mDiv.appendChild(molstarDiv);
     }
     // Create an add molecule button.
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
@@ -1625,11 +1699,12 @@ function addAtom(molecule: Molecule, aa: AtomArray, a: Atom,
     let aDivID: string = addRID(molecule.getID(), aID);
     let aDiv: HTMLDivElement = createFlexDiv(aDivID, level);
     aDiv.appendChild(createLabel(aID, boundary));
+    let aIDs: Set<string> = new Set();
     // elementType.
-    processElementType(a, aDiv, true, boundary);
+    processElementType(a, aDiv, aIDs, true, boundary);
     // Coordinates.
-    processCoordinates(a, aDiv, boundary, boundary);
-    addRemoveButton(aDiv, boundary, removeAtom, molecule, aID);
+    processCoordinates(a, aDiv, aIDs, boundary, boundary);
+    addRemoveButton(aDiv, boundary, removeAtom, molecule, aID, aIDs);
     // Get elements with Bond.s_atomRefs2 className. These select elements are to be updated to include the new atom option.
     addOptionByClassName(Bond.s_atomRefs2, aID);
     return aDiv;
@@ -1640,8 +1715,12 @@ function addAtom(molecule: Molecule, aa: AtomArray, a: Atom,
  * @param molecule The molecule.
  * @param id The atom id to remove.
  */
-function removeAtom(molecule: Molecule, id: string) {
+function removeAtom(molecule: Molecule, id: string, aIDs: Set<string>) {
     molecule.getAtoms().removeAtom(id);
+    aIDs.forEach((x) => {
+        console.log("Removing " + x);
+        remove(x);
+    });
     molecule.getBonds().bonds.forEach((bond) => {
         let atomRefs2: string = bond.getAtomRefs2();
         let atomRefs: string[] = atomRefs2.split(" ");
@@ -1712,7 +1791,8 @@ function getAddBondButton(molecule: Molecule, moleculeId: string, baDiv: HTMLDiv
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
     // Create an add button.
-    let button: HTMLButtonElement = createButton(s_Add_sy_add, addRID(moleculeId, "Add" + typeID + "Button"), level);
+    let id = addRID(baDiv.id, typeID, s_button);
+    let button: HTMLButtonElement = createButton(s_Add_sy_add, id, level);
     button.addEventListener('click', () => {
         let atoms: Map<string, Atom> = molecule.getAtoms().atoms;
         if (atoms.size < 2) {
@@ -1742,7 +1822,8 @@ function addBond(molecule: Molecule, atoms: Map<string, Atom>, ba: BondArray, b:
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let bID = ba.addBond(b, b.getID());
-    let bDivID: string = addRID(molecule.getID(), bID);
+    let bDivID: string = getID(molecule.getID(), bID);
+    //let bDivID: string = addRID(molecule.getID(), bID);
     let bDiv: HTMLDivElement = createFlexDiv(bDivID, level);
     bDiv.appendChild(createLabel(bID, boundary));
     // atomRefs2.
@@ -1772,13 +1853,18 @@ function addBond(molecule: Molecule, atoms: Map<string, Atom>, ba: BondArray, b:
  */
 function processAtomRefs2(molecule: Molecule, bDiv: HTMLDivElement, bond: Bond,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let id = addRID(bDiv.id, Bond.s_atomRefs2);
+    //let id = addRID(bDiv.id, Bond.s_atomRefs2);
+    let id = getID(bDiv.id, Bond.s_atomRefs2);
+    //bIDs.add(id);
     let atomRefs2: string | undefined = bond.getAtomRefs2();
     let atomRefs: string[] = atomRefs2.split(" ");
     let atomRefOptions: string[] = Array.from((molecule.getAtoms() as AtomArray).atoms.keys());
     // alws.
+    let alwsID: string = getID(id, 0);
+    //let alwsID: string = addRID(id, 0);
+    //bIDs.add(alwsID);
     let alws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[0]", atomRefOptions, Atom.tagName, atomRefs[0],
-        addRID(id, 0), margin, margin);
+        alwsID, margin, margin);
     let aselect: HTMLSelectElement = alws.querySelector('select') as HTMLSelectElement;
     aselect.classList.add(Bond.s_atomRefs2);
     aselect.addEventListener('change', (event: Event) => {
@@ -1792,8 +1878,11 @@ function processAtomRefs2(molecule: Molecule, bDiv: HTMLDivElement, bond: Bond,
     resizeSelectElement(aselect);
     bDiv.appendChild(alws);
     // blws.
+    let blwsID: string = getID(id, 1);
+    //let blwsID: string = addRID(id, 1);
+    //bIDs.add(blwsID);
     let blws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[1]", atomRefOptions, Atom.tagName, atomRefs[1],
-        addRID(id, 1), margin, margin);
+        blwsID, margin, margin);
     let bselect: HTMLSelectElement = blws.querySelector('select') as HTMLSelectElement;
     bselect.classList.add(Bond.s_atomRefs2);
     bselect.addEventListener('change', (event: Event) => {
@@ -1808,19 +1897,21 @@ function processAtomRefs2(molecule: Molecule, bDiv: HTMLDivElement, bond: Bond,
     bDiv.appendChild(blws);
 }
 
-function addProperty(dictRef: string, ps: PropertyScalar, id: string,
+function addProperty(dictRef: string, ps: PropertyScalarNumber, id: string,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let pDiv: HTMLDivElement = createFlexDiv(id, level);
     pDiv.appendChild(createLabel(dictRef, boundary));
     // value.
     let value: Big = ps.getValue();
+    //let value: string = ps.value;
     let valueInputId: string = addRID(id, s_input);
     let valueInput: HTMLInputElement = createInput("text", valueInputId, boundary);
     pDiv.appendChild(valueInput);
     valueInput.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
         ps.setValue(new Big(target.value));
+        //ps.value = target.value;
         resizeInputElement(target);
     });
     valueInput.value = value.toString();
@@ -1828,10 +1919,11 @@ function addProperty(dictRef: string, ps: PropertyScalar, id: string,
     return pDiv;
 }
 
-function addPropertyScalar(attributes: Map<string, string>, value: Big, units: string[] | undefined, pl: PropertyList,
-    p: Property, plDiv: HTMLDivElement,
+
+function addPropertyScalarNumber(attributes: Map<string, string>, iDs: Set<string>, value: Big, 
+    units: string[] | undefined, pl: PropertyList, p: Property, plDiv: HTMLDivElement,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
-    let ps: PropertyScalar = p.getProperty() as PropertyScalar;
+    let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
     ps.setValue = function (value: Big) {
         ps.value = value;
         //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
@@ -1840,35 +1932,18 @@ function addPropertyScalar(attributes: Map<string, string>, value: Big, units: s
             redrawReactionsDiagram();
         }
     }.bind(ps);
+    ps.value = value;
+    if (p.dictRef == ZPE.dictRef) {
+        // Update the molecule energy diagram.
+        redrawReactionsDiagram();
+    }
     let id: string = addRID(plDiv.id, p.dictRef);
     console.log("div ID " + id);
-    let div: HTMLDivElement = processNumber(id, p.dictRef, ps.getValue.bind(ps), ps.setValue,
+    let div: HTMLDivElement = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
         () => pl.removeProperty(p.dictRef), boundary1, level1);
-    console.log("unitsID " + addRID(id, PropertyScalar.s_units));
-    addAnyUnits(units, attributes, div, div.querySelector(s_input) as HTMLElement, getID(id, PropertyScalar.s_units), p.dictRef, boundary, boundary);
+    console.log("unitsID " + addRID(id, PropertyScalarNumber.s_units));
+    addAnyUnits(units, attributes, div, div.querySelector(s_input) as HTMLElement, getID(id, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
     plDiv.appendChild(div);
-    /*
-    // Get the button from the div and click it.
-    let button: HTMLButtonElement = div.querySelector(s_button) as HTMLButtonElement;
-    button.click();
-    */
-    /*
-    let observer = new MutationObserver((mutationsList, observer) => {
-        for(let mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                let button: HTMLButtonElement = div.querySelector(s_button) as HTMLButtonElement;
-                if (button) {
-                    button.click();
-                    console.log("Clicked button " + button.textContent);
-                    observer.disconnect(); // Stop observing when the button is found and clicked
-                }
-            }
-        }
-    });
-    
-    // Start observing the div with configuration
-    observer.observe(div, { childList: true });
-    */
 }
 
 /**
@@ -1886,13 +1961,55 @@ function createProperty(pap: Set<string>, pl: PropertyList, xml: Element, plDiv:
     pap.delete(p.dictRef);
     //console.log("p.dictRef " + p.dictRef);
     if (p.dictRef == ZPE.dictRef) {
-        processProperty(pl, p, Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
+        // "me:ZPE", scalar, Mesmer.energyUnits.
+        processPropertyScalarNumber(pl, p, Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == Hf0.dictRef) {
+        // "me:Hf0", scalar, Mesmer.energyUnits.
+        processPropertyScalarNumber(pl, p, Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == HfAT0.dictRef) {
+        // "me:HfAT0", scalar, Mesmer.energyUnits.
+        processPropertyScalarNumber(pl, p, Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == Hf298.dictRef) {
+        // "me:Hf298", scalar, Mesmer.energyUnits.
+        processPropertyScalarNumber(pl, p, Mesmer.energyUnits, molecule, xml, plDiv, boundary, level);
     } else if (p.dictRef == RotConsts.dictRef) {
-        processProperty(pl, p, Mesmer.frequencyUnits, molecule, xml, plDiv, boundary, level);
+        // "me:rotConsts", array, Mesmer.frequencyUnits.
+        processPropertyScalarNumber(pl, p, Mesmer.frequencyUnits, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == SymmetryNumber.dictRef) {
+        // "me:symmetryNumber", scalar, No units.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == TSOpticalSymmetryNumber.dictRef) {
+        // "me:TSOpticalSymmetryNumber", scalar, No units.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == FrequenciesScaleFactor.dictRef) {
+        // "me:frequenciesScaleFactor", scalar, No units.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
     } else if (p.dictRef == VibFreqs.dictRef) {
-        processProperty(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+        // "me:vibFreqs", array, cm-1.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == MW.dictRef) {
+        // "me:MW", scalar, amu.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == SpinMultiplicity.dictRef) {
+        // "me:spinMultiplicity", scalar, No units.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == Epsilon.dictRef) {
+        // "me:epsilon", scalar, K (fixed).
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == Sigma.dictRef) {
+        // "me:sigma", scalar, Å (fixed).
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == Hessian.dictRef) {
+        // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == EinsteinAij.dictRef) {
+        // "me:EinsteinAij", array, s-1 (fixed).
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+    } else if (p.dictRef == EinsteinBij.dictRef) {
+        // "me:EinsteinBij", array, m3/J/s2 (fixed).
+        processPropertyScalarNumber(pl, p, undefined, molecule, xml, plDiv, boundary, level);
     } else {
-        processProperty(pl, p, undefined, molecule, xml, plDiv, boundary, level);
+        processPropertyScalarString(pl, p, molecule, xml, plDiv, boundary, level);
     }
     return p;
 }
@@ -1905,7 +2022,7 @@ function createProperty(pap: Set<string>, pl: PropertyList, xml: Element, plDiv:
  * @param margin The margin for the components.
  * @returns A HTMLDivElement containing the HTMLLabelElement and HTMLSelectElement elements.
  */
-function processElementType(a: Atom, aDiv: HTMLDivElement, first: boolean,
+function processElementType(a: Atom, aDiv: HTMLDivElement, aIDs: Set<string>, first: boolean,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let elementType: string | undefined = a.getElementType();
     //console.log("Atom.s_elementType " + elementType);
@@ -1916,8 +2033,10 @@ function processElementType(a: Atom, aDiv: HTMLDivElement, first: boolean,
         addOrRemoveInstructions(selectTypes, first);
         //console.log("Atom.s_elementTypes " + arrayToString(Atom.elementTypes));
     }
+    let id = addRID(aDiv.id, Atom.s_elementType);
+    aIDs.add(id);
     let lws: HTMLDivElement = createLabelWithSelect(Atom.s_elementType, selectTypes, Atom.s_elementType,
-        elementType!, addRID(aDiv.id, Atom.s_elementType), margin, margin);
+        elementType!, id, margin, margin);
     let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
     select.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLSelectElement;
@@ -1954,35 +2073,46 @@ function addOrRemoveInstructions(options: string[], add: boolean): void {
  * @param aDiv The atom div.
  * @param margin The margin.
  */
-function processCoordinates(a: Atom, aDiv: HTMLDivElement,
+function processCoordinates(a: Atom, aDiv: HTMLDivElement, aIDs: Set<string>, 
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
-    aDiv.appendChild(processNumber(addRID(aDiv.id, Atom.s_x3), Atom.s_x3, a.getX3.bind(a), a.setX3.bind(a), a.removeX3, marginComponent, margin));
-    aDiv.appendChild(processNumber(addRID(aDiv.id, Atom.s_y3), Atom.s_y3, a.getY3.bind(a), a.setY3.bind(a), a.removeY3, marginComponent, margin));
-    aDiv.appendChild(processNumber(addRID(aDiv.id, Atom.s_z3), Atom.s_z3, a.getZ3.bind(a), a.setZ3.bind(a), a.removeZ3, marginComponent, margin));
+    let id: string;
+    id = addRID(aDiv.id, Atom.s_x3);
+    aIDs.add(id);
+    aDiv.appendChild(processNumber(id, aIDs, Atom.s_x3, a.getX3.bind(a), a.setX3.bind(a), a.removeX3, marginComponent, margin));
+    id = addRID(aDiv.id, Atom.s_y3);
+    aIDs.add(id);
+    aDiv.appendChild(processNumber(id, aIDs, Atom.s_y3, a.getY3.bind(a), a.setY3.bind(a), a.removeY3, marginComponent, margin));
+    id = addRID(aDiv.id, Atom.s_z3);
+    aIDs.add(id);
+    aDiv.appendChild(processNumber(id, aIDs, Atom.s_z3, a.getZ3.bind(a), a.setZ3.bind(a), a.removeZ3, marginComponent, margin));
 }
+
 
 /**
  * Process a numerical variable.
- * @param div The div.
  * @param id The id.
+ * @param iDs The set of IDs to add to.
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
  */
-function processNumber(id: string, name: string,
+function processNumber(id: string, iDs: Set<string>, name: string,
     getter: () => Big | undefined, setter: (value: Big) => void, remover: () => void,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let button = createButton(buttonTextContentDeselected, addRID(id, s_button), marginComponent);
+    let idb = addRID(id, s_button);
+    iDs.add(idb);
+    let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     let inputId: string = addRID(id, name, s_input)
+    iDs.add(inputId);
     let value: Big | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -2139,8 +2269,92 @@ function addRemoveButton(div: HTMLDivElement,
     button.addEventListener('click', () => {
         removeFunction(...args);
         div.remove();
+        remove(div.id);
     });
     return button;
+}
+
+/**
+ * Process a numerical variable.
+ * @param id The id.
+ * @param iDs The set of IDs to add to.
+ * @param name The name of the variable.
+ * @param getter The getter function.
+ * @param setter The setter function.
+ * @param margin The margin.
+ */
+function processString(id: string, iDs: Set<string>, name: string,
+    getter: () => string | undefined, setter: (value: string) => void, remover: () => void,
+    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    let div: HTMLDivElement = createFlexDiv(id, margin);
+    let buttonTextContentSelected: string = name + sy_selected;
+    let buttonTextContentDeselected: string = name + sy_deselected;
+    let idb = addRID(id, s_button);
+    iDs.add(idb);
+    let button = createButton(buttonTextContentDeselected, idb, marginComponent);
+    div.appendChild(button);
+    button.classList.add(s_optionOn);
+    button.classList.add(s_optionOff);
+    let inputId: string = addRID(id, name, s_input)
+    iDs.add(inputId);
+    let value: string | undefined = getter();
+    if (value == undefined) {
+        button.textContent = buttonTextContentDeselected;
+        button.classList.toggle(s_optionOn);
+    } else {
+        addString(div, inputId, name, value, setter, marginComponent);
+        button.textContent = buttonTextContentSelected;
+        button.classList.toggle(s_optionOff);
+    }
+    // Add event listener for the button.
+    button.addEventListener('click', (event: MouseEvent) => {
+        if (document.getElementById(inputId) == null) {
+            addString(div, inputId, name, value, setter, marginComponent);
+            button.textContent = buttonTextContentSelected;
+        } else {
+            // Remove existing.
+            document.getElementById(inputId)?.remove();
+            // 
+            remover();
+            console.log("Removed " + inputId);
+            button.textContent = buttonTextContentDeselected;
+        }
+        button.classList.toggle(s_optionOn)
+        button.classList.toggle(s_optionOff);
+    });
+    return div;
+}
+
+/**
+ * @param div The div to add the input to.
+ * @param id The id.
+ * @param name The name of the input.
+ * @param value The numerical value.
+ * @param setter The setter function to call.
+ * @param boundary The boundary.
+ * @param level The level.
+ */
+function addString(div: HTMLDivElement, id: string, name: string, value: string | undefined,
+    setter: (value: string) => void,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    let valueString: string;
+    if (value == undefined) {
+        valueString = "";
+    } else {
+        valueString = value.toString();
+    }
+    //let input: HTMLInputElement = createInput("number", id, boundary);
+    let input: HTMLInputElement = createInput("text", id, boundary);
+    input.addEventListener('change', (event: Event) => {
+        let target = event.target as HTMLInputElement;
+            setter(target.value);
+            console.log(name + " changed from " + value + " to " + target.value);
+        resizeInputElement(target);
+    });
+    input.value = valueString;
+    resizeInputElement(input);
+    div.appendChild(input);
 }
 
 /**
@@ -2151,7 +2365,8 @@ function addRemoveButton(div: HTMLDivElement,
  */
 function processOrder(bondDiv: HTMLDivElement, bond: Bond,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
-    let id = addRID(bondDiv.id, Bond.s_order);
+    //let id = addRID(bondDiv.id, Bond.s_order);
+    let id = getID(bondDiv.id, Bond.s_order);
     let div: HTMLDivElement = createFlexDiv(undefined, margin);
     bondDiv.appendChild(div);
     let buttonTextContentSelected: string = Bond.s_order + sy_selected;
@@ -2435,21 +2650,25 @@ function displayXML(xmlFilename: string, xml: string) {
  * @param boundary The boundary to go around components.
  * @param level The level of the component.
  */
-function processProperty(pl: PropertyList, p: Property, units: string[] | undefined, molecule: Molecule, element: Element,
+function processPropertyScalarNumber(pl: PropertyList, p: Property, units: string[] | undefined, molecule: Molecule, element: Element,
     plDiv: HTMLDivElement,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+
+    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
+    let pIDs: Set<string> = new Set<string>();
+
     // PropertyScalar.
-    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalar.tagName);
+    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarNumber.tagName);
     if (scalarNodes.length > 0) {
         if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + PropertyScalar.tagName + " but finding " + scalarNodes.length + "!");
+            throw new Error("Expecting 1 " + PropertyScalarNumber.tagName + " but finding " + scalarNodes.length + "!");
         }
         let inputString: string = getInputString(scalarNodes[0]);
         let value: Big = new Big(inputString);
         let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
-        // Add PropertyScalar.
-        let ps: PropertyScalar = new PropertyScalar(psAttributes, value);
+        // Add PropertyScalarNumber.
+        let ps: PropertyScalarNumber = new PropertyScalarNumber(psAttributes, value);
         p.setProperty(ps);
         ps.setValue = function (value: Big) {
             ps.value = value;
@@ -2459,9 +2678,9 @@ function processProperty(pl: PropertyList, p: Property, units: string[] | undefi
                 redrawReactionsDiagram();
             }
         }.bind(ps);
-        let div: HTMLDivElement = processNumber(addRID(plDiv.id, p.dictRef), p.dictRef, ps.getValue.bind(ps), ps.setValue,
+        let div: HTMLDivElement = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
             () => pl.removeProperty(p.dictRef), boundary1, level1);
-        addAnyUnits(units, psAttributes, div, div.querySelector(s_input) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyScalar.s_units), p.dictRef, boundary, boundary);
+        addAnyUnits(units, psAttributes, div, div.querySelector(s_input) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
         plDiv.appendChild(div);
     } else {
         // PropertyArray.
@@ -2478,7 +2697,7 @@ function processProperty(pl: PropertyList, p: Property, units: string[] | undefi
                 p.setProperty(pa);
                 let div: HTMLDivElement = processNumberArray(addRID(plDiv.id, p.dictRef), p.dictRef, pa, pa.getValues.bind(pa), pa.setValues,
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
-                addAnyUnits(units, paAttributes, div, div.querySelector(s_textarea) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyScalar.s_units), p.dictRef, boundary, boundary);
+                addAnyUnits(units, paAttributes, div, div.querySelector(s_textarea) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyArray.s_units), p.dictRef, boundary, boundary);
                 plDiv.appendChild(div);
             }
         } else {
@@ -2516,10 +2735,56 @@ function processProperty(pl: PropertyList, p: Property, units: string[] | undefi
                 addAnyUnits(units, pmAttributes, inputDiv, ta, addRID(plDiv.id, p.dictRef, s_select, "Units"), p.dictRef, boundary, boundary);
                 plDiv.appendChild(inputDiv);
             } else {
-                throw new Error("Expecting " + PropertyScalar.tagName + ", " + PropertyArray.tagName + " or "
+                throw new Error("Expecting " + PropertyScalarNumber.tagName + ", " + PropertyArray.tagName + " or "
                     + PropertyMatrix.tagName + " but finding none!");
             }
         }
+    }
+}
+
+/**
+ * For processing a molecule property.
+ * @param p The property.
+ * @param units The possible units.
+ * @param molecule The molecule.
+ * @param element The element.
+ * @param plDiv The PropertyList div.
+ * @param textArea If true, a text area is created rather than an input.
+ * @param boundary The boundary to go around components.
+ * @param level The level of the component.
+ */
+function processPropertyScalarString(pl: PropertyList, p: Property, molecule: Molecule, element: Element,
+    plDiv: HTMLDivElement,
+    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+
+    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
+    let pIDs: Set<string> = new Set<string>();
+
+    // PropertyScalarString.
+    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarString.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + PropertyScalarString.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString: string = getInputString(scalarNodes[0]);
+        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
+        // Add PropertyScalarNumber.
+        let ps: PropertyScalarString = new PropertyScalarString(psAttributes, inputString);
+        p.setProperty(ps);
+        ps.setValue = function (value: string) {
+            ps.value = value;
+            //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
+            if (p.dictRef == ZPE.dictRef) {
+                // Update the molecule energy diagram.
+                redrawReactionsDiagram();
+            }
+        }.bind(ps);
+        let div: HTMLDivElement = processString(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
+            () => pl.removeProperty(p.dictRef), boundary1, level1);
+        plDiv.appendChild(div);
+    } else {
+        console.log("Expecting " + PropertyScalarString.tagName + " but finding none!");
     }
 }
 
@@ -2672,7 +2937,8 @@ export function setNumberArrayNode(node: NumberArrayNode, ta: HTMLTextAreaElemen
 export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
     try {
         let value: Big = new Big(input.value);
-        node.setValue(value);
+        //node.setValue(value);
+        node.value = value;
     } catch (e) {
         alert("Value invalid, resetting...");
     }
@@ -2745,13 +3011,13 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
         //console.log("xml_reactants.length=" + xml_reactants.length);
         if (xml_reactants.length > 0) {
             // Create a new collapsible div for the reactants.
-            let rsDivID: string = addRID(reaction.id, Reactant.tagName);
+            let rsDivID: string = addRID(reactionDivID, Reactant.tagName);
             let rsDiv: HTMLDivElement = createDiv(rsDivID);
             let rscDivID = addRID(rsDivID, s_container);
             let rscDiv: HTMLDivElement = getCollapsibleDiv(rscDivID, reactionDiv, null, rsDiv, "Reactants", boundary1, level1);
             let reactants: Reactant[] = [];
             for (let j = 0; j < xml_reactants.length; j++) {
-                let reactantDivID = addRID(reaction.id, Reactant.tagName, j);
+                let reactantDivID = addRID(rsDivID, Reactant.tagName, j);
                 let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
                 let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
                 let reactant: Reactant = new Reactant(getAttributes(xml_reactants[j]), molecule);
@@ -2787,7 +3053,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let product: Product = new Product(getAttributes(xml_products[j]), molecule);
                 products.push(product);
                 let lws: HTMLDivElement = createLabelWithSelect(molecule.ref + " role", Product.roleOptions, molecule.role,
-                    molecule.ref, "Role", boundary1, level1);
+                    molecule.ref, addRID(psDivID, j, "Role"), boundary1, level1);
                 let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
                 select.value = molecule.role;
                 select.addEventListener('change', (event: Event) => {
@@ -2815,7 +3081,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             let tunneling: Tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
             reaction.setTunneling(tunneling);
             let lws: HTMLDivElement = createLabelWithSelect(Tunneling.tagName, Tunneling.options, "Tunneling", tunneling.getName(),
-                reaction.id, boundary1, level1);
+                addID(reactionDivID, Tunneling.tagName), boundary1, level1);
             lws.querySelector('select')?.addEventListener('change', (event: Event) => {
                 let target = event.target as HTMLSelectElement;
                 tunneling.setName(target.value);
@@ -2858,7 +3124,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let mm: MCRCMethod;
                 let mmAttributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
                 let name: string | undefined = mmAttributes.get("name");
-                let mmDivId: string = addRID(reaction.id, MCRCMethod.tagName);
+                let mmDivId: string = addRID(reactionDivID, MCRCMethod.tagName);
                 let mmDiv: HTMLDivElement = createDiv(mmDivId);
                 if (name == undefined || name == MesmerILT.xsiType2) {
                     // Create a collapsible div.
@@ -3016,7 +3282,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             let value: Big = new Big(getNodeValue(getFirstChildNode(xml_erc[0])));
             let erc: ExcessReactantConc = new ExcessReactantConc(getAttributes(xml_erc[0]), value);
             reaction.setExcessReactantConc(erc);
-            let id = addRID(reaction.id, ExcessReactantConc.tagName);
+            let id = addRID(reactionDivID, ExcessReactantConc.tagName);
             let lwi: HTMLDivElement = createLabelWithInput("number", id, boundary1, level1,
                 (event: Event) => {
                     let target = event.target as HTMLInputElement;
@@ -3035,7 +3301,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             let crl: CanonicalRateList = new CanonicalRateList(clr_attributes);
             reaction.setCanonicalRateList(crl);
             // Create a new collapsible div for the canonicalRateList.
-            let crlDivID: string = addRID(reaction.id, CanonicalRateList.tagName);
+            let crlDivID: string = addRID(reactionDivID, CanonicalRateList.tagName);
             let crlDiv: HTMLDivElement = createDiv(crlDivID);
             let crlcDivID = addRID(crlDivID, s_container);
             let crlcDiv: HTMLDivElement = getCollapsibleDiv(crlcDivID, reactionDiv, null, crlDiv, CanonicalRateList.tagName, boundary1, level1);
@@ -3061,7 +3327,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             //console.log("xml_k.length=" + xml_k.length);
             if (xml_k.length > 0) {
                 // Create a table for the kinf.
-                let t: HTMLTableElement = createTable(addRID(crlDiv, s_table), level1);
+                let t: HTMLTableElement = createTable(addRID(crlDivID, Kinf.tagName, s_table), level1);
                 crlDiv.appendChild(t);
                 for (let j = 0; j < xml_k.length; j++) {
                     let k: Kinf = new Kinf(getAttributes(xml_k[j]));
@@ -3140,13 +3406,14 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
         let ccDiv: HTMLDivElement = getCollapsibleDiv(ccDivID, conditionssDiv, null, cDiv, Conditions.tagName + " " + i.toString(),
             boundary1, level1);
         let conditions: Conditions = addConditions(getAttributes(xml_conditions), i);
-        handleBathGases(conditions, cDiv, i, xml_conditions);
-        handlePTs(conditions, cDiv, i, xml_conditions);
+        handleBathGases(conditions, cDiv, xml_conditions);
+        handlePTs(conditions, cDiv, xml_conditions);
         // Add a remove conditions button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeConditions.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the conditions.
             remove(ccDivID);
+            conditionsIDs.removeIDs(cDivID);
         });
     }
     // Create an add button to add a conditions.
@@ -3156,30 +3423,31 @@ function processConditions(xml: XMLDocument): HTMLDivElement {
 
 /**
  * @param conditions The conditions.
- * @param conditionsDiv The conditions div.
+ * @param cDiv The conditions div.
  * @param conditionsIndex The conditions index.
  * @param xml_conditions The XML conditions.
  */
-function handleBathGases(conditions: Conditions, conditionsDiv: HTMLDivElement, conditionsIndex: number, xml_conditions: Element | null): void {
+function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions: Element | null): void {
     // Bath Gases
     // Create a collapsible div.
-    let bsDivID: string = addRID(Conditions.tagName, conditionsIndex.toString(), BathGas.tagName);
+    let bsDivID: string = conditionsIDs.addID(cDiv.id, BathGas.tagName);
     let bsDiv: HTMLDivElement = createDiv(bsDivID);
-    let bscDivID = addRID(bsDivID, s_container);
-    let bscDiv: HTMLDivElement = getCollapsibleDiv(bscDivID, conditionsDiv, null, bsDiv, BathGas.tagName, boundary1, level1);
+    let bscDivID = conditionsIDs.addID(cDiv.id, BathGas.tagName, s_container);
+    let bscDiv: HTMLDivElement = getCollapsibleDiv(bscDivID, cDiv, null, bsDiv, BathGas.tagName, boundary1, level1);
     // Add add button.
-    let addBathGasButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
+    let addBathGasButton: HTMLButtonElement = createButton(s_Add_sy_add, conditionsIDs.addID(cDiv.id, BathGas.tagName, s_button), level1);
     bsDiv.appendChild(addBathGasButton);
     addBathGasButton.addEventListener('click', () => {
         let bathGas: BathGas = new BathGas(new Map(), s_selectOption);
         let bathGasIndex = conditions.addBathGas(bathGas);
         let div: HTMLDivElement = createFlexDiv(undefined, level1);
-        let id: string = addRID(bsDivID, bathGasIndex.toString());
+        let id: string = conditionsIDs.addID(cDiv.id, BathGas.tagName, bathGasIndex.toString());
         let select: HTMLSelectElement = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true, id);
         select.classList.add(BathGas.tagName);
         div.appendChild(select);
         addRemoveButton(div, boundary1, (bathGas) => {
             bsDiv.removeChild(div);
+            conditionsIDs.removeID(id), 
             conditions.removeBathGas(bathGas);
         });
         bsDiv.insertBefore(div, addBathGasButton);
@@ -3194,21 +3462,23 @@ function handleBathGases(conditions: Conditions, conditionsDiv: HTMLDivElement, 
                 let bathGas: BathGas = new BathGas(attributes, moleculeID);
                 //console.log("bathGas " + bathGas.toString());
                 let bathGasIndex = conditions.addBathGas(bathGas);
-                let id: string = addRID(bsDivID, bathGasIndex.toString());
+                let id: string = conditionsIDs.addID(cDiv.id, BathGas.tagName, bathGasIndex.toString());
                 let div: HTMLDivElement = createFlexDiv(id, level1);
                 div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, false, id));
                 addRemoveButton(div, boundary1, (bathGas) => {
                     bsDiv.removeChild(div);
+                    conditionsIDs.removeID(id); 
                     conditions.removeBathGas(bathGas);
                 });
                 bsDiv.insertBefore(div, addBathGasButton);
             }
         } else {
-            let id: string = addRID(bsDivID, "0");
-            let div: HTMLDivElement = createFlexDiv(addRID(bsDivID, 0), level1);
+            let div: HTMLDivElement = createFlexDiv(undefined, level1);
+            let id: string = conditionsIDs.addID(cDiv.id, BathGas.tagName, 0);
             div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), undefined, false, id));
             addRemoveButton(div, boundary1, (bathGas) => {
                 bsDiv.removeChild(div);
+                conditionsIDs.removeID(id);
                 conditions.removeBathGas(bathGas);
             });
             bsDiv.insertBefore(div, addBathGasButton);
@@ -3219,20 +3489,19 @@ function handleBathGases(conditions: Conditions, conditionsDiv: HTMLDivElement, 
 /**
  * 
  * @param conditions 
- * @param conditionsDiv 
- * @param conditionsIndex 
+ * @param cDiv
  * @param xml_conditions 
  * @param level 
  * @param nextLevel 
  */
-function handlePTs(conditions: Conditions, conditionsDiv: HTMLDivElement, conditionsIndex: number, xml_conditions: Element | null): void {
+function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions: Element | null): void {
     // PTs
     let moleculeKeys: Set<string> = new Set(molecules.keys());
     // Create collapsible div.
-    let pTsDivId: string = addRID(conditionsDiv.id, conditionsIndex.toString(), PTs.tagName);
+    let pTsDivId: string = conditionsIDs.addID(cDiv.id, PTs.tagName);
     let pTsDiv: HTMLDivElement = createDiv(pTsDivId);
-    let pTscDivId = addRID(pTsDivId, s_container);
-    let pTscDiv: HTMLDivElement = getCollapsibleDiv(pTscDivId, conditionsDiv, null, pTsDiv, PTs.tagName, boundary1, level1);
+    let pTscDivId = conditionsIDs.addID(cDiv.id, pTsDivId, s_container);
+    let pTscDiv: HTMLDivElement = getCollapsibleDiv(pTscDivId, cDiv, null, pTsDiv, PTs.tagName, boundary1, level1);
     let pTs: PTs;
     if (xml_conditions) {
         let xml_PTss: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(PTs.tagName);
@@ -3288,7 +3557,7 @@ function handlePTs(conditions: Conditions, conditionsDiv: HTMLDivElement, condit
                             new Big(getNodeValue(getFirstChildNode(xml_ees[0])).trim())));
                     }
                     // Create pTpairDiv.
-                    pTsDiv.appendChild(createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, conditionsIndex, i, moleculeKeys, level1));
+                    pTsDiv.appendChild(createPTpairDiv(pTs, pTsDiv, pTpair, cDiv.id, i, moleculeKeys, level1));
                 }
             }
         } else {
@@ -3313,7 +3582,7 @@ function handlePTs(conditions: Conditions, conditionsDiv: HTMLDivElement, condit
         let pTpairIndex: number = pTs.add(pTpair);
         console.log("Added new pTpair pTpairIndex=" + pTpairIndex);
         // Create a new div for the PTpair.
-        pTsDiv.insertBefore(createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, conditionsIndex, pTpairIndex, moleculeKeys, level1), pTsButtonsDiv);
+        pTsDiv.insertBefore(createPTpairDiv(pTs, pTsDiv, pTpair, cDiv.id, pTpairIndex, moleculeKeys, level1), pTsButtonsDiv);
     });
     // Create an add from spreadsheet button to add multiple PTPairs.
     let addMultipleButton: HTMLButtonElement = createButton(s_Add_from_spreadsheet, undefined, boundary1);
@@ -3440,7 +3709,7 @@ function handlePTs(conditions: Conditions, conditionsDiv: HTMLDivElement, condit
                     //console.log("pTpair=" + pTpair);
                     let pTpairIndex: number = pTs.ptps.length - 1;
                     // Create a new div for the PTpair.
-                    pTsDiv.insertBefore(createPTpairDiv(pTs, pTsDiv, pTpair, conditionsDiv.id, conditionsIndex, pTpairIndex, moleculeKeys, level1), pTsButtonsDiv);
+                    pTsDiv.insertBefore(createPTpairDiv(pTs, pTsDiv, pTpair, cDiv.id, pTpairIndex, moleculeKeys, level1), pTsButtonsDiv);
                 }
                 pTsDiv.removeChild(div);
             }
@@ -3479,7 +3748,7 @@ function createAddConditionsButton(conditionssDiv: HTMLDivElement): HTMLButtonEl
         // ElementToInsert before is element after the conditions div with the previous index.
         let elementToInsertBefore: Element | null;
         if (i > 0) {
-            let aboveElement = document.getElementById(addRID(Conditions.tagName, (i - 1).toString(), s_container)) as Element;
+            let aboveElement = document.getElementById(getID(Conditions.tagName, (i - 1).toString(), s_container)) as Element;
             let nextElementSibling: Element | null = aboveElement.nextElementSibling;
             // If nextElementSibling is not a child of conditionssDiv the element.
             if (nextElementSibling != null) {
@@ -3498,13 +3767,14 @@ function createAddConditionsButton(conditionssDiv: HTMLDivElement): HTMLButtonEl
             Conditions.tagName + " " + i.toString(), boundary1, level1);
         // Add the conditions
         let conditions: Conditions = addConditions(new Map(), i);
-        handleBathGases(conditions, cDiv, i, null);
-        handlePTs(conditions, cDiv, i, null);
+        handleBathGases(conditions, cDiv, null);
+        handlePTs(conditions, cDiv, null);
         // Add a remove conditions button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeConditions.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the conditions.
             remove(ccDivID);
+            conditionsIDs.removeIDs(cDivID);
         });
     });
     return button;
@@ -3528,14 +3798,14 @@ function addConditions(attributes: Map<string, string>, i: number): Conditions {
  * @param moleculeKeys The molecule keys.
  * @param level The level.
  */
-function createPTpairDiv(pTs: PTs, pTsDiv: HTMLDivElement, pTpair: PTpair, conditionsDivId: string, conditionsIndex: number, pTIndex: number,
+function createPTpairDiv(pTs: PTs, pTsDiv: HTMLDivElement, pTpair: PTpair, cDivID: string, pTIndex: number,
     moleculeKeys: Set<string>,
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let pTpairDiv: HTMLDivElement = createFlexDiv(addRID(pTsDiv.id, pTIndex), level);
     addPorT(pTpairDiv, PTpair.s_P, pTpair.getP.bind(pTpair), pTpair.setP.bind(pTpair)); // The binding is necessary to maintain the correct "this".
     addAnyUnits(Mesmer.pressureUnits, pTpair.attributes, pTpairDiv, null, PTpair.tagName, PTpair.tagName, boundary1, level1);
     addPorT(pTpairDiv, PTpair.s_T, pTpair.getT.bind(pTpair), pTpair.setT.bind(pTpair)); // The binding is necessary to maintain the correct "this".
-    let id: string = addRID(conditionsDivId, PTpair.tagName, pTIndex.toString());
+    //let id: string = conditionsIDs.addID(cDivID, pTsDiv.id, pTIndex.toString());
 
     // ExcessReactantConc.
     //addButtonWithToggle(pTpairDiv, pTpair, PTpair.s_excessReactantConc, addID(id, PTpair.s_excessReactantConc),
@@ -4076,8 +4346,9 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         // Add a remove modelParameters button.
         let removeButton: HTMLButtonElement = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
-            // Remove the conditions.
+            // Remove the modelParameters.
             remove(mpcDivID);
+            modelParametersIDs.removeIDs(mpDivID);
         });
     }
     // Create an add button to add a modelParameters.
@@ -4190,16 +4461,16 @@ function setGrainSize(mps: ModelParameters, xml_mps: Element, mpsDiv: HTMLDivEle
  */
 function addGrainSize(mps: ModelParameters, mpsDiv: HTMLDivElement): HTMLDivElement {
     let tagName: string = GrainSize.tagName;
-    let id: string = addRID(mpsDiv.id, tagName);
+    let id: string = modelParametersIDs.addID(mpsDiv.id, tagName);
     let div: HTMLDivElement = createFlexDiv(id, level1);
     mpsDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
-    let button = createButton(tagName, addRID(id, s_button), boundary1);
+    let button = createButton(tagName, modelParametersIDs.addID(mpsDiv.id, tagName, s_button), boundary1);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     div.appendChild(button);
-    let idi: string = addRID(id, s_input);
+    let idi: string = modelParametersIDs.addID(mpsDiv.id, tagName, s_input);
     let gs: GrainSize;
     let valueString: string;
     gs = getDefaultGrainsize(tagName);
@@ -4255,16 +4526,16 @@ function processModelParametersN<T extends { new(attributes: Map<string, string>
     mps: ModelParameters, xml_mps: Element | null, mpsDiv: HTMLDivElement, mpt: T,
     setModelParameter: (mp: InstanceType<T>) => void, removeModelParameter: () => void): void {
     let tagName: string = mpt.tagName;
-    let id: string = addRID(mpsDiv.id, tagName);
+    let id: string = modelParametersIDs.addID(mpsDiv.id, tagName);
     let div: HTMLDivElement = createFlexDiv(id, level1);
     mpsDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
-    let button = createButton(tagName, addRID(id, s_button), boundary1);
+    let button = createButton(tagName, modelParametersIDs.addID(mpsDiv.id, tagName, s_button), boundary1);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     div.appendChild(button);
-    let idi: string = addRID(id, s_input);
+    let idi: string = modelParametersIDs.addID(mpsDiv.id, tagName, s_input);
     let mp: InstanceType<T>;
     let valueString: string;
     if (xml_mps != null) {
@@ -4297,7 +4568,8 @@ function processModelParametersN<T extends { new(attributes: Map<string, string>
         } else {
             //valueString = mp.value.toExponential();
             removeModelParameter();
-            document.getElementById(idi)?.remove();
+            remove(idi);
+            modelParametersIDs.removeID(idi);
             button.textContent = buttonTextContentDeselected;
         }
         button.classList.toggle(s_optionOn)
@@ -4349,7 +4621,7 @@ function createAddModelParametersButton(mpsDiv: HTMLDivElement): HTMLButtonEleme
         // ElementToInsert before is element after the conditions div with the previous index.
         let elementToInsertBefore: Element | null;
         if (i > 0) {
-            let aboveElement = document.getElementById(addRID(tn, (i - 1).toString(), s_container)) as Element;
+            let aboveElement = document.getElementById(getID(tn, (i - 1).toString(), s_container)) as Element;
             let nextElementSibling: Element | null = aboveElement.nextElementSibling;
             // If nextElementSibling is not a child of conditionssDiv the element.
             if (nextElementSibling != null) {
@@ -4366,7 +4638,7 @@ function createAddModelParametersButton(mpsDiv: HTMLDivElement): HTMLButtonEleme
         }
         let mpcDiv: HTMLDivElement = getCollapsibleDiv(mpcDivID, mpsDiv, elementToInsertBefore, mpDiv,
             tn + " " + i.toString(), boundary1, level1);
-        // Add the conditions
+        // Add the modelParameters.
         let mp: ModelParameters = addModelParameters(new Map(), i);
         addGrainSize(mp, mpDiv);
         processModelParametersN(mp, null, mpDiv, AutomaticallySetMaxEne,
@@ -4375,10 +4647,12 @@ function createAddModelParametersButton(mpsDiv: HTMLDivElement): HTMLButtonEleme
             mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill);
         processModelParametersN(mp, null, mpDiv, MaxTemperature,
             mp.setMaxTemperature, mp.removeMaxTemperature);
-        // Add a remove conditions button.
+        // Add a remove modelParameters button.
         let removeButton: HTMLButtonElement = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
+            // Remove the modelParameters.
             remove(mpcDivID);
+            modelParametersIDs.removeIDs(mpDivID);
         });
     });
     return button;
@@ -4445,7 +4719,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
         getControlOptionsSimple(control).forEach(option => {
-            handleControl(control, cDiv, i, onOffControls, xml_control, null, option.class, option.setMethod, option.removeMethod);
+            handleControl(control, cDiv, onOffControls, xml_control, null, option.class, option.setMethod, option.removeMethod);
         });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level1);
@@ -4456,9 +4730,9 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         cDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
         handleTestMicroRates(control, cDiv, null, level1);
-        handleCalcMethod(control, cDiv, i, xml_control, level1);
+        handleCalcMethod(control, cDiv, xml_control, level1);
         getControlItems(control).forEach(item => {
-            handleControl(control, cDiv, i, onOffControls, xml_control, level1, item.class, item.setMethod, item.removeMethod, true);
+            handleControl(control, cDiv, onOffControls, xml_control, level1, item.class, item.setMethod, item.removeMethod, true);
         });
         // me:ForceMacroDetailedBalance
         let xml_fdb: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ForceMacroDetailedBalance.tagName);
@@ -4471,7 +4745,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
 
             let fdb: ForceMacroDetailedBalance = new ForceMacroDetailedBalance(fdb_attributes, s);
             control.setForceMacroDetailedBalance(fdb);
-            let fdbDiv: HTMLDivElement = createFlexDiv(undefined, level1);
+            let fdbDiv: HTMLDivElement = createFlexDiv(controlIDs.addID(cDivID, ForceMacroDetailedBalance.tagName), level1);
             cDiv.appendChild(fdbDiv);
             let fdbl: HTMLLabelElement = createLabel(ForceMacroDetailedBalance.tagName + " " + mapToString(fdb_attributes) + " " + s, boundary1);
             fdbDiv.appendChild(fdbl);
@@ -4481,6 +4755,7 @@ function processControl(xml: XMLDocument): HTMLDivElement {
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the control.
             remove(ccDivID);
+            controlIDs.removeIDs(cDivID);
         });
     }
     // Create an add button to add a control.
@@ -4550,7 +4825,7 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
         // ElementToInsert before is element after the control div with the previous index.
         let elementToInsertBefore: Element | null;
         if (i > 0) {
-            let aboveElement = document.getElementById(addRID(Control.tagName, (i - 1).toString(), s_container)) as Element;
+            let aboveElement = document.getElementById(getID(Control.tagName, (i - 1).toString(), s_container)) as Element;
             let nextElementSibling: Element | null = aboveElement.nextElementSibling;
             // If nextElementSibling is not a child of controlsDiv the element.
             if (nextElementSibling != null) {
@@ -4574,7 +4849,7 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
         getControlOptionsSimple(control).forEach(option => {
-            handleControl(control, cDiv, i, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
+            handleControl(control, cDiv, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
         });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level);
@@ -4585,15 +4860,16 @@ function createAddControlButton(controlsDiv: HTMLDivElement,
         cDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
         handleTestMicroRates(control, cDiv, null, level);
-        handleCalcMethod(control, cDiv, i, null, level);
+        handleCalcMethod(control, cDiv, null, level);
         getControlItems(control).forEach(item => {
-            handleControl(control, cDiv, i, onOffControls, null, level, item.class, item.setMethod, item.removeMethod, true);
+            handleControl(control, cDiv, onOffControls, null, level, item.class, item.setMethod, item.removeMethod, true);
         });
         // Add a remove control button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeControl.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the control.
             remove(ccDivID);
+            controlIDs.removeIDs(cDivID);
         });
     });
     return button;
@@ -4633,15 +4909,14 @@ function createInputControlItem(control: Control, div: HTMLDivElement, obj: any,
 /**
  * 
  * @param control The control.
- * @param controlDiv The control div.
- * @param index The index.
+ * @param cDiv The control div.
  * @param onOffControls The on/off controls.
  * @param xml_control The xml control.
  * @param ControlClass The control class.
  * @param setControlMethod The set control method.
  * @param removeControlMethod The remove control method.
  */
-function handleControl(control: Control, controlDiv: HTMLDivElement, index: number, onOffControls: Map<string, HTMLButtonElement> | null,
+function handleControl(control: Control, cDiv: HTMLDivElement, onOffControls: Map<string, HTMLButtonElement> | null,
     xml_control: Element | null, level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string } | null,
     ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void, handleInput: boolean = false): void {
     let tagName: string = ControlClass.tagName;
@@ -4658,11 +4933,11 @@ function handleControl(control: Control, controlDiv: HTMLDivElement, index: numb
     let id: string;
 
     if (level) {
-        id = addRID(controlDiv.id, tagName, index);
+        id = controlIDs.addID(cDiv.id, tagName);
         div = createFlexDiv(id, level);
-        controlDiv.appendChild(div);
+        cDiv.appendChild(div);
         div.appendChild(button);
-        id = addRID(id, s_input);
+        id = controlIDs.addID(cDiv.id, id, s_input);
     }
 
     if (xml_control) {
@@ -4710,16 +4985,15 @@ function handleControl(control: Control, controlDiv: HTMLDivElement, index: numb
 
 /**
  * @param control The control.
- * @param controlDiv The control div.
- * @param i The index.
+ * @param cDiv The control div.
  * @param xml_control The xml control. 
  * @param level The level.
  */
-function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: number, xml_control: Element | null,
+function handleCalcMethod(control: Control, cDiv: HTMLDivElement, xml_control: Element | null,
     level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
     //console.log("handleCalcMethod " + (xml_control == null));
     let div: HTMLDivElement = createFlexDiv(undefined, level);
-    controlDiv.appendChild(div);
+    cDiv.appendChild(div);
     let tagName: string = CalcMethod.tagName;
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
@@ -4728,12 +5002,12 @@ function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: numbe
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     // Add the div for the CalcMethod.
-    let divCmId = addRID(Control.tagName, tagName, i.toString());
+    let divCmId = controlIDs.addID(cDiv.id, tagName);
     let divCm: HTMLDivElement = createFlexDiv(divCmId, boundary1);
     div.appendChild(divCm);
     let options: string[] = CalcMethod.options;
-    let divCmDetailsId = addRID(divCmId, "details");
-    let divCmDetailsSelectId = addRID(divCmDetailsId, "select");
+    let divCmDetailsId = controlIDs.addID(cDiv.id, divCmId, "details");
+    let divCmDetailsSelectId = controlIDs.addID(cDiv.id, divCmDetailsId, "select");
     let cm: CalcMethod;
     let first: boolean = true;
     if (xml_control != null) {
@@ -4798,25 +5072,25 @@ function handleCalcMethod(control: Control, controlDiv: HTMLDivElement, i: numbe
 /**
  * Process "me:testMicroRates".
  * @param control The control.
- * @param controlDiv The control div.
+ * @param cDiv The control div.
  * @param xml_control The xml control.
  * @param level The level.
  */
-function handleTestMicroRates(control: Control, controlDiv: HTMLDivElement, xml_control: Element | null,
+function handleTestMicroRates(control: Control, cDiv: HTMLDivElement, xml_control: Element | null,
     level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
-    let div: HTMLDivElement = createFlexDiv(undefined, level);
-    controlDiv.appendChild(div);
     let tagName: string = TestMicroRates.tagName;
+    let divID = controlIDs.addID(cDiv.id, tagName);
+    let div: HTMLDivElement = createFlexDiv(divID, level);
+    cDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
-    let button = createButton(tagName, undefined, boundary1);
-    button.id = Control.tagName + "_" + tagName;
+    let button = createButton(tagName, controlIDs.addID(cDiv.id, tagName, s_button), boundary1);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let idTmax = Control.tagName + "_" + tagName + "_Tmax";
-    let idTmin = Control.tagName + "_" + tagName + "_Tmin";
-    let idTstep = Control.tagName + "_" + tagName + "_Tstep";
+    let idTmax = controlIDs.addID(cDiv.id, tagName, Tmax.tagName);
+    let idTmin = controlIDs.addID(cDiv.id, tagName, Tmin.tagName);
+    let idTstep = controlIDs.addID(cDiv.id, tagName, Tstep.tagName);
     if (xml_control) {
         let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
         if (xml.length == 1) {
@@ -5346,7 +5620,7 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, op
  */
 function processMetadataList(xml: XMLDocument): HTMLDivElement {
     console.log(MetadataList.tagName);
-    let mlDiv: HTMLDivElement = createDiv(addID(MetadataList.tagName, 0), boundary1);
+    let mlDiv: HTMLDivElement = createDiv(addRID(MetadataList.tagName, 0), boundary1);
     let xml_mls: HTMLCollectionOf<Element> = xml.getElementsByTagName(MetadataList.tagName);
     if (xml_mls.length > 0) {
         if (xml_mls.length > 1) {
@@ -5410,7 +5684,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
         // "me:eigenvalueList".
         let xml_el: HTMLCollectionOf<Element> = xml_as[0].getElementsByTagName(EigenvalueList.tagName);
         // Create a new collapsible div for the EigenvalueLists.
-        let elDivID = addRID(aDiv, EigenvalueList.tagName);
+        let elDivID = addRID(aDivID, EigenvalueList.tagName);
         let elDiv: HTMLDivElement = createDiv(elDivID, level1);
         let elcDiv: HTMLDivElement = getCollapsibleDiv(elDivID, aDiv, null, elDiv,
             EigenvalueList.tagName + "s", boundary1, level1);
@@ -5442,7 +5716,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
         // "me:populationList".
         let xml_pl: HTMLCollectionOf<Element> = xml_as[0].getElementsByTagName(PopulationList.tagName);
         // Create a new collapsible div for the PopulationLists.
-        let plDivID = addRID(aDiv, PopulationList.tagName);
+        let plDivID = addRID(aDivID, PopulationList.tagName);
         let plDiv: HTMLDivElement = createDiv(plDivID, level1);
         let plcDiv: HTMLDivElement = getCollapsibleDiv(plDivID, aDiv, null, plDiv,
             PopulationList.tagName + "s", boundary1, level1);
@@ -5536,7 +5810,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
         // me:rateList.
         let xml_rl: HTMLCollectionOf<Element> = xml_as[0].getElementsByTagName(RateList.tagName);
         // Create a new collapsible div for the RateLists.
-        let rlDivID = addRID(aDiv, RateList.tagName);
+        let rlDivID = addRID(aDivID, RateList.tagName);
         let rlDiv: HTMLDivElement = createDiv(rlDivID, level1);
         let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, aDiv, null, rlDiv,
             RateList.tagName + "s", boundary1, level1);
@@ -6145,7 +6419,7 @@ function getFilename(name: string): string {
  */
 function addSaveAsPNGButton(canvas: HTMLCanvasElement, divToAddTo: HTMLElement, elementToInsertBefore: HTMLElement | null, name: string) {
     // Add a save button to save the canvas as an image.
-    let saveButtonID = addRID('saveButton');
+    let saveButtonID = addRID(divToAddTo.id, 'saveButton');
     let saveButton: HTMLButtonElement = createButton("Save as PNG", saveButtonID, boundary1);
     if (elementToInsertBefore != null) {
         divToAddTo.insertBefore(saveButton, elementToInsertBefore);

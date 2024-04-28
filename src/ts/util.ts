@@ -21,7 +21,7 @@ export function get(map: Map<any, any>, key: any): any {
  * @param parts The parts of the ID.
  * @return A string ID composed of the parts joined by the delimiter.
  */
-export function getID(...parts: any[]): string {
+export function getID(...parts: (string | number)[]): string {
     // Convert the components to strings.
     let sparts = parts.map((part) => part.toString());
     // Join the parts with a hyphen.

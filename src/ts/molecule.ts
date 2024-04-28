@@ -620,10 +620,44 @@ export class BondArray extends NodeWithNodes {
 }
 
 /**
- * The attributes may contain "units".
  * In the XML, a "scalar" node is a child of a "property" node.
  */
-export class PropertyScalar extends NumberNode {
+export class PropertyScalarString extends StringNode {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "scalar";
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: string) {
+        super(attributes, PropertyScalarString.tagName, value);
+    }
+
+    /**
+     * @returns The value.
+     */
+    getValue(): string {
+        return this.value;
+    }
+
+    /**
+     * Sets the value.
+     * @param val The value.
+     */
+    setValue(val: string): void {
+        this.value = val;
+    }
+}
+
+/**
+ * In the XML, a "scalar" node is a child of a "property" node.
+ * The attributes may contain "units".
+ */
+export class PropertyScalarNumber extends NumberNode {
 
     /**
      * The tag name.
@@ -640,7 +674,7 @@ export class PropertyScalar extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: Big) {
-        super(attributes, PropertyScalar.tagName, value);
+        super(attributes, PropertyScalarNumber.tagName, value);
     }
 
     /**
@@ -651,15 +685,31 @@ export class PropertyScalar extends NumberNode {
     updateUnits(units: string | undefined): void {
         // Check the units are the same and if not replace the units...
         if (units) {
-            let existingUnits: string | undefined = this.attributes.get(PropertyScalar.s_units);
+            let existingUnits: string | undefined = this.attributes.get(PropertyScalarNumber.s_units);
             if (existingUnits != undefined) {
                 if (existingUnits != units) {
                     //console.log('Units are not the same, changing units...');
-                    this.attributes.set(PropertyScalar.s_units, units);
+                    this.attributes.set(PropertyScalarNumber.s_units, units);
                 }
             }
         }
     }
+
+    /**
+     * @returns The value.
+     */
+    getValue(): Big {
+        return this.value;
+    }
+
+    /**
+     * Sets the value.
+     * @param val The value.
+     */
+    setValue(val: Big): void {
+        this.value = val;
+    }
+
 }
 
 /**
@@ -686,7 +736,7 @@ export class PropertyScalar extends NumberNode {
  * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 export class PropertyArray extends NumberArrayNode {
-    
+
     /**
      * The tag name.
      */
@@ -788,7 +838,7 @@ export class PropertyMatrix extends NumberArrayNode {
 
 /**
  * The attributes must contain "dictRef" which is a dictionary reference for a type of property.
- * In the XML, a "property" node has a "propertyList" parent and either a "scalar" or "array" or another type of child not yet implemented (there could be a "matrix" type).
+ * In the XML, a "property" node has a "propertyList" parent and either a "scalar", "array", "matrix" or other not yet implemented child type).
  */
 export class Property extends NodeWithNodes {
 
@@ -811,7 +861,7 @@ export class Property extends NodeWithNodes {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property?: PropertyScalar | PropertyArray | PropertyMatrix) {
+    constructor(attributes: Map<string, string>, property?: PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix) {
         super(attributes, Property.tagName);
         let dictRef: string | undefined = attributes.get(Property.s_dictRef);
         if (dictRef == undefined) {
@@ -826,8 +876,14 @@ export class Property extends NodeWithNodes {
                     dictRef = "me:Hf298";
                 } else if (title == "Hf0") {
                     dictRef = "me:Hf0";
+                } else if (title == "program") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "program";
+                } else if (title == "basis") {  // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "basis";
+                } else if (title == "method") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "method";
                 } else {
-                    throw new Error('Title not recognised!');
+                    throw new Error('Title ' + title + 'not recognised!');
                 }
             }
         }
@@ -840,15 +896,15 @@ export class Property extends NodeWithNodes {
     /**
      * @returns The property.
      */
-    getProperty(): PropertyScalar | PropertyArray | PropertyMatrix {
-        return this.nodes.get(0) as PropertyScalar | PropertyArray | PropertyMatrix;
+    getProperty(): PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix {
+        return this.nodes.get(0) as PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix;
     }
 
     /**
      * Set the property.
      * @param property The property.
      */
-    setProperty(property: PropertyScalar | PropertyArray | PropertyMatrix): void {
+    setProperty(property: PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix): void {
         this.nodes.set(0, property);
     }
 
@@ -876,7 +932,7 @@ export class ZPE extends Property {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
         super(attributes, property);
     }
 
@@ -885,7 +941,7 @@ export class ZPE extends Property {
      * Should be one of Mesmer.energyUnits.
      */
     setUnits(units: string): void {
-        this.getProperty().updateUnits(units);
+        (this.getProperty() as PropertyScalarNumber).updateUnits(units);
     }
 }
 
@@ -904,7 +960,7 @@ export class Hf0 extends Property {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
         super(attributes, property);
     }
 
@@ -913,7 +969,35 @@ export class Hf0 extends Property {
      * Should be one of Mesmer.energyUnits.
      */
     setUnits(units: string): void {
-        this.getProperty().updateUnits(units);
+        (this.getProperty() as PropertyScalarNumber).updateUnits(units);
+    }
+}
+
+/**
+ * Is this different to Hf0?
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+export class HfAT0 extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:HfAT0";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units: string): void {
+        (this.getProperty() as PropertyScalarNumber).updateUnits(units);
     }
 }
 
@@ -932,7 +1016,7 @@ export class Hf298 extends Property {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
         super(attributes, property);
     }
 
@@ -941,46 +1025,7 @@ export class Hf298 extends Property {
      * Should be one of Mesmer.energyUnits.
      */
     setUnits(units: string): void {
-        this.getProperty().updateUnits(units);
-    }
-}
-
-/**
- * "me:frequenciesScaleFactor" property.
- */
-export class FrequenciesScaleFactor extends Property {
-
-    /**
-     * The dictionary reference.
-     */
-    static readonly dictRef: string = "me:frequenciesScaleFactor";
-
-    /**
-     * @param attributes The attributes.
-     * @param property The property.
-     */
-    constructor(attributes: Map<string, string>, property: PropertyScalar) {
-        super(attributes, property);
-    }
-}
-
-/**
- * The vibration frequencies.
- * The child "array" node should have a "units" attribute (known units=[cm-1]).
- */
-export class VibFreqs extends Property {
-
-    /**
-     * The dictionary reference.
-     */
-    static readonly dictRef: string = "me:vibFreqs";
-
-    /**
-     * @param attributes The attributes.
-     * @param property The property.
-     */
-    constructor(attributes: Map<string, string>, property: PropertyArray) {
-        super(attributes, property);
+        (this.getProperty() as PropertyScalarNumber).updateUnits(units);
     }
 }
 
@@ -1010,6 +1055,83 @@ export class RotConsts extends Property {
 }
 
 /**
+ * Rotational symmetry number.
+ */
+export class SymmetryNumber extends Property {
+
+    /**
+    * The dictionary reference.
+    */
+    static readonly dictRef: string = "me:symmetryNumber";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * Transition state optical symmetry number.
+ */
+export class TSOpticalSymmetryNumber extends Property {
+
+    /**
+    * The dictionary reference.
+    */
+    static readonly dictRef: string = "me:TSOpticalSymmetryNumber";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * "me:frequenciesScaleFactor" property.
+ */
+export class FrequenciesScaleFactor extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:frequenciesScaleFactor";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The vibration frequencies.
+ * The child "array" node should have a "units" attribute (known units=[cm-1]).
+ */
+export class VibFreqs extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:vibFreqs";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyArray) {
+        super(attributes, property);
+    }
+}
+
+/**
  * The Molecular Weight.
  * The child "scalar" node should have a "units" attribute (known units=[amu]).
  */
@@ -1024,7 +1146,132 @@ export class MW extends Property {
      * @param attributes The attributes.
      * @param property The property.
      */
-    constructor(attributes: Map<string, string>, property: PropertyScalar) {
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The Spin Multiplicity.
+ */
+export class SpinMultiplicity extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:spinMultiplicity";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The Epsilon.
+ * The child "scalar" node should have a "units" attribute K (fixed).
+ */
+export class Epsilon extends Property {
+
+    /**
+    * The dictionary reference.
+    */
+    static readonly dictRef: string = "me:epsilon";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The Sigma.
+ * The child "scalar" node should have a "units" attribute Å (fixed).
+ */
+export class Sigma extends Property {
+
+    /**
+    * The dictionary reference.
+    */
+    static readonly dictRef: string = "me:sigma";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The Hessian.
+ * The child "matrix" node should have a "units" attribute with options [kJ/mol/Å2, kcal/mol/Å2, Hartree/Å2]
+ */
+export class Hessian extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:hessian";
+
+    /**
+     * The units.
+     */
+    static readonly unitOptions: string[] = ["kJ/mol/Å2", "kcal/mol/Å2", "Hartree/Å2"];
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyMatrix) {
+        super(attributes, property);
+    }
+}
+
+/**
+ * The Einstein Aij.
+ * The child "array" node should have a "units" attribute s-1 (fixed).
+ */
+export class EinsteinAij extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:EinsteinAij";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyArray) {
+        super(attributes, property);
+    }
+
+}
+
+/**
+ * The Einstein Bij.
+ * The child "array" node should have a "units" attribute m3/J/s2 (fixed).
+ */
+export class EinsteinBij extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:EinsteinBij";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyArray) {
         super(attributes, property);
     }
 }
@@ -2363,8 +2610,8 @@ export class DensityOfStates extends NodeWithNodes {
      * @returns The density of states as a string array.
      */
     toStringArray(): string[] {
-        return [this.getT()!.getValue().toString(), this.getQtot()!.getValue().toString(),
-        this.getSumc()!.getValue().toString(), this.getSumg()!.getValue().toString()];
+        return [this.getT()!.value.toString(), this.getQtot()!.value.toString(),
+        this.getSumc()!.value.toString(), this.getSumg()!.value.toString()];
     }
 }
 
@@ -3006,6 +3253,6 @@ export class Molecule extends NodeWithNodes {
             throw new Error(ZPE.dictRef + ' property not found!');
             //return 0;
         }
-        return (p.getProperty() as PropertyScalar).value;
+        return (p.getProperty() as PropertyScalarNumber).value;
     }
 }

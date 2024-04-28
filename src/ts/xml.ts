@@ -223,21 +223,6 @@ export class NumberNode extends TagWithAttributes {
     }
 
     /**
-     * Get the value.
-     */
-    getValue(): Big {
-        return this.value;
-    }
-
-    /**
-     * Set the value.
-     * @param value The value.
-     */
-    setValue(value: Big) {
-        this.value = value;
-    }
-
-    /**
      * Get the XML representation.
      * @param padding The padding (Optional).
      * @returns An XML representation.
