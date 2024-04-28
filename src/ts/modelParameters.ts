@@ -88,6 +88,11 @@ export class ModelParameters extends NodeWithNodes {
     static readonly tagName: string = "me:modelParameters";
 
     /**
+     * The id.
+     */
+    id: number;
+
+    /**
      * The index.
      */
     index: Map<string, number>;
@@ -99,10 +104,11 @@ export class ModelParameters extends NodeWithNodes {
      * @param energyAboveTheTopHill The energy above the top hill.
      * @param maxTemperature The max temperature.
      */
-    constructor(attributes: Map<string, string>, grainSize?: GrainSize, 
+    constructor(attributes: Map<string, string>, id: number, grainSize?: GrainSize, 
         automaticallySetMaxEne?: AutomaticallySetMaxEne, energyAboveTheTopHill?: EnergyAboveTheTopHill,
         maxTemperature?: MaxTemperature) {
         super(attributes, ModelParameters.tagName);
+        this.id = id;
         this.index = new Map<string, number>();
         if (grainSize != undefined) {
             this.index.set(GrainSize.tagName, this.nodes.size);
@@ -126,18 +132,21 @@ export class ModelParameters extends NodeWithNodes {
      * @returns The grain size or undefined.
      */
     getGrainSize(): GrainSize | undefined {
+        console.log("getGrainSize");
         let i: number | undefined = this.index.get(GrainSize.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i) as GrainSize;
         }
+        console.log("XgetGrainSize");
     }
 
     /**
      * @param grainSize The grain size.
      */
     setGrainSize(grainSize: GrainSize) {
+        console.log("setGrainSize");
         let i: number | undefined = this.index.get(GrainSize.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, grainSize);
         } else {
             this.index.set(GrainSize.tagName, this.nodes.size);

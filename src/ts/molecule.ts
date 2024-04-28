@@ -686,7 +686,7 @@ export class PropertyScalar extends NumberNode {
  * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 export class PropertyArray extends NumberArrayNode {
-
+    
     /**
      * The tag name.
      */
@@ -696,6 +696,10 @@ export class PropertyArray extends NumberArrayNode {
      * The key for the units attribute.
      */
     static readonly s_units: string = "units";
+
+    static readonly propertyDictRefs: Set<string> = new Set(["me:ZPE", "me:Hf0", "me:HfAT0", "me:Hf298", "me:rotConsts", "me:symmetryNumber",
+        "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:vibFreqs", "me:MW", "me:spinMultiplicity", "me:epsilon", "me:sigma",
+        "me:hessian", "me:EinsteinAij", "me:EinsteinBij"]);
 
     /**
      * @param attributes The attributes.
@@ -1455,59 +1459,37 @@ export class PotentialPoint extends TagWithAttributes {
     static readonly s_potential: string = "potential";
 
     /**
-     * The angle stored for convenience, this is also an attribute.
-     */
-    angle: Big;
-
-    /**
-     * The potential stored for convenience, this is also an attribute.
-     */
-    potential: Big;
-
-    /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, PotentialPoint.tagName);
-        let angle: string | undefined = attributes.get(PotentialPoint.s_angle);
-        if (angle == undefined) {
-            throw new Error(PotentialPoint.s_potential + ' is undefined!');
-        }
-        this.angle = new Big(angle);
-        let potential: string | undefined = attributes.get(PotentialPoint.s_potential);
-        if (potential == undefined) {
-            throw new Error(PotentialPoint.s_potential + ' is undefined!');
-        }
-        this.potential = new Big(potential);
     }
 
     /**
      * @returns The angle.
      */
-    getAngle(): Big {
-        return this.angle;
+    getAngle(): string | undefined {
+        return this.attributes.get(PotentialPoint.s_angle);
     }
 
     /**
      * @param angle The angle of the PotentialPoint.
      */
     setAngle(angle: Big): void {
-        this.angle = angle;
         this.attributes.set(PotentialPoint.s_angle, angle.toString());
     }
 
     /**
      * @returns The potential.
      */
-    getPotential(): Big {
-        return this.potential;
+    getPotential(): string | undefined {
+        return this.attributes.get(PotentialPoint.s_potential);
     }
 
     /**
      * @param potential The potential of the PotentialPoint.
      */
     setPotential(potential: Big): void {
-        this.potential = potential;
         this.attributes.set(PotentialPoint.s_potential, potential.toString());
     }
 }
@@ -1898,11 +1880,6 @@ export class HinderedRotorPotential extends NodeWithNodes {
     units: string;
 
     /**
-     * The expansionSize stored for convenience, this is also an attribute.
-     */
-    expansionSize: Big;
-
-    /**
      * The useSineTerms stored for convenience, this is also an attribute.
      */
     useSineTerms: boolean;
@@ -1928,11 +1905,6 @@ export class HinderedRotorPotential extends NodeWithNodes {
                 this.nodes.set(this.nodes.size, p);
             });
         }
-        let expansionSize: string | undefined = attributes.get(HinderedRotorPotential.s_expansionSize);
-        if (expansionSize == undefined) {
-            throw new Error(HinderedRotorPotential.s_expansionSize + ' is undefined!');
-        }
-        this.expansionSize = new Big(expansionSize);
         let useSineTerms: string | undefined = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
             this.useSineTerms = false;
@@ -1980,15 +1952,14 @@ export class HinderedRotorPotential extends NodeWithNodes {
     /**
      * @returns The expansionSize of the HinderedRotorPotential.
      */
-    getExpansionSize(): Big {
-        return this.expansionSize;
+    getExpansionSize(): string | undefined {
+        return this.attributes.get(HinderedRotorPotential.s_expansionSize);
     }
 
     /**
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */
     setExpansionSize(expansionSize: Big): void {
-        this.expansionSize = expansionSize;
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
 

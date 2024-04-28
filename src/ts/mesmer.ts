@@ -254,6 +254,77 @@ export class ConditionsList extends NodeWithNodes {
 }
 
 /**
+ * A class for representing a "modelParametersList" - this does not yet exist in the MEMSER, so this is not used.
+ * Currently, in the XML, a "modelParameters" node is a child node of a "me:mesmer" node and there is no "modelParametersList".
+ */
+export class ModelParametersList extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "modelParametersList";
+
+    /**
+     * The index. The keys are the modelParameters ids and the values are the node indexes.
+     */
+    index: Map<number, number>;
+
+    /**
+     * @param attributes The attributes.
+     * @param modelParameterss The modelParameters.
+     */
+    constructor(attributes: Map<string, string>, modelParameterss?: ModelParameters[]) {
+        super(attributes, ModelParametersList.tagName);
+        this.index = new Map();
+        if (modelParameterss != undefined) {
+            modelParameterss.forEach(modelParameters => {
+                this.nodes.set(this.nodes.size, modelParameters);
+                this.index.set(modelParameters.id, this.nodes.size - 1);
+            });
+        }
+    }
+
+    /**
+     * @param id The id of the modelParameters.
+     * @returns The modelParameters.
+     */
+    getModelParameters(id: number): ModelParameters | undefined {
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            return this.nodes.get(i) as ModelParameters;
+        }
+    }
+
+    /**
+     * Remove a modelParameters.
+     * @param id The id of the modelParameters to remove.
+     */
+    removeModelParameters(id: number): void {
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+
+    /**
+     * Add a modelParameters.
+     * @param modelParameters The modelParameters.
+     */
+    addModelParameters(modelParameters: ModelParameters): void {
+        let index = this.index.get(modelParameters.id);
+        if (index != undefined) {
+            this.nodes.set(index, modelParameters);
+            console.log('Replaced modelParameters with id ' + modelParameters.id);
+        } else {
+            this.nodes.set(this.nodes.size, modelParameters);
+            this.index.set(modelParameters.id, this.nodes.size - 1);
+        }
+    }
+}
+
+
+/**
  * A class for representing a "controlList" - this does not yet exist in the MEMSER, so this is not used.
  * Currently, in the XML, a "control" node is a child node of a "me:mesmer" node and there is no "controlList".
  */
@@ -403,6 +474,11 @@ export class Mesmer extends NodeWithNodes {
     conditionsIndex: Map<number, number>;
 
     /**
+     * The modelParameters index. The keys are the modelParameters ids and the values are the node indexes.
+     */
+    modelParametersIndex: Map<number, number>;
+
+    /**
      * The control index. The keys are the control ids and the values are the node indexes.
      */
     controlIndex: Map<number, number>;
@@ -416,7 +492,7 @@ export class Mesmer extends NodeWithNodes {
      * @param controls The controls.
      */
     constructor(attributes: Map<string, string>, title?: Title, moleculeList?: MoleculeList, reactionList?: ReactionList,
-        conditionss?: Conditions[], modelParameters?: ModelParameters, controls?: Control[], metadataList?: MetadataList,
+        conditionss?: Conditions[], modelParameterss?: ModelParameters[], controls?: Control[], metadataList?: MetadataList,
         analysis?: Analysis) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
@@ -460,9 +536,13 @@ export class Mesmer extends NodeWithNodes {
                 this.addNode(conditions);
             });
         }
-        if (modelParameters != undefined) {
-            this.index.set(ModelParameters.tagName, this.nodes.size);
-            this.addNode(modelParameters);
+        this.modelParametersIndex = new Map();
+        if (modelParameterss != undefined) {
+            modelParameterss.forEach(modelParameters => {
+                this.index.set(ModelParameters.tagName + modelParameters.id, this.nodes.size);
+                this.modelParametersIndex.set(modelParameters.id, this.nodes.size);
+                this.addNode(modelParameters);
+            });
         }
         this.controlIndex = new Map();
         if (controls != undefined) {
@@ -609,7 +689,7 @@ export class Mesmer extends NodeWithNodes {
         let id = 0;
         // Sort the control index by key and go through these and take the next available id.
         let sortedKeys = Array.from(this.conditionsIndex.keys()).sort((a, b) => a - b);
-        console.log("sortedKeys " + arrayToString(sortedKeys));
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
         sortedKeys.forEach((key) => {
             if (key > id) {
                 return id;
@@ -631,28 +711,82 @@ export class Mesmer extends NodeWithNodes {
             this.conditionsIndex.delete(conditionsID);
         }
     }
+    
+    /**
+     * Add a ModelParameters.
+     * @param modelParameters The ModelParameters.
+     */
+    addModelParameters(modelParameters: ModelParameters) {
+        let id = ModelParameters.tagName + modelParameters.id;
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.set(i, modelParameters);
+        } else {
+            this.index.set(id, this.nodes.size);
+            this.modelParametersIndex.set(modelParameters.id, this.nodes.size);
+            this.addNode(modelParameters);
+        }
+    }
 
     /**
-     * @returns The model parameters.
+     * @param modelParametersID The id of the modelParameters.
+     * @returns The modelParameters for the modelParametersID.
      */
-    getModelParameters() {
-        let i: number | undefined = this.index.get(ModelParameters.tagName);
+    getModelParameters(modelParametersID: number): ModelParameters | undefined {
+        let i: number | undefined = this.modelParametersIndex.get(modelParametersID);
         if (i != undefined) {
             return this.nodes.get(i) as ModelParameters;
         }
     }
 
     /**
-     * Set the model parameters.
-     * @param modelParameters The model parameters.
+     * @returns The modelParameters as a ModelParameters[].
      */
-    setModelParameters(modelParameters: ModelParameters) {
-        let i: number | undefined = this.index.get(ModelParameters.tagName);
+    getModelParameterss(): ModelParameters[] {
+        let modelParameterss: ModelParameters[] = [];
+        this.modelParametersIndex.forEach((index, modelParametersID) => {
+            modelParameterss.push(this.nodes.get(index) as ModelParameters);
+        });
+        return modelParameterss;
+    }
+
+    /**
+     * Set the modelParameters.
+     * @param modelParameterss The ModelParameters[].
+     */
+    setModelParameterss(modelParameterss: ModelParameters[]) {
+        modelParameterss.forEach(modelParameters => {
+            this.addModelParameters(modelParameters);
+        });
+    }
+
+    /**
+     * @returns The next modelParameters id.
+     */
+    getNextModelParametersID(): number {
+        let id = 0;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.modelParametersIndex.keys()).sort((a, b) => a - b);
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            if (key > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
+
+    /**
+     * Remove a modelParameters.
+     * @param modelParametersID The id of the modelParameters to remove.
+     */
+    removeModelParameters(modelParametersID: number) {
+        let i: number | undefined = this.modelParametersIndex.get(modelParametersID);
         if (i != undefined) {
-            this.nodes.set(i, modelParameters);
-        } else {
-            this.index.set(ModelParameters.tagName, this.nodes.size);
-            this.addNode(modelParameters);
+            this.nodes.delete(i);
+            this.index.delete(ModelParameters.tagName + modelParametersID);
+            this.modelParametersIndex.delete(modelParametersID);
         }
     }
 
@@ -710,7 +844,7 @@ export class Mesmer extends NodeWithNodes {
         let id = 0;
         // Sort the control index by key and go through these and take the next available id.
         let sortedKeys = Array.from(this.controlIndex.keys()).sort((a, b) => a - b);
-        console.log("sortedKeys " + arrayToString(sortedKeys));
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
         sortedKeys.forEach((key) => {
             if (key > id) {
                 return id;
@@ -726,8 +860,8 @@ export class Mesmer extends NodeWithNodes {
      */
     removeControl(controlID: number) {
         let i: number | undefined = this.controlIndex.get(controlID);
-        console.log("removeControl " + controlID + " " + i);
-        console.log("controlIndex " + arrayToString(Array.from(this.controlIndex.keys())));
+        //console.log("removeControl " + controlID + " " + i);
+        //console.log("controlIndex " + arrayToString(Array.from(this.controlIndex.keys())));
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(Control.tagName + controlID);
@@ -767,7 +901,7 @@ export class Mesmer extends NodeWithNodes {
             return this.nodes.get(i) as Analysis;
         }
     }
-    
+
     /**
      * @param analysis The analysis.
      */

@@ -9,78 +9,69 @@ import { createFlexDiv } from "./html";
 export class LibraryMolecules {
 
     /**
-     * The molecules.
-     */
-    molecules: Map<string, Molecule>;
-
-    /**
-     * The aliases.
-     */
-    alias = new Map<string, string>();
-
-    /**
      * @param defaults The defaults.
      */
-    constructor() {
-        this.molecules = new Map();
-        this.readFile();
-    }
+    constructor() { }
 
     /**
-     * Read the file.
+     * @returns 
      */
-    readFile() {
-        // Create a file input element to prompt the user to select the default.xml file.
-        let input: HTMLInputElement = document.createElement('input');
-        input.type = 'file';
-        let self = this;
-        input.onchange = function () {
-            if (input.files) {
-                for (let i = 0; i < input.files.length; i++) {
-                    console.log("inputElement.files[" + i + "]=" + input.files[i]);
-                }
-                let file: File | null = input.files[0];
-                //console.log("file=" + file);
-                console.log(file.name);
-                let inputFilename: string = file.name;
-                let reader = new FileReader();
-                let chunkSize = 1024 * 1024; // 1MB
-                let start = 0;
-                let contents = '';
-                reader.onload = function (e) {
-                    if (e.target == null) {
-                        throw new Error('Event target is null');
-                    }
-                    contents += (e.target as FileReader).result as string;
-                    if (file != null) {
-                        if (start < file.size) {
-                            // Read the next chunk
-                            let blob = file.slice(start, start + chunkSize);
-                            reader.readAsText(blob);
-                            start += chunkSize;
-                        } else {
-                            // All chunks have been read
-                            contents = contents.trim();
-                            //console.log('contents ' + contents);
-                            let parser = new DOMParser();
-                            let xml: Document = parser.parseFromString(contents, "text/xml");
-                            self.parse(xml);
+    readFile(): Promise<Map<string, Molecule>> {
+        return new Promise((resolve, reject) => {
+            let input: HTMLInputElement = document.createElement('input');
+            input.type = 'file';
+            let self = this;
+
+            input.onchange = function () {
+                if (input.files) {
+                    let file: File | null = input.files[0];
+                    let inputFilename: string = file.name;
+                    let reader = new FileReader();
+                    let chunkSize = 1024 * 1024; // 1MB
+                    let start = 0;
+                    let contents = '';
+
+                    reader.onload = function (e) {
+                        if (e.target == null) {
+                            reject(new Error('Event target is null'));
+                            return;
                         }
-                    }
-                };
-                // Read the first chunk
-                let blob = file.slice(start, start + chunkSize);
-                reader.readAsText(blob);
-                start += chunkSize;
-            }
-        };
-        input.click();
+                        contents += (e.target as FileReader).result as string;
+                        if (file != null) {
+                            if (start < file.size) {
+                                // Read the next chunk
+                                let blob = file.slice(start, start + chunkSize);
+                                reader.readAsText(blob);
+                                start += chunkSize;
+                            } else {
+                                // All chunks have been read
+                                contents = contents.trim();
+                                let parser = new DOMParser();
+                                let xml: Document = parser.parseFromString(contents, "text/xml");
+                                resolve(self.parse(xml));
+                            }
+                        }
+                    };
+
+                    // Read the first chunk
+                    let blob = file.slice(start, start + chunkSize);
+                    reader.readAsText(blob);
+                    start += chunkSize;
+                }
+            };
+
+            input.click();
+        });
     }
 
     /**
      * Parse the XML.
      */
-    parse(xml: Document): void {
+    parse(xml: Document): Map<string, Molecule> {
+        /**
+         * The molecules.
+         */
+        let molecules: Map<string, Molecule> = new Map();
         // Get the XML "moleculeList" element.
         let xml_ml: Element = getSingularElement(xml, MoleculeList.tagName);
         // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
@@ -88,28 +79,31 @@ export class LibraryMolecules {
         xml_ml.childNodes.forEach(function (node) {
             mlTagNames.add(node.nodeName);
         });
+        /*
         if (mlTagNames.size != 1) {
             if (!(mlTagNames.size >= 2 && mlTagNames.has("#text")) ||
                 !(mlTagNames.size == 3 && mlTagNames.has('#comment'))) {
                 console.error("moleculeListTagNames:");
                 mlTagNames.forEach(x => console.error(x));
-                throw new Error("Additional tag names in moleculeList:");
+                //throw new Error("Additional tag names in moleculeList:");
             }
         }
         if (!mlTagNames.has(Molecule.tagName)) {
             throw new Error("Expecting tags with \"" + Molecule.tagName + "\" tagName but there are none!");
         }
+        */
         // Process the XML "molecule" elements.
         let xml_ms: HTMLCollectionOf<Element> = xml_ml.getElementsByTagName(Molecule.tagName);
         let xml_msl = xml_ms.length;
         console.log("Number of molecules=" + xml_msl);
+        let naliases: number = 0;
         //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
         for (let i = 0; i < xml_msl; i++) {
-            console.log("i=" + i);
+            // console.log("i=" + i);
             // Create a new Molecule.
             let attributes: Map<string, string> = getAttributes(xml_ms[i]);
             let mID: string | undefined = attributes.get(Molecule.s_id);
-            console.log("mID=" + mID);
+            //console.log("mID=" + mID);
             if (mID == undefined) {
                 throw new Error(Molecule.s_id + ' is undefined');
             }
@@ -117,16 +111,16 @@ export class LibraryMolecules {
             //console.log("cns.length=" + cns.length);
             // Check if there are any child elements. If not, then this molecule is an alias.
             if (cns.length == 0) {
-                console.log("This molecule is an alias.");
+                naliases++;
+                //console.log("This molecule is an alias.");
                 let ref: string | undefined = attributes.get("ref");
                 if (ref == undefined) {
                     throw new Error("ref is undefined");
                 }
-                this.alias.set(ref, mID);
                 continue;
             }
             let m = new Molecule(attributes, mID);
-            this.molecules.set(mID, m);
+            molecules.set(mID, m);
             // Create a set of molecule tag names.
             let moleculeTagNames: Set<string> = new Set();
             //cns.forEach(function (cn) {
@@ -359,5 +353,8 @@ export class LibraryMolecules {
                 //throw new Error("Unexpected tags in molecule.");
             }
         }
+        console.log("Number of molecules=" + molecules.size);
+        console.log("Number of alias molecules=" + naliases.toString());
+        return molecules;
     }
 }

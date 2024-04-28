@@ -1,6 +1,7 @@
 /* All collapsible elements are hidden by default */
 .collapsible + * {
   display: none;
+  /*display: block;*/
 }
 
 /* For input and select elements. */

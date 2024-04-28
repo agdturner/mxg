@@ -4,21 +4,7 @@ export const s_button: string = "button";
 export const s_collapsible: string = "collapsible";
 export const sy_downTriangle: string = "\u25BC"; // ▼
 export const sy_upTriangle: string = "\u25B2"; // ▲
-
-/**
- * Remove an element with the given id.
- * @param id The id of the element to remove.
- * @param ids The set of ids to remove the id from.
- */
-export function remove(id: string, ids?: Set<string>) {
-    let e: HTMLElement | null = document.getElementById(id);
-    if (e != null) {
-        e.remove();
-    }
-    if (ids != undefined) {
-        ids.delete(id);
-    }
-}
+export const s_select: string = "select";
 
 /**
  * Create a HTMLDivElement containing a HTMLButtonElement and a HTMLDivElement which display is toggled as the button is actioned. 
@@ -309,11 +295,10 @@ export function createLabelWithSelect(textContent: string, options: string[] | S
     name: string, value: string, id: string,
     componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
+    let div: HTMLDivElement = createFlexDiv(id, divMargin);
     let label: HTMLLabelElement = createLabel(textContent, componentMargin);
-    label.htmlFor = id;
     div.appendChild(label);
-    div.appendChild(createSelectElement(options, name, value, id, componentMargin));
+    div.appendChild(createSelectElement(options, name, value, getID(id, s_select), componentMargin));
     return div;
 }
 

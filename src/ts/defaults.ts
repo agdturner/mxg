@@ -87,15 +87,34 @@ export class Defaults {
     /**
      * TagName.
      */
-    public static tagName = 'defaults';
+    tagName: string = 'defaults';
 
     /**
-     * @param defaults The defaults.
+     * Default values. Keys are tagNames.
+     */
+    values: Map<string, string>;
+
+    /**
+     * @param attributes Keys are tagNames.
+     */
+    attributess: Map<string, Map<string, string>>;
+
+    /**
+     * Construct a new M_Defaults object.
      */
     constructor() {
+        this.values = new Map<string, string>();
+        this.attributess = new Map<string, Map<string, string>>();
+    }
+
+    /**
+     * Read the defaults.xml file.
+     */
+    readFile(): void {
         // Create a file input element to prompt the user to select the default.xml file.
         let input: HTMLInputElement = document.createElement('input');
         input.type = 'file';
+        let self = this;
         input.onchange = function () {
             if (input.files) {
                 for (let i = 0; i < input.files.length; i++) {
@@ -123,10 +142,10 @@ export class Defaults {
                         } else {
                             // All chunks have been read
                             contents = contents.trim();
-                            console.log('contents ' + contents);
+                            //console.log('contents ' + contents);
                             let parser = new DOMParser();
                             let xml: Document = parser.parseFromString(contents, "text/xml");
-                            parse(xml);
+                            self.parse(xml);
                         }
                     }
                 };
@@ -138,14 +157,58 @@ export class Defaults {
         };
         input.click();
     }
-}
 
+    /**
+     * Parses the xml loading data into attributess and values.
+     * @param xml The XML document.
+     */
+    parse(xml: Document): void {
+        // Process the XML.
+        let xml_defaults: Element = getSingularElement(xml, this.tagName);
+        let attributes: Map<string, string> = getAttributes(xml_defaults);
+        console.log("Default attributes: " + mapToString(attributes));
+        let children: HTMLCollection = xml_defaults.children;
+        console.log("children.length=" + children.length);
+        for (let i = 0; i < children.length; i++) {
+            let child: Element = children[i] as Element;
+            let tagName: string = child.tagName;
+            console.log("tagName=" + tagName);
+            let attributes: Map<string, string> = getAttributes(child);
+            this.attributess.set(tagName, attributes);
+            console.log("Attributes: " + mapToString(attributes));
+            if (tagName == 'property') {
+                let dictRef: string = child.getAttribute('dictRef') as string;
+                try {
+                    let xml_scalar = getSingularElement(child, 'scalar');
+                    let v: string | null = xml_scalar.innerHTML;
+                    if (v != null) {
+                        console.log("v=" + v);
+                        this.values.set(dictRef, v);
+                    } else {
+                        console.log("v is null");
+                    }
+                } catch (e) {
+                    console.log("Error: " + e);
+                }
+            } else {
+                //let v: string | null = child.nodeValue;
+                //let v: string | null = child.nodeName;
+                let v: string | null = child.innerHTML;
+                if (v != null) {
+                    console.log("v=" + v);
+                    this.values.set(tagName, v);
+                } else {
+                    console.log("v is null");
+                }
+            }
+        }
 
-function parse(xml: Document): void {
+        // Some tests.
+        console.log("values: " + mapToString(this.values));
+        this.attributess.forEach((value: Map<string, string>, key: string) => {
+            console.log("key=" + key + " value=" + mapToString(value));
+        });
+    }
 
-    // Process the XML.
-    let xml_defaults: Element = getSingularElement(xml, Defaults.tagName);
-    let attributes: Map<string, string> = getAttributes(xml_defaults);
-    console.log(mapToString(attributes));
 
 }
