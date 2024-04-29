@@ -4377,7 +4377,7 @@ function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv:
     mpsDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
-    let button = createButton(tagName, addID(id, s_button), boundary1);
+    let button = createButton(tagName, modelParametersIDs.addID(mpsDiv.id, tagName, s_button), boundary1);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     div.appendChild(button);
@@ -5153,9 +5153,9 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
         tmr = new TestMicroRates(attributes);
     } else {
         attributes = new Map<string, string>();
-        attributes.set("Tmax", "");
-        attributes.set("Tmin", "");
-        attributes.set("Tstep", "");
+        attributes.set("Tmax", "0"); // These should load from some kind of default...
+        attributes.set("Tmin", "0");
+        attributes.set("Tstep", "0");
         tmr = new TestMicroRates(attributes);
     }
     control.setTestMicroRates(tmr);
