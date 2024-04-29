@@ -2318,14 +2318,14 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle(s_optionOn);
     } else {
-        addNumber(div, inputId, name, value, setter, marginComponent);
+        addNumber(div, inputId, name, value, getter, setter, marginComponent);
         button.textContent = buttonTextContentSelected;
         button.classList.toggle(s_optionOff);
     }
     // Add event listener for the button.
     button.addEventListener("click", (event)=>{
         if (document.getElementById(inputId) == null) {
-            addNumber(div, inputId, name, value, setter, marginComponent);
+            addNumber(div, inputId, name, value, getter, setter, marginComponent);
             button.textContent = buttonTextContentSelected;
         } else {
             // Remove existing.
@@ -2348,7 +2348,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
  * @param setter The setter function to call.
  * @param boundary The boundary.
  * @param level The level.
- */ function addNumber(div, id, name, value, setter, boundary) {
+ */ function addNumber(div, id, name, value, getter, setter, boundary) {
     let valueString;
     if (value == undefined) valueString = "";
     else valueString = value.toString();
@@ -2361,7 +2361,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
             console.log(name + " changed from " + value + " to " + target.value);
         } catch (e) {
             alert("Input invalid, resetting...");
-            target.value = valueString;
+            target.value = getter().toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
     });
@@ -6259,7 +6259,7 @@ function handleEvent(element, tagName) {
     });
 }
 
-},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./html.js":"aLPSL","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","./defaults.js":"d6DU0","./librarymols.js":"dhi1y","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./reaction.js":"8grVN","./canvas.js":"hoJRr"}],"f0Rnl":[function(require,module,exports) {
+},{"./util.js":"f0Rnl","./xml.js":"7znDa","./molecule.js":"ahQNx","./reaction.js":"8grVN","./html.js":"aLPSL","./canvas.js":"hoJRr","./conditions.js":"aksKl","./modelParameters.js":"kQHfz","./control.js":"Qx5gu","./mesmer.js":"kMp4Q","big.js":"91nMZ","./analysis.js":"53wyH","./metadata.js":"aKNnu","./defaults.js":"d6DU0","./librarymols.js":"dhi1y","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f0Rnl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -15242,493 +15242,7 @@ class ModelParameters extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d6DU0":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * Defaults are stored in a defaults.xml file. MESMER version 7.0 has the following:
- * <me:activationEnergy units="kJ/mol" default="NEEDS TO BE CHECKED**">0.0</me:activationEnergy>
- * <me:preExponential default="NEEDS TO BE CHECKED**">6.00e-12</me:preExponential>
- * <property dictRef="me:spinMultiplicity" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:symmetryNumber" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:frequenciesScaleFactor" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:epsilon" default="true">
- *  <scalar>50.0</scalar>
- * </property>
- * <property dictRef="me:sigma" default="true">
- *  <scalar>5.0</scalar>
- * </property>
- * <me:deltaEDown default="NEEDS TO BE CHECKED**">130.0</me:deltaEDown>
- * <property dictRef="me:deltaEDownTExponent" default="true">
- *  <scalar referenceTemperature="298">0.0</scalar>
- * </property>
- * <molecule spinMultiplicity="1" default="true"/>
- * <molecule me:type="deficientReactant excessReactant modelled transitionState sink"
- *           default="is unsatisfactory. Choose one from list: "></molecule>
- * <molecule role="deficientReactant excessReactant modelled transitionState sink"
- *           default="is unsatisfactory. Choose one from list: "></molecule>
- * <property dictRef="me:MW" default="IS UNSATISFACTORY. A VALUE NEEDS TO BE PROVIDED**">
- *  <scalar>0.0</scalar>
- * </property>
- * <me:MCRCMethod default="NEEDS TO BE CHECKED. COULD BE** " name="RRKM"/>
- * <me:DOSCMethod default="true" name="ClassicalRotors"/>
- * <me:DOSCType default="true">external</me:DOSCType>
- * <me:DistributionCalcMethod default="true" name="Boltzmann"/>
- * <me:excessReactantConc default="NEEDS TO BE CHECKED**">2.25e+16</me:excessReactantConc>
- * <me:PTpair units="PPCC" precision="d" P="1.01E17" T="299" timeUnits ="microsec" default="true"/>
- * <me:PTset units="PPCC" precision="d" default="true"/>
- * <me:bathgas default="true">He</me:bathgas>
- * <me:TInfinity default="true">298</me:TInfinity>
- * <me:grainSize units="cm-1" default="true">100</me:grainSize>
- * <me:energyAboveTheTopHill units="kT" default="true">25</me:energyAboveTheTopHill>
- * <me:calcMethod default="true" name="simpleCalc"/>
- * <me:fittingTolerance default="true">0.01</me:fittingTolerance>
- * <me:fittingIterations default="true">10</me:fittingIterations>
- * <me:energyTransferModel name="ExponentialDown" default="true"/>
- * <me:FragmentDist name="Prior" default="true"/>
- * <me:MarquardtDerivDelta default="true">1.e-03</me:MarquardtDerivDelta>
- * <me:MarquardtTolerance default="true">1.e-03</me:MarquardtTolerance>
- * <me:MarquardtLambda default="true">1.0</me:MarquardtLambda>
- * <me:MarquardtLambdaScale default="true">10.0</me:MarquardtLambdaScale>
- * <me:ConstraintFactor default="true">1.0</me:ConstraintFactor>
- * <me:ConstraintAddand default="true">0.0</me:ConstraintAddand>
- * <me:sensitivityAnalysisSamples default="true">256</me:sensitivityAnalysisSamples>
- * <me:sensitivityGenerateData default="true">true</me:sensitivityGenerateData>
- * <me:chebMinConc units="particles per cubic centimeter" default="true"/>
- * <me:calcMethod units="kJ/mol" default="true"/>
- * <me:Tmin default="true">200</me:Tmin>
- * <me:Tmax default="true">1500</me:Tmax>
- * <me:Tstep default="true">50</me:Tstep>
- * <me:Tmid default="true">1000</me:Tmid>
- * <me:shortestTimeOfInterest default="true">1.0e-11</me:shortestTimeOfInterest>
- * <me:MaximumEvolutionTime default="true">1.0e+05</me:MaximumEvolutionTime>
- * <me:errorPropagationSamples default="true">300</me:errorPropagationSamples>
- * <property dictRef="me:Hf298">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <property dictRef="me:Hf0">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <property dictRef="me:ZPE">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <me:RMS_SOC_element units="cm-1" default="true">10.0</me:RMS_SOC_element>
- * <me:GradientDifferenceMagnitude units="a.u./Bohr" default="true">0.1</me:GradientDifferenceMagnitude>
- * <me:GradientReducedMass units="a.m.u." default="true">16.0</me:GradientReducedMass>
- * <me:AverageSlope units="a.u./Bohr" default="true">0.1</me:AverageSlope>
- * <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
- * <me:testMicroRates Tmin = "100" Tmax = "2000" Tstep = "100" default="true"/>
- * <me:experimentalRate error ="0.0" default="true"/>
- */ parcelHelpers.export(exports, "Defaults", ()=>Defaults);
-var _util = require("./util");
-var _xml = require("./xml");
-class Defaults {
-    /**
-     * Construct a new M_Defaults object.
-     */ constructor(){
-        /**
-     * TagName.
-     */ this.tagName = "defaults";
-        this.values = new Map();
-        this.attributess = new Map();
-    }
-    /**
-     * Read the defaults.xml file.
-     */ readFile() {
-        // Create a file input element to prompt the user to select the default.xml file.
-        let input = document.createElement("input");
-        input.type = "file";
-        let self = this;
-        input.onchange = function() {
-            if (input.files) {
-                for(let i = 0; i < input.files.length; i++)console.log("inputElement.files[" + i + "]=" + input.files[i]);
-                let file = input.files[0];
-                //console.log("file=" + file);
-                console.log(file.name);
-                let inputFilename = file.name;
-                let reader = new FileReader();
-                let chunkSize = 1048576; // 1MB
-                let start = 0;
-                let contents = "";
-                reader.onload = function(e) {
-                    if (e.target == null) throw new Error("Event target is null");
-                    contents += e.target.result;
-                    if (file != null) {
-                        if (start < file.size) {
-                            // Read the next chunk
-                            let blob = file.slice(start, start + chunkSize);
-                            reader.readAsText(blob);
-                            start += chunkSize;
-                        } else {
-                            // All chunks have been read
-                            contents = contents.trim();
-                            //console.log('contents ' + contents);
-                            let parser = new DOMParser();
-                            let xml = parser.parseFromString(contents, "text/xml");
-                            self.parse(xml);
-                        }
-                    }
-                };
-                // Read the first chunk
-                let blob = file.slice(start, start + chunkSize);
-                reader.readAsText(blob);
-                start += chunkSize;
-            }
-        };
-        input.click();
-    }
-    /**
-     * Parses the xml loading data into attributess and values.
-     * @param xml The XML document.
-     */ parse(xml) {
-        // Process the XML.
-        let xml_defaults = (0, _xml.getSingularElement)(xml, this.tagName);
-        let attributes = (0, _xml.getAttributes)(xml_defaults);
-        console.log("Default attributes: " + (0, _util.mapToString)(attributes));
-        let children = xml_defaults.children;
-        console.log("children.length=" + children.length);
-        for(let i = 0; i < children.length; i++){
-            let child = children[i];
-            let tagName = child.tagName;
-            console.log("tagName=" + tagName);
-            let attributes = (0, _xml.getAttributes)(child);
-            this.attributess.set(tagName, attributes);
-            console.log("Attributes: " + (0, _util.mapToString)(attributes));
-            if (tagName == "property") {
-                let dictRef = child.getAttribute("dictRef");
-                try {
-                    let xml_scalar = (0, _xml.getSingularElement)(child, "scalar");
-                    let v = xml_scalar.innerHTML;
-                    if (v != null) {
-                        console.log("v=" + v);
-                        this.values.set(dictRef, v);
-                    } else console.log("v is null");
-                } catch (e) {
-                    console.log("Error: " + e);
-                }
-            } else {
-                //let v: string | null = child.nodeValue;
-                //let v: string | null = child.nodeName;
-                let v = child.innerHTML;
-                if (v != null) {
-                    console.log("v=" + v);
-                    this.values.set(tagName, v);
-                } else console.log("v is null");
-            }
-        }
-        // Some tests.
-        console.log("values: " + (0, _util.mapToString)(this.values));
-        this.attributess.forEach((value, key)=>{
-            console.log("key=" + key + " value=" + (0, _util.mapToString)(value));
-        });
-    }
-}
-
-},{"./util":"f0Rnl","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dhi1y":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "LibraryMolecules", ()=>LibraryMolecules);
-var _bigJs = require("big.js");
-var _bigJsDefault = parcelHelpers.interopDefault(_bigJs);
-var _mesmer = require("./mesmer");
-var _metadata = require("./metadata");
-var _molecule = require("./molecule");
-var _xml = require("./xml");
-class LibraryMolecules {
-    /**
-     * @param defaults The defaults.
-     */ constructor(){}
-    /**
-     * @returns 
-     */ readFile() {
-        return new Promise((resolve, reject)=>{
-            let input = document.createElement("input");
-            input.type = "file";
-            let self = this;
-            input.onchange = function() {
-                if (input.files) {
-                    let file = input.files[0];
-                    let inputFilename = file.name;
-                    let reader = new FileReader();
-                    let chunkSize = 1048576; // 1MB
-                    let start = 0;
-                    let contents = "";
-                    reader.onload = function(e) {
-                        if (e.target == null) {
-                            reject(new Error("Event target is null"));
-                            return;
-                        }
-                        contents += e.target.result;
-                        if (file != null) {
-                            if (start < file.size) {
-                                // Read the next chunk
-                                let blob = file.slice(start, start + chunkSize);
-                                reader.readAsText(blob);
-                                start += chunkSize;
-                            } else {
-                                // All chunks have been read
-                                contents = contents.trim();
-                                let parser = new DOMParser();
-                                let xml = parser.parseFromString(contents, "text/xml");
-                                resolve(self.parse(xml));
-                            }
-                        }
-                    };
-                    // Read the first chunk
-                    let blob = file.slice(start, start + chunkSize);
-                    reader.readAsText(blob);
-                    start += chunkSize;
-                }
-            };
-            input.click();
-        });
-    }
-    /**
-     * Parse the XML.
-     */ parse(xml) {
-        /**
-         * The molecules.
-         */ let molecules = new Map();
-        // Get the XML "moleculeList" element.
-        let xml_ml = (0, _xml.getSingularElement)(xml, (0, _mesmer.MoleculeList).tagName);
-        // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
-        let mlTagNames = new Set();
-        xml_ml.childNodes.forEach(function(node) {
-            mlTagNames.add(node.nodeName);
-        });
-        /*
-        if (mlTagNames.size != 1) {
-            if (!(mlTagNames.size >= 2 && mlTagNames.has("#text")) ||
-                !(mlTagNames.size == 3 && mlTagNames.has('#comment'))) {
-                console.error("moleculeListTagNames:");
-                mlTagNames.forEach(x => console.error(x));
-                //throw new Error("Additional tag names in moleculeList:");
-            }
-        }
-        if (!mlTagNames.has(Molecule.tagName)) {
-            throw new Error("Expecting tags with \"" + Molecule.tagName + "\" tagName but there are none!");
-        }
-        */ // Process the XML "molecule" elements.
-        let xml_ms = xml_ml.getElementsByTagName((0, _molecule.Molecule).tagName);
-        let xml_msl = xml_ms.length;
-        console.log("Number of molecules=" + xml_msl);
-        let naliases = 0;
-        //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
-        for(let i = 0; i < xml_msl; i++){
-            // console.log("i=" + i);
-            // Create a new Molecule.
-            let attributes = (0, _xml.getAttributes)(xml_ms[i]);
-            let mID = attributes.get((0, _molecule.Molecule).s_id);
-            //console.log("mID=" + mID);
-            if (mID == undefined) throw new Error((0, _molecule.Molecule).s_id + " is undefined");
-            let cns = xml_ms[i].childNodes;
-            //console.log("cns.length=" + cns.length);
-            // Check if there are any child elements. If not, then this molecule is an alias.
-            if (cns.length == 0) {
-                naliases++;
-                //console.log("This molecule is an alias.");
-                let ref = attributes.get("ref");
-                if (ref == undefined) throw new Error("ref is undefined");
-                continue;
-            }
-            let m = new (0, _molecule.Molecule)(attributes, mID);
-            molecules.set(mID, m);
-            // Create a set of molecule tag names.
-            let moleculeTagNames = new Set();
-            //cns.forEach(function (cn) {
-            for(let j = 0; j < cns.length; j++){
-                let cn = cns[j];
-                // Check for nodeName repeats that are not #text.
-                if (!moleculeTagNames.has(cn.nodeName)) moleculeTagNames.add(cn.nodeName);
-                else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
-                if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
-            //console.log(cn.nodeName);
-            }
-            // Init metadataList.
-            //console.log("Init metadataList.");
-            let xml_mls = xml_ms[i].getElementsByTagName((0, _metadata.MetadataList).tagName);
-            if (xml_mls.length > 0) {
-                if (xml_mls.length > 1) throw new Error("Expecting 1 or 0 " + (0, _metadata.MetadataList).tagName + " but finding " + xml_mls.length + "!");
-                let ml = new (0, _metadata.MetadataList)((0, _xml.getAttributes)(xml_mls[0]));
-                m.setMetadataList(ml);
-                let xml_ms = xml_mls[0].getElementsByTagName((0, _metadata.Metadata).tagName);
-                for(let j = 0; j < xml_ms.length; j++){
-                    // Create a new Metadata.
-                    let md = new (0, _metadata.Metadata)((0, _xml.getAttributes)(xml_ms[j]));
-                    ml.addMetadata(md);
-                }
-                moleculeTagNames.delete((0, _metadata.MetadataList).tagName);
-            }
-            // Init atoms.
-            //console.log("Init atoms.");
-            // There can be an individual atom not in an atom array, or an atom array.
-            let xml_aas = xml_ms[i].getElementsByTagName((0, _molecule.AtomArray).tagName);
-            if (xml_aas.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.AtomArray).tagName + " but finding " + xml_aas.length + "!");
-            if (xml_aas.length == 1) {
-                let xml_aa = xml_aas[0];
-                let xml_as = xml_aa.getElementsByTagName((0, _molecule.Atom).tagName);
-                if (xml_as.length == 0) throw new Error("Expecting 1 or more atoms in " + (0, _molecule.AtomArray).tagName + ", but finding 0!");
-                let aa = new (0, _molecule.AtomArray)((0, _xml.getAttributes)(xml_aa));
-                m.setAtoms(aa);
-                for(let j = 0; j < xml_as.length; j++)aa.addAtom(new (0, _molecule.Atom)((0, _xml.getAttributes)(xml_as[j]), m));
-                moleculeTagNames.delete((0, _molecule.AtomArray).tagName);
-            } else {
-                let xml_as = xml_ms[i].getElementsByTagName((0, _molecule.Atom).tagName);
-                if (xml_as.length == 1) {
-                    let aa = new (0, _molecule.AtomArray)(new Map());
-                    aa.addAtom(new (0, _molecule.Atom)((0, _xml.getAttributes)(xml_as[0]), m));
-                    m.setAtoms(aa);
-                } else if (xml_as.length > 1) throw new Error("Expecting 1 " + (0, _molecule.Atom).tagName + " but finding " + xml_as.length + ". Should these be in an " + (0, _molecule.AtomArray).tagName + "?");
-            }
-            //console.log("atomsNode=" + atomsNode);
-            moleculeTagNames.delete((0, _molecule.Atom).tagName);
-            // Init bonds.
-            // There can be an individual bond not in a bond array, or a bond array.
-            // There may be only 1 bond in a BondArray.
-            let xml_bas = xml_ms[i].getElementsByTagName((0, _molecule.BondArray).tagName);
-            if (xml_bas.length > 0) {
-                if (xml_bas.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.BondArray).tagName + " but finding " + xml_bas.length + "!");
-                let xml_bs = xml_bas[0].getElementsByTagName((0, _molecule.Bond).tagName);
-                let ba = new (0, _molecule.BondArray)((0, _xml.getAttributes)(xml_bas[0]));
-                for(let j = 0; j < xml_bs.length; j++)ba.addBond(new (0, _molecule.Bond)((0, _xml.getAttributes)(xml_bs[j]), m));
-                m.setBonds(ba);
-                moleculeTagNames.delete((0, _molecule.BondArray).tagName);
-            } else {
-                let xml_bonds = xml_ms[i].getElementsByTagName((0, _molecule.Bond).tagName);
-                if (xml_bonds.length > 0) {
-                    if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _molecule.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _molecule.BondArray).tagName + "?");
-                    let ba = new (0, _molecule.BondArray)(new Map());
-                    ba.addBond(new (0, _molecule.Bond)((0, _xml.getAttributes)(xml_bonds[0]), m));
-                    m.setBonds(ba);
-                }
-            }
-            moleculeTagNames.delete((0, _molecule.Bond).tagName);
-            // Organise PropertyList or individual Property.
-            // (There can be an individual property not in a propertyList?)
-            // If there is a PropertyList, then create a property list.
-            let xml_pls = xml_ms[i].getElementsByTagName((0, _molecule.PropertyList).tagName);
-            if (xml_pls.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.PropertyList).tagName + " but finding " + xml_pls.length + "!");
-            if (xml_pls.length == 1) {
-                // Create a new PropertyList.
-                let pl = new (0, _molecule.PropertyList)((0, _xml.getAttributes)(xml_pls[0]));
-                m.setPropertyList(pl);
-                let xml_ps = xml_pls[0].getElementsByTagName((0, _molecule.Property).tagName);
-                for(let j = 0; j < xml_ps.length; j++)// Create a new Property.
-                pl.setProperty(new (0, _molecule.Property)((0, _xml.getAttributes)(xml_ps[j])));
-                moleculeTagNames.delete((0, _molecule.PropertyList).tagName);
-            } else {
-                // There is a Property on its own. For simplicity, this will be stored in a PropertyList.
-                // Create a new PropertyList.
-                let pl = new (0, _molecule.PropertyList)(new Map());
-                m.setPropertyList(pl);
-                let xml_ps = xml_ms[i].getElementsByTagName((0, _molecule.Property).tagName);
-                if (xml_ps.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Property).tagName + " but finding " + xml_ps.length + ". Should these be in a " + (0, _molecule.PropertyList).tagName + "?");
-                // Create a new Property.
-                pl.setProperty(new (0, _molecule.Property)((0, _xml.getAttributes)(xml_ps[0])));
-                moleculeTagNames.delete((0, _molecule.Property).tagName);
-            }
-            // Organise EnergyTransferModel.
-            let xml_etms = xml_ms[i].getElementsByTagName((0, _molecule.EnergyTransferModel).tagName);
-            if (xml_etms.length > 0) {
-                if (xml_etms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.EnergyTransferModel).tagName + " but finding " + xml_etms.length + "!");
-                let etm = new (0, _molecule.EnergyTransferModel)((0, _xml.getAttributes)(xml_etms[0]));
-                m.setEnergyTransferModel(etm);
-                moleculeTagNames.delete((0, _molecule.EnergyTransferModel).tagName);
-            }
-            // Organise DOSCMethod.
-            let xml_dms = xml_ms[i].getElementsByTagName((0, _molecule.DOSCMethod).tagName);
-            if (xml_dms.length > 0) {
-                if (xml_dms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DOSCMethod).tagName + " but finding " + xml_dms.length + "!");
-                let doscm = new (0, _molecule.DOSCMethod)((0, _xml.getAttributes)(xml_dms[0]));
-                m.setDOSCMethod(doscm);
-                moleculeTagNames.delete((0, _molecule.DOSCMethod).tagName);
-            }
-            // Organise DistributionCalcMethod. (Output only)
-            let xml_dcms = xml_ms[i].getElementsByTagName((0, _molecule.DistributionCalcMethod).tagName);
-            if (xml_dcms.length > 0) {
-                if (xml_dcms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DistributionCalcMethod).tagName + " but finding " + xml_dcms.length + "!");
-                let dcmAttributes = (0, _xml.getAttributes)(xml_dcms[0]);
-                let dcm = new (0, _molecule.DistributionCalcMethod)(dcmAttributes);
-                m.setDistributionCalcMethod(dcm);
-                moleculeTagNames.delete((0, _molecule.DistributionCalcMethod).tagName);
-            }
-            // Organise DensityOfStatesList. (Output only)
-            let xml_dosl = xml_ms[i].getElementsByTagName((0, _molecule.DensityOfStatesList).tagName);
-            if (xml_dosl.length > 0) {
-                if (xml_dosl.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DensityOfStatesList).tagName + " but finding " + xml_dosl.length + "!");
-                let dosl = new (0, _molecule.DensityOfStatesList)((0, _xml.getAttributes)(xml_dosl[0]));
-                m.setDensityOfStatesList(dosl);
-                let xml_dos = xml_dosl[0].getElementsByTagName((0, _molecule.DensityOfStates).tagName);
-                // Organise Description.
-                let xml_ds = xml_dosl[0].getElementsByTagName((0, _mesmer.Description).tagName);
-                if (xml_ds.length > 0) {
-                    if (xml_ds.length > 1) throw new Error("Expecting 1 or 0 " + (0, _mesmer.Description).tagName + " but finding " + xml_ds.length + "!");
-                    let ds = new (0, _mesmer.Description)((0, _xml.getAttributes)(xml_ds[0]), (0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_ds[0])));
-                    dosl.setDescription(ds);
-                }
-                // Organise DensityOfStates.
-                //console.log("xml_dos.length=" + xml_dos.length);
-                if (xml_dos.length == 0) throw new Error("Expecting 1 or more " + (0, _molecule.DensityOfStates).tagName + " but finding 0!");
-                else for(let j = 0; j < xml_dos.length; j++){
-                    //console.log("j=" + j);
-                    let dos = new (0, _molecule.DensityOfStates)((0, _xml.getAttributes)(xml_dos[j]));
-                    dosl.addDensityOfStates(dos);
-                    // T.
-                    let xml_t = xml_dos[j].getElementsByTagName((0, _mesmer.T).tagName);
-                    if (xml_t.length != 1) throw new Error("Expecting 1 " + (0, _mesmer.T).tagName + " but finding " + xml_t.length + "!");
-                    else {
-                        let t = new (0, _mesmer.T)((0, _xml.getAttributes)(xml_t[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_t[0]))));
-                        dos.setT(t);
-                    //dosDiv.appendChild(createLabel(t.value.toString(), boundary1));
-                    }
-                    // qtot.
-                    let xml_qtot = xml_dos[j].getElementsByTagName((0, _molecule.Qtot).tagName);
-                    if (xml_qtot.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Qtot).tagName + " but finding " + xml_qtot.length + "!");
-                    else {
-                        let qtot = new (0, _molecule.Qtot)((0, _xml.getAttributes)(xml_qtot[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_qtot[0]))));
-                        dos.setQtot(qtot);
-                    //dosDiv.appendChild(createLabel(Qtot.tagName + " " + qtot.value.toString(), boundary1));
-                    }
-                    // sumc.
-                    let xml_sumc = xml_dos[j].getElementsByTagName((0, _molecule.Sumc).tagName);
-                    if (xml_sumc.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Sumc).tagName + " but finding " + xml_sumc.length + "!");
-                    else {
-                        let sumc = new (0, _molecule.Sumc)((0, _xml.getAttributes)(xml_sumc[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_sumc[0]))));
-                        dos.setSumc(sumc);
-                    //dosDiv.appendChild(createLabel(sumc.value.toString(), boundary1));
-                    }
-                    // sumg.
-                    let xml_sumg = xml_dos[j].getElementsByTagName((0, _molecule.Sumg).tagName);
-                    if (xml_sumg.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Sumg).tagName + " but finding " + xml_sumg.length + "!");
-                    else {
-                        let sumg = new (0, _molecule.Sumg)((0, _xml.getAttributes)(xml_sumg[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_sumg[0]))));
-                        dos.setSumg(sumg);
-                    //dosDiv.appendChild(createLabel(sumg.value.toString(), boundary1));
-                    }
-                }
-                moleculeTagNames.delete((0, _molecule.DensityOfStatesList).tagName);
-            }
-            // Check for unexpected tags.
-            moleculeTagNames.delete("#text");
-            if (moleculeTagNames.size > 0) {
-                console.warn("There are additional unexpected moleculeTagNames:");
-                moleculeTagNames.forEach((x)=>console.warn(x));
-            //throw new Error("Unexpected tags in molecule.");
-            }
-        }
-        console.log("Number of molecules=" + molecules.size);
-        console.log("Number of alias molecules=" + naliases.toString());
-        return molecules;
-    }
-}
-
-},{"big.js":"91nMZ","./mesmer":"kMp4Q","./metadata":"aKNnu","./molecule":"ahQNx","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8grVN":[function(require,module,exports) {
+},{"./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8grVN":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -16806,6 +16320,492 @@ function getTextWidth(ctx, text, font) {
     return ctx.measureText(text).width;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d6DU0":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * Defaults are stored in a defaults.xml file. MESMER version 7.0 has the following:
+ * <me:activationEnergy units="kJ/mol" default="NEEDS TO BE CHECKED**">0.0</me:activationEnergy>
+ * <me:preExponential default="NEEDS TO BE CHECKED**">6.00e-12</me:preExponential>
+ * <property dictRef="me:spinMultiplicity" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:symmetryNumber" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:frequenciesScaleFactor" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:epsilon" default="true">
+ *  <scalar>50.0</scalar>
+ * </property>
+ * <property dictRef="me:sigma" default="true">
+ *  <scalar>5.0</scalar>
+ * </property>
+ * <me:deltaEDown default="NEEDS TO BE CHECKED**">130.0</me:deltaEDown>
+ * <property dictRef="me:deltaEDownTExponent" default="true">
+ *  <scalar referenceTemperature="298">0.0</scalar>
+ * </property>
+ * <molecule spinMultiplicity="1" default="true"/>
+ * <molecule me:type="deficientReactant excessReactant modelled transitionState sink"
+ *           default="is unsatisfactory. Choose one from list: "></molecule>
+ * <molecule role="deficientReactant excessReactant modelled transitionState sink"
+ *           default="is unsatisfactory. Choose one from list: "></molecule>
+ * <property dictRef="me:MW" default="IS UNSATISFACTORY. A VALUE NEEDS TO BE PROVIDED**">
+ *  <scalar>0.0</scalar>
+ * </property>
+ * <me:MCRCMethod default="NEEDS TO BE CHECKED. COULD BE** " name="RRKM"/>
+ * <me:DOSCMethod default="true" name="ClassicalRotors"/>
+ * <me:DOSCType default="true">external</me:DOSCType>
+ * <me:DistributionCalcMethod default="true" name="Boltzmann"/>
+ * <me:excessReactantConc default="NEEDS TO BE CHECKED**">2.25e+16</me:excessReactantConc>
+ * <me:PTpair units="PPCC" precision="d" P="1.01E17" T="299" timeUnits ="microsec" default="true"/>
+ * <me:PTset units="PPCC" precision="d" default="true"/>
+ * <me:bathgas default="true">He</me:bathgas>
+ * <me:TInfinity default="true">298</me:TInfinity>
+ * <me:grainSize units="cm-1" default="true">100</me:grainSize>
+ * <me:energyAboveTheTopHill units="kT" default="true">25</me:energyAboveTheTopHill>
+ * <me:calcMethod default="true" name="simpleCalc"/>
+ * <me:fittingTolerance default="true">0.01</me:fittingTolerance>
+ * <me:fittingIterations default="true">10</me:fittingIterations>
+ * <me:energyTransferModel name="ExponentialDown" default="true"/>
+ * <me:FragmentDist name="Prior" default="true"/>
+ * <me:MarquardtDerivDelta default="true">1.e-03</me:MarquardtDerivDelta>
+ * <me:MarquardtTolerance default="true">1.e-03</me:MarquardtTolerance>
+ * <me:MarquardtLambda default="true">1.0</me:MarquardtLambda>
+ * <me:MarquardtLambdaScale default="true">10.0</me:MarquardtLambdaScale>
+ * <me:ConstraintFactor default="true">1.0</me:ConstraintFactor>
+ * <me:ConstraintAddand default="true">0.0</me:ConstraintAddand>
+ * <me:sensitivityAnalysisSamples default="true">256</me:sensitivityAnalysisSamples>
+ * <me:sensitivityGenerateData default="true">true</me:sensitivityGenerateData>
+ * <me:chebMinConc units="particles per cubic centimeter" default="true"/>
+ * <me:calcMethod units="kJ/mol" default="true"/>
+ * <me:Tmin default="true">200</me:Tmin>
+ * <me:Tmax default="true">1500</me:Tmax>
+ * <me:Tstep default="true">50</me:Tstep>
+ * <me:Tmid default="true">1000</me:Tmid>
+ * <me:shortestTimeOfInterest default="true">1.0e-11</me:shortestTimeOfInterest>
+ * <me:MaximumEvolutionTime default="true">1.0e+05</me:MaximumEvolutionTime>
+ * <me:errorPropagationSamples default="true">300</me:errorPropagationSamples>
+ * <property dictRef="me:Hf298">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <property dictRef="me:Hf0">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <property dictRef="me:ZPE">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <me:RMS_SOC_element units="cm-1" default="true">10.0</me:RMS_SOC_element>
+ * <me:GradientDifferenceMagnitude units="a.u./Bohr" default="true">0.1</me:GradientDifferenceMagnitude>
+ * <me:GradientReducedMass units="a.m.u." default="true">16.0</me:GradientReducedMass>
+ * <me:AverageSlope units="a.u./Bohr" default="true">0.1</me:AverageSlope>
+ * <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
+ * <me:testMicroRates Tmin = "100" Tmax = "2000" Tstep = "100" default="true"/>
+ * <me:experimentalRate error ="0.0" default="true"/>
+ */ parcelHelpers.export(exports, "Defaults", ()=>Defaults);
+var _util = require("./util");
+var _xml = require("./xml");
+class Defaults {
+    /**
+     * Construct a new M_Defaults object.
+     */ constructor(){
+        /**
+     * TagName.
+     */ this.tagName = "defaults";
+        this.values = new Map();
+        this.attributess = new Map();
+    }
+    /**
+     * Read the defaults.xml file.
+     */ readFile() {
+        // Create a file input element to prompt the user to select the default.xml file.
+        let input = document.createElement("input");
+        input.type = "file";
+        let self = this;
+        input.onchange = function() {
+            if (input.files) {
+                for(let i = 0; i < input.files.length; i++)console.log("inputElement.files[" + i + "]=" + input.files[i]);
+                let file = input.files[0];
+                //console.log("file=" + file);
+                console.log(file.name);
+                let inputFilename = file.name;
+                let reader = new FileReader();
+                let chunkSize = 1048576; // 1MB
+                let start = 0;
+                let contents = "";
+                reader.onload = function(e) {
+                    if (e.target == null) throw new Error("Event target is null");
+                    contents += e.target.result;
+                    if (file != null) {
+                        if (start < file.size) {
+                            // Read the next chunk
+                            let blob = file.slice(start, start + chunkSize);
+                            reader.readAsText(blob);
+                            start += chunkSize;
+                        } else {
+                            // All chunks have been read
+                            contents = contents.trim();
+                            //console.log('contents ' + contents);
+                            let parser = new DOMParser();
+                            let xml = parser.parseFromString(contents, "text/xml");
+                            self.parse(xml);
+                        }
+                    }
+                };
+                // Read the first chunk
+                let blob = file.slice(start, start + chunkSize);
+                reader.readAsText(blob);
+                start += chunkSize;
+            }
+        };
+        input.click();
+    }
+    /**
+     * Parses the xml loading data into attributess and values.
+     * @param xml The XML document.
+     */ parse(xml) {
+        // Process the XML.
+        let xml_defaults = (0, _xml.getSingularElement)(xml, this.tagName);
+        let attributes = (0, _xml.getAttributes)(xml_defaults);
+        console.log("Default attributes: " + (0, _util.mapToString)(attributes));
+        let children = xml_defaults.children;
+        console.log("children.length=" + children.length);
+        for(let i = 0; i < children.length; i++){
+            let child = children[i];
+            let tagName = child.tagName;
+            console.log("tagName=" + tagName);
+            let attributes = (0, _xml.getAttributes)(child);
+            this.attributess.set(tagName, attributes);
+            console.log("Attributes: " + (0, _util.mapToString)(attributes));
+            if (tagName == "property") {
+                let dictRef = child.getAttribute("dictRef");
+                try {
+                    let xml_scalar = (0, _xml.getSingularElement)(child, "scalar");
+                    let v = xml_scalar.innerHTML;
+                    if (v != null) {
+                        console.log("v=" + v);
+                        this.values.set(dictRef, v);
+                    } else console.log("v is null");
+                } catch (e) {
+                    console.log("Error: " + e);
+                }
+            } else {
+                //let v: string | null = child.nodeValue;
+                //let v: string | null = child.nodeName;
+                let v = child.innerHTML;
+                if (v != null) {
+                    console.log("v=" + v);
+                    this.values.set(tagName, v);
+                } else console.log("v is null");
+            }
+        }
+        // Some tests.
+        console.log("values: " + (0, _util.mapToString)(this.values));
+        this.attributess.forEach((value, key)=>{
+            console.log("key=" + key + " value=" + (0, _util.mapToString)(value));
+        });
+    }
+}
+
+},{"./util":"f0Rnl","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dhi1y":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "LibraryMolecules", ()=>LibraryMolecules);
+var _bigJs = require("big.js");
+var _bigJsDefault = parcelHelpers.interopDefault(_bigJs);
+var _mesmer = require("./mesmer");
+var _metadata = require("./metadata");
+var _molecule = require("./molecule");
+var _xml = require("./xml");
+class LibraryMolecules {
+    /**
+     * @param defaults The defaults.
+     */ constructor(){}
+    /**
+     * @returns 
+     */ readFile() {
+        return new Promise((resolve, reject)=>{
+            let input = document.createElement("input");
+            input.type = "file";
+            let self = this;
+            input.onchange = function() {
+                if (input.files) {
+                    let file = input.files[0];
+                    let inputFilename = file.name;
+                    let reader = new FileReader();
+                    let chunkSize = 1048576; // 1MB
+                    let start = 0;
+                    let contents = "";
+                    reader.onload = function(e) {
+                        if (e.target == null) {
+                            reject(new Error("Event target is null"));
+                            return;
+                        }
+                        contents += e.target.result;
+                        if (file != null) {
+                            if (start < file.size) {
+                                // Read the next chunk
+                                let blob = file.slice(start, start + chunkSize);
+                                reader.readAsText(blob);
+                                start += chunkSize;
+                            } else {
+                                // All chunks have been read
+                                contents = contents.trim();
+                                let parser = new DOMParser();
+                                let xml = parser.parseFromString(contents, "text/xml");
+                                resolve(self.parse(xml));
+                            }
+                        }
+                    };
+                    // Read the first chunk
+                    let blob = file.slice(start, start + chunkSize);
+                    reader.readAsText(blob);
+                    start += chunkSize;
+                }
+            };
+            input.click();
+        });
+    }
+    /**
+     * Parse the XML.
+     */ parse(xml) {
+        /**
+         * The molecules.
+         */ let molecules = new Map();
+        // Get the XML "moleculeList" element.
+        let xml_ml = (0, _xml.getSingularElement)(xml, (0, _mesmer.MoleculeList).tagName);
+        // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
+        let mlTagNames = new Set();
+        xml_ml.childNodes.forEach(function(node) {
+            mlTagNames.add(node.nodeName);
+        });
+        /*
+        if (mlTagNames.size != 1) {
+            if (!(mlTagNames.size >= 2 && mlTagNames.has("#text")) ||
+                !(mlTagNames.size == 3 && mlTagNames.has('#comment'))) {
+                console.error("moleculeListTagNames:");
+                mlTagNames.forEach(x => console.error(x));
+                //throw new Error("Additional tag names in moleculeList:");
+            }
+        }
+        if (!mlTagNames.has(Molecule.tagName)) {
+            throw new Error("Expecting tags with \"" + Molecule.tagName + "\" tagName but there are none!");
+        }
+        */ // Process the XML "molecule" elements.
+        let xml_ms = xml_ml.getElementsByTagName((0, _molecule.Molecule).tagName);
+        let xml_msl = xml_ms.length;
+        console.log("Number of molecules=" + xml_msl);
+        let naliases = 0;
+        //xml_molecules.forEach(function (xml_molecule) { // Cannot iterate over HTMLCollectionOf<Element> like this.
+        for(let i = 0; i < xml_msl; i++){
+            // console.log("i=" + i);
+            // Create a new Molecule.
+            let attributes = (0, _xml.getAttributes)(xml_ms[i]);
+            let mID = attributes.get((0, _molecule.Molecule).s_id);
+            //console.log("mID=" + mID);
+            if (mID == undefined) throw new Error((0, _molecule.Molecule).s_id + " is undefined");
+            let cns = xml_ms[i].childNodes;
+            //console.log("cns.length=" + cns.length);
+            // Check if there are any child elements. If not, then this molecule is an alias.
+            if (cns.length == 0) {
+                naliases++;
+                //console.log("This molecule is an alias.");
+                let ref = attributes.get("ref");
+                if (ref == undefined) throw new Error("ref is undefined");
+                continue;
+            }
+            let m = new (0, _molecule.Molecule)(attributes, mID);
+            molecules.set(mID, m);
+            // Create a set of molecule tag names.
+            let moleculeTagNames = new Set();
+            //cns.forEach(function (cn) {
+            for(let j = 0; j < cns.length; j++){
+                let cn = cns[j];
+                // Check for nodeName repeats that are not #text.
+                if (!moleculeTagNames.has(cn.nodeName)) moleculeTagNames.add(cn.nodeName);
+                else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+                if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+            //console.log(cn.nodeName);
+            }
+            // Init metadataList.
+            //console.log("Init metadataList.");
+            let xml_mls = xml_ms[i].getElementsByTagName((0, _metadata.MetadataList).tagName);
+            if (xml_mls.length > 0) {
+                if (xml_mls.length > 1) throw new Error("Expecting 1 or 0 " + (0, _metadata.MetadataList).tagName + " but finding " + xml_mls.length + "!");
+                let ml = new (0, _metadata.MetadataList)((0, _xml.getAttributes)(xml_mls[0]));
+                m.setMetadataList(ml);
+                let xml_ms = xml_mls[0].getElementsByTagName((0, _metadata.Metadata).tagName);
+                for(let j = 0; j < xml_ms.length; j++){
+                    // Create a new Metadata.
+                    let md = new (0, _metadata.Metadata)((0, _xml.getAttributes)(xml_ms[j]));
+                    ml.addMetadata(md);
+                }
+                moleculeTagNames.delete((0, _metadata.MetadataList).tagName);
+            }
+            // Init atoms.
+            //console.log("Init atoms.");
+            // There can be an individual atom not in an atom array, or an atom array.
+            let xml_aas = xml_ms[i].getElementsByTagName((0, _molecule.AtomArray).tagName);
+            if (xml_aas.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.AtomArray).tagName + " but finding " + xml_aas.length + "!");
+            if (xml_aas.length == 1) {
+                let xml_aa = xml_aas[0];
+                let xml_as = xml_aa.getElementsByTagName((0, _molecule.Atom).tagName);
+                if (xml_as.length == 0) throw new Error("Expecting 1 or more atoms in " + (0, _molecule.AtomArray).tagName + ", but finding 0!");
+                let aa = new (0, _molecule.AtomArray)((0, _xml.getAttributes)(xml_aa));
+                m.setAtoms(aa);
+                for(let j = 0; j < xml_as.length; j++)aa.addAtom(new (0, _molecule.Atom)((0, _xml.getAttributes)(xml_as[j]), m));
+                moleculeTagNames.delete((0, _molecule.AtomArray).tagName);
+            } else {
+                let xml_as = xml_ms[i].getElementsByTagName((0, _molecule.Atom).tagName);
+                if (xml_as.length == 1) {
+                    let aa = new (0, _molecule.AtomArray)(new Map());
+                    aa.addAtom(new (0, _molecule.Atom)((0, _xml.getAttributes)(xml_as[0]), m));
+                    m.setAtoms(aa);
+                } else if (xml_as.length > 1) throw new Error("Expecting 1 " + (0, _molecule.Atom).tagName + " but finding " + xml_as.length + ". Should these be in an " + (0, _molecule.AtomArray).tagName + "?");
+            }
+            //console.log("atomsNode=" + atomsNode);
+            moleculeTagNames.delete((0, _molecule.Atom).tagName);
+            // Init bonds.
+            // There can be an individual bond not in a bond array, or a bond array.
+            // There may be only 1 bond in a BondArray.
+            let xml_bas = xml_ms[i].getElementsByTagName((0, _molecule.BondArray).tagName);
+            if (xml_bas.length > 0) {
+                if (xml_bas.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.BondArray).tagName + " but finding " + xml_bas.length + "!");
+                let xml_bs = xml_bas[0].getElementsByTagName((0, _molecule.Bond).tagName);
+                let ba = new (0, _molecule.BondArray)((0, _xml.getAttributes)(xml_bas[0]));
+                for(let j = 0; j < xml_bs.length; j++)ba.addBond(new (0, _molecule.Bond)((0, _xml.getAttributes)(xml_bs[j]), m));
+                m.setBonds(ba);
+                moleculeTagNames.delete((0, _molecule.BondArray).tagName);
+            } else {
+                let xml_bonds = xml_ms[i].getElementsByTagName((0, _molecule.Bond).tagName);
+                if (xml_bonds.length > 0) {
+                    if (xml_bonds.length > 1) throw new Error("Expecting 1 " + (0, _molecule.Bond).tagName + " but finding " + xml_bonds.length + ". Should these be in a " + (0, _molecule.BondArray).tagName + "?");
+                    let ba = new (0, _molecule.BondArray)(new Map());
+                    ba.addBond(new (0, _molecule.Bond)((0, _xml.getAttributes)(xml_bonds[0]), m));
+                    m.setBonds(ba);
+                }
+            }
+            moleculeTagNames.delete((0, _molecule.Bond).tagName);
+            // Organise PropertyList or individual Property.
+            // (There can be an individual property not in a propertyList?)
+            // If there is a PropertyList, then create a property list.
+            let xml_pls = xml_ms[i].getElementsByTagName((0, _molecule.PropertyList).tagName);
+            if (xml_pls.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.PropertyList).tagName + " but finding " + xml_pls.length + "!");
+            if (xml_pls.length == 1) {
+                // Create a new PropertyList.
+                let pl = new (0, _molecule.PropertyList)((0, _xml.getAttributes)(xml_pls[0]));
+                m.setPropertyList(pl);
+                let xml_ps = xml_pls[0].getElementsByTagName((0, _molecule.Property).tagName);
+                for(let j = 0; j < xml_ps.length; j++)// Create a new Property.
+                pl.setProperty(new (0, _molecule.Property)((0, _xml.getAttributes)(xml_ps[j])));
+                moleculeTagNames.delete((0, _molecule.PropertyList).tagName);
+            } else {
+                // There is a Property on its own. For simplicity, this will be stored in a PropertyList.
+                // Create a new PropertyList.
+                let pl = new (0, _molecule.PropertyList)(new Map());
+                m.setPropertyList(pl);
+                let xml_ps = xml_ms[i].getElementsByTagName((0, _molecule.Property).tagName);
+                if (xml_ps.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Property).tagName + " but finding " + xml_ps.length + ". Should these be in a " + (0, _molecule.PropertyList).tagName + "?");
+                // Create a new Property.
+                pl.setProperty(new (0, _molecule.Property)((0, _xml.getAttributes)(xml_ps[0])));
+                moleculeTagNames.delete((0, _molecule.Property).tagName);
+            }
+            // Organise EnergyTransferModel.
+            let xml_etms = xml_ms[i].getElementsByTagName((0, _molecule.EnergyTransferModel).tagName);
+            if (xml_etms.length > 0) {
+                if (xml_etms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.EnergyTransferModel).tagName + " but finding " + xml_etms.length + "!");
+                let etm = new (0, _molecule.EnergyTransferModel)((0, _xml.getAttributes)(xml_etms[0]));
+                m.setEnergyTransferModel(etm);
+                moleculeTagNames.delete((0, _molecule.EnergyTransferModel).tagName);
+            }
+            // Organise DOSCMethod.
+            let xml_dms = xml_ms[i].getElementsByTagName((0, _molecule.DOSCMethod).tagName);
+            if (xml_dms.length > 0) {
+                if (xml_dms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DOSCMethod).tagName + " but finding " + xml_dms.length + "!");
+                let doscm = new (0, _molecule.DOSCMethod)((0, _xml.getAttributes)(xml_dms[0]));
+                m.setDOSCMethod(doscm);
+                moleculeTagNames.delete((0, _molecule.DOSCMethod).tagName);
+            }
+            // Organise DistributionCalcMethod. (Output only)
+            let xml_dcms = xml_ms[i].getElementsByTagName((0, _molecule.DistributionCalcMethod).tagName);
+            if (xml_dcms.length > 0) {
+                if (xml_dcms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DistributionCalcMethod).tagName + " but finding " + xml_dcms.length + "!");
+                let dcmAttributes = (0, _xml.getAttributes)(xml_dcms[0]);
+                let dcm = new (0, _molecule.DistributionCalcMethod)(dcmAttributes);
+                m.setDistributionCalcMethod(dcm);
+                moleculeTagNames.delete((0, _molecule.DistributionCalcMethod).tagName);
+            }
+            // Organise DensityOfStatesList. (Output only)
+            let xml_dosl = xml_ms[i].getElementsByTagName((0, _molecule.DensityOfStatesList).tagName);
+            if (xml_dosl.length > 0) {
+                if (xml_dosl.length > 1) throw new Error("Expecting 1 or 0 " + (0, _molecule.DensityOfStatesList).tagName + " but finding " + xml_dosl.length + "!");
+                let dosl = new (0, _molecule.DensityOfStatesList)((0, _xml.getAttributes)(xml_dosl[0]));
+                m.setDensityOfStatesList(dosl);
+                let xml_dos = xml_dosl[0].getElementsByTagName((0, _molecule.DensityOfStates).tagName);
+                // Organise Description.
+                let xml_ds = xml_dosl[0].getElementsByTagName((0, _mesmer.Description).tagName);
+                if (xml_ds.length > 0) {
+                    if (xml_ds.length > 1) throw new Error("Expecting 1 or 0 " + (0, _mesmer.Description).tagName + " but finding " + xml_ds.length + "!");
+                    let ds = new (0, _mesmer.Description)((0, _xml.getAttributes)(xml_ds[0]), (0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_ds[0])));
+                    dosl.setDescription(ds);
+                }
+                // Organise DensityOfStates.
+                //console.log("xml_dos.length=" + xml_dos.length);
+                if (xml_dos.length == 0) throw new Error("Expecting 1 or more " + (0, _molecule.DensityOfStates).tagName + " but finding 0!");
+                else for(let j = 0; j < xml_dos.length; j++){
+                    //console.log("j=" + j);
+                    let dos = new (0, _molecule.DensityOfStates)((0, _xml.getAttributes)(xml_dos[j]));
+                    dosl.addDensityOfStates(dos);
+                    // T.
+                    let xml_t = xml_dos[j].getElementsByTagName((0, _mesmer.T).tagName);
+                    if (xml_t.length != 1) throw new Error("Expecting 1 " + (0, _mesmer.T).tagName + " but finding " + xml_t.length + "!");
+                    else {
+                        let t = new (0, _mesmer.T)((0, _xml.getAttributes)(xml_t[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_t[0]))));
+                        dos.setT(t);
+                    //dosDiv.appendChild(createLabel(t.value.toString(), boundary1));
+                    }
+                    // qtot.
+                    let xml_qtot = xml_dos[j].getElementsByTagName((0, _molecule.Qtot).tagName);
+                    if (xml_qtot.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Qtot).tagName + " but finding " + xml_qtot.length + "!");
+                    else {
+                        let qtot = new (0, _molecule.Qtot)((0, _xml.getAttributes)(xml_qtot[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_qtot[0]))));
+                        dos.setQtot(qtot);
+                    //dosDiv.appendChild(createLabel(Qtot.tagName + " " + qtot.value.toString(), boundary1));
+                    }
+                    // sumc.
+                    let xml_sumc = xml_dos[j].getElementsByTagName((0, _molecule.Sumc).tagName);
+                    if (xml_sumc.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Sumc).tagName + " but finding " + xml_sumc.length + "!");
+                    else {
+                        let sumc = new (0, _molecule.Sumc)((0, _xml.getAttributes)(xml_sumc[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_sumc[0]))));
+                        dos.setSumc(sumc);
+                    //dosDiv.appendChild(createLabel(sumc.value.toString(), boundary1));
+                    }
+                    // sumg.
+                    let xml_sumg = xml_dos[j].getElementsByTagName((0, _molecule.Sumg).tagName);
+                    if (xml_sumg.length != 1) throw new Error("Expecting 1 " + (0, _molecule.Sumg).tagName + " but finding " + xml_sumg.length + "!");
+                    else {
+                        let sumg = new (0, _molecule.Sumg)((0, _xml.getAttributes)(xml_sumg[0]), new (0, _bigJsDefault.default)((0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_sumg[0]))));
+                        dos.setSumg(sumg);
+                    //dosDiv.appendChild(createLabel(sumg.value.toString(), boundary1));
+                    }
+                }
+                moleculeTagNames.delete((0, _molecule.DensityOfStatesList).tagName);
+            }
+            // Check for unexpected tags.
+            moleculeTagNames.delete("#text");
+            if (moleculeTagNames.size > 0) {
+                console.warn("There are additional unexpected moleculeTagNames:");
+                moleculeTagNames.forEach((x)=>console.warn(x));
+            //throw new Error("Unexpected tags in molecule.");
+            }
+        }
+        console.log("Number of molecules=" + molecules.size);
+        console.log("Number of alias molecules=" + naliases.toString());
+        return molecules;
+    }
+}
+
+},{"big.js":"91nMZ","./mesmer":"kMp4Q","./metadata":"aKNnu","./molecule":"ahQNx","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
 
 //# sourceMappingURL=index.50584fd7.js.map

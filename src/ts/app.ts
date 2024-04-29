@@ -2117,14 +2117,14 @@ function processNumber(id: string, iDs: Set<string>, name: string,
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle(s_optionOn);
     } else {
-        addNumber(div, inputId, name, value, setter, marginComponent);
+        addNumber(div, inputId, name, value, getter, setter, marginComponent);
         button.textContent = buttonTextContentSelected;
         button.classList.toggle(s_optionOff);
     }
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
         if (document.getElementById(inputId) == null) {
-            addNumber(div, inputId, name, value, setter, marginComponent);
+            addNumber(div, inputId, name, value, getter, setter, marginComponent);
             button.textContent = buttonTextContentSelected;
         } else {
             // Remove existing.
@@ -2150,7 +2150,7 @@ function processNumber(id: string, iDs: Set<string>, name: string,
  * @param level The level.
  */
 function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | undefined,
-    setter: (value: Big) => void,
+    getter: () => Big | undefined, setter: (value: Big) => void,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
     let valueString: string;
     if (value == undefined) {
@@ -2167,7 +2167,7 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
             console.log(name + " changed from " + value + " to " + target.value);
         } catch (e) {
             alert("Input invalid, resetting...");
-            target.value = valueString;
+            target.value = getter()!.toString();
         }
         resizeInputElement(target);
     });
