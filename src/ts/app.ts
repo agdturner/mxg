@@ -932,7 +932,6 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             }
         }
         let xml_as: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(Atom.tagName);
-        m.setAtoms(aa);
         for (let j = 0; j < xml_as.length; j++) {
             aaDiv.appendChild(addAtom(m, aa, new Atom(getAttributes(xml_as[j]), m), boundary1, level1));
         }
@@ -3023,8 +3022,8 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let reactant: Reactant = new Reactant(getAttributes(xml_reactants[j]), molecule);
                 reactants.push(reactant);
                 // Create a new div for the role.
-                let lws: HTMLDivElement = createLabelWithSelect(molecule.ref + " role", Reactant.roleOptions, "Role",
-                    molecule.role, addRID(reactantDivID, s_select), boundary1, level1);
+                let lws: HTMLDivElement = createLabelWithSelect(molecule.getRef() + " role", Reactant.roleOptions, "Role",
+                    molecule.getRole(), addRID(reactantDivID, s_select), boundary1, level1);
                 lws.querySelector('select')?.addEventListener('change', (event: Event) => {
                     let target = event.target as HTMLSelectElement;
                     molecule.setRole(target.value);
@@ -3052,10 +3051,10 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
                 let product: Product = new Product(getAttributes(xml_products[j]), molecule);
                 products.push(product);
-                let lws: HTMLDivElement = createLabelWithSelect(molecule.ref + " role", Product.roleOptions, molecule.role,
-                    molecule.ref, addRID(psDivID, j, "Role"), boundary1, level1);
+                let lws: HTMLDivElement = createLabelWithSelect(molecule.getRef() + " role", Product.roleOptions, molecule.getRole(),
+                    molecule.getRef(), addRID(psDivID, j, "Role"), boundary1, level1);
                 let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
-                select.value = molecule.role;
+                select.value = molecule.getRole();
                 select.addEventListener('change', (event: Event) => {
                     let target = event.target as HTMLSelectElement;
                     molecule.setRole(target.value);
@@ -3107,7 +3106,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
                 let transitionState: TransitionState = new TransitionState(getAttributes(xml_transitionStates[j]), molecule);
                 transitionStates.push(transitionState);
                 // Create a label for the Transition State.
-                let label: HTMLLabelElement = createLabel(molecule.ref + " role transitionState", level1);
+                let label: HTMLLabelElement = createLabel(molecule.getRef() + " role transitionState", level1);
                 tsDiv.appendChild(label);
             }
             reaction.setTransitionStates(transitionStates);
@@ -4956,6 +4955,7 @@ function handleControl(control: Control, cDiv: HTMLDivElement, onOffControls: Ma
                 controlInstance = new ControlClass(getAttributes(xml[0]), value);
                 createInputControlItem(control, div!, controlInstance, setControlMethod, id!, valueString);
             } else {
+                controlInstance = new ControlClass(getAttributes(xml[0]));
                 setControlMethod.call(control, controlInstance);
             }
             button.textContent = buttonTextContentSelected;
@@ -6187,7 +6187,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
                     // Insert transition states.
                     if (reactionTransitionStates != undefined) {
                         reactionTransitionStates.forEach(function (ts) {
-                            let ref: string = ts.getMolecule().ref;
+                            let ref: string = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
                             energy = molecules.get(ref)?.getEnergy() ?? big0;
@@ -6202,7 +6202,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
                 } else {
                     if (reactionTransitionStates != undefined) {
                         reactionTransitionStates.forEach(function (ts) {
-                            let ref: string = ts.getMolecule().ref;
+                            let ref: string = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
                             energy = molecules.get(ref)?.getEnergy() ?? big0;
@@ -6301,7 +6301,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
             let productInXY: number[] = get(productsInXY, productsLabel);
             if (reactionTransitionStates.length > 0) {
                 reactionTransitionStates.forEach(function (ts) {
-                    let transitionStateLabel: string = ts.getMolecule().ref;
+                    let transitionStateLabel: string = ts.getMolecule().getRef();
                     let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
                     drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0],
                         transitionStateInXY[1]);

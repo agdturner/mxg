@@ -1314,7 +1314,6 @@ let sp_font = "2em SensSerif";
             if (aaa.size > 0) console.warn("AtomArray attributes lost/ignored: " + (0, _utilJs.mapToString)(aaa));
         }
         let xml_as = xml_ms[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
-        m.setAtoms(aa);
         for(let j = 0; j < xml_as.length; j++)aaDiv.appendChild(addAtom(m, aa, new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_as[j]), m), boundary1, level1));
         aaDiv.appendChild(getAddAtomButton(m, aaDiv, (0, _moleculeJs.Atom).tagName, boundary1, level1));
         moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
@@ -3114,7 +3113,7 @@ function setNumberNode(node, input) {
                 let reactant = new (0, _reactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), molecule);
                 reactants.push(reactant);
                 // Create a new div for the role.
-                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.ref + " role", (0, _reactionJs.Reactant).roleOptions, "Role", molecule.role, addRID(reactantDivID, (0, _htmlJs.s_select)), boundary1, level1);
+                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _reactionJs.Reactant).roleOptions, "Role", molecule.getRole(), addRID(reactantDivID, (0, _htmlJs.s_select)), boundary1, level1);
                 lws.querySelector("select")?.addEventListener("change", (event)=>{
                     let target = event.target;
                     molecule.setRole(target.value);
@@ -3141,9 +3140,9 @@ function setNumberNode(node, input) {
                 let molecule = new (0, _reactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
                 let product = new (0, _reactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), molecule);
                 products.push(product);
-                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.ref + " role", (0, _reactionJs.Product).roleOptions, molecule.role, molecule.ref, addRID(psDivID, j, "Role"), boundary1, level1);
+                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _reactionJs.Product).roleOptions, molecule.getRole(), molecule.getRef(), addRID(psDivID, j, "Role"), boundary1, level1);
                 let select = lws.querySelector("select");
-                select.value = molecule.role;
+                select.value = molecule.getRole();
                 select.addEventListener("change", (event)=>{
                     let target = event.target;
                     molecule.setRole(target.value);
@@ -3189,7 +3188,7 @@ function setNumberNode(node, input) {
                 let transitionState = new (0, _reactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), molecule);
                 transitionStates.push(transitionState);
                 // Create a label for the Transition State.
-                let label = (0, _htmlJs.createLabel)(molecule.ref + " role transitionState", level1);
+                let label = (0, _htmlJs.createLabel)(molecule.getRef() + " role transitionState", level1);
                 tsDiv.appendChild(label);
             }
             reaction.setTransitionStates(transitionStates);
@@ -4907,7 +4906,10 @@ function getDefaultGrainsize(tagName) {
                 let value = new (0, _bigJsDefault.default)(valueString);
                 controlInstance = new ControlClass((0, _xmlJs.getAttributes)(xml[0]), value);
                 createInputControlItem(control, div, controlInstance, setControlMethod, id, valueString);
-            } else setControlMethod.call(control, controlInstance);
+            } else {
+                controlInstance = new ControlClass((0, _xmlJs.getAttributes)(xml[0]));
+                setControlMethod.call(control, controlInstance);
+            }
             button.textContent = buttonTextContentSelected;
             button.classList.toggle(s_optionOff);
         } else {
@@ -5994,7 +5996,7 @@ function handleEvent(element, tagName) {
                     // Insert transition states.
                     if (reactionTransitionStates != undefined) {
                         reactionTransitionStates.forEach(function(ts) {
-                            let ref = ts.getMolecule().ref;
+                            let ref = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
                             energy = molecules.get(ref)?.getEnergy() ?? big0;
@@ -6008,7 +6010,7 @@ function handleEvent(element, tagName) {
                     }
                 } else {
                     if (reactionTransitionStates != undefined) reactionTransitionStates.forEach(function(ts) {
-                        let ref = ts.getMolecule().ref;
+                        let ref = ts.getMolecule().getRef();
                         transitionStates.add(ref);
                         orders.set(ref, i);
                         energy = molecules.get(ref)?.getEnergy() ?? big0;
@@ -6123,7 +6125,7 @@ function handleEvent(element, tagName) {
             let reactantOutXY = (0, _utilJs.get)(reactantsOutXY, reactantsLabel);
             let productInXY = (0, _utilJs.get)(productsInXY, productsLabel);
             if (reactionTransitionStates.length > 0) reactionTransitionStates.forEach(function(ts) {
-                let transitionStateLabel = ts.getMolecule().ref;
+                let transitionStateLabel = ts.getMolecule().getRef();
                 let transitionStateInXY = (0, _utilJs.get)(transitionStatesInXY, transitionStateLabel);
                 (0, _canvasJs.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
                 let transitionStateOutXY = (0, _utilJs.get)(transitionStatesOutXY, transitionStateLabel);
@@ -15333,9 +15335,26 @@ class ReactionMolecule extends (0, _xmlJs.TagWithAttributes) {
         this.role = attributes.get("role");
     }
     /**
+     * @returns The ref attribute.
+     */ getRef() {
+        return this.ref;
+    }
+    /**
+     * @param ref The ref attribute.
+     */ setRef(ref) {
+        this.ref = ref;
+        this.attributes.set("ref", ref);
+    }
+    /**
+     * @returns The role attribute.
+     */ getRole() {
+        return this.role;
+    }
+    /**
      * @param role The role of the molecule in the reaction.
      */ setRole(role) {
         this.role = role;
+        this.attributes.set("role", role);
     }
 }
 class Reactant extends (0, _xmlJs.NodeWithNodes) {
@@ -15889,14 +15908,14 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         this.id = id;
         if (reactants != undefined) {
             reactants.forEach((reactant)=>{
-                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+                this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
                 this.addNode(reactant);
             });
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
             products.forEach((product)=>{
-                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+                this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
                 this.addNode(product);
             });
             this.index.set(Product.tagName, this.productsIndex);
@@ -15907,7 +15926,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         }
         if (transitionStates != undefined) {
             transitionStates.forEach((transitionState)=>{
-                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+                this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
                 this.addNode(transitionState);
             });
             this.index.set(TransitionState.tagName, this.transitionStatesIndex);
@@ -15933,7 +15952,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         else if (v instanceof Map) v.set(node.tagName, this.nodes.size);
         else {
             let map = new Map();
-            map.set(this.nodes.get(v).ref, v);
+            map.set(this.nodes.get(v).getRef(), v);
             map.set(node.tagName, this.nodes.size);
             this.index.set(tagName, map);
         }
@@ -15952,7 +15971,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Set the reactants.
      */ setReactants(reactants) {
         reactants.forEach((reactant)=>{
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+            this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
             this.addNode(reactant);
         });
         this.index.set(Reactant.tagName, this.reactantsIndex);
@@ -15969,7 +15988,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param reactant The reactant to add.
      */ addReactant(reactant) {
-        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+        this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
         this.addNode(reactant);
     }
     /**
@@ -15996,7 +16015,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Set the products.
      */ setProducts(products) {
         products.forEach((product)=>{
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+            this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
             this.addNode(product);
         });
         this.index.set(Product.tagName, this.productsIndex);
@@ -16013,7 +16032,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param product The product to add.
      */ addProduct(product) {
-        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+        this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
         this.addNode(product);
     }
     /**
@@ -16059,7 +16078,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Set the transition states.
      */ setTransitionStates(transitionStates) {
         transitionStates.forEach((transitionState)=>{
-            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+            this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
             this.addNode(transitionState);
         });
         this.index.set(TransitionState.tagName, this.transitionStatesIndex);
@@ -16076,7 +16095,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param transitionState The transition state to add.
      */ addTransitionState(transitionState) {
-        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+        this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
         this.addNode(transitionState);
     }
     /**
@@ -16150,13 +16169,13 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */ getReactantsLabel() {
-        return this.getReactants().map((reactant)=>reactant.getMolecule().ref).join(" + ");
+        return this.getReactants().map((reactant)=>reactant.getMolecule().getRef()).join(" + ");
     }
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */ getProductsLabel() {
-        return this.getProducts().map((product)=>product.getMolecule().ref).join(" + ");
+        return this.getProducts().map((product)=>product.getMolecule().getRef()).join(" + ");
     }
     /**
      * Get the label of the reaction.
@@ -16171,8 +16190,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      */ getReactantsEnergy(molecules) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map((reactant)=>{
-            let molecule = molecules.get(reactant.getMolecule().ref);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
+            let molecule = molecules.get(reactant.getMolecule().getRef());
+            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJsDefault.default)(0));
     }
@@ -16182,8 +16201,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      */ getProductsEnergy(molecules) {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map((product)=>{
-            let molecule = molecules.get(product.getMolecule().ref);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
+            let molecule = molecules.get(product.getMolecule().getRef());
+            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJsDefault.default)(0));
     }
