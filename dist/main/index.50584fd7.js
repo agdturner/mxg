@@ -1153,6 +1153,7 @@ let sp_font = "2em SensSerif";
     drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     // Add action listener to the pop diagram button.
     pb.addEventListener("click", ()=>{
+        //if (rdWindow == null || rdWindow.closed) {
         if (rdWindow == null) {
             let popWindowRDCanvas = document.createElement("canvas");
             popWindowRDCanvas.id = rdcID;
@@ -1997,20 +1998,29 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
         console.log("Removing " + x);
         remove(x);
     });
+    removeOptionByClassName((0, _moleculeJs.Bond).s_atomRefs2, id);
     molecule.getBonds().bonds.forEach((bond)=>{
         let atomRefs2 = bond.getAtomRefs2();
         let atomRefs = atomRefs2.split(" ");
-        if (atomRefs[0] == id || atomRefs[1] == id) {
+        if (atomRefs[0] == atomRefs[1]) {
             let bondId = bond.getID();
             //console.log("Removing bond " + bondId + " as it references atom " + id);
             molecule.getBonds().removeBond(bondId);
+            removeOptionByClassName((0, _moleculeJs.Bond).tagName, bondId);
+            // remove the bondDiv elements.
+            let bID = (0, _utilJs.getID)(molecule.getID(), bondId);
+            let bondDiv = document.getElementById(bID);
+            if (bondDiv == null) throw new Error("Bond div with id " + bID + " not found.");
+            else bondDiv.remove();
+        /*
             // Remove any bondDiv elements with a reference to id.
-            let bondDivs = document.getElementsByClassName(id);
-            //console.log("bondDivs.length=" + bondDivs.length);
-            for(let i = 0; i < bondDivs.length; i++)bondDivs[i].remove();
-        }
+            let bondDivs: HTMLCollectionOf<Element> = document.getElementsByClassName(atomRefs[0]);
+            console.log("bondDivs.length=" + bondDivs.length);
+            for (let i = 0; i < bondDivs.length; i++) {
+                bondDivs[i].remove();
+            }
+            */ }
     });
-    removeOptionByClassName((0, _moleculeJs.Bond).s_atomRefs2, id);
 }
 /**
  * @param className The className of Elements to update
@@ -2019,8 +2029,17 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
     let elements = document.getElementsByClassName(className);
     for(let i = 0; i < elements.length; i++)if (elements[i] instanceof HTMLSelectElement) {
         let options = elements[i].options;
+        let selectValue = elements[i].value;
         Array.from(options).forEach((option)=>{
-            if (option.value == optionToRemove) option.remove();
+            if (option.value == optionToRemove) {
+                option.remove();
+                if (selectValue == optionToRemove) {
+                    // Create a new event
+                    let event = new Event("change");
+                    // Dispatch the event
+                    elements[i].dispatchEvent(event);
+                }
+            }
         });
     }
 }
@@ -3163,7 +3182,7 @@ function setNumberNode(node, input) {
             if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _reactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
             let tunneling = new (0, _reactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
             reaction.setTunneling(tunneling);
-            let lws = (0, _htmlJs.createLabelWithSelect)((0, _reactionJs.Tunneling).tagName, (0, _reactionJs.Tunneling).options, "Tunneling", tunneling.getName(), addID(reactionDivID, (0, _reactionJs.Tunneling).tagName), boundary1, level1);
+            let lws = (0, _htmlJs.createLabelWithSelect)((0, _reactionJs.Tunneling).tagName, (0, _reactionJs.Tunneling).options, "Tunneling", tunneling.getName(), addRID(reactionDivID, (0, _reactionJs.Tunneling).tagName), boundary1, level1);
             lws.querySelector("select")?.addEventListener("change", (event)=>{
                 let target = event.target;
                 tunneling.setName(target.value);

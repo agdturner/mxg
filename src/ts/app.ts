@@ -742,6 +742,7 @@ function parse(xml: XMLDocument) {
     drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
     // Add action listener to the pop diagram button.
     pb.addEventListener('click', () => {
+        //if (rdWindow == null || rdWindow.closed) {
         if (rdWindow == null) {
             let popWindowRDCanvas: HTMLCanvasElement = document.createElement('canvas');
             popWindowRDCanvas.id = rdcID;
@@ -1720,22 +1721,26 @@ function removeAtom(molecule: Molecule, id: string, aIDs: Set<string>) {
         console.log("Removing " + x);
         remove(x);
     });
+    removeOptionByClassName(Bond.s_atomRefs2, id);
     molecule.getBonds().bonds.forEach((bond) => {
         let atomRefs2: string = bond.getAtomRefs2();
         let atomRefs: string[] = atomRefs2.split(" ");
-        if (atomRefs[0] == id || atomRefs[1] == id) {
+        if (atomRefs[0] == atomRefs[1]) {
             let bondId = bond.getID()!;
             //console.log("Removing bond " + bondId + " as it references atom " + id);
             molecule.getBonds().removeBond(bondId);
-            // Remove any bondDiv elements with a reference to id.
-            let bondDivs: HTMLCollectionOf<Element> = document.getElementsByClassName(id);
-            //console.log("bondDivs.length=" + bondDivs.length);
-            for (let i = 0; i < bondDivs.length; i++) {
-                bondDivs[i].remove();
+            removeOptionByClassName(Bond.tagName, bondId);
+            // remove the bondDiv element.
+            let bID: string = getID(molecule.getID(), bondId);
+            let bondDiv: HTMLElement | null = document.getElementById(bID);
+            if (bondDiv == null) {
+                throw new Error("Bond div with id " + bID + " not found.");
+            } else {
+                bondDiv.remove();
             }
         }
     });
-    removeOptionByClassName(Bond.s_atomRefs2, id);
+    
 }
 
 /**
@@ -1747,9 +1752,16 @@ function removeOptionByClassName(className: string, optionToRemove: string): voi
     for (let i = 0; i < elements.length; i++) {
         if (elements[i] instanceof HTMLSelectElement) {
             let options: HTMLOptionsCollection = (elements[i] as HTMLSelectElement).options;
+            let selectValue: string = (elements[i] as HTMLSelectElement).value;
             Array.from(options).forEach((option) => {
                 if (option.value == optionToRemove) {
                     option.remove();
+                    if (selectValue == optionToRemove) {
+                        // Create a new event
+                        let event = new Event('change');
+                        // Dispatch the event
+                        (elements[i] as HTMLSelectElement).dispatchEvent(event);
+                    }
                 }
             });
         }
@@ -3080,7 +3092,7 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             let tunneling: Tunneling = new Tunneling(getAttributes(xml_tunneling[0]));
             reaction.setTunneling(tunneling);
             let lws: HTMLDivElement = createLabelWithSelect(Tunneling.tagName, Tunneling.options, "Tunneling", tunneling.getName(),
-                addID(reactionDivID, Tunneling.tagName), boundary1, level1);
+                addRID(reactionDivID, Tunneling.tagName), boundary1, level1);
             lws.querySelector('select')?.addEventListener('change', (event: Event) => {
                 let target = event.target as HTMLSelectElement;
                 tunneling.setName(target.value);
