@@ -1010,6 +1010,12 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let p: Property = createProperty(pap, pl, xml_ps[j], plDiv, m, boundary1, level1);
             pl.setProperty(p);
         }
+        
+        /* This code is currently commented out as it is not wanted yet. The idea is that  
+        properties would be selectable a bit like controls, and all those not loaded in a 
+        file would be deselected and selectable. As there could be additional properties 
+        in future or that are not known about, some way of adding these will likely also be 
+        wanted...
         // Add Properties not in xml_ps.
         console.log("Molecule " + m.getDescription());
         console.log("pap.size=" + pap.size);
@@ -1038,7 +1044,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 //attributes.set(Hf0.s_units, "kJ/mol");
                 addPropertyScalarNumber(s_attributes, iDs, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
                 pl.setProperty(p);
-                /*
+                
                 } else if (dictRef == "me:ZPE") {
                     let value: Big = new Big("0");
                     let ps: PropertyScalar = new PropertyScalar(new Map(), value);
@@ -1049,9 +1055,10 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     addPropertyScalar(attributes, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
  
                     pl.setProperty(p);
-                */
+                
             }
         });
+        */
         // Organise EnergyTransferModel.
         let xml_etms: HTMLCollectionOf<Element> | null = xml_ms[i].getElementsByTagName(EnergyTransferModel.tagName);
         if (xml_etms.length > 0) {
@@ -1740,7 +1747,7 @@ function removeAtom(molecule: Molecule, id: string, aIDs: Set<string>) {
             }
         }
     });
-    
+
 }
 
 /**
@@ -1931,7 +1938,7 @@ function addProperty(dictRef: string, ps: PropertyScalarNumber, id: string,
 }
 
 
-function addPropertyScalarNumber(attributes: Map<string, string>, iDs: Set<string>, value: Big, 
+function addPropertyScalarNumber(attributes: Map<string, string>, iDs: Set<string>, value: Big,
     units: string[] | undefined, pl: PropertyList, p: Property, plDiv: HTMLDivElement,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
     let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
@@ -2084,7 +2091,7 @@ function addOrRemoveInstructions(options: string[], add: boolean): void {
  * @param aDiv The atom div.
  * @param margin The margin.
  */
-function processCoordinates(a: Atom, aDiv: HTMLDivElement, aIDs: Set<string>, 
+function processCoordinates(a: Atom, aDiv: HTMLDivElement, aIDs: Set<string>,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
     let id: string;
@@ -2359,8 +2366,8 @@ function addString(div: HTMLDivElement, id: string, name: string, value: string 
     let input: HTMLInputElement = createInput("text", id, boundary);
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
-            setter(target.value);
-            console.log(name + " changed from " + value + " to " + target.value);
+        setter(target.value);
+        console.log(name + " changed from " + value + " to " + target.value);
         resizeInputElement(target);
     });
     input.value = valueString;
@@ -3458,8 +3465,8 @@ function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_condi
         div.appendChild(select);
         addRemoveButton(div, boundary1, (bathGas) => {
             bsDiv.removeChild(div);
-            conditionsIDs.removeID(id), 
-            conditions.removeBathGas(bathGas);
+            conditionsIDs.removeID(id),
+                conditions.removeBathGas(bathGas);
         });
         bsDiv.insertBefore(div, addBathGasButton);
     });
@@ -3478,7 +3485,7 @@ function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_condi
                 div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, false, id));
                 addRemoveButton(div, boundary1, (bathGas) => {
                     bsDiv.removeChild(div);
-                    conditionsIDs.removeID(id); 
+                    conditionsIDs.removeID(id);
                     conditions.removeBathGas(bathGas);
                 });
                 bsDiv.insertBefore(div, addBathGasButton);
@@ -4439,10 +4446,10 @@ function processGrainSize(mps: ModelParameters, xml_mps: Element | null, mpsDiv:
  */
 function setGrainSize(mps: ModelParameters, xml_mps: Element, mpsDiv: HTMLDivElement) {
     let tagName: string = GrainSize.tagName;
-    
+
     let div: HTMLDivElement = addGrainSize(mps, mpsDiv);
-    
-    
+
+
     // Save the current display style of the div
     let originalDisplay = div.style.display;
     // Make the div visible
@@ -4450,10 +4457,10 @@ function setGrainSize(mps: ModelParameters, xml_mps: Element, mpsDiv: HTMLDivEle
     let input: HTMLInputElement = div.querySelector('input') as HTMLInputElement;
     // restore the original display style
     div.style.display = originalDisplay;
-    
+
 
     //let input: HTMLInputElement = document.getElementById(getID(mpsDiv.id, tagName, s_input)) as HTMLInputElement;
-    
+
     let xml: HTMLCollectionOf<Element> = xml_mps.getElementsByTagName(tagName);
     if (xml.length > 0) {
         if (xml.length > 1) {
