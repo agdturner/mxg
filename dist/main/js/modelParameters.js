@@ -78,6 +78,10 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
      */
     static tagName = "me:modelParameters";
     /**
+     * The id.
+     */
+    id;
+    /**
      * The index.
      */
     index;
@@ -88,8 +92,9 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
      * @param energyAboveTheTopHill The energy above the top hill.
      * @param maxTemperature The max temperature.
      */
-    constructor(attributes, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature) {
+    constructor(attributes, id, grainSize, automaticallySetMaxEne, energyAboveTheTopHill, maxTemperature) {
         super(attributes, ModelParameters.tagName);
+        this.id = id;
         this.index = new Map();
         if (grainSize != undefined) {
             this.index.set(GrainSize.tagName, this.nodes.size);
@@ -112,17 +117,20 @@ class ModelParameters extends xml_js_1.NodeWithNodes {
      * @returns The grain size or undefined.
      */
     getGrainSize() {
+        console.log("getGrainSize");
         let i = this.index.get(GrainSize.tagName);
-        if (i) {
+        if (i != undefined) {
             return this.nodes.get(i);
         }
+        console.log("XgetGrainSize");
     }
     /**
      * @param grainSize The grain size.
      */
     setGrainSize(grainSize) {
+        console.log("setGrainSize");
         let i = this.index.get(GrainSize.tagName);
-        if (i) {
+        if (i != undefined) {
             this.nodes.set(i, grainSize);
         }
         else {

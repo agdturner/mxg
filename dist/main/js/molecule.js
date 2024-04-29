@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.MW = exports.RotConsts = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.Hf298 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalar = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.Molecule = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.EinsteinBij = exports.EinsteinAij = exports.Hessian = exports.Sigma = exports.Epsilon = exports.SpinMultiplicity = exports.MW = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.TSOpticalSymmetryNumber = exports.SymmetryNumber = exports.RotConsts = exports.Hf298 = exports.HfAT0 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalarNumber = exports.PropertyScalarString = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
 const big_js_1 = __importDefault(require("big.js"));
 const range_js_1 = require("./range.js");
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const mesmer_js_1 = require("./mesmer.js");
+const metadata_js_1 = require("./metadata.js");
 /**
  * Atom data.
  * The examples can be used to compile this.
@@ -79,13 +80,13 @@ class Atom extends xml_js_1.TagWithAttributes {
     /**
      * @returns The id.
      */
-    getId() {
+    getID() {
         return this.attributes.get(Atom.s_id);
     }
     /**
      * @param id The id.
      */
-    setId(id) {
+    setID(id) {
         this.attributes.set(Atom.s_id, id);
     }
     /**
@@ -218,26 +219,29 @@ class AtomArray extends xml_js_1.NodeWithNodes {
      * @param atom The atom to add.
      * @returns The id of the atom.
      */
-    addAtom(atom) {
+    addAtom(atom, aID) {
         //console.log('Adding atom...');
-        let id = atom.getId();
-        if (id == undefined) {
-            id = this.getNextAtomID();
-            atom.setId(id);
-        }
-        else {
-            if (this.atoms.has(id)) {
-                let newID = this.getNextAtomID();
-                console.warn('Atom with id ' + id + ' already exists, adding with id ' + newID);
-                atom.setId(newID);
-                id = newID;
+        if (aID == undefined) {
+            let id = atom.getID();
+            if (id == undefined) {
+                id = this.getNextAtomID();
+                atom.setID(id);
             }
+            else {
+                if (this.atoms.has(id)) {
+                    let newID = this.getNextAtomID();
+                    console.warn('Atom with id ' + id + ' already exists, adding with id ' + newID);
+                    atom.setID(newID);
+                    id = newID;
+                }
+            }
+            aID = id;
         }
         //console.log('Atom id: ' + id);
-        this.index.set(id, this.nodes.size);
-        this.reverseIndex.set(this.nodes.size, id);
+        this.index.set(aID, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, aID);
         this.nodes.set(this.nodes.size, atom);
-        this.atoms.set(id, atom);
+        this.atoms.set(aID, atom);
         /*
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
@@ -249,7 +253,7 @@ class AtomArray extends xml_js_1.NodeWithNodes {
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
         */
-        return id;
+        return aID;
     }
     /**
      * @returns The atomId.
@@ -379,13 +383,13 @@ class Bond extends xml_js_1.TagWithAttributes {
     /**
      * @returns The id.
      */
-    getId() {
+    getID() {
         return this.attributes.get(Bond.s_id);
     }
     /**
      * @param id The id to set the attribute value referred to by "id".
      */
-    setId(id) {
+    setID(id) {
         this.attributes.set(Bond.s_id, id);
     }
     /**
@@ -462,27 +466,31 @@ class BondArray extends xml_js_1.NodeWithNodes {
     /**
      * Adds a bond to the array.
      * @param bond The bond to add.
+     * @param bID The id of the bond to add if it already exists.
+     * @returns The id of the bond.
      */
-    addBond(bond) {
-        //console.log('Add ' + bond.tagName + '...');
-        let id = bond.getId();
-        if (id == undefined) {
-            id = this.getNextBondID();
-            bond.setId(id);
-        }
-        else {
-            if (this.bonds.has(id)) {
-                let newID = this.getNextBondID();
-                console.log('Bond with id ' + id + ' already exists, adding with id ' + newID);
-                bond.setId(newID);
-                id = newID;
+    addBond(bond, bID) {
+        if (bID == undefined) {
+            let id = bond.getID();
+            if (id == undefined) {
+                id = this.getNextBondID();
+                bond.setID(id);
             }
+            else {
+                if (this.bonds.has(id)) {
+                    let newID = this.getNextBondID();
+                    console.log('Bond with id ' + id + ' already exists, adding with id ' + newID);
+                    bond.setID(newID);
+                    id = newID;
+                }
+            }
+            bID = id;
         }
         //console.log('Bond id: ' + id);
-        this.index.set(id, this.nodes.size);
-        this.reverseIndex.set(this.nodes.size, id);
+        this.index.set(bID, this.nodes.size);
+        this.reverseIndex.set(this.nodes.size, bID);
         this.nodes.set(this.nodes.size, bond);
-        this.bonds.set(id, bond);
+        this.bonds.set(bID, bond);
         /*
         console.log('this.index.size ' + this.index.size);
         console.log('this.nodes.size ' + this.nodes.size);
@@ -494,7 +502,7 @@ class BondArray extends xml_js_1.NodeWithNodes {
         console.log('this.nodes.keys() ' + Array.from(this.nodes.keys()));
         console.log('this.atoms.keys() ' + Array.from(this.atoms.keys()));
         */
-        return id;
+        return bID;
     }
     /**
      * @returns The atomId.
@@ -562,10 +570,40 @@ class BondArray extends xml_js_1.NodeWithNodes {
 }
 exports.BondArray = BondArray;
 /**
- * The attributes may contain "units".
  * In the XML, a "scalar" node is a child of a "property" node.
  */
-class PropertyScalar extends xml_js_1.NumberNode {
+class PropertyScalarString extends xml_js_1.StringNode {
+    /**
+     * The tag name.
+     */
+    static tagName = "scalar";
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, PropertyScalarString.tagName, value);
+    }
+    /**
+     * @returns The value.
+     */
+    getValue() {
+        return this.value;
+    }
+    /**
+     * Sets the value.
+     * @param val The value.
+     */
+    setValue(val) {
+        this.value = val;
+    }
+}
+exports.PropertyScalarString = PropertyScalarString;
+/**
+ * In the XML, a "scalar" node is a child of a "property" node.
+ * The attributes may contain "units".
+ */
+class PropertyScalarNumber extends xml_js_1.NumberNode {
     /**
      * The tag name.
      */
@@ -579,7 +617,7 @@ class PropertyScalar extends xml_js_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, PropertyScalar.tagName, value);
+        super(attributes, PropertyScalarNumber.tagName, value);
     }
     /**
      * This updates the units of the property. It does not do any unit conversion.
@@ -589,20 +627,52 @@ class PropertyScalar extends xml_js_1.NumberNode {
     updateUnits(units) {
         // Check the units are the same and if not replace the units...
         if (units) {
-            let existingUnits = this.attributes.get(PropertyScalar.s_units);
+            let existingUnits = this.attributes.get(PropertyScalarNumber.s_units);
             if (existingUnits != undefined) {
                 if (existingUnits != units) {
                     //console.log('Units are not the same, changing units...');
-                    this.attributes.set(PropertyScalar.s_units, units);
+                    this.attributes.set(PropertyScalarNumber.s_units, units);
                 }
             }
         }
     }
+    /**
+     * @returns The value.
+     */
+    getValue() {
+        return this.value;
+    }
+    /**
+     * Sets the value.
+     * @param val The value.
+     */
+    setValue(val) {
+        this.value = val;
+    }
 }
-exports.PropertyScalar = PropertyScalar;
+exports.PropertyScalarNumber = PropertyScalarNumber;
 /**
  * The attributes may contain "units".
  * In the XML, an "array" node is a child of a "property" node.
+ * The "property" nodes of a PropertyArray may be a "scalar", "array", or "matrix" type.
+ * The different kinds of "property" nodes are listed below from Table 1 of the Mesmer User Manual:
+ * dictRef, value, units, Inserted from defaults.xml if absent
+ * "me:ZPE", scalar, Mesmer.energyUnits, No
+ * "me:Hf0", scalar, Mesmer.energyUnits, No
+ * "me:HfAT0", scalar, Mesmer.energyUnits, No
+ * "me:Hf298", scalar, Mesmer.energyUnits, No
+ * "me:rotConsts", array, Mesmer.frequencyUnits, No
+ * "me:symmetryNumber", scalar, No units, Yes (1)
+ * "me:TSOpticalSymmetryNumber", scalar, No units, Yes (1)
+ * "me:frequenciesScaleFactor", scalar, No units, Yes (1.0)
+ * "me:vibFreqs", array, cm-1, No
+ * "me:MW", scalar, amu, No
+ * "me:spinMultiplicity", scalar, No units, Yes (1)
+ * "me:epsilon", scalar, K (fixed), Yes (50)
+ * "me:sigma", scalar, Å (fixed), Yes (5)
+ * "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2, No
+ * "me:EinsteinAij", array, s-1 (fixed), No
+ * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 class PropertyArray extends xml_js_1.NumberArrayNode {
     /**
@@ -613,6 +683,9 @@ class PropertyArray extends xml_js_1.NumberArrayNode {
      * The key for the units attribute.
      */
     static s_units = "units";
+    static propertyDictRefs = new Set(["me:ZPE", "me:Hf0", "me:HfAT0", "me:Hf298", "me:rotConsts", "me:symmetryNumber",
+        "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:vibFreqs", "me:MW", "me:spinMultiplicity", "me:epsilon", "me:sigma",
+        "me:hessian", "me:EinsteinAij", "me:EinsteinBij"]);
     /**
      * @param attributes The attributes.
      * @param values The values.
@@ -693,7 +766,7 @@ class PropertyMatrix extends xml_js_1.NumberArrayNode {
 exports.PropertyMatrix = PropertyMatrix;
 /**
  * The attributes must contain "dictRef" which is a dictionary reference for a type of property.
- * In the XML, a "property" node has a "propertyList" parent and either a "scalar" or "array" or another type of child not yet implemented (there could be a "matrix" type).
+ * In the XML, a "property" node has a "propertyList" parent and either a "scalar", "array", "matrix" or other not yet implemented child type).
  */
 class Property extends xml_js_1.NodeWithNodes {
     /**
@@ -716,7 +789,34 @@ class Property extends xml_js_1.NodeWithNodes {
         super(attributes, Property.tagName);
         let dictRef = attributes.get(Property.s_dictRef);
         if (dictRef == undefined) {
-            throw new Error(Property.s_dictRef + ' is undefined!');
+            // If there is no dictRef, then try setting this from the "title" attribute.
+            let title = attributes.get("title");
+            if (title == undefined) {
+                throw new Error(Property.s_dictRef + ' and title are undefined!');
+            }
+            else {
+                if (title == "MW") {
+                    dictRef = "me:MW";
+                }
+                else if (title == "Hf298") {
+                    dictRef = "me:Hf298";
+                }
+                else if (title == "Hf0") {
+                    dictRef = "me:Hf0";
+                }
+                else if (title == "program") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "program";
+                }
+                else if (title == "basis") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "basis";
+                }
+                else if (title == "method") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "method";
+                }
+                else {
+                    throw new Error('Title ' + title + 'not recognised!');
+                }
+            }
         }
         this.dictRef = dictRef;
         if (property) {
@@ -789,6 +889,31 @@ class Hf0 extends Property {
 }
 exports.Hf0 = Hf0;
 /**
+ * Is this different to Hf0?
+ * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
+ */
+class HfAT0 extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:HfAT0";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+    /**
+     * @param units The units.
+     * Should be one of Mesmer.energyUnits.
+     */
+    setUnits(units) {
+        this.getProperty().updateUnits(units);
+    }
+}
+exports.HfAT0 = HfAT0;
+/**
  * The Heat of Formation at 298K.
  * The child "scalar" node should have a "units" attribute (Mesmer.energyUnits).
  */
@@ -813,6 +938,62 @@ class Hf298 extends Property {
     }
 }
 exports.Hf298 = Hf298;
+/**
+ * The rotation constants.
+ * The child "array" node should have a "units" attribute with options ["cm-1", "GHz", "amuA^2"]
+ */
+class RotConsts extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:rotConsts";
+    /**
+     * The units.
+     */
+    static unitOptions = ["cm-1", "GHz", "amuA^2"];
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.RotConsts = RotConsts;
+/**
+ * Rotational symmetry number.
+ */
+class SymmetryNumber extends Property {
+    /**
+    * The dictionary reference.
+    */
+    static dictRef = "me:symmetryNumber";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.SymmetryNumber = SymmetryNumber;
+/**
+ * Transition state optical symmetry number.
+ */
+class TSOpticalSymmetryNumber extends Property {
+    /**
+    * The dictionary reference.
+    */
+    static dictRef = "me:TSOpticalSymmetryNumber";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.TSOpticalSymmetryNumber = TSOpticalSymmetryNumber;
 /**
  * "me:frequenciesScaleFactor" property.
  */
@@ -849,28 +1030,6 @@ class VibFreqs extends Property {
 }
 exports.VibFreqs = VibFreqs;
 /**
- * The rotation constants.
- * The child "array" node should have a "units" attribute with options ["cm-1", "GHz", "amuA^2"]
- */
-class RotConsts extends Property {
-    /**
-     * The dictionary reference.
-     */
-    static dictRef = "me:rotConsts";
-    /**
-     * The units.
-     */
-    static unitOptions = ["cm-1", "GHz", "amuA^2"];
-    /**
-     * @param attributes The attributes.
-     * @param property The property.
-     */
-    constructor(attributes, property) {
-        super(attributes, property);
-    }
-}
-exports.RotConsts = RotConsts;
-/**
  * The Molecular Weight.
  * The child "scalar" node should have a "units" attribute (known units=[amu]).
  */
@@ -888,6 +1047,117 @@ class MW extends Property {
     }
 }
 exports.MW = MW;
+/**
+ * The Spin Multiplicity.
+ */
+class SpinMultiplicity extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:spinMultiplicity";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.SpinMultiplicity = SpinMultiplicity;
+/**
+ * The Epsilon.
+ * The child "scalar" node should have a "units" attribute K (fixed).
+ */
+class Epsilon extends Property {
+    /**
+    * The dictionary reference.
+    */
+    static dictRef = "me:epsilon";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.Epsilon = Epsilon;
+/**
+ * The Sigma.
+ * The child "scalar" node should have a "units" attribute Å (fixed).
+ */
+class Sigma extends Property {
+    /**
+    * The dictionary reference.
+    */
+    static dictRef = "me:sigma";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.Sigma = Sigma;
+/**
+ * The Hessian.
+ * The child "matrix" node should have a "units" attribute with options [kJ/mol/Å2, kcal/mol/Å2, Hartree/Å2]
+ */
+class Hessian extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:hessian";
+    /**
+     * The units.
+     */
+    static unitOptions = ["kJ/mol/Å2", "kcal/mol/Å2", "Hartree/Å2"];
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.Hessian = Hessian;
+/**
+ * The Einstein Aij.
+ * The child "array" node should have a "units" attribute s-1 (fixed).
+ */
+class EinsteinAij extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:EinsteinAij";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.EinsteinAij = EinsteinAij;
+/**
+ * The Einstein Bij.
+ * The child "array" node should have a "units" attribute m3/J/s2 (fixed).
+ */
+class EinsteinBij extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:EinsteinBij";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.EinsteinBij = EinsteinBij;
 /**
  * "me:imFreqs"
  */
@@ -1281,53 +1551,33 @@ class PotentialPoint extends xml_js_1.TagWithAttributes {
      */
     static s_potential = "potential";
     /**
-     * The angle stored for convenience, this is also an attribute.
-     */
-    angle;
-    /**
-     * The potential stored for convenience, this is also an attribute.
-     */
-    potential;
-    /**
      * @param attributes The attributes.
      */
     constructor(attributes) {
         super(attributes, PotentialPoint.tagName);
-        let angle = attributes.get(PotentialPoint.s_angle);
-        if (angle == undefined) {
-            throw new Error(PotentialPoint.s_potential + ' is undefined!');
-        }
-        this.angle = new big_js_1.default(angle);
-        let potential = attributes.get(PotentialPoint.s_potential);
-        if (potential == undefined) {
-            throw new Error(PotentialPoint.s_potential + ' is undefined!');
-        }
-        this.potential = new big_js_1.default(potential);
     }
     /**
      * @returns The angle.
      */
     getAngle() {
-        return this.angle;
+        return this.attributes.get(PotentialPoint.s_angle);
     }
     /**
      * @param angle The angle of the PotentialPoint.
      */
     setAngle(angle) {
-        this.angle = angle;
         this.attributes.set(PotentialPoint.s_angle, angle.toString());
     }
     /**
      * @returns The potential.
      */
     getPotential() {
-        return this.potential;
+        return this.attributes.get(PotentialPoint.s_potential);
     }
     /**
      * @param potential The potential of the PotentialPoint.
      */
     setPotential(potential) {
-        this.potential = potential;
         this.attributes.set(PotentialPoint.s_potential, potential.toString());
     }
 }
@@ -1666,10 +1916,6 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      */
     units;
     /**
-     * The expansionSize stored for convenience, this is also an attribute.
-     */
-    expansionSize;
-    /**
      * The useSineTerms stored for convenience, this is also an attribute.
      */
     useSineTerms;
@@ -1694,11 +1940,6 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
                 this.nodes.set(this.nodes.size, p);
             });
         }
-        let expansionSize = attributes.get(HinderedRotorPotential.s_expansionSize);
-        if (expansionSize == undefined) {
-            throw new Error(HinderedRotorPotential.s_expansionSize + ' is undefined!');
-        }
-        this.expansionSize = new big_js_1.default(expansionSize);
         let useSineTerms = attributes.get(HinderedRotorPotential.s_useSineTerms);
         if (useSineTerms == undefined) {
             this.useSineTerms = false;
@@ -1743,13 +1984,12 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      * @returns The expansionSize of the HinderedRotorPotential.
      */
     getExpansionSize() {
-        return this.expansionSize;
+        return this.attributes.get(HinderedRotorPotential.s_expansionSize);
     }
     /**
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */
     setExpansionSize(expansionSize) {
-        this.expansionSize = expansionSize;
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
     /**
@@ -2118,8 +2358,8 @@ class DensityOfStates extends xml_js_1.NodeWithNodes {
      * @returns The density of states as a string array.
      */
     toStringArray() {
-        return [this.getT().getValue().toString(), this.getQtot().getValue().toString(),
-            this.getSumc().getValue().toString(), this.getSumg().getValue().toString()];
+        return [this.getT().value.toString(), this.getQtot().value.toString(),
+            this.getSumc().value.toString(), this.getSumg().value.toString()];
     }
 }
 exports.DensityOfStates = DensityOfStates;
@@ -2276,6 +2516,10 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     index;
     /**
+     * This is the molecule ID which is unique and independent of the attribute id value.
+     */
+    id;
+    /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
      * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
@@ -2288,11 +2532,17 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
-    constructor(attributes, id, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethod, reservoirSize, tt) {
+    constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethod, reservoirSize, tt) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        this.setID(id);
+        this.id = id;
         let i = 0;
+        // MetadataList
+        if (metadataList) {
+            this.nodes.set(i, metadataList);
+            this.index.set(metadata_js_1.MetadataList.tagName, i);
+            i++;
+        }
         // Atoms
         if (atoms) {
             this.nodes.set(i, atoms);
@@ -2412,10 +2662,27 @@ class Molecule extends xml_js_1.NodeWithNodes {
         return label;
     }
     /**
-     * @returns A comma and space separated string of the attributes of the molecule.
+     * @returns The metadata list of the molecule.
      */
-    getAttributesAsString() {
-        return Array.from(this.attributes, ([key, value]) => `${key}=\"${value}\"`).join(', ');
+    getMetadataList() {
+        let i = this.index.get(metadata_js_1.MetadataList.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * Set the metadata list.
+     * @param metadataList The metadata list.
+     */
+    setMetadataList(metadataList) {
+        let i = this.index.get(metadata_js_1.MetadataList.tagName);
+        if (i == undefined) {
+            this.index.set(metadata_js_1.MetadataList.tagName, this.nodes.size);
+            this.addNode(metadataList);
+        }
+        else {
+            this.nodes.set(i, metadataList);
+        }
     }
     /**
      * @returns The properties of the molecule.

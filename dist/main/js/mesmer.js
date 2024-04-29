@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.T = exports.Description = exports.Mesmer = exports.ControlList = exports.ConditionsList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
+exports.T = exports.Description = exports.Mesmer = exports.ControlList = exports.ModelParametersList = exports.ConditionsList = exports.ReactionList = exports.MoleculeList = exports.Title = void 0;
 const analysis_js_1 = require("./analysis.js");
 const conditions_js_1 = require("./conditions.js");
 const control_js_1 = require("./control.js");
 const metadata_js_1 = require("./metadata.js");
 const modelParameters_js_1 = require("./modelParameters.js");
-const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 /**
  * The title.
@@ -220,6 +219,71 @@ class ConditionsList extends xml_js_1.NodeWithNodes {
 }
 exports.ConditionsList = ConditionsList;
 /**
+ * A class for representing a "modelParametersList" - this does not yet exist in the MEMSER, so this is not used.
+ * Currently, in the XML, a "modelParameters" node is a child node of a "me:mesmer" node and there is no "modelParametersList".
+ */
+class ModelParametersList extends xml_js_1.NodeWithNodes {
+    /**
+     * The tag name.
+     */
+    static tagName = "modelParametersList";
+    /**
+     * The index. The keys are the modelParameters ids and the values are the node indexes.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     * @param modelParameterss The modelParameters.
+     */
+    constructor(attributes, modelParameterss) {
+        super(attributes, ModelParametersList.tagName);
+        this.index = new Map();
+        if (modelParameterss != undefined) {
+            modelParameterss.forEach(modelParameters => {
+                this.nodes.set(this.nodes.size, modelParameters);
+                this.index.set(modelParameters.id, this.nodes.size - 1);
+            });
+        }
+    }
+    /**
+     * @param id The id of the modelParameters.
+     * @returns The modelParameters.
+     */
+    getModelParameters(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * Remove a modelParameters.
+     * @param id The id of the modelParameters to remove.
+     */
+    removeModelParameters(id) {
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(id);
+        }
+    }
+    /**
+     * Add a modelParameters.
+     * @param modelParameters The modelParameters.
+     */
+    addModelParameters(modelParameters) {
+        let index = this.index.get(modelParameters.id);
+        if (index != undefined) {
+            this.nodes.set(index, modelParameters);
+            console.log('Replaced modelParameters with id ' + modelParameters.id);
+        }
+        else {
+            this.nodes.set(this.nodes.size, modelParameters);
+            this.index.set(modelParameters.id, this.nodes.size - 1);
+        }
+    }
+}
+exports.ModelParametersList = ModelParametersList;
+/**
  * A class for representing a "controlList" - this does not yet exist in the MEMSER, so this is not used.
  * Currently, in the XML, a "control" node is a child node of a "me:mesmer" node and there is no "controlList".
  */
@@ -301,7 +365,7 @@ class Mesmer extends xml_js_1.NodeWithNodes {
     /**
      * Energy units.
      */
-    static energyUnits = ["kJ/mol", "cm-1", "wavenumber", "kcal/mol", "Hartree", "au"];
+    static energyUnits = ["kJ/mol", "kJ per mol", "cm-1", "wavenumber", "kcal/mol", "kcal per mol", "Hartree", "au"];
     /**
      * Frequency units.
      */
@@ -350,6 +414,10 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      */
     conditionsIndex;
     /**
+     * The modelParameters index. The keys are the modelParameters ids and the values are the node indexes.
+     */
+    modelParametersIndex;
+    /**
      * The control index. The keys are the control ids and the values are the node indexes.
      */
     controlIndex;
@@ -361,7 +429,7 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      * @param modelParameters The model parameters.
      * @param controls The controls.
      */
-    constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameters, controls, metadataList, analysis) {
+    constructor(attributes, title, moleculeList, reactionList, conditionss, modelParameterss, controls, metadataList, analysis) {
         super(attributes, Mesmer.tagName);
         let elements = ["H", "O", "C", "N", "Cl", "S", "Ph", "Fe"];
         let colors = ["White", "Red", "DarkGrey", "Blue", "Green", "Yellow", "Orange", "Brown"];
@@ -404,9 +472,13 @@ class Mesmer extends xml_js_1.NodeWithNodes {
                 this.addNode(conditions);
             });
         }
-        if (modelParameters != undefined) {
-            this.index.set(modelParameters_js_1.ModelParameters.tagName, this.nodes.size);
-            this.addNode(modelParameters);
+        this.modelParametersIndex = new Map();
+        if (modelParameterss != undefined) {
+            modelParameterss.forEach(modelParameters => {
+                this.index.set(modelParameters_js_1.ModelParameters.tagName + modelParameters.id, this.nodes.size);
+                this.modelParametersIndex.set(modelParameters.id, this.nodes.size);
+                this.addNode(modelParameters);
+            });
         }
         this.controlIndex = new Map();
         if (controls != undefined) {
@@ -521,13 +593,32 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * @returns The conditions as a Conditions[].
+     */
+    getConditionss() {
+        let conditionss = [];
+        this.conditionsIndex.forEach((index, conditionsID) => {
+            conditionss.push(this.nodes.get(index));
+        });
+        return conditionss;
+    }
+    /**
+     * Set the conditions.
+     * @param conditionss The Conditions[].
+     */
+    setConditionss(conditionss) {
+        conditionss.forEach(conditions => {
+            this.addConditions(conditions);
+        });
+    }
+    /**
      * @returns The next control id.
      */
     getNextConditionsID() {
         let id = 0;
         // Sort the control index by key and go through these and take the next available id.
         let sortedKeys = Array.from(this.conditionsIndex.keys()).sort((a, b) => a - b);
-        console.log("sortedKeys " + (0, util_js_1.arrayToString)(sortedKeys));
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
         sortedKeys.forEach((key) => {
             if (key > id) {
                 return id;
@@ -549,26 +640,76 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         }
     }
     /**
-     * @returns The model parameters.
+     * Add a ModelParameters.
+     * @param modelParameters The ModelParameters.
      */
-    getModelParameters() {
-        let i = this.index.get(modelParameters_js_1.ModelParameters.tagName);
+    addModelParameters(modelParameters) {
+        let id = modelParameters_js_1.ModelParameters.tagName + modelParameters.id;
+        let i = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.set(i, modelParameters);
+        }
+        else {
+            this.index.set(id, this.nodes.size);
+            this.modelParametersIndex.set(modelParameters.id, this.nodes.size);
+            this.addNode(modelParameters);
+        }
+    }
+    /**
+     * @param modelParametersID The id of the modelParameters.
+     * @returns The modelParameters for the modelParametersID.
+     */
+    getModelParameters(modelParametersID) {
+        let i = this.modelParametersIndex.get(modelParametersID);
         if (i != undefined) {
             return this.nodes.get(i);
         }
     }
     /**
-     * Set the model parameters.
-     * @param modelParameters The model parameters.
+     * @returns The modelParameters as a ModelParameters[].
      */
-    setModelParameters(modelParameters) {
-        let i = this.index.get(modelParameters_js_1.ModelParameters.tagName);
+    getModelParameterss() {
+        let modelParameterss = [];
+        this.modelParametersIndex.forEach((index, modelParametersID) => {
+            modelParameterss.push(this.nodes.get(index));
+        });
+        return modelParameterss;
+    }
+    /**
+     * Set the modelParameters.
+     * @param modelParameterss The ModelParameters[].
+     */
+    setModelParameterss(modelParameterss) {
+        modelParameterss.forEach(modelParameters => {
+            this.addModelParameters(modelParameters);
+        });
+    }
+    /**
+     * @returns The next modelParameters id.
+     */
+    getNextModelParametersID() {
+        let id = 0;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.modelParametersIndex.keys()).sort((a, b) => a - b);
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            if (key > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
+    /**
+     * Remove a modelParameters.
+     * @param modelParametersID The id of the modelParameters to remove.
+     */
+    removeModelParameters(modelParametersID) {
+        let i = this.modelParametersIndex.get(modelParametersID);
         if (i != undefined) {
-            this.nodes.set(i, modelParameters);
-        }
-        else {
-            this.index.set(modelParameters_js_1.ModelParameters.tagName, this.nodes.size);
-            this.addNode(modelParameters);
+            this.nodes.delete(i);
+            this.index.delete(modelParameters_js_1.ModelParameters.tagName + modelParametersID);
+            this.modelParametersIndex.delete(modelParametersID);
         }
     }
     /**
@@ -597,13 +738,32 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         }
     }
     /**
+     * @returns The controls.
+     */
+    getControls() {
+        let controls = [];
+        this.controlIndex.forEach((index, controlID) => {
+            controls.push(this.nodes.get(index));
+        });
+        return controls;
+    }
+    /**
+     * Set the controls.
+     * @param controls The controls.
+     */
+    setControls(controls) {
+        controls.forEach(control => {
+            this.addControl(control);
+        });
+    }
+    /**
      * @returns The next control id.
      */
     getNextControlID() {
         let id = 0;
         // Sort the control index by key and go through these and take the next available id.
         let sortedKeys = Array.from(this.controlIndex.keys()).sort((a, b) => a - b);
-        console.log("sortedKeys " + (0, util_js_1.arrayToString)(sortedKeys));
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
         sortedKeys.forEach((key) => {
             if (key > id) {
                 return id;
@@ -618,12 +778,21 @@ class Mesmer extends xml_js_1.NodeWithNodes {
      */
     removeControl(controlID) {
         let i = this.controlIndex.get(controlID);
-        console.log("removeControl " + controlID + " " + i);
-        console.log("controlIndex " + (0, util_js_1.arrayToString)(Array.from(this.controlIndex.keys())));
+        //console.log("removeControl " + controlID + " " + i);
+        //console.log("controlIndex " + arrayToString(Array.from(this.controlIndex.keys())));
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(control_js_1.Control.tagName + controlID);
             this.controlIndex.delete(controlID);
+        }
+    }
+    /**
+     * @returns The metadata list.
+     */
+    getMetadataList() {
+        let i = this.index.get(metadata_js_1.MetadataList.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
         }
     }
     /**
@@ -637,6 +806,15 @@ class Mesmer extends xml_js_1.NodeWithNodes {
         else {
             this.index.set(metadata_js_1.MetadataList.tagName, this.nodes.size);
             this.addNode(metadataList);
+        }
+    }
+    /**
+     * @returns The analysis.
+     */
+    getAnalysis() {
+        let i = this.index.get(analysis_js_1.Analysis.tagName);
+        if (i != undefined) {
+            return this.nodes.get(i);
         }
     }
     /**

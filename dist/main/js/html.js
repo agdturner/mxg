@@ -1,26 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addTableRow = exports.createTable = exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.remove = exports.sy_upTriangle = exports.sy_downTriangle = exports.s_collapsible = exports.s_button = void 0;
+exports.addTableRow = exports.createTable = exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.s_select = exports.sy_upTriangle = exports.sy_downTriangle = exports.s_collapsible = exports.s_button = void 0;
 const util_1 = require("./util");
 exports.s_button = "button";
 exports.s_collapsible = "collapsible";
 exports.sy_downTriangle = "\u25BC"; // ▼
 exports.sy_upTriangle = "\u25B2"; // ▲
-/**
- * Remove an element with the given id.
- * @param id The id of the element to remove.
- * @param ids The set of ids to remove the id from.
- */
-function remove(id, ids) {
-    let e = document.getElementById(id);
-    if (e != null) {
-        e.remove();
-    }
-    if (ids != undefined) {
-        ids.delete(id);
-    }
-}
-exports.remove = remove;
+exports.s_select = "select";
 /**
  * Create a HTMLDivElement containing a HTMLButtonElement and a HTMLDivElement which display is toggled as the button is actioned.
  * By default the content is not displayed. Then if the button is actioned the content is diplayed, then if actioned again it is
@@ -252,6 +238,7 @@ exports.resizeTextAreaElement = resizeTextAreaElement;
  *
  * @param options The options.
  * @param name The name for the select.
+ * @param value The value for the select.
  * @param id id + "_" + name will be the select element ID.
  * @param margin The margin for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
@@ -287,11 +274,10 @@ exports.createSelectElement = createSelectElement;
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
 function createLabelWithSelect(textContent, options, name, value, id, componentMargin, divMargin) {
-    let div = createFlexDiv(undefined, divMargin);
+    let div = createFlexDiv(id, divMargin);
     let label = createLabel(textContent, componentMargin);
-    label.htmlFor = id;
     div.appendChild(label);
-    div.appendChild(createSelectElement(options, name, value, id, componentMargin));
+    div.appendChild(createSelectElement(options, name, value, (0, util_1.getID)(id, exports.s_select), componentMargin));
     return div;
 }
 exports.createLabelWithSelect = createLabelWithSelect;

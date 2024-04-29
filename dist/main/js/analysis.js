@@ -21,7 +21,11 @@ class Eigenvalue extends xml_js_1.NumberNode {
 exports.Eigenvalue = Eigenvalue;
 /**
  * In the XML, the "me:eigenvalueList" element is a child of the "analysis" element.
- * , and the rateList tag is a child of the analysis tag.
+ * Attributes include:
+ * number
+ * selection
+ * Child nodes include:
+ * me:eigenvalue
  */
 class EigenvalueList extends xml_js_1.NodeWithNodes {
     /**
@@ -33,13 +37,24 @@ class EigenvalueList extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, eigenvalues) {
         super(attributes, EigenvalueList.tagName);
+        if (eigenvalues) {
+            eigenvalues.forEach((eigenvalue) => {
+                this.addNode(eigenvalue);
+            });
+        }
+    }
+    /**
+     * Add an eigenvalue.
+     */
+    addEigenvalue(e) {
+        this.addNode(e);
     }
 }
 exports.EigenvalueList = EigenvalueList;
 /**
  * In the XML, the "me:pop" element is a child of the "population" element.
  * Attributes include:
- * ref
+ * ref (A reference to the species (molecule).)
  */
 class Pop extends xml_js_1.NumberNode {
     /**
@@ -58,7 +73,8 @@ exports.Pop = Pop;
 /**
  * In the XML, the "me:population" element is a child of the "populationList" element.
  * Attributes include:
- * time, logTime
+ * time
+ * logTime
  * Child elements include:
  * me:pop
  */
@@ -73,11 +89,19 @@ class Population extends xml_js_1.NodeWithNodes {
     constructor(attributes, pops) {
         super(attributes, Population.tagName);
     }
+    /**
+     * Add a pop.
+     */
+    addPop(p) {
+        this.addNode(p);
+    }
 }
 exports.Population = Population;
 /**
  * In the XML, the "me:populationList" element is a child of the "analysis" element.
  * Attributes include:
+ * T (Temperature)
+ * conc (Concentration)
  * Child elements include:
  * me:population
  */
@@ -91,6 +115,17 @@ class PopulationList extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, populations) {
         super(attributes, PopulationList.tagName);
+        if (populations) {
+            populations.forEach((population) => {
+                this.addNode(population);
+            });
+        }
+    }
+    /**
+     * Add a population.
+     */
+    addPopulation(p) {
+        this.addNode(p);
     }
 }
 exports.PopulationList = PopulationList;
@@ -146,10 +181,77 @@ class RateList extends xml_js_1.NodeWithNodes {
      */
     static tagName = 'me:rateList';
     /**
+     * The index.
+     */
+    index;
+    /**
+     * The first order loss index.
+     */
+    folIndex;
+    /**
+     * The first order losses.
+     */
+    fols;
+    /**
+     * The first order rate index.
+     */
+    forIndex;
+    /**
+     * The first order rates.
+     */
+    fors;
+    /**
      * @param attributes The attributes.
      */
     constructor(attributes, firstOrderLosses, firstOrderRates) {
         super(attributes, Analysis.tagName);
+        this.index = new Map();
+        this.folIndex = new Map();
+        if (firstOrderLosses) {
+            let i = 0;
+            firstOrderLosses.forEach((fol) => {
+                this.index.set(FirstOrderLoss.tagName + i.toString(), this.nodes.size);
+                this.folIndex.set(this.folIndex.size, this.nodes.size);
+                this.addNode(fol);
+                i++;
+            });
+            this.fols = firstOrderLosses;
+        }
+        else {
+            this.fols = [];
+        }
+        this.forIndex = new Map();
+        if (firstOrderRates) {
+            let i = 0;
+            firstOrderRates.forEach((forr) => {
+                this.index.set(FirstOrderRate.tagName + i.toString(), this.nodes.size);
+                this.forIndex.set(this.forIndex.size, this.nodes.size);
+                this.addNode(forr);
+                i++;
+            });
+            this.fors = firstOrderRates;
+        }
+        else {
+            this.fors = [];
+        }
+    }
+    /**
+     * Add a first order loss.
+     */
+    addFirstOrderLoss(f) {
+        this.folIndex.set(this.folIndex.size, this.nodes.size);
+        this.index.set(FirstOrderLoss.tagName + this.folIndex.size.toString(), this.nodes.size);
+        this.fols.push(f);
+        this.addNode(f);
+    }
+    /**
+     * Add a first order rate.
+     */
+    addFirstOrderRate(f) {
+        this.forIndex.set(this.forIndex.size, this.nodes.size);
+        this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
+        this.fors.push(f);
+        this.addNode(f);
     }
 }
 exports.RateList = RateList;
@@ -178,13 +280,25 @@ class Analysis extends xml_js_1.NodeWithNodes {
      */
     elIndex;
     /**
+     * The EigenvalueList.
+     */
+    els;
+    /**
      * The PopulationList index.
      */
     plIndex;
     /**
+     * The PopulationList.
+     */
+    pls;
+    /**
      * The RateList index.
      */
     rlIndex;
+    /**
+     * The RateList.
+     */
+    rls;
     /**
      * @param attributes The attributes.
      */
@@ -202,6 +316,10 @@ class Analysis extends xml_js_1.NodeWithNodes {
                 this.elIndex.set(this.elIndex.size, this.nodes.size);
                 this.addNode(el);
             });
+            this.els = els;
+        }
+        else {
+            this.els = [];
         }
         this.plIndex = new Map();
         if (pls) {
@@ -210,6 +328,10 @@ class Analysis extends xml_js_1.NodeWithNodes {
                 this.plIndex.set(this.plIndex.size, this.nodes.size);
                 this.addNode(pl);
             });
+            this.pls = pls;
+        }
+        else {
+            this.pls = [];
         }
         this.rlIndex = new Map();
         if (rls) {
@@ -218,6 +340,10 @@ class Analysis extends xml_js_1.NodeWithNodes {
                 this.rlIndex.set(this.rlIndex.size, this.nodes.size);
                 this.addNode(rl);
             });
+            this.rls = rls;
+        }
+        else {
+            this.rls = [];
         }
     }
     /**
@@ -243,70 +369,28 @@ class Analysis extends xml_js_1.NodeWithNodes {
         }
     }
     /**
-     * Get the eigenvalue list.
-     */
-    getEigenvalueList() {
-        if (this.index.has(EigenvalueList.tagName)) {
-            let i = this.index.get(EigenvalueList.tagName);
-            return this.nodes.get(i);
-        }
-    }
-    /**
      * @param eigenvalueList The eigenvalue list.
      */
-    setEigenvalueList(eigenvalueList) {
-        if (this.index.has(EigenvalueList.tagName)) {
-            let i = this.index.get(EigenvalueList.tagName);
-            this.nodes.set(i, eigenvalueList);
-        }
-        else {
-            this.index.set(EigenvalueList.tagName, this.nodes.size);
-            this.addNode(eigenvalueList);
-        }
-    }
-    /**
-     * Get the population list.
-     */
-    getPopulationList() {
-        if (this.index.has(PopulationList.tagName)) {
-            let i = this.index.get(PopulationList.tagName);
-            return this.nodes.get(i);
-        }
+    addEigenvalueList(eigenvalueList) {
+        this.elIndex.set(this.elIndex.size, this.nodes.size);
+        this.addNode(eigenvalueList);
+        this.els.push(eigenvalueList);
     }
     /**
      * @param populationList The population list.
      */
-    setPopulationList(populationList) {
-        if (this.index.has(PopulationList.tagName)) {
-            let i = this.index.get(PopulationList.tagName);
-            this.nodes.set(i, populationList);
-        }
-        else {
-            this.index.set(PopulationList.tagName, this.nodes.size);
-            this.addNode(populationList);
-        }
-    }
-    /**
-     * Get the rate list.
-     */
-    getRateList() {
-        if (this.index.has(RateList.tagName)) {
-            let i = this.index.get(RateList.tagName);
-            return this.nodes.get(i);
-        }
+    addPopulationList(populationList) {
+        this.plIndex.set(this.plIndex.size, this.nodes.size);
+        this.addNode(populationList);
+        this.pls.push(populationList);
     }
     /**
      * @param rateList The rate list.
      */
-    setRateList(rateList) {
-        if (this.index.has(RateList.tagName)) {
-            let i = this.index.get(RateList.tagName);
-            this.nodes.set(i, rateList);
-        }
-        else {
-            this.index.set(RateList.tagName, this.nodes.size);
-            this.addNode(rateList);
-        }
+    addRateList(rateList) {
+        this.rlIndex.set(this.rlIndex.size, this.nodes.size);
+        this.addNode(rateList);
+        this.rls.push(rateList);
     }
 }
 exports.Analysis = Analysis;

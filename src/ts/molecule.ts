@@ -2786,6 +2786,11 @@ export class Molecule extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
+     * This is the molecule ID which is unique and independent of the attribute id value.
+     */
+    id: number;
+
+    /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
      * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
@@ -2798,22 +2803,13 @@ export class Molecule extends NodeWithNodes {
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
-    constructor(
-        attributes: Map<string, string>,
-        id: string,
-        metadataList?: MetadataList,
-        atoms?: AtomArray,
-        bonds?: BondArray,
-        properties?: PropertyList,
-        energyTransferModel?: EnergyTransferModel,
-        dOSCMethod?: DOSCMethod,
-        distributionCalcMethod?: DistributionCalcMethod,
-        extraDOSCMethod?: ExtraDOSCMethod,
-        reservoirSize?: ReservoirSize,
-        tt?: ThermoTable) {
+    constructor(attributes: Map<string, string>, id: number, metadataList?: MetadataList, atoms?: AtomArray,
+        bonds?: BondArray, properties?: PropertyList, energyTransferModel?: EnergyTransferModel,
+        dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethod?: ExtraDOSCMethod, 
+        reservoirSize?: ReservoirSize, tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        this.setID(id);
+        this.id = id;
         let i: number = 0;
         // MetadataList
         if (metadataList) {
@@ -2874,6 +2870,14 @@ export class Molecule extends NodeWithNodes {
     /**
      * @returns The id of the molecule.
      */
+    getLabel(): string {
+        return this.getID() + " " + this.id.toString();
+    }
+
+    
+    /**
+     * @returns The id of the molecule.
+     */
     getID(): string {
         return this.attributes.get(Molecule.s_id) as string;
     }
@@ -2926,24 +2930,6 @@ export class Molecule extends NodeWithNodes {
      */
     setActive(active: boolean): void {
         this.attributes.set(Molecule.s_active, active.toString());
-    }
-
-    /**
-     * Get a label for the molecule which includes the is and any description and whether active.
-     * @returns A label for the molecule detailing the attributes of the XML element (including id, 
-     * and possibly including description and whether active).
-     */
-    getLabel(): string {
-        let label: string = this.getID();
-        let description: string | undefined = this.getDescription();
-        if (description != undefined) {
-            label += " (" + description + ")";
-        }
-        let active: boolean | undefined = this.getActive();
-        if (active) {
-            label += " (" + Molecule.s_active + ")";
-        }
-        return label;
     }
 
     /**

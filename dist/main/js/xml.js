@@ -208,19 +208,6 @@ class NumberNode extends TagWithAttributes {
         return super.toString() + `, ${this.value.toString()})`;
     }
     /**
-     * Get the value.
-     */
-    getValue() {
-        return this.value;
-    }
-    /**
-     * Set the value.
-     * @param value The value.
-     */
-    setValue(value) {
-        this.value = value;
-    }
-    /**
      * Get the XML representation.
      * @param padding The padding (Optional).
      * @returns An XML representation.
@@ -432,7 +419,7 @@ function getAttributes(element) {
     attributeNames.forEach(function (attributeName) {
         let attributeValue = element.getAttribute(attributeName);
         if (attributeValue != null) {
-            attributes.set(attributeName, attributeValue);
+            attributes.set(attributeName.trim(), attributeValue.trim());
             //console.log("attributeName=" + attributeName + " attributeValue=" + attributeValue);
         }
     });

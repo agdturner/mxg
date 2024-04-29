@@ -1,9 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MetadataList = exports.DCContributor = exports.DCDate = exports.DCCreator = exports.DCSource = exports.DCTitle = void 0;
+exports.MetadataList = exports.DCContributor = exports.DCDate = exports.DCCreator = exports.DCSource = exports.DCTitle = exports.Metadata = void 0;
 const xml_js_1 = require("./xml.js");
 /**
- * DC Title.
+ * Metadata.
+ * In the XML, the "metadata" element is a child of the "metadataList" element.
+ * For example:
+ * <metadataList>
+ *  <metadata name="dc:description" content="Experimental data for OH (Hydroxyl radical)"/>
+ *  <metadata name="dc:source" content="http://cccbdb.nist.gov/"/>
+ *  <metadata name="dc:contributor" content="Dr Reaction Kinetics"/>
+ *  <metadata name="dc:date" content="20240311_090547"/>
+ * </metadataList>
+ */
+class Metadata extends xml_js_1.NodeWithNodes {
+    /**
+     * Tag name.
+     */
+    static tagName = 'metadata';
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes) {
+        super(attributes, Metadata.tagName);
+    }
+    /**
+     * Get string for label.
+     */
+    getLabelText() {
+        let label = '';
+        this.attributes.forEach((value, key) => {
+            label += key + ': ' + value + ' ';
+        });
+        return label;
+    }
+}
+exports.Metadata = Metadata;
+/**
+ * DCTitle.
+ * In the XML, the "dc:title" element is a child of the "metadataList" element.
+ * For example:
+ * <metadataList xmlns:dc="http://purl.org/dc/elements/1.1/">
+ *  <dc:title>Title</dc:title>
+ *  <dc:source>file.xml</dc:source>
+ *  <dc:creator>Mesmer v7.0</dc:creator>
+ *  <dc:date>20240311_090547</dc:date>
+ *  <dc:contributor>Dr Reaction Kinetics</dc:contributor>
+ * </metadataList>
  */
 class DCTitle extends xml_js_1.StringNode {
     /**
@@ -103,11 +146,16 @@ class MetadataList extends xml_js_1.NodeWithNodes {
      */
     index;
     /**
+     * To look up metadata nodes by index.
+     */
+    metadataIndex;
+    /**
      * @param attributes The attributes.
      */
     constructor(attributes, title, source, creator, date, contributor) {
         super(attributes, MetadataList.tagName);
         this.index = new Map();
+        this.metadataIndex = new Map();
         if (title) {
             this.index.set(DCTitle.tagName, this.nodes.size);
             this.addNode(title);
@@ -238,6 +286,25 @@ class MetadataList extends xml_js_1.NodeWithNodes {
             this.index.set(DCContributor.tagName, this.nodes.size);
             this.addNode(contributor);
         }
+    }
+    /**
+     * Add metadata.
+     * @param metadata The metadata.
+     */
+    addMetadata(metadata) {
+        this.metadataIndex.set(this.metadataIndex.size, this.nodes.size);
+        this.addNode(metadata);
+    }
+    /**
+     * Get metadata.
+     */
+    getMetadata() {
+        let metadata = [];
+        for (let i = 0; i < this.metadataIndex.size; i++) {
+            let j = this.metadataIndex.get(i);
+            metadata.push(this.nodes.get(j));
+        }
+        return metadata;
     }
 }
 exports.MetadataList = MetadataList;

@@ -38,10 +38,30 @@ class ReactionMolecule extends xml_js_1.TagWithAttributes {
         this.role = attributes.get("role");
     }
     /**
+     * @returns The ref attribute.
+     */
+    getRef() {
+        return this.ref;
+    }
+    /**
+     * @param ref The ref attribute.
+     */
+    setRef(ref) {
+        this.ref = ref;
+        this.attributes.set("ref", ref);
+    }
+    /**
+     * @returns The role attribute.
+     */
+    getRole() {
+        return this.role;
+    }
+    /**
      * @param role The role of the molecule in the reaction.
      */
     setRole(role) {
         this.role = role;
+        this.attributes.set("role", role);
     }
 }
 exports.ReactionMolecule = ReactionMolecule;
@@ -613,7 +633,8 @@ class Kinf extends xml_js_1.NodeWithNodes {
         let val = this.getVal();
         let rev = this.getRev();
         let keq = this.getKeq();
-        return [t.getValue().toString(), val.getValue().toString(), rev.getValue().toString(), keq.getValue().toString()];
+        //return [t.getValue().toString(), val.getValue().toString(), rev.getValue().toString(), keq.getValue().toString()];
+        return [t.value.toString(), val.value.toString(), rev.value.toString(), keq.value.toString()];
     }
     /**
      * @returns The Kinf as a CSV string.
@@ -776,14 +797,14 @@ class Reaction extends xml_js_1.NodeWithNodes {
         this.id = id;
         if (reactants != undefined) {
             reactants.forEach(reactant => {
-                this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+                this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
                 this.addNode(reactant);
             });
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
             products.forEach(product => {
-                this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+                this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
                 this.addNode(product);
             });
             this.index.set(Product.tagName, this.productsIndex);
@@ -794,7 +815,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
         if (transitionStates != undefined) {
             transitionStates.forEach(transitionState => {
-                this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+                this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
                 this.addNode(transitionState);
             });
             this.index.set(TransitionState.tagName, this.transitionStatesIndex);
@@ -825,7 +846,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
         }
         else {
             let map = new Map();
-            map.set(this.nodes.get(v).ref, v);
+            map.set(this.nodes.get(v).getRef(), v);
             map.set(node.tagName, this.nodes.size);
             this.index.set(tagName, map);
         }
@@ -850,7 +871,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setReactants(reactants) {
         reactants.forEach(reactant => {
-            this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+            this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
             this.addNode(reactant);
         });
         this.index.set(Reactant.tagName, this.reactantsIndex);
@@ -871,7 +892,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param reactant The reactant to add.
      */
     addReactant(reactant) {
-        this.reactantsIndex.set(reactant.getMolecule().ref, this.nodes.size);
+        this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
         this.addNode(reactant);
     }
     /**
@@ -907,7 +928,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setProducts(products) {
         products.forEach(product => {
-            this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+            this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
             this.addNode(product);
         });
         this.index.set(Product.tagName, this.productsIndex);
@@ -928,7 +949,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param product The product to add.
      */
     addProduct(product) {
-        this.productsIndex.set(product.getMolecule().ref, this.nodes.size);
+        this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
         this.addNode(product);
     }
     /**
@@ -992,7 +1013,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      */
     setTransitionStates(transitionStates) {
         transitionStates.forEach(transitionState => {
-            this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+            this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
             this.addNode(transitionState);
         });
         this.index.set(TransitionState.tagName, this.transitionStatesIndex);
@@ -1013,7 +1034,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @param transitionState The transition state to add.
      */
     addTransitionState(transitionState) {
-        this.transitionStatesIndex.set(transitionState.getMolecule().ref, this.nodes.size);
+        this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
         this.addNode(transitionState);
     }
     /**
@@ -1118,14 +1139,14 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * @returns The label of the reactants.
      */
     getReactantsLabel() {
-        return this.getReactants().map(reactant => reactant.getMolecule().ref).join(' + ');
+        return this.getReactants().map(reactant => reactant.getMolecule().getRef()).join(' + ');
     }
     /**
      * Returns the label for the products.
      * @returns The label for the products.
      */
     getProductsLabel() {
-        return this.getProducts().map(product => product.getMolecule().ref).join(' + ');
+        return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
     }
     /**
      * Get the label of the reaction.
@@ -1139,12 +1160,12 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
-    getReactantsEnergy(molecules) {
+    getReactantsEnergy(getMolecule) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map(reactant => {
-            let molecule = molecules.get(reactant.getMolecule().ref);
+            let molecule = getMolecule(reactant.getMolecule().getRef());
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${reactant.getMolecule().ref} not found`);
+                throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new big_js_1.default(0));
@@ -1153,12 +1174,12 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(molecules) {
+    getProductsEnergy(getMolecule) {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map(product => {
-            let molecule = molecules.get(product.getMolecule().ref);
+            let molecule = getMolecule(product.getMolecule().getRef());
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${product.getMolecule().ref} not found`);
+                throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new big_js_1.default(0));

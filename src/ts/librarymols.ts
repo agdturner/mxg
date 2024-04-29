@@ -16,7 +16,7 @@ export class LibraryMolecules {
     /**
      * @returns 
      */
-    readFile(): Promise<Map<string, Molecule>> {
+    readFile(): Promise<Map<number, Molecule>> {
         return new Promise((resolve, reject) => {
             let input: HTMLInputElement = document.createElement('input');
             input.type = 'file';
@@ -67,11 +67,11 @@ export class LibraryMolecules {
     /**
      * Parse the XML.
      */
-    parse(xml: Document): Map<string, Molecule> {
+    parse(xml: Document): Map<number, Molecule> {
         /**
          * The molecules.
          */
-        let molecules: Map<string, Molecule> = new Map();
+        let molecules: Map<number, Molecule> = new Map();
         // Get the XML "moleculeList" element.
         let xml_ml: Element = getSingularElement(xml, MoleculeList.tagName);
         // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
@@ -119,8 +119,9 @@ export class LibraryMolecules {
                 }
                 continue;
             }
-            let m = new Molecule(attributes, mID);
-            molecules.set(mID, m);
+            let id = molecules.size;
+            let m = new Molecule(attributes, id);
+            molecules.set(id, m);
             // Create a set of molecule tag names.
             let moleculeTagNames: Set<string> = new Set();
             //cns.forEach(function (cn) {

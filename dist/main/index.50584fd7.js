@@ -583,6 +583,11 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
+ * This returns the first molecule found with the given id.
+ * @param id The id of the molecule.
+ * @returns The first molecule with the id attribute value equal to id.
+ */ parcelHelpers.export(exports, "getMolecule", ()=>getMolecule);
+/**
  * Set a molecule property array when the input value is changed.
  * @param node The NumberArayNode.
  * @param ta The HTMLTextAreaElement.
@@ -841,9 +846,37 @@ console.log("dark=" + dark);
  * For storing molecules loaded from files.
  */ let libmols = new Map();
 /**
- * A map of molecules with Molecule ID as key and Molecule as value.
+ * A map of molecules with id as key and Molecule as value.
+ * If a molecule is removed, it is not deleted from the map.
  */ let molecules;
 /**
+ * Get the keys of the molecules. The keys are a composite of the molecule ID and the index.
+ * @returns The keys of the molecules.
+ */ function getMoleculeKeys(molecules) {
+    let keys = new Set();
+    molecules.forEach((v, k)=>{
+        keys.add(v.getID() + "-" + k.toString());
+    });
+    return keys;
+}
+function getMolecule(id) {
+    for (let [key, molecule] of molecules)if (molecule.getID() == id) {
+        console.log("Found molecule with id " + id);
+        return molecule;
+    }
+    return null;
+}
+/*
+export function getMolecule(id: string): Molecule | null {
+    molecules.forEach((v, k) => {
+        if (v.getID() == id) {
+            console.log("Found molecule with id " + id);
+            return v;
+        }
+    });
+    return null;
+}
+*/ /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */ let reactions;
 /**
@@ -887,9 +920,9 @@ let sp_font = "2em SensSerif";
     let lm = new (0, _librarymolsJs.LibraryMolecules)();
     lmb.addEventListener("click", async (event)=>{
         let ms = await lm.readFile();
-        // Add the molecules to the molecules map.
+        // Add the molecules to the libmols map.
         ms.forEach((v, k)=>{
-            libmols.set(k, v);
+            libmols.set(libmols.size, v);
         });
     });
     // Add Load Defaults button.
@@ -1246,13 +1279,11 @@ let sp_font = "2em SensSerif";
         let mDivID = addRID((0, _moleculeJs.Molecule).tagName, i);
         let mDiv = (0, _htmlJs.createDiv)(mDivID);
         let attributes = (0, _xmlJs.getAttributes)(xml_ms[i]);
-        let mID = attributes.get((0, _moleculeJs.Molecule).s_id);
-        if (mID == undefined) throw new Error((0, _moleculeJs.Molecule).s_id + " is undefined");
-        let m = new (0, _moleculeJs.Molecule)(attributes, mID);
-        molecules.set(mID, m);
+        let m = new (0, _moleculeJs.Molecule)(attributes, i);
+        molecules.set(i, m);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = addRID(mDivID, s_container);
-        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, mID, boundary1, level1);
+        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.getLabel(), boundary1, level1);
         // Create a set of molecule tag names.
         let moleculeTagNames = new Set();
         let cns = xml_ms[i].childNodes;
@@ -1269,7 +1300,7 @@ let sp_font = "2em SensSerif";
         // Add edit Name button.
         addEditIDButton(m, mcDiv.querySelector((0, _htmlJs.s_button)), mDiv, level1);
         // Description
-        mDiv.appendChild(processDescription(addRID(m.getID(), s_description), m.getDescription.bind(m), m.setDescription.bind(m), boundary1, level1));
+        mDiv.appendChild(processDescription(addRID(mDivID, s_description), m.getDescription.bind(m), m.setDescription.bind(m), boundary1, level1));
         // Init metadataList.
         //console.log("Init metadataList.");
         let xml_mls = xml_ms[i].getElementsByTagName((0, _metadataJs.MetadataList).tagName);
@@ -1288,13 +1319,7 @@ let sp_font = "2em SensSerif";
                 // Create a new Metadata.
                 let md = new (0, _metadataJs.Metadata)((0, _xmlJs.getAttributes)(xml_ms[j]));
                 mlDiv.appendChild(addMetadata(m, md, ml, addRID(mlDivID, j), boundary1, level1));
-            /*
-                ml.addMetadata(md);
-                let mdDivID = addID(mlDivID, j);
-                let mdDiv = createFlexDiv(mdDivID, level1);
-                mlDiv.appendChild(mdDiv);
-                mdDiv.appendChild(createLabel(m.getID(), boundary1));
-                */ }
+            }
             moleculeTagNames.delete((0, _metadataJs.MetadataList).tagName);
         }
         // Init atoms.
@@ -1315,7 +1340,7 @@ let sp_font = "2em SensSerif";
             if (aaa.size > 0) console.warn("AtomArray attributes lost/ignored: " + (0, _utilJs.mapToString)(aaa));
         }
         let xml_as = xml_ms[i].getElementsByTagName((0, _moleculeJs.Atom).tagName);
-        for(let j = 0; j < xml_as.length; j++)aaDiv.appendChild(addAtom(m, aa, new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_as[j]), m), boundary1, level1));
+        for(let j = 0; j < xml_as.length; j++)aaDiv.appendChild(addAtom(m, aaDivID, aa, new (0, _moleculeJs.Atom)((0, _xmlJs.getAttributes)(xml_as[j]), m), boundary1, level1));
         aaDiv.appendChild(getAddAtomButton(m, aaDiv, (0, _moleculeJs.Atom).tagName, boundary1, level1));
         moleculeTagNames.delete((0, _moleculeJs.Atom).tagName);
         // Init bonds.
@@ -1338,14 +1363,14 @@ let sp_font = "2em SensSerif";
         for(let j = 0; j < xml_bs.length; j++){
             // Load those bonds that have an id attribute first.
             let b_attributes = (0, _xmlJs.getAttributes)(xml_bs[j]);
-            if (b_attributes.has((0, _moleculeJs.Bond).s_id)) baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bs[j]), m), boundary1, level1));
+            if (b_attributes.has((0, _moleculeJs.Bond).s_id)) baDiv.appendChild(addBond(m, baDivID, m.getAtoms().atoms, ba, new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bs[j]), m), boundary1, level1));
         }
         // Load those bonds that do not have an id attribute.
         for(let j = 0; j < xml_bs.length; j++){
             let b_attributes = (0, _xmlJs.getAttributes)(xml_bs[j]);
-            if (!b_attributes.has((0, _moleculeJs.Bond).s_id)) baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bs[j]), m), boundary1, level1));
+            if (!b_attributes.has((0, _moleculeJs.Bond).s_id)) baDiv.appendChild(addBond(m, baDivID, m.getAtoms().atoms, ba, new (0, _moleculeJs.Bond)((0, _xmlJs.getAttributes)(xml_bs[j]), m), boundary1, level1));
         }
-        baDiv.appendChild(getAddBondButton(m, mID, baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
+        baDiv.appendChild(getAddBondButton(m, baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
         moleculeTagNames.delete((0, _moleculeJs.Bond).tagName);
         // Add a viewer for the molecule.
         // Create collapsible viewer HTMLDivElement.
@@ -1378,31 +1403,40 @@ let sp_font = "2em SensSerif";
             let p = createProperty(pap, pl, xml_ps[j], plDiv, m, boundary1, level1);
             pl.setProperty(p);
         }
+        /* This code is currently commented out as it is not wanted yet. The idea is that  
+        properties would be selectable a bit like controls, and all those not loaded in a 
+        file would be deselected and selectable. As there could be additional properties 
+        in future or that are not known about, some way of adding these will likely also be 
+        wanted...
         // Add Properties not in xml_ps.
         console.log("Molecule " + m.getDescription());
         console.log("pap.size=" + pap.size);
-        pap.forEach(function(dictRef) {
+        pap.forEach(function (dictRef) {
             console.log("dictRef=" + dictRef);
-            let attributes = new Map();
-            attributes.set((0, _moleculeJs.Property).s_dictRef, dictRef);
+            let attributes: Map<string, string> = new Map();
+            attributes.set(Property.s_dictRef, dictRef);
             if (dictRef == "me:Hf0") {
-                let vs = "";
-                if (defaults != undefined) vs = defaults.values.get(dictRef) ?? "";
-                let value;
-                try {
-                    value = new (0, _bigJsDefault.default)(vs);
-                } catch (e) {
-                    value = new (0, _bigJsDefault.default)("0");
+                let vs: string = "";
+                if (defaults != undefined) {
+                    vs = defaults.values.get(dictRef) ?? "";
                 }
-                let s_attributes = new Map();
+                let value: Big;
+                try {
+                    value = new Big(vs);
+                } catch (e) {
+                    value = new Big("0");
+                }
+                let s_attributes: Map<string, string> = new Map();
                 s_attributes.set("units", "kJ/mol");
-                let ps = new (0, _moleculeJs.PropertyScalarNumber)(s_attributes, value);
-                let p = new (0, _moleculeJs.Hf0)(attributes, ps);
-                let iDs = new Set();
+                let ps: PropertyScalarNumber = new PropertyScalarNumber(s_attributes, value);
+                let p: Property = new Hf0(attributes, ps);
+
+                let iDs: Set<string> = new Set();
+
                 //attributes.set(Hf0.s_units, "kJ/mol");
-                addPropertyScalarNumber(s_attributes, iDs, value, (0, _mesmerJs.Mesmer).energyUnits, pl, p, plDiv, boundary1);
+                addPropertyScalarNumber(s_attributes, iDs, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
                 pl.setProperty(p);
-            /*
+                
                 } else if (dictRef == "me:ZPE") {
                     let value: Big = new Big("0");
                     let ps: PropertyScalar = new PropertyScalar(new Map(), value);
@@ -1413,9 +1447,10 @@ let sp_font = "2em SensSerif";
                     addPropertyScalar(attributes, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
  
                     pl.setProperty(p);
-                */ }
+                
+            }
         });
-        // Organise EnergyTransferModel.
+        */ // Organise EnergyTransferModel.
         let xml_etms = xml_ms[i].getElementsByTagName((0, _moleculeJs.EnergyTransferModel).tagName);
         if (xml_etms.length > 0) {
             if (xml_etms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.EnergyTransferModel).tagName + " but finding " + xml_etms.length + "!");
@@ -1428,7 +1463,7 @@ let sp_font = "2em SensSerif";
         if (xml_dms.length > 0) {
             if (xml_dms.length > 1) throw new Error("Expecting 1 or 0 " + (0, _moleculeJs.DOSCMethod).tagName + " but finding " + xml_dms.length + "!");
             let doscm = new (0, _moleculeJs.DOSCMethod)((0, _xmlJs.getAttributes)(xml_dms[0]));
-            mDiv.appendChild((0, _htmlJs.createLabelWithSelect)((0, _moleculeJs.DOSCMethod).tagName, (0, _moleculeJs.DOSCMethod).xsi_typeOptions, (0, _moleculeJs.DOSCMethod).tagName, doscm.getXsiType(), m.getID(), boundary1, level1));
+            mDiv.appendChild((0, _htmlJs.createLabelWithSelect)((0, _moleculeJs.DOSCMethod).tagName, (0, _moleculeJs.DOSCMethod).xsi_typeOptions, (0, _moleculeJs.DOSCMethod).tagName, doscm.getXsiType(), addRID(mDivID, (0, _moleculeJs.DOSCMethod).tagName), boundary1, level1));
             moleculeTagNames.delete((0, _moleculeJs.DOSCMethod).tagName);
         }
         // Organise DistributionCalcMethod. (Output only)
@@ -1514,7 +1549,7 @@ let sp_font = "2em SensSerif";
                     (0, _htmlJs.addTableRow)(t, dos.toStringArray());
                 //console.log("dos: " + dos.toString());
                 }
-                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, mID + "_" + (0, _moleculeJs.DensityOfStatesList).tagName, level1);
+                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, m.getLabel() + "_" + (0, _moleculeJs.DensityOfStatesList).tagName, level1);
             }
             moleculeTagNames.delete((0, _moleculeJs.DensityOfStatesList).tagName);
         }
@@ -1545,7 +1580,7 @@ let sp_font = "2em SensSerif";
                 // Append the table to the div.
                 ttDiv.appendChild(t);
                 tt.init(tvs);
-                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, mID + "_" + (0, _moleculeJs.ThermoTable).tagName, level1);
+                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, m.getLabel() + "_" + (0, _moleculeJs.ThermoTable).tagName, level1);
             }
             m.setThermoTable(tt);
             moleculeTagNames.delete(tvtn);
@@ -1566,7 +1601,7 @@ let sp_font = "2em SensSerif";
                 if (xml_brs.length != 1) throw new Error("Expecting only 1 bondRef, but there are " + xml_brs.length);
                 let bids = m.getBonds().getBondIds();
                 let br = new (0, _moleculeJs.BondRef)((0, _xmlJs.getAttributes)(xml_brs[0]), (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_brs[0])));
-                let lws = (0, _htmlJs.createLabelWithSelect)((0, _moleculeJs.BondRef).tagName, bids, (0, _moleculeJs.BondRef).tagName, br.value, m.getID(), boundary1, level1);
+                let lws = (0, _htmlJs.createLabelWithSelect)((0, _moleculeJs.BondRef).tagName, bids, (0, _moleculeJs.BondRef).tagName, br.value, addRID(edmDivID, (0, _moleculeJs.BondRef).tagName), boundary1, level1);
                 let select = lws.getElementsByTagName("select")[0];
                 select.classList.add((0, _moleculeJs.Bond).tagName);
                 edmDiv.appendChild(lws);
@@ -1699,7 +1734,7 @@ let sp_font = "2em SensSerif";
             let reservoirSizeAttributes = (0, _xmlJs.getAttributes)(xml_ReservoirSize[0]);
             let reservoirSize = new (0, _moleculeJs.ReservoirSize)(reservoirSizeAttributes, value);
             m.setReservoirSize(reservoirSize);
-            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", m.getID() + "_" + (0, _moleculeJs.ReservoirSize).tagName, boundary1, level1, (event)=>{
+            let inputDiv = (0, _htmlJs.createLabelWithInput)("number", m.getLabel() + "_" + (0, _moleculeJs.ReservoirSize).tagName, boundary1, level1, (event)=>{
                 let target = event.target;
                 reservoirSize.value = new (0, _bigJsDefault.default)(target.value);
                 (0, _htmlJs.resizeInputElement)(target);
@@ -1719,23 +1754,24 @@ let sp_font = "2em SensSerif";
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener("click", ()=>{
         // Ask the user to specify the molecule ID.
-        let moleculeId = prompt("Please enter a name for the molecule", "Kr");
-        if (moleculeId == null) return;
-        let molecule = new (0, _moleculeJs.Molecule)(new Map(), moleculeId);
+        let mid = prompt("Please enter a name for the molecule", "Kr");
+        if (mid == null) mid = "";
+        let id = molecules.size;
+        let molecule = new (0, _moleculeJs.Molecule)(new Map(), id);
         molecule.setAtoms(new (0, _moleculeJs.AtomArray)(new Map()));
         molecule.setBonds(new (0, _moleculeJs.BondArray)(new Map()));
-        molecules.set(moleculeId, molecule);
-        let moleculeDivID = addRID((0, _moleculeJs.Molecule).tagName, molecules.size);
+        molecules.set(molecules.size, molecule);
+        let moleculeDivID = addRID((0, _moleculeJs.Molecule).tagName, id);
         let moleculeDiv = (0, _htmlJs.createDiv)(moleculeDivID);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = addRID(moleculeDivID, s_container);
-        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, moleculeId, boundary1, level1);
+        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, mid + " " + id, boundary1, level1);
         // Add the molecule to the BathGas select elements.
-        addOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getID());
+        addOptionByClassName((0, _conditionsJs.BathGas).tagName, mid + " " + id);
         // Add edit Name button.
         addEditIDButton(molecule, mcDiv.querySelector((0, _htmlJs.s_button)), moleculeDiv, level1);
         // Description
-        moleculeDiv.appendChild(processDescription(addRID(molecule.getID(), s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
+        moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
         // Create collapsible AtomArray HTMLDivElement.
         let aaDivID = addRID(moleculeDivID, (0, _moleculeJs.AtomArray).tagName);
         let aaDiv = (0, _htmlJs.createDiv)(aaDivID);
@@ -1747,7 +1783,7 @@ let sp_font = "2em SensSerif";
         let baDiv = (0, _htmlJs.createDiv)(baDivID);
         let bacDivID = addRID(baDivID, s_container);
         let bacDiv = (0, _htmlJs.getCollapsibleDiv)(bacDivID, moleculeDiv, null, baDiv, (0, _moleculeJs.BondArray).tagName, boundary1, level1);
-        baDiv.appendChild(getAddBondButton(molecule, moleculeId, baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
+        baDiv.appendChild(getAddBondButton(molecule, baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
         create3DViewer(molecule, moleculeDiv, boundary1, level1);
         // Create collapsible Properties HTMLDivElement.
         let plDivID = addRID(moleculeDivID, (0, _moleculeJs.PropertyList).tagName);
@@ -1765,7 +1801,7 @@ let sp_font = "2em SensSerif";
         let selectDivID = (0, _utilJs.getID)((0, _moleculeJs.Molecule).tagName, "div");
         remove(selectDivID);
         let selectDiv = (0, _htmlJs.createDiv)(addRID(selectDivID), level1);
-        let options = Array.from(libmols.keys());
+        let options = Array.from(getMoleculeKeys(libmols));
         if (options.length == 0) {
             alert("There are no additional molecules to add, please load data...");
             return;
@@ -1783,20 +1819,20 @@ let sp_font = "2em SensSerif";
             let target = event.target;
             let selectedOption = target.options[target.selectedIndex];
             let mID = selectedOption.value;
-            let molecule = libmols.get(mID);
-            molecules.set(mID, molecule);
+            let molecule = libmols.get(parseInt(mID.split("-")[1]));
+            molecules.set(molecules.size, molecule);
             // Add molecule to the MoleculeList.
             let moleculeDivID = addRID((0, _moleculeJs.Molecule).tagName, molecules.size);
             let moleculeDiv = (0, _htmlJs.createDiv)(moleculeDivID);
             // Create collapsible Molecule HTMLDivElement.
             let mcDivID = addRID(moleculeDivID, s_container);
-            let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, molecule.getID(), boundary1, level1);
+            let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, molecule.getLabel(), boundary1, level1);
             // Add the molecule to the BathGas select elements.
-            addOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getID());
+            addOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getLabel());
             // Add edit Name button.
             addEditIDButton(molecule, mcDiv.querySelector((0, _htmlJs.s_button)), moleculeDiv, level1);
             // Description
-            moleculeDiv.appendChild(processDescription(addRID(molecule.getID(), s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
+            moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
             // Create collapsible MetadataList HTMLDivElement.
             let mlistDivID = addRID(moleculeDivID, (0, _metadataJs.MetadataList).tagName);
             let mlistDiv = (0, _htmlJs.createDiv)(mlistDivID, level1);
@@ -1817,7 +1853,7 @@ let sp_font = "2em SensSerif";
             // Add atoms.
             let aa = molecule.getAtoms();
             if (aa != undefined) aa.atoms.forEach((a)=>{
-                aaDiv.appendChild(addAtom(molecule, molecule.getAtoms(), a, boundary1, level1));
+                aaDiv.appendChild(addAtom(molecule, aaDivID, molecule.getAtoms(), a, boundary1, level1));
             });
             aaDiv.appendChild(getAddAtomButton(molecule, aaDiv, (0, _moleculeJs.Atom).tagName, boundary1, level1));
             // Create collapsible BondArray HTMLDivElement.
@@ -1828,10 +1864,10 @@ let sp_font = "2em SensSerif";
             // Add bonds.
             let ba = molecule.getBonds();
             if (ba != undefined) molecule.getBonds().bonds.forEach((b)=>{
-                if (aa == undefined) throw new Error("Atoms are not defined for molecule " + molecule.getID());
-                baDiv.appendChild(addBond(molecule, aa.atoms, molecule.getBonds(), b, boundary1, level1));
+                if (aa == undefined) throw new Error("Atoms are not defined for molecule " + molecule.getLabel());
+                baDiv.appendChild(addBond(molecule, baDivID, aa.atoms, molecule.getBonds(), b, boundary1, level1));
             });
-            baDiv.appendChild(getAddBondButton(molecule, molecule.getID(), baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
+            baDiv.appendChild(getAddBondButton(molecule, baDiv, (0, _moleculeJs.Bond).tagName, boundary1, level1));
             create3DViewer(molecule, moleculeDiv, boundary1, level1);
             // Create collapsible Properties HTMLDivElement.
             let plDivID = addRID(moleculeDivID, (0, _moleculeJs.PropertyList).tagName);
@@ -1857,19 +1893,15 @@ let sp_font = "2em SensSerif";
     let editNameButton = (0, _htmlJs.createButton)(s_editName, editNameButtonID, level);
     moleculeDiv.appendChild(editNameButton);
     editNameButton.addEventListener("click", ()=>{
-        let newMoleculeId = prompt("Please enter a name for the molecule:", molecule.getID());
-        if (newMoleculeId != null) {
-            let mid = addRID(newMoleculeId) // This ensures that all special chars are handled.
-            ;
+        let newMoleculeId = prompt("Please enter a name for the molecule:", molecule.getLabel());
+        if (newMoleculeId == null) {
+            newMoleculeId = "";
             // Update the BathGas select elements.
-            addOptionByClassName((0, _conditionsJs.BathGas).tagName, mid);
-            let omid = molecule.getID();
-            removeOptionByClassName((0, _conditionsJs.BathGas).tagName, omid);
-            molecules.set(mid, molecule);
-            molecules.delete(molecule.getID());
-            molecule.setID(mid);
-            moleculeDiv.id = mid;
-            button.textContent = newMoleculeId + " " + (0, _htmlJs.sy_upTriangle);
+            removeOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getLabel());
+            molecule.setID(newMoleculeId);
+            let moleculeLabel = molecule.getLabel();
+            addOptionByClassName((0, _conditionsJs.BathGas).tagName, moleculeLabel);
+            button.textContent = moleculeLabel + " " + (0, _htmlJs.sy_upTriangle);
         }
     //}
     });
@@ -1950,19 +1982,19 @@ let sp_font = "2em SensSerif";
  * @returns The add bond button.
  */ function getAddAtomButton(molecule, aaDiv, typeID, boundary, level) {
     // Create an add atom button.
-    let button = (0, _htmlJs.createButton)(s_Add_sy_add, addRID(molecule.getID(), "Add" + typeID + "Button"), level);
+    let button = (0, _htmlJs.createButton)(s_Add_sy_add, addRID(aaDiv.id, "Add" + typeID + "Button"), level);
     button.addEventListener("click", ()=>{
         let attributes = new Map();
         let a = new (0, _moleculeJs.Atom)(attributes, molecule);
         //let aID: string = molecule.getAtoms().addAtom(a);
-        aaDiv.insertBefore(addAtom(molecule, molecule.getAtoms(), a, boundary, level), button);
+        aaDiv.insertBefore(addAtom(molecule, aaDiv.id, molecule.getAtoms(), a, boundary, level), button);
     });
     return button;
 }
 function addMetadata(m, md, ml, mdDivID, boundary, level) {
     ml.addMetadata(md);
     let mdDiv = (0, _htmlJs.createFlexDiv)(mdDivID, level1);
-    mdDiv.appendChild((0, _htmlJs.createLabel)(m.getID(), boundary1));
+    mdDiv.appendChild((0, _htmlJs.createLabel)(m.getLabel(), boundary1));
     return mdDiv;
 }
 /**
@@ -1973,9 +2005,9 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param boundary The margin for components.
  * @param level The margin for the div.
  * @returns A new div for the atom.
- */ function addAtom(molecule, aa, a, boundary, level) {
+ */ function addAtom(molecule, aaDivID, aa, a, boundary, level) {
     let aID = aa.addAtom(a, a.getID());
-    let aDivID = addRID(molecule.getID(), aID);
+    let aDivID = addRID(aaDivID, aID);
     let aDiv = (0, _htmlJs.createFlexDiv)(aDivID, level);
     aDiv.appendChild((0, _htmlJs.createLabel)(aID, boundary));
     let aIDs = new Set();
@@ -1991,14 +2023,14 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
 /**
  * Remove an atom from the AtomArray.
  * @param molecule The molecule.
- * @param id The atom id to remove.
- */ function removeAtom(molecule, id, aIDs) {
-    molecule.getAtoms().removeAtom(id);
+ * @param aID The atom id to remove.
+ */ function removeAtom(molecule, aID, aIDs) {
+    molecule.getAtoms().removeAtom(aID);
     aIDs.forEach((x)=>{
         console.log("Removing " + x);
         remove(x);
     });
-    removeOptionByClassName((0, _moleculeJs.Bond).s_atomRefs2, id);
+    removeOptionByClassName((0, _moleculeJs.Bond).s_atomRefs2, aID);
     molecule.getBonds().bonds.forEach((bond)=>{
         let atomRefs2 = bond.getAtomRefs2();
         let atomRefs = atomRefs2.split(" ");
@@ -2007,19 +2039,12 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
             //console.log("Removing bond " + bondId + " as it references atom " + id);
             molecule.getBonds().removeBond(bondId);
             removeOptionByClassName((0, _moleculeJs.Bond).tagName, bondId);
-            // remove the bondDiv elements.
-            let bID = (0, _utilJs.getID)(molecule.getID(), bondId);
+            // remove the bondDiv element.
+            let bID = (0, _utilJs.getID)((0, _moleculeJs.Molecule).tagName, molecule.id, (0, _moleculeJs.BondArray).tagName, bondId);
             let bondDiv = document.getElementById(bID);
             if (bondDiv == null) throw new Error("Bond div with id " + bID + " not found.");
             else bondDiv.remove();
-        /*
-            // Remove any bondDiv elements with a reference to id.
-            let bondDivs: HTMLCollectionOf<Element> = document.getElementsByClassName(atomRefs[0]);
-            console.log("bondDivs.length=" + bondDivs.length);
-            for (let i = 0; i < bondDivs.length; i++) {
-                bondDivs[i].remove();
-            }
-            */ }
+        }
     });
 }
 /**
@@ -2070,7 +2095,7 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param boundary The margin for components.
  * @param level The margin for the div.
  * @returns The add bond button.
- */ function getAddBondButton(molecule, moleculeId, baDiv, typeID, boundary, level) {
+ */ function getAddBondButton(molecule, baDiv, typeID, boundary, level) {
     // Create an add button.
     let id = addRID(baDiv.id, typeID, (0, _htmlJs.s_button));
     let button = (0, _htmlJs.createButton)(s_Add_sy_add, id, level);
@@ -2084,7 +2109,7 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
         let atomRefs2 = Array.from(atoms.keys()).slice(0, 2).join(" ");
         attributes.set((0, _moleculeJs.Bond).s_atomRefs2, atomRefs2);
         let b = new (0, _moleculeJs.Bond)(attributes, molecule);
-        baDiv.insertBefore(addBond(molecule, atoms, molecule.getBonds(), b, boundary, level), button);
+        baDiv.insertBefore(addBond(molecule, baDiv.id, atoms, molecule.getBonds(), b, boundary, level), button);
     });
     baDiv.appendChild(button);
     return button;
@@ -2097,10 +2122,9 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param boundary The margin for components.
  * @param level The margin for the div.
  * @returns The a new div for the bond.
- */ function addBond(molecule, atoms, ba, b, boundary, level) {
+ */ function addBond(molecule, baDivID, atoms, ba, b, boundary, level) {
     let bID = ba.addBond(b, b.getID());
-    let bDivID = (0, _utilJs.getID)(molecule.getID(), bID);
-    //let bDivID: string = addRID(molecule.getID(), bID);
+    let bDivID = (0, _utilJs.getID)(baDivID, bID);
     let bDiv = (0, _htmlJs.createFlexDiv)(bDivID, level);
     bDiv.appendChild((0, _htmlJs.createLabel)(bID, boundary));
     // atomRefs2.
@@ -2191,7 +2215,6 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
     let ps = p.getProperty();
     ps.setValue = (function(value) {
         ps.value = value;
-        //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
         if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
         redrawReactionsDiagram();
     }).bind(ps);
@@ -2643,10 +2666,10 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
  */ function create3DViewer(molecule, moleculeDiv, boundary, level) {
     // Add a 3Dmol.js viewer.
     // Create a new div for the viewer.
-    let viewerContainerDivID = addRID(molecule.getID(), "viewerContainer");
+    let viewerContainerDivID = addRID(moleculeDiv.id, "viewerContainer");
     let viewerContainerDiv = (0, _htmlJs.createDiv)(viewerContainerDivID, level);
     moleculeDiv.appendChild(viewerContainerDiv);
-    let viewerDivID = addRID(molecule.getID(), "viewer");
+    let viewerDivID = addRID(moleculeDiv.id, "viewer");
     let showAtomLabels = false;
     let showBondLabels = false;
     // Create the GLViewer viewer.
@@ -2785,14 +2808,14 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
     }
     // Atom Labels.
     let s_Atom_Labels = "Atom Labels";
-    let atomLabelbutton = createLabelButton(s_Atom_Labels, addRID(molecule.getID(), s_Atom_Labels), showAtomLabels, (newState)=>showAtomLabels = newState);
+    let atomLabelbutton = createLabelButton(s_Atom_Labels, addRID(viewerDivID, s_Atom_Labels), showAtomLabels, (newState)=>showAtomLabels = newState);
     viewerContainerDiv.appendChild(atomLabelbutton);
     // Bond Labels.
     let s_Bond_Labels = "Bond Labels";
-    let bondLabelbutton = createLabelButton(s_Bond_Labels, addRID(molecule.getID(), s_Bond_Labels), showBondLabels, (newState)=>showBondLabels = newState);
+    let bondLabelbutton = createLabelButton(s_Bond_Labels, addRID(viewerDivID, s_Bond_Labels), showBondLabels, (newState)=>showBondLabels = newState);
     viewerContainerDiv.appendChild(bondLabelbutton);
     // Add a save button to save the viewer as an image.
-    let saveButton = (0, _htmlJs.createButton)("Save as PNG", addRID(molecule.getID(), s_save), boundary1);
+    let saveButton = (0, _htmlJs.createButton)("Save as PNG", addRID(viewerDivID, s_save), boundary1);
     saveButton.addEventListener("click", ()=>{
         //viewer.pngURI({ backgroundColor: 'white', download: true });
         let canvas = viewer.pngURI();
@@ -2847,7 +2870,6 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
         p.setProperty(ps);
         ps.setValue = (function(value) {
             ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
             if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
             redrawReactionsDiagram();
         }).bind(ps);
@@ -2894,7 +2916,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
                     pm = p.getProperty();
                     values = (0, _utilJs.toNumberArray)(inputString.split(/\s+/));
                     pm.values = values;
-                    console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + inputString);
+                    console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + inputString);
                     //resizeInputElement(inputElement);
                     (0, _htmlJs.resizeTextAreaElement)(ta);
                 });
@@ -2928,7 +2950,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
         p.setProperty(ps);
         ps.setValue = (function(value) {
             ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
+            //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
             if (p.dictRef == (0, _moleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
             redrawReactionsDiagram();
         }).bind(ps);
@@ -2993,7 +3015,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
     let xml_deltaEDowns = element.getElementsByTagName((0, _moleculeJs.DeltaEDown).tagName);
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
-        let etmdivID = addRID(molecule.getID(), (0, _moleculeJs.EnergyTransferModel).tagName);
+        let etmdivID = addRID(moleculeDiv.id, (0, _moleculeJs.EnergyTransferModel).tagName);
         let etmDiv = document.createElement("div");
         let etmcDivID = addRID(etmdivID, s_container);
         let etmcDiv = (0, _htmlJs.getCollapsibleDiv)(etmcDivID, moleculeDiv, null, etmDiv, (0, _moleculeJs.EnergyTransferModel).tagName, boundary1, level1);
@@ -3507,7 +3529,7 @@ function setNumberNode(node, input) {
         let bathGasIndex = conditions.addBathGas(bathGas);
         let div = (0, _htmlJs.createFlexDiv)(undefined, level1);
         let id = conditionsIDs.addID(cDiv.id, (0, _conditionsJs.BathGas).tagName, bathGasIndex.toString());
-        let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, true, id);
+        let select = createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), bathGas, true, id);
         select.classList.add((0, _conditionsJs.BathGas).tagName);
         div.appendChild(select);
         addRemoveButton(div, boundary1, (bathGas)=>{
@@ -3527,7 +3549,7 @@ function setNumberNode(node, input) {
             let bathGasIndex = conditions.addBathGas(bathGas);
             let id = conditionsIDs.addID(cDiv.id, (0, _conditionsJs.BathGas).tagName, bathGasIndex.toString());
             let div = (0, _htmlJs.createFlexDiv)(id, level1);
-            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, false, id));
+            div.appendChild(createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), bathGas, false, id));
             addRemoveButton(div, boundary1, (bathGas)=>{
                 bsDiv.removeChild(div);
                 conditionsIDs.removeID(id);
@@ -3538,7 +3560,7 @@ function setNumberNode(node, input) {
         else {
             let div = (0, _htmlJs.createFlexDiv)(undefined, level1);
             let id = conditionsIDs.addID(cDiv.id, (0, _conditionsJs.BathGas).tagName, 0);
-            div.appendChild(createSelectElementBathGas(Array.from(new Set(molecules.keys())), undefined, false, id));
+            div.appendChild(createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), undefined, false, id));
             addRemoveButton(div, boundary1, (bathGas)=>{
                 bsDiv.removeChild(div);
                 conditionsIDs.removeID(id);
@@ -3557,7 +3579,7 @@ function setNumberNode(node, input) {
  * @param nextLevel 
  */ function handlePTs(conditions, cDiv, xml_conditions) {
     // PTs
-    let moleculeKeys = new Set(molecules.keys());
+    let moleculeKeys = getMoleculeKeys(molecules);
     // Create collapsible div.
     let pTsDivId = conditionsIDs.addID(cDiv.id, (0, _conditionsJs.PTs).tagName);
     let pTsDiv = (0, _htmlJs.createDiv)(pTsDivId);
@@ -4113,7 +4135,7 @@ function getValue(getter) {
  */ function createBathGasSelectElement(id, pTpair, bathGas, first) {
     //console.log("createBathGasSelectElement");
     //console.log("pTpair " + pTpair.toString());
-    let select = createSelectElementBathGas(Array.from(new Set(molecules.keys())), bathGas, first, id);
+    let select = createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), bathGas, first, id);
     //select.id = id;
     select.addEventListener("change", (event)=>{
         let target = event.target;
@@ -5989,7 +6011,7 @@ function handleEvent(element, tagName) {
             if (reactantsLabel != undefined) {
                 reactants.push(reactantsLabel);
                 if (products.has(reactantsLabel)) intProducts.add(reactantsLabel);
-                let energy = reaction.getReactantsEnergy(molecules);
+                let energy = reaction.getReactantsEnergy(getMolecule);
                 energyMin = (0, _utilJs.min)(energyMin, energy);
                 energyMax = (0, _utilJs.max)(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -6001,7 +6023,7 @@ function handleEvent(element, tagName) {
             let productsLabel = reaction.getProductsLabel();
             if (productsLabel != undefined) {
                 products.add(productsLabel);
-                let energy = reaction.getProductsEnergy(molecules);
+                let energy = reaction.getProductsEnergy(getMolecule);
                 energyMin = (0, _utilJs.min)(energyMin, energy);
                 energyMax = (0, _utilJs.max)(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -6018,7 +6040,7 @@ function handleEvent(element, tagName) {
                             let ref = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
-                            energy = molecules.get(ref)?.getEnergy() ?? big0;
+                            energy = getMolecule(ref)?.getEnergy() ?? big0;
                             energyMin = (0, _utilJs.min)(energyMin, energy);
                             energyMax = (0, _utilJs.max)(energyMax, energy);
                             energies.set(ref, energy);
@@ -6032,7 +6054,7 @@ function handleEvent(element, tagName) {
                         let ref = ts.getMolecule().getRef();
                         transitionStates.add(ref);
                         orders.set(ref, i);
-                        energy = molecules.get(ref)?.getEnergy() ?? big0;
+                        energy = getMolecule(ref)?.getEnergy() ?? big0;
                         energyMin = (0, _utilJs.min)(energyMin, energy);
                         energyMax = (0, _utilJs.max)(energyMax, energy);
                         energies.set(ref, energy);
@@ -10041,7 +10063,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethod, reservoirSize, tt){
         super(attributes, Molecule.tagName);
         this.index = new Map();
-        this.setID(id);
+        this.id = id;
         let i = 0;
         // MetadataList
         if (metadataList) {
@@ -10100,6 +10122,11 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @returns The id of the molecule.
+     */ getLabel() {
+        return this.getID() + " " + this.id.toString();
+    }
+    /**
+     * @returns The id of the molecule.
      */ getID() {
         return this.attributes.get(Molecule.s_id);
     }
@@ -10137,18 +10164,6 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param active The active status of the molecule.
      */ setActive(active) {
         this.attributes.set(Molecule.s_active, active.toString());
-    }
-    /**
-     * Get a label for the molecule which includes the is and any description and whether active.
-     * @returns A label for the molecule detailing the attributes of the XML element (including id, 
-     * and possibly including description and whether active).
-     */ getLabel() {
-        let label = this.getID();
-        let description = this.getDescription();
-        if (description != undefined) label += " (" + description + ")";
-        let active = this.getActive();
-        if (active) label += " (" + Molecule.s_active + ")";
-        return label;
     }
     /**
      * @returns The metadata list of the molecule.
@@ -16206,10 +16221,12 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
-     */ getReactantsEnergy(molecules) {
+     */ getReactantsEnergy(retrieveMolecule) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map((reactant)=>{
-            let molecule = molecules.get(reactant.getMolecule().getRef());
+            let ref = reactant.getMolecule().getRef();
+            console.log('ref="' + ref + '"');
+            let molecule = retrieveMolecule(reactant.getMolecule().getRef());
             if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJsDefault.default)(0));
@@ -16217,10 +16234,10 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Returns the total energy of all products.
      * @returns The total energy of all products.
-     */ getProductsEnergy(molecules) {
+     */ getProductsEnergy(retrieveMolecule) {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map((product)=>{
-            let molecule = molecules.get(product.getMolecule().getRef());
+            let molecule = retrieveMolecule(product.getMolecule().getRef());
             if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJsDefault.default)(0));
@@ -16634,8 +16651,9 @@ class LibraryMolecules {
                 if (ref == undefined) throw new Error("ref is undefined");
                 continue;
             }
-            let m = new (0, _molecule.Molecule)(attributes, mID);
-            molecules.set(mID, m);
+            let id = molecules.size;
+            let m = new (0, _molecule.Molecule)(attributes, id);
+            molecules.set(id, m);
             // Create a set of molecule tag names.
             let moleculeTagNames = new Set();
             //cns.forEach(function (cn) {
