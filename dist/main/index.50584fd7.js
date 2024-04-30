@@ -4302,9 +4302,9 @@ function createExperimentalEigenvalueDetails(id, pTpair) {
         let mp = addModelParameters((0, _xmlJs.getAttributes)(xml_mps[i]), i);
         processGrainSize(mp, xml_mps[i], mpDiv);
         //setGrainSize(mp, xml_mps[i], mpDiv);
-        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _controlJs.AutomaticallySetMaxEne), mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne);
-        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _modelParametersJs.EnergyAboveTheTopHill), mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill);
-        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _modelParametersJs.MaxTemperature), mp.setMaxTemperature, mp.removeMaxTemperature);
+        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _controlJs.AutomaticallySetMaxEne), mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));
+        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _modelParametersJs.EnergyAboveTheTopHill), mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill.bind(mp));
+        processModelParametersN(mp, xml_mps[i], mpDiv, (0, _modelParametersJs.MaxTemperature), mp.setMaxTemperature, mp.removeMaxTemperature.bind(mp));
         // Add a remove modelParameters button.
         let removeButton = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener("click", (event)=>{
@@ -5198,8 +5198,7 @@ function getDefaultGrainsize(tagName) {
     select.value = xsi_type;
     divCm.appendChild(select);
     // Add the details div.
-    let divCmDetails = (0, _htmlJs.createFlexDiv)(undefined, boundary1);
-    divCmDetails.id = divCmDetailsId;
+    let divCmDetails = (0, _htmlJs.createFlexDiv)(divCmDetailsId, boundary1);
     divCm.appendChild(divCmDetails);
     if (xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type || xsi_type == (0, _controlJs.CalcMethodSimpleCalc).xsi_type2) //console.log("CalcMethodSimpleCalc");
     cm = new (0, _controlJs.CalcMethodSimpleCalc)(attributes);
@@ -5318,27 +5317,27 @@ function getDefaultGrainsize(tagName) {
  * @param cm The CalcMethodFitting.
  */ function processCalcMethodFitting(divCmDetails, cm) {
     // FittingIterations.
-    let fittingIterations = cm.getFittingIterations() || new (0, _controlJs.FittingIterations)(new Map(), big0);
-    cm.setFittingIterations(fittingIterations);
-    divCmDetails.appendChild((0, _htmlJs.createLabelWithInput)("number", divCmDetails.id + "_FittingIterations_input", boundary1, level0, (event)=>{
+    let fi = cm.getFittingIterations() || new (0, _controlJs.FittingIterations)(new Map(), big0);
+    cm.setFittingIterations(fi);
+    divCmDetails.appendChild((0, _htmlJs.createLabelWithInput)("number", (0, _utilJs.getID)(divCmDetails.id, (0, _controlJs.FittingIterations).tagName, s_input), boundary1, level0, (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _utilJs.isNumeric)(target.value)) {
-            fittingIterations.value = new (0, _bigJsDefault.default)(target.value);
+            fi.value = new (0, _bigJsDefault.default)(target.value);
             console.log("Set FittingIterations to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
-            target.value = fittingIterations.value.toString();
+            target.value = fi.value.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
-    }, fittingIterations.value.toString(), (0, _controlJs.FittingIterations).tagName));
+    }, fi.value.toString(), (0, _controlJs.FittingIterations).tagName));
 }
 /**
  * @param divCmDetails The details div.
  * @param cm The CalcMethodMarquardt.
  */ function processCalcMethodMarquardt(divCmDetails, cm) {
     function createLabelWithInputForObject(obj, divCmDetails, boundary, level) {
-        let id = addRID(divCmDetails.id, obj.tagName, "Input");
+        let id = (0, _utilJs.getID)(divCmDetails.id, obj.tagName, s_input);
         let value = obj.value.toString();
         let labelTextContent = obj.tagName;
         let inputHandler = (event)=>{
@@ -5356,17 +5355,17 @@ function getDefaultGrainsize(tagName) {
         divCmDetails.appendChild((0, _htmlJs.createLabelWithInput)("number", id, boundary, level, inputHandler, value, labelTextContent));
     }
     // MarquardtIterations.
-    let marquardtIterations = cm.getMarquardtIterations() || new (0, _controlJs.MarquardtIterations)(new Map(), big0);
-    cm.setMarquardtIterations(marquardtIterations);
-    createLabelWithInputForObject(marquardtIterations, divCmDetails, boundary1, level0);
+    let mi = cm.getMarquardtIterations() || new (0, _controlJs.MarquardtIterations)(new Map(), big0);
+    cm.setMarquardtIterations(mi);
+    createLabelWithInputForObject(mi, divCmDetails, boundary1, level0);
     // MarquardtTolerance.
-    let marquardtTolerance = cm.getMarquardtTolerance() || new (0, _controlJs.MarquardtTolerance)(new Map(), big0);
-    cm.setMarquardtTolerance(marquardtTolerance);
-    createLabelWithInputForObject(marquardtTolerance, divCmDetails, boundary1, level0);
+    let mt = cm.getMarquardtTolerance() || new (0, _controlJs.MarquardtTolerance)(new Map(), big0);
+    cm.setMarquardtTolerance(mt);
+    createLabelWithInputForObject(mt, divCmDetails, boundary1, level0);
     // MarquardtDerivDelta.
-    let marquardtDerivDelta = cm.getMarquardtDerivDelta() || new (0, _controlJs.MarquardtDerivDelta)(new Map(), big0);
-    cm.setMarquardtDerivDelta(marquardtDerivDelta);
-    createLabelWithInputForObject(marquardtDerivDelta, divCmDetails, boundary1, level0);
+    let mdd = cm.getMarquardtDerivDelta() || new (0, _controlJs.MarquardtDerivDelta)(new Map(), big0);
+    cm.setMarquardtDerivDelta(mdd);
+    createLabelWithInputForObject(mdd, divCmDetails, boundary1, level0);
 }
 /**
  * @param divCmDetails The details div.

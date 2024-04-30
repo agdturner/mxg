@@ -4379,11 +4379,11 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         processGrainSize(mp, xml_mps[i], mpDiv);
         //setGrainSize(mp, xml_mps[i], mpDiv);
         processModelParametersN(mp, xml_mps[i], mpDiv, AutomaticallySetMaxEne,
-            mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne);
+            mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));    
         processModelParametersN(mp, xml_mps[i], mpDiv, EnergyAboveTheTopHill,
-            mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill);
+            mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill.bind(mp));
         processModelParametersN(mp, xml_mps[i], mpDiv, MaxTemperature,
-            mp.setMaxTemperature, mp.removeMaxTemperature);
+            mp.setMaxTemperature, mp.removeMaxTemperature.bind(mp));
         // Add a remove modelParameters button.
         let removeButton: HTMLButtonElement = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
@@ -5281,8 +5281,7 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
     select.value = xsi_type;
     divCm.appendChild(select);
     // Add the details div.
-    let divCmDetails: HTMLDivElement = createFlexDiv(undefined, boundary1);
-    divCmDetails.id = divCmDetailsId;
+    let divCmDetails: HTMLDivElement = createFlexDiv(divCmDetailsId, boundary1);
     divCm.appendChild(divCmDetails);
     if (xsi_type == CalcMethodSimpleCalc.xsi_type || xsi_type == CalcMethodSimpleCalc.xsi_type2) {
         //console.log("CalcMethodSimpleCalc");
@@ -5422,21 +5421,21 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
  */
 function processCalcMethodFitting(divCmDetails: HTMLDivElement, cm: CalcMethodFitting) {
     // FittingIterations.
-    let fittingIterations: MarquardtIterations = cm.getFittingIterations() || new FittingIterations(new Map(), big0);
-    cm.setFittingIterations(fittingIterations);
-    divCmDetails.appendChild(createLabelWithInput("number", divCmDetails.id + "_FittingIterations_input", boundary1, level0,
-        (event: Event) => {
+    let fi: MarquardtIterations = cm.getFittingIterations() || new FittingIterations(new Map(), big0);
+    cm.setFittingIterations(fi);
+    divCmDetails.appendChild(createLabelWithInput("number", getID(divCmDetails.id, FittingIterations.tagName, s_input),
+        boundary1, level0, (event: Event) => {
             let target = event.target as HTMLInputElement;
             // Check the value is a number.
             if (isNumeric(target.value)) {
-                fittingIterations.value = new Big(target.value);
+                fi.value = new Big(target.value);
                 console.log("Set FittingIterations to " + target.value);
             } else {
                 alert("Value is not numeric, resetting...");
-                target.value = fittingIterations.value.toString();
+                target.value = fi.value.toString();
             }
             resizeInputElement(target);
-        }, fittingIterations.value.toString(), FittingIterations.tagName));
+        }, fi.value.toString(), FittingIterations.tagName));
 }
 
 /**
@@ -5447,7 +5446,7 @@ function processCalcMethodMarquardt(divCmDetails: HTMLDivElement, cm: CalcMethod
     function createLabelWithInputForObject(obj: { value: Big, tagName: string }, divCmDetails: HTMLElement,
         boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
         level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-        let id = addRID(divCmDetails.id, obj.tagName, "Input");
+        let id = getID(divCmDetails.id, obj.tagName, s_input);
         let value = obj.value.toString();
         let labelTextContent = obj.tagName;
         let inputHandler = (event: Event) => {
@@ -5465,17 +5464,17 @@ function processCalcMethodMarquardt(divCmDetails: HTMLDivElement, cm: CalcMethod
         divCmDetails.appendChild(createLabelWithInput("number", id, boundary, level, inputHandler, value, labelTextContent));
     }
     // MarquardtIterations.
-    let marquardtIterations: MarquardtIterations = cm.getMarquardtIterations() || new MarquardtIterations(new Map(), big0);
-    cm.setMarquardtIterations(marquardtIterations);
-    createLabelWithInputForObject(marquardtIterations, divCmDetails, boundary1, level0);
+    let mi: MarquardtIterations = cm.getMarquardtIterations() || new MarquardtIterations(new Map(), big0);
+    cm.setMarquardtIterations(mi);
+    createLabelWithInputForObject(mi, divCmDetails, boundary1, level0);
     // MarquardtTolerance.
-    let marquardtTolerance: MarquardtTolerance = cm.getMarquardtTolerance() || new MarquardtTolerance(new Map(), big0);
-    cm.setMarquardtTolerance(marquardtTolerance);
-    createLabelWithInputForObject(marquardtTolerance, divCmDetails, boundary1, level0);
+    let mt: MarquardtTolerance = cm.getMarquardtTolerance() || new MarquardtTolerance(new Map(), big0);
+    cm.setMarquardtTolerance(mt);
+    createLabelWithInputForObject(mt, divCmDetails, boundary1, level0);
     // MarquardtDerivDelta.
-    let marquardtDerivDelta: MarquardtDerivDelta = cm.getMarquardtDerivDelta() || new MarquardtDerivDelta(new Map(), big0);
-    cm.setMarquardtDerivDelta(marquardtDerivDelta);
-    createLabelWithInputForObject(marquardtDerivDelta, divCmDetails, boundary1, level0);
+    let mdd: MarquardtDerivDelta = cm.getMarquardtDerivDelta() || new MarquardtDerivDelta(new Map(), big0);
+    cm.setMarquardtDerivDelta(mdd);
+    createLabelWithInputForObject(mdd, divCmDetails, boundary1, level0);
 }
 
 /**
