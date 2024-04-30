@@ -1593,17 +1593,16 @@ function addEditIDButton(molecule: Molecule, button: HTMLButtonElement, molecule
     let editNameButton: HTMLButtonElement = createButton(s_editName, editNameButtonID, level);
     moleculeDiv.appendChild(editNameButton);
     editNameButton.addEventListener('click', () => {
-        let newMoleculeId: string | null = prompt("Please enter a name for the molecule:", molecule.getLabel());
+        let newMoleculeId: string | null = prompt("Please edit the molecule ID:", molecule.getID());
         if (newMoleculeId == null) {
             newMoleculeId = "";
-            // Update the BathGas select elements.
-            removeOptionByClassName(BathGas.tagName, molecule.getLabel());
-            molecule.setID(newMoleculeId);
-            let moleculeLabel: string = molecule.getLabel();
-            addOptionByClassName(BathGas.tagName, moleculeLabel);
-            button.textContent = moleculeLabel + " " + sy_upTriangle;
         }
-        //}
+        // Update the BathGas select elements.
+        removeOptionByClassName(BathGas.tagName, molecule.getLabel());
+        molecule.setID(newMoleculeId);
+        let moleculeLabel: string = molecule.getLabel();
+        addOptionByClassName(BathGas.tagName, moleculeLabel);
+        button.textContent = moleculeLabel + " " + sy_upTriangle;
     });
 }
 

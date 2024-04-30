@@ -1893,17 +1893,14 @@ let sp_font = "2em SensSerif";
     let editNameButton = (0, _htmlJs.createButton)(s_editName, editNameButtonID, level);
     moleculeDiv.appendChild(editNameButton);
     editNameButton.addEventListener("click", ()=>{
-        let newMoleculeId = prompt("Please enter a name for the molecule:", molecule.getLabel());
-        if (newMoleculeId == null) {
-            newMoleculeId = "";
-            // Update the BathGas select elements.
-            removeOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getLabel());
-            molecule.setID(newMoleculeId);
-            let moleculeLabel = molecule.getLabel();
-            addOptionByClassName((0, _conditionsJs.BathGas).tagName, moleculeLabel);
-            button.textContent = moleculeLabel + " " + (0, _htmlJs.sy_upTriangle);
-        }
-    //}
+        let newMoleculeId = prompt("Please edit the molecule ID:", molecule.getID());
+        if (newMoleculeId == null) newMoleculeId = "";
+        // Update the BathGas select elements.
+        removeOptionByClassName((0, _conditionsJs.BathGas).tagName, molecule.getLabel());
+        molecule.setID(newMoleculeId);
+        let moleculeLabel = molecule.getLabel();
+        addOptionByClassName((0, _conditionsJs.BathGas).tagName, moleculeLabel);
+        button.textContent = moleculeLabel + " " + (0, _htmlJs.sy_upTriangle);
     });
 }
 /**
