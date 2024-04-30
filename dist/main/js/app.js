@@ -290,14 +290,26 @@ function getMoleculeKeys(molecules) {
  * @returns The first molecule with the id attribute value equal to id.
  */
 function getMolecule(id) {
+    for (let [key, molecule] of molecules) {
+        if (molecule.getID() == id) {
+            console.log("Found molecule with id " + id);
+            return molecule;
+        }
+    }
+    return null;
+}
+exports.getMolecule = getMolecule;
+/*
+export function getMolecule(id: string): Molecule | null {
     molecules.forEach((v, k) => {
         if (v.getID() == id) {
+            console.log("Found molecule with id " + id);
             return v;
         }
     });
     return null;
 }
-exports.getMolecule = getMolecule;
+*/
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
@@ -773,7 +785,7 @@ function processMoleculeList(xml) {
         molecules.set(i, m);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = addRID(mDivID, s_container);
-        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.getID(), boundary1, level1);
+        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.getLabel(), boundary1, level1);
         // Create a set of molecule tag names.
         let moleculeTagNames = new Set();
         let cns = xml_ms[i].childNodes;
@@ -797,7 +809,7 @@ function processMoleculeList(xml) {
         // Add edit Name button.
         addEditIDButton(m, mcDiv.querySelector(html_js_1.s_button), mDiv, level1);
         // Description
-        mDiv.appendChild(processDescription(addRID(m.getID(), s_description), m.getDescription.bind(m), m.setDescription.bind(m), boundary1, level1));
+        mDiv.appendChild(processDescription(addRID(mDivID, s_description), m.getDescription.bind(m), m.setDescription.bind(m), boundary1, level1));
         // Init metadataList.
         //console.log("Init metadataList.");
         let xml_mls = xml_ms[i].getElementsByTagName(metadata_js_1.MetadataList.tagName);
@@ -818,13 +830,6 @@ function processMoleculeList(xml) {
                 // Create a new Metadata.
                 let md = new metadata_js_1.Metadata((0, xml_js_1.getAttributes)(xml_ms[j]));
                 mlDiv.appendChild(addMetadata(m, md, ml, addRID(mlDivID, j), boundary1, level1));
-                /*
-                ml.addMetadata(md);
-                let mdDivID = addID(mlDivID, j);
-                let mdDiv = createFlexDiv(mdDivID, level1);
-                mlDiv.appendChild(mdDiv);
-                mdDiv.appendChild(createLabel(m.getID(), boundary1));
-                */
             }
             moleculeTagNames.delete(metadata_js_1.MetadataList.tagName);
         }
@@ -849,7 +854,7 @@ function processMoleculeList(xml) {
         }
         let xml_as = xml_ms[i].getElementsByTagName(molecule_js_1.Atom.tagName);
         for (let j = 0; j < xml_as.length; j++) {
-            aaDiv.appendChild(addAtom(m, aa, new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_as[j]), m), boundary1, level1));
+            aaDiv.appendChild(addAtom(m, aaDivID, aa, new molecule_js_1.Atom((0, xml_js_1.getAttributes)(xml_as[j]), m), boundary1, level1));
         }
         aaDiv.appendChild(getAddAtomButton(m, aaDiv, molecule_js_1.Atom.tagName, boundary1, level1));
         moleculeTagNames.delete(molecule_js_1.Atom.tagName);
@@ -876,14 +881,14 @@ function processMoleculeList(xml) {
             // Load those bonds that have an id attribute first.
             let b_attributes = (0, xml_js_1.getAttributes)(xml_bs[j]);
             if (b_attributes.has(molecule_js_1.Bond.s_id)) {
-                baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bs[j]), m), boundary1, level1));
+                baDiv.appendChild(addBond(m, baDivID, m.getAtoms().atoms, ba, new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bs[j]), m), boundary1, level1));
             }
         }
         // Load those bonds that do not have an id attribute.
         for (let j = 0; j < xml_bs.length; j++) {
             let b_attributes = (0, xml_js_1.getAttributes)(xml_bs[j]);
             if (!b_attributes.has(molecule_js_1.Bond.s_id)) {
-                baDiv.appendChild(addBond(m, m.getAtoms().atoms, ba, new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bs[j]), m), boundary1, level1));
+                baDiv.appendChild(addBond(m, baDivID, m.getAtoms().atoms, ba, new molecule_js_1.Bond((0, xml_js_1.getAttributes)(xml_bs[j]), m), boundary1, level1));
             }
         }
         baDiv.appendChild(getAddBondButton(m, baDiv, molecule_js_1.Bond.tagName, boundary1, level1));
@@ -986,7 +991,7 @@ function processMoleculeList(xml) {
                 throw new Error("Expecting 1 or 0 " + molecule_js_1.DOSCMethod.tagName + " but finding " + xml_dms.length + "!");
             }
             let doscm = new molecule_js_1.DOSCMethod((0, xml_js_1.getAttributes)(xml_dms[0]));
-            mDiv.appendChild((0, html_js_1.createLabelWithSelect)(molecule_js_1.DOSCMethod.tagName, molecule_js_1.DOSCMethod.xsi_typeOptions, molecule_js_1.DOSCMethod.tagName, doscm.getXsiType(), m.getID(), boundary1, level1));
+            mDiv.appendChild((0, html_js_1.createLabelWithSelect)(molecule_js_1.DOSCMethod.tagName, molecule_js_1.DOSCMethod.xsi_typeOptions, molecule_js_1.DOSCMethod.tagName, doscm.getXsiType(), addRID(mDivID, molecule_js_1.DOSCMethod.tagName), boundary1, level1));
             moleculeTagNames.delete(molecule_js_1.DOSCMethod.tagName);
         }
         // Organise DistributionCalcMethod. (Output only)
@@ -1088,7 +1093,7 @@ function processMoleculeList(xml) {
                     (0, html_js_1.addTableRow)(t, dos.toStringArray());
                     //console.log("dos: " + dos.toString());
                 }
-                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, m.getID() + "_" + molecule_js_1.DensityOfStatesList.tagName, level1);
+                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, m.getLabel() + "_" + molecule_js_1.DensityOfStatesList.tagName, level1);
             }
             moleculeTagNames.delete(molecule_js_1.DensityOfStatesList.tagName);
         }
@@ -1123,7 +1128,7 @@ function processMoleculeList(xml) {
                 // Append the table to the div.
                 ttDiv.appendChild(t);
                 tt.init(tvs);
-                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, m.getID() + "_" + molecule_js_1.ThermoTable.tagName, level1);
+                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, m.getLabel() + "_" + molecule_js_1.ThermoTable.tagName, level1);
             }
             m.setThermoTable(tt);
             moleculeTagNames.delete(tvtn);
@@ -1147,7 +1152,7 @@ function processMoleculeList(xml) {
                     }
                     let bids = m.getBonds().getBondIds();
                     let br = new molecule_js_1.BondRef((0, xml_js_1.getAttributes)(xml_brs[0]), (0, xml_js_1.getNodeValue)((0, xml_js_1.getFirstChildNode)(xml_brs[0])));
-                    let lws = (0, html_js_1.createLabelWithSelect)(molecule_js_1.BondRef.tagName, bids, molecule_js_1.BondRef.tagName, br.value, m.getID(), boundary1, level1);
+                    let lws = (0, html_js_1.createLabelWithSelect)(molecule_js_1.BondRef.tagName, bids, molecule_js_1.BondRef.tagName, br.value, addRID(edmDivID, molecule_js_1.BondRef.tagName), boundary1, level1);
                     let select = lws.getElementsByTagName("select")[0];
                     select.classList.add(molecule_js_1.Bond.tagName);
                     edmDiv.appendChild(lws);
@@ -1176,6 +1181,7 @@ function processMoleculeList(xml) {
                         let target = event.target;
                         // Check the input is a number.
                         try {
+                            console.log("Setting " + molecule_js_1.HinderedRotorPotential.s_expansionSize + " to " + target.value);
                             hrp.setExpansionSize(new big_js_1.default(target.value));
                         }
                         catch (e) {
@@ -1275,7 +1281,7 @@ function processMoleculeList(xml) {
                     }, valueString, molecule_js_1.Periodicity.tagName);
                     edmDiv.appendChild(lwi);
                 }
-                m.setExtraDOSCMethod(edm);
+                m.setExtraDOSCMethod(j, edm);
                 moleculeTagNames.delete(molecule_js_1.ExtraDOSCMethod.tagName);
             }
         }
@@ -1291,7 +1297,7 @@ function processMoleculeList(xml) {
             let reservoirSizeAttributes = (0, xml_js_1.getAttributes)(xml_ReservoirSize[0]);
             let reservoirSize = new molecule_js_1.ReservoirSize(reservoirSizeAttributes, value);
             m.setReservoirSize(reservoirSize);
-            let inputDiv = (0, html_js_1.createLabelWithInput)("number", m.getID() + "_" + molecule_js_1.ReservoirSize.tagName, boundary1, level1, (event) => {
+            let inputDiv = (0, html_js_1.createLabelWithInput)("number", m.getLabel() + "_" + molecule_js_1.ReservoirSize.tagName, boundary1, level1, (event) => {
                 let target = event.target;
                 reservoirSize.value = new big_js_1.default(target.value);
                 (0, html_js_1.resizeInputElement)(target);
@@ -1311,25 +1317,26 @@ function processMoleculeList(xml) {
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
         // Ask the user to specify the molecule ID.
-        let id = prompt("Please enter a name for the molecule", "Kr");
-        if (id == null) {
-            id = "";
+        let mid = prompt("Please enter a name for the molecule", "Kr");
+        if (mid == null) {
+            mid = "";
         }
-        let molecule = new molecule_js_1.Molecule(new Map(), molecules.size);
+        let id = molecules.size;
+        let molecule = new molecule_js_1.Molecule(new Map(), id);
         molecule.setAtoms(new molecule_js_1.AtomArray(new Map()));
         molecule.setBonds(new molecule_js_1.BondArray(new Map()));
         molecules.set(molecules.size, molecule);
-        let moleculeDivID = addRID(molecule_js_1.Molecule.tagName, molecules.size);
+        let moleculeDivID = addRID(molecule_js_1.Molecule.tagName, id);
         let moleculeDiv = (0, html_js_1.createDiv)(moleculeDivID);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = addRID(moleculeDivID, s_container);
-        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, id, boundary1, level1);
+        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, mid + " " + id, boundary1, level1);
         // Add the molecule to the BathGas select elements.
-        addOptionByClassName(conditions_js_1.BathGas.tagName, molecule.getID());
+        addOptionByClassName(conditions_js_1.BathGas.tagName, mid + " " + id);
         // Add edit Name button.
         addEditIDButton(molecule, mcDiv.querySelector(html_js_1.s_button), moleculeDiv, level1);
         // Description
-        moleculeDiv.appendChild(processDescription(addRID(molecule.getID(), s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
+        moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
         // Create collapsible AtomArray HTMLDivElement.
         let aaDivID = addRID(moleculeDivID, molecule_js_1.AtomArray.tagName);
         let aaDiv = (0, html_js_1.createDiv)(aaDivID);
@@ -1384,13 +1391,13 @@ function processMoleculeList(xml) {
             let moleculeDiv = (0, html_js_1.createDiv)(moleculeDivID);
             // Create collapsible Molecule HTMLDivElement.
             let mcDivID = addRID(moleculeDivID, s_container);
-            let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, molecule.getID(), boundary1, level1);
+            let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, addMoleculeButton, moleculeDiv, molecule.getLabel(), boundary1, level1);
             // Add the molecule to the BathGas select elements.
-            addOptionByClassName(conditions_js_1.BathGas.tagName, molecule.getID());
+            addOptionByClassName(conditions_js_1.BathGas.tagName, molecule.getLabel());
             // Add edit Name button.
             addEditIDButton(molecule, mcDiv.querySelector(html_js_1.s_button), moleculeDiv, level1);
             // Description
-            moleculeDiv.appendChild(processDescription(addRID(molecule.getID(), s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
+            moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), molecule.getDescription.bind(molecule), molecule.setDescription.bind(molecule), boundary1, level1));
             // Create collapsible MetadataList HTMLDivElement.
             let mlistDivID = addRID(moleculeDivID, metadata_js_1.MetadataList.tagName);
             let mlistDiv = (0, html_js_1.createDiv)(mlistDivID, level1);
@@ -1414,7 +1421,7 @@ function processMoleculeList(xml) {
             let aa = molecule.getAtoms();
             if (aa != undefined) {
                 aa.atoms.forEach((a) => {
-                    aaDiv.appendChild(addAtom(molecule, molecule.getAtoms(), a, boundary1, level1));
+                    aaDiv.appendChild(addAtom(molecule, aaDivID, molecule.getAtoms(), a, boundary1, level1));
                 });
             }
             aaDiv.appendChild(getAddAtomButton(molecule, aaDiv, molecule_js_1.Atom.tagName, boundary1, level1));
@@ -1428,9 +1435,9 @@ function processMoleculeList(xml) {
             if (ba != undefined) {
                 molecule.getBonds().bonds.forEach((b) => {
                     if (aa == undefined) {
-                        throw new Error("Atoms are not defined for molecule " + molecule.getID());
+                        throw new Error("Atoms are not defined for molecule " + molecule.getLabel());
                     }
-                    baDiv.appendChild(addBond(molecule, aa.atoms, molecule.getBonds(), b, boundary1, level1));
+                    baDiv.appendChild(addBond(molecule, baDivID, aa.atoms, molecule.getBonds(), b, boundary1, level1));
                 });
             }
             baDiv.appendChild(getAddBondButton(molecule, baDiv, molecule_js_1.Bond.tagName, boundary1, level1));
@@ -1460,17 +1467,16 @@ function addEditIDButton(molecule, button, moleculeDiv, level) {
     let editNameButton = (0, html_js_1.createButton)(s_editName, editNameButtonID, level);
     moleculeDiv.appendChild(editNameButton);
     editNameButton.addEventListener('click', () => {
-        let newMoleculeId = prompt("Please enter a name for the molecule:", molecule.getID());
-        if (newMoleculeId != null) {
-            let mid = (0, util_js_1.getID)(newMoleculeId, molecule.id);
-            // Update the BathGas select elements.
-            addOptionByClassName(conditions_js_1.BathGas.tagName, mid);
-            let omid = (0, util_js_1.getID)(molecule.getID(), molecule.id);
-            removeOptionByClassName(conditions_js_1.BathGas.tagName, omid);
-            molecule.setID(mid);
-            button.textContent = mid + " " + html_js_1.sy_upTriangle;
+        let newMoleculeId = prompt("Please edit the molecule ID:", molecule.getID());
+        if (newMoleculeId == null) {
+            newMoleculeId = "";
         }
-        //}
+        // Update the BathGas select elements.
+        removeOptionByClassName(conditions_js_1.BathGas.tagName, molecule.getLabel());
+        molecule.setID(newMoleculeId);
+        let moleculeLabel = molecule.getLabel();
+        addOptionByClassName(conditions_js_1.BathGas.tagName, moleculeLabel);
+        button.textContent = moleculeLabel + " " + html_js_1.sy_upTriangle;
     });
 }
 /**
@@ -1558,19 +1564,19 @@ function addDescription(div, id, value, setter, boundary) {
  */
 function getAddAtomButton(molecule, aaDiv, typeID, boundary, level) {
     // Create an add atom button.
-    let button = (0, html_js_1.createButton)(s_Add_sy_add, addRID(molecule.getID(), "Add" + typeID + "Button"), level);
+    let button = (0, html_js_1.createButton)(s_Add_sy_add, addRID(aaDiv.id, "Add" + typeID + "Button"), level);
     button.addEventListener('click', () => {
         let attributes = new Map();
         let a = new molecule_js_1.Atom(attributes, molecule);
         //let aID: string = molecule.getAtoms().addAtom(a);
-        aaDiv.insertBefore(addAtom(molecule, molecule.getAtoms(), a, boundary, level), button);
+        aaDiv.insertBefore(addAtom(molecule, aaDiv.id, molecule.getAtoms(), a, boundary, level), button);
     });
     return button;
 }
 function addMetadata(m, md, ml, mdDivID, boundary, level) {
     ml.addMetadata(md);
     let mdDiv = (0, html_js_1.createFlexDiv)(mdDivID, level1);
-    mdDiv.appendChild((0, html_js_1.createLabel)(m.getID(), boundary1));
+    mdDiv.appendChild((0, html_js_1.createLabel)(m.getLabel(), boundary1));
     return mdDiv;
 }
 /**
@@ -1582,9 +1588,9 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param level The margin for the div.
  * @returns A new div for the atom.
  */
-function addAtom(molecule, aa, a, boundary, level) {
+function addAtom(molecule, aaDivID, aa, a, boundary, level) {
     let aID = aa.addAtom(a, a.getID());
-    let aDivID = addRID(molecule.getID(), aID);
+    let aDivID = addRID(aaDivID, aID);
     let aDiv = (0, html_js_1.createFlexDiv)(aDivID, level);
     aDiv.appendChild((0, html_js_1.createLabel)(aID, boundary));
     let aIDs = new Set();
@@ -1600,15 +1606,15 @@ function addAtom(molecule, aa, a, boundary, level) {
 /**
  * Remove an atom from the AtomArray.
  * @param molecule The molecule.
- * @param id The atom id to remove.
+ * @param aID The atom id to remove.
  */
-function removeAtom(molecule, id, aIDs) {
-    molecule.getAtoms().removeAtom(id);
+function removeAtom(molecule, aID, aIDs) {
+    molecule.getAtoms().removeAtom(aID);
     aIDs.forEach((x) => {
         console.log("Removing " + x);
         remove(x);
     });
-    removeOptionByClassName(molecule_js_1.Bond.s_atomRefs2, id);
+    removeOptionByClassName(molecule_js_1.Bond.s_atomRefs2, aID);
     molecule.getBonds().bonds.forEach((bond) => {
         let atomRefs2 = bond.getAtomRefs2();
         let atomRefs = atomRefs2.split(" ");
@@ -1618,7 +1624,7 @@ function removeAtom(molecule, id, aIDs) {
             molecule.getBonds().removeBond(bondId);
             removeOptionByClassName(molecule_js_1.Bond.tagName, bondId);
             // remove the bondDiv element.
-            let bID = (0, util_js_1.getID)(molecule.getID(), bondId);
+            let bID = (0, util_js_1.getID)(molecule_js_1.Molecule.tagName, molecule.id, molecule_js_1.BondArray.tagName, bondId);
             let bondDiv = document.getElementById(bID);
             if (bondDiv == null) {
                 throw new Error("Bond div with id " + bID + " not found.");
@@ -1696,7 +1702,7 @@ function getAddBondButton(molecule, baDiv, typeID, boundary, level) {
         let atomRefs2 = Array.from(atoms.keys()).slice(0, 2).join(" ");
         attributes.set(molecule_js_1.Bond.s_atomRefs2, atomRefs2);
         let b = new molecule_js_1.Bond(attributes, molecule);
-        baDiv.insertBefore(addBond(molecule, atoms, molecule.getBonds(), b, boundary, level), button);
+        baDiv.insertBefore(addBond(molecule, baDiv.id, atoms, molecule.getBonds(), b, boundary, level), button);
     });
     baDiv.appendChild(button);
     return button;
@@ -1710,10 +1716,9 @@ function getAddBondButton(molecule, baDiv, typeID, boundary, level) {
  * @param level The margin for the div.
  * @returns The a new div for the bond.
  */
-function addBond(molecule, atoms, ba, b, boundary, level) {
+function addBond(molecule, baDivID, atoms, ba, b, boundary, level) {
     let bID = ba.addBond(b, b.getID());
-    let bDivID = (0, util_js_1.getID)(molecule.getID(), bID);
-    //let bDivID: string = addRID(molecule.getID(), bID);
+    let bDivID = (0, util_js_1.getID)(baDivID, bID);
     let bDiv = (0, html_js_1.createFlexDiv)(bDivID, level);
     bDiv.appendChild((0, html_js_1.createLabel)(bID, boundary));
     // atomRefs2.
@@ -1805,7 +1810,6 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
     let ps = p.getProperty();
     ps.setValue = function (value) {
         ps.value = value;
-        //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
         if (p.dictRef == molecule_js_1.ZPE.dictRef) {
             // Update the molecule energy diagram.
             redrawReactionsDiagram();
@@ -2339,10 +2343,10 @@ function processUseSineTerms(hrpDiv, hrp, margin) {
 function create3DViewer(molecule, moleculeDiv, boundary, level) {
     // Add a 3Dmol.js viewer.
     // Create a new div for the viewer.
-    let viewerContainerDivID = addRID(molecule.getID(), "viewerContainer");
+    let viewerContainerDivID = addRID(moleculeDiv.id, "viewerContainer");
     let viewerContainerDiv = (0, html_js_1.createDiv)(viewerContainerDivID, level);
     moleculeDiv.appendChild(viewerContainerDiv);
-    let viewerDivID = addRID(molecule.getID(), "viewer");
+    let viewerDivID = addRID(moleculeDiv.id, "viewer");
     let showAtomLabels = false;
     let showBondLabels = false;
     // Create the GLViewer viewer.
@@ -2462,14 +2466,14 @@ function create3DViewer(molecule, moleculeDiv, boundary, level) {
     }
     // Atom Labels.
     let s_Atom_Labels = "Atom Labels";
-    let atomLabelbutton = createLabelButton(s_Atom_Labels, addRID(molecule.getID(), s_Atom_Labels), showAtomLabels, newState => showAtomLabels = newState);
+    let atomLabelbutton = createLabelButton(s_Atom_Labels, addRID(viewerDivID, s_Atom_Labels), showAtomLabels, newState => showAtomLabels = newState);
     viewerContainerDiv.appendChild(atomLabelbutton);
     // Bond Labels.
     let s_Bond_Labels = "Bond Labels";
-    let bondLabelbutton = createLabelButton(s_Bond_Labels, addRID(molecule.getID(), s_Bond_Labels), showBondLabels, newState => showBondLabels = newState);
+    let bondLabelbutton = createLabelButton(s_Bond_Labels, addRID(viewerDivID, s_Bond_Labels), showBondLabels, newState => showBondLabels = newState);
     viewerContainerDiv.appendChild(bondLabelbutton);
     // Add a save button to save the viewer as an image.
-    let saveButton = (0, html_js_1.createButton)("Save as PNG", addRID(molecule.getID(), s_save), boundary1);
+    let saveButton = (0, html_js_1.createButton)("Save as PNG", addRID(viewerDivID, s_save), boundary1);
     saveButton.addEventListener('click', () => {
         //viewer.pngURI({ backgroundColor: 'white', download: true });
         let canvas = viewer.pngURI();
@@ -2528,7 +2532,6 @@ function processPropertyScalarNumber(pl, p, units, molecule, element, plDiv, bou
         p.setProperty(ps);
         ps.setValue = function (value) {
             ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
             if (p.dictRef == molecule_js_1.ZPE.dictRef) {
                 // Update the molecule energy diagram.
                 redrawReactionsDiagram();
@@ -2583,7 +2586,7 @@ function processPropertyScalarNumber(pl, p, units, molecule, element, plDiv, bou
                     pm = p.getProperty();
                     values = (0, util_js_2.toNumberArray)(inputString.split(/\s+/));
                     pm.values = values;
-                    console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + inputString);
+                    console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + inputString);
                     //resizeInputElement(inputElement);
                     (0, html_js_1.resizeTextAreaElement)(ta);
                 });
@@ -2624,7 +2627,7 @@ function processPropertyScalarString(pl, p, molecule, element, plDiv, boundary, 
         p.setProperty(ps);
         ps.setValue = function (value) {
             ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getID() + " to " + value);
+            //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
             if (p.dictRef == molecule_js_1.ZPE.dictRef) {
                 // Update the molecule energy diagram.
                 redrawReactionsDiagram();
@@ -2700,7 +2703,7 @@ function processEnergyTransferModel(etm, molecule, element, moleculeDiv) {
     let xml_deltaEDowns = element.getElementsByTagName(molecule_js_1.DeltaEDown.tagName);
     if (xml_deltaEDowns.length > 0) {
         // Create a new collapsible div for the energyTransferModel.
-        let etmdivID = addRID(molecule.getID(), molecule_js_1.EnergyTransferModel.tagName);
+        let etmdivID = addRID(moleculeDiv.id, molecule_js_1.EnergyTransferModel.tagName);
         let etmDiv = document.createElement("div");
         let etmcDivID = addRID(etmdivID, s_container);
         let etmcDiv = (0, html_js_1.getCollapsibleDiv)(etmcDivID, moleculeDiv, null, etmDiv, molecule_js_1.EnergyTransferModel.tagName, boundary1, level1);
@@ -4111,9 +4114,9 @@ function processModelParameters(xml) {
         let mp = addModelParameters((0, xml_js_1.getAttributes)(xml_mps[i]), i);
         processGrainSize(mp, xml_mps[i], mpDiv);
         //setGrainSize(mp, xml_mps[i], mpDiv);
-        processModelParametersN(mp, xml_mps[i], mpDiv, control_js_1.AutomaticallySetMaxEne, mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne);
-        processModelParametersN(mp, xml_mps[i], mpDiv, modelParameters_js_1.EnergyAboveTheTopHill, mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill);
-        processModelParametersN(mp, xml_mps[i], mpDiv, modelParameters_js_1.MaxTemperature, mp.setMaxTemperature, mp.removeMaxTemperature);
+        processModelParametersN(mp, xml_mps[i], mpDiv, control_js_1.AutomaticallySetMaxEne, mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));
+        processModelParametersN(mp, xml_mps[i], mpDiv, modelParameters_js_1.EnergyAboveTheTopHill, mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill.bind(mp));
+        processModelParametersN(mp, xml_mps[i], mpDiv, modelParameters_js_1.MaxTemperature, mp.setMaxTemperature, mp.removeMaxTemperature.bind(mp));
         // Add a remove modelParameters button.
         let removeButton = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event) => {
@@ -4988,8 +4991,7 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
     select.value = xsi_type;
     divCm.appendChild(select);
     // Add the details div.
-    let divCmDetails = (0, html_js_1.createFlexDiv)(undefined, boundary1);
-    divCmDetails.id = divCmDetailsId;
+    let divCmDetails = (0, html_js_1.createFlexDiv)(divCmDetailsId, boundary1);
     divCm.appendChild(divCmDetails);
     if (xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type || xsi_type == control_js_1.CalcMethodSimpleCalc.xsi_type2) {
         //console.log("CalcMethodSimpleCalc");
@@ -5140,21 +5142,21 @@ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_ty
  */
 function processCalcMethodFitting(divCmDetails, cm) {
     // FittingIterations.
-    let fittingIterations = cm.getFittingIterations() || new control_js_1.FittingIterations(new Map(), big0);
-    cm.setFittingIterations(fittingIterations);
-    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", divCmDetails.id + "_FittingIterations_input", boundary1, level0, (event) => {
+    let fi = cm.getFittingIterations() || new control_js_1.FittingIterations(new Map(), big0);
+    cm.setFittingIterations(fi);
+    divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", (0, util_js_1.getID)(divCmDetails.id, control_js_1.FittingIterations.tagName, s_input), boundary1, level0, (event) => {
         let target = event.target;
         // Check the value is a number.
         if ((0, util_js_1.isNumeric)(target.value)) {
-            fittingIterations.value = new big_js_1.default(target.value);
+            fi.value = new big_js_1.default(target.value);
             console.log("Set FittingIterations to " + target.value);
         }
         else {
             alert("Value is not numeric, resetting...");
-            target.value = fittingIterations.value.toString();
+            target.value = fi.value.toString();
         }
         (0, html_js_1.resizeInputElement)(target);
-    }, fittingIterations.value.toString(), control_js_1.FittingIterations.tagName));
+    }, fi.value.toString(), control_js_1.FittingIterations.tagName));
 }
 /**
  * @param divCmDetails The details div.
@@ -5162,7 +5164,7 @@ function processCalcMethodFitting(divCmDetails, cm) {
  */
 function processCalcMethodMarquardt(divCmDetails, cm) {
     function createLabelWithInputForObject(obj, divCmDetails, boundary, level) {
-        let id = addRID(divCmDetails.id, obj.tagName, "Input");
+        let id = (0, util_js_1.getID)(divCmDetails.id, obj.tagName, s_input);
         let value = obj.value.toString();
         let labelTextContent = obj.tagName;
         let inputHandler = (event) => {
@@ -5181,17 +5183,17 @@ function processCalcMethodMarquardt(divCmDetails, cm) {
         divCmDetails.appendChild((0, html_js_1.createLabelWithInput)("number", id, boundary, level, inputHandler, value, labelTextContent));
     }
     // MarquardtIterations.
-    let marquardtIterations = cm.getMarquardtIterations() || new control_js_1.MarquardtIterations(new Map(), big0);
-    cm.setMarquardtIterations(marquardtIterations);
-    createLabelWithInputForObject(marquardtIterations, divCmDetails, boundary1, level0);
+    let mi = cm.getMarquardtIterations() || new control_js_1.MarquardtIterations(new Map(), big0);
+    cm.setMarquardtIterations(mi);
+    createLabelWithInputForObject(mi, divCmDetails, boundary1, level0);
     // MarquardtTolerance.
-    let marquardtTolerance = cm.getMarquardtTolerance() || new control_js_1.MarquardtTolerance(new Map(), big0);
-    cm.setMarquardtTolerance(marquardtTolerance);
-    createLabelWithInputForObject(marquardtTolerance, divCmDetails, boundary1, level0);
+    let mt = cm.getMarquardtTolerance() || new control_js_1.MarquardtTolerance(new Map(), big0);
+    cm.setMarquardtTolerance(mt);
+    createLabelWithInputForObject(mt, divCmDetails, boundary1, level0);
     // MarquardtDerivDelta.
-    let marquardtDerivDelta = cm.getMarquardtDerivDelta() || new control_js_1.MarquardtDerivDelta(new Map(), big0);
-    cm.setMarquardtDerivDelta(marquardtDerivDelta);
-    createLabelWithInputForObject(marquardtDerivDelta, divCmDetails, boundary1, level0);
+    let mdd = cm.getMarquardtDerivDelta() || new control_js_1.MarquardtDerivDelta(new Map(), big0);
+    cm.setMarquardtDerivDelta(mdd);
+    createLabelWithInputForObject(mdd, divCmDetails, boundary1, level0);
 }
 /**
  * @param divCmDetails The details div.

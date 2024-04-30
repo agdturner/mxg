@@ -1990,6 +1990,7 @@ class HinderedRotorPotential extends xml_js_1.NodeWithNodes {
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */
     setExpansionSize(expansionSize) {
+        console.log(expansionSize.toString());
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
     /**
@@ -2516,6 +2517,10 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     index;
     /**
+     * An index for Extra DOSCMethods. Key are index of the extraDOSCMethod in the array. The value is the index of the node.
+     */
+    edmindex;
+    /**
      * This is the molecule ID which is unique and independent of the attribute id value.
      */
     id;
@@ -2528,13 +2533,14 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param properties The properties.
      * @param energyTransferModel The energy transfer model.
      * @param dOSCMethod The method for calculating density of states.
-     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param extraDOSCMethods The extra DOSC methods for calculating density of states.
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
-    constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethod, reservoirSize, tt) {
+    constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
+        this.edmindex = new Map();
         this.id = id;
         let i = 0;
         // MetadataList
@@ -2571,26 +2577,38 @@ class Molecule extends xml_js_1.NodeWithNodes {
         if (dOSCMethod) {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
+            i++;
         }
         // DistributionCalcMethod
         if (distributionCalcMethod) {
             this.nodes.set(i, distributionCalcMethod);
             this.index.set(DistributionCalcMethod.tagName, i);
+            i++;
         }
         // ExtraDOSCMethod
-        if (extraDOSCMethod) {
-            this.nodes.set(i, extraDOSCMethod);
-            this.index.set(ExtraDOSCMethod.tagName, i);
+        if (extraDOSCMethods) {
+            extraDOSCMethods.forEach((edm) => {
+                this.nodes.set(i, edm);
+                this.edmindex.set(i, i);
+                i++;
+            });
         }
         // ReservoirSize
         if (reservoirSize) {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
+            i++;
         }
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
         }
+    }
+    /**
+     * @returns The id of the molecule.
+     */
+    getLabel() {
+        return this.getID() + " " + this.id.toString();
     }
     /**
      * @returns The id of the molecule.
@@ -2643,23 +2661,6 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     setActive(active) {
         this.attributes.set(Molecule.s_active, active.toString());
-    }
-    /**
-     * Get a label for the molecule which includes the is and any description and whether active.
-     * @returns A label for the molecule detailing the attributes of the XML element (including id,
-     * and possibly including description and whether active).
-     */
-    getLabel() {
-        let label = this.getID();
-        let description = this.getDescription();
-        if (description != undefined) {
-            label += " (" + description + ")";
-        }
-        let active = this.getActive();
-        if (active) {
-            label += " (" + Molecule.s_active + ")";
-        }
-        return label;
     }
     /**
      * @returns The metadata list of the molecule.
@@ -2847,12 +2848,9 @@ class Molecule extends xml_js_1.NodeWithNodes {
     /**
      * @returns The extra DOSC method of the molecule.
      */
-    getExtraDOSCMethod() {
-        let i = this.index.get(ExtraDOSCMethod.tagName);
-        if (i == undefined) {
-            return undefined;
-        }
-        else {
+    getExtraDOSCMethod(index) {
+        let i = this.edmindex.get(index);
+        if (i != undefined) {
             return this.nodes.get(i);
         }
     }
@@ -2860,11 +2858,11 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * Set the extra DOSC method.
      * @param extraDOSCMethod The extra DOSC method.
      */
-    setExtraDOSCMethod(extraDOSCMethod) {
-        let i = this.index.get(ExtraDOSCMethod.tagName);
+    setExtraDOSCMethod(index, extraDOSCMethod) {
+        let i = this.edmindex.get(index);
         if (i == undefined) {
-            this.index.set(ExtraDOSCMethod.tagName, this.nodes.size);
-            this.addNode(extraDOSCMethod);
+            this.edmindex.set(index, this.nodes.size);
+            this.nodes.set(this.nodes.size, extraDOSCMethod);
         }
         else {
             this.nodes.set(i, extraDOSCMethod);

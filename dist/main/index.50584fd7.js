@@ -1596,7 +1596,7 @@ let sp_font = "2em SensSerif";
             let edmcDivID = addRID(edmDivID, s_container);
             let edmcDiv = (0, _htmlJs.getCollapsibleDiv)(edmcDivID, mDiv, null, edmDiv, (0, _moleculeJs.ExtraDOSCMethod).tagName, boundary1, level1);
             // Read bondRef.
-            let xml_brs = xml_edms[0].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
+            let xml_brs = xml_edms[j].getElementsByTagName((0, _moleculeJs.BondRef).tagName);
             if (xml_brs.length > 0) {
                 if (xml_brs.length != 1) throw new Error("Expecting only 1 bondRef, but there are " + xml_brs.length);
                 let bids = m.getBonds().getBondIds();
@@ -1607,7 +1607,7 @@ let sp_font = "2em SensSerif";
                 edmDiv.appendChild(lws);
             }
             // Read hinderedRotorPotential.
-            let xml_hrps = xml_edms[0].getElementsByTagName((0, _moleculeJs.HinderedRotorPotential).tagName);
+            let xml_hrps = xml_edms[j].getElementsByTagName((0, _moleculeJs.HinderedRotorPotential).tagName);
             if (xml_hrps.length > 0) {
                 if (xml_hrps.length != 1) throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + xml_hrps.length);
                 let hrpAttributes = (0, _xmlJs.getAttributes)(xml_hrps[0]);
@@ -1628,6 +1628,7 @@ let sp_font = "2em SensSerif";
                     let target = event.target;
                     // Check the input is a number.
                     try {
+                        console.log("Setting " + (0, _moleculeJs.HinderedRotorPotential).s_expansionSize + " to " + target.value);
                         hrp.setExpansionSize(new (0, _bigJsDefault.default)(target.value));
                     } catch (e) {
                         alert("Invalid value, resetting...");
@@ -1721,7 +1722,7 @@ let sp_font = "2em SensSerif";
                 }, valueString, (0, _moleculeJs.Periodicity).tagName);
                 edmDiv.appendChild(lwi);
             }
-            m.setExtraDOSCMethod(edm);
+            m.setExtraDOSCMethod(j, edm);
             moleculeTagNames.delete((0, _moleculeJs.ExtraDOSCMethod).tagName);
         }
         // Organise ReservoirSize.
@@ -9641,6 +9642,7 @@ class HinderedRotorPotential extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */ setExpansionSize(expansionSize) {
+        console.log(expansionSize.toString());
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
     /**
@@ -10053,12 +10055,13 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param properties The properties.
      * @param energyTransferModel The energy transfer model.
      * @param dOSCMethod The method for calculating density of states.
-     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param extraDOSCMethods The extra DOSC methods for calculating density of states.
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
-     */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethod, reservoirSize, tt){
+     */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt){
         super(attributes, Molecule.tagName);
         this.index = new Map();
+        this.edmindex = new Map();
         this.id = id;
         let i = 0;
         // MetadataList
@@ -10095,21 +10098,25 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
         if (dOSCMethod) {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
+            i++;
         }
         // DistributionCalcMethod
         if (distributionCalcMethod) {
             this.nodes.set(i, distributionCalcMethod);
             this.index.set(DistributionCalcMethod.tagName, i);
+            i++;
         }
         // ExtraDOSCMethod
-        if (extraDOSCMethod) {
-            this.nodes.set(i, extraDOSCMethod);
-            this.index.set(ExtraDOSCMethod.tagName, i);
-        }
+        if (extraDOSCMethods) extraDOSCMethods.forEach((edm)=>{
+            this.nodes.set(i, edm);
+            this.edmindex.set(i, i);
+            i++;
+        });
         // ReservoirSize
         if (reservoirSize) {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
+            i++;
         }
         if (tt) {
             this.nodes.set(i, tt);
@@ -10295,19 +10302,18 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @returns The extra DOSC method of the molecule.
-     */ getExtraDOSCMethod() {
-        let i = this.index.get(ExtraDOSCMethod.tagName);
-        if (i == undefined) return undefined;
-        else return this.nodes.get(i);
+     */ getExtraDOSCMethod(index) {
+        let i = this.edmindex.get(index);
+        if (i != undefined) return this.nodes.get(i);
     }
     /**
      * Set the extra DOSC method.
      * @param extraDOSCMethod The extra DOSC method.
-     */ setExtraDOSCMethod(extraDOSCMethod) {
-        let i = this.index.get(ExtraDOSCMethod.tagName);
+     */ setExtraDOSCMethod(index, extraDOSCMethod) {
+        let i = this.edmindex.get(index);
         if (i == undefined) {
-            this.index.set(ExtraDOSCMethod.tagName, this.nodes.size);
-            this.addNode(extraDOSCMethod);
+            this.edmindex.set(index, this.nodes.size);
+            this.nodes.set(this.nodes.size, extraDOSCMethod);
         } else this.nodes.set(i, extraDOSCMethod);
     }
     /**

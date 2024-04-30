@@ -1160,10 +1160,12 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
-    getReactantsEnergy(getMolecule) {
+    getReactantsEnergy(retrieveMolecule) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map(reactant => {
-            let molecule = getMolecule(reactant.getMolecule().getRef());
+            let ref = reactant.getMolecule().getRef();
+            console.log("ref=\"" + ref + "\"");
+            let molecule = retrieveMolecule(reactant.getMolecule().getRef());
             if (molecule == undefined) {
                 throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
             }
@@ -1174,10 +1176,10 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(getMolecule) {
+    getProductsEnergy(retrieveMolecule) {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map(product => {
-            let molecule = getMolecule(product.getMolecule().getRef());
+            let molecule = retrieveMolecule(product.getMolecule().getRef());
             if (molecule == undefined) {
                 throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
             }

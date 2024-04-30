@@ -2207,6 +2207,7 @@ export class HinderedRotorPotential extends NodeWithNodes {
      * @param expansionSize The expansionSize of the HinderedRotorPotential.
      */
     setExpansionSize(expansionSize: Big): void {
+        console.log(expansionSize.toString());
         this.attributes.set(HinderedRotorPotential.s_expansionSize, expansionSize.toString());
     }
 
@@ -2786,6 +2787,11 @@ export class Molecule extends NodeWithNodes {
     index: Map<string, number>;
 
     /**
+     * An index for Extra DOSCMethods. Key are index of the extraDOSCMethod in the array. The value is the index of the node.
+     */
+    edmindex: Map<number, number>;
+
+    /**
      * This is the molecule ID which is unique and independent of the attribute id value.
      */
     id: number;
@@ -2799,16 +2805,17 @@ export class Molecule extends NodeWithNodes {
      * @param properties The properties.
      * @param energyTransferModel The energy transfer model.
      * @param dOSCMethod The method for calculating density of states.
-     * @param extraDOSCMethod The extra method for calculating density of states.
+     * @param extraDOSCMethods The extra DOSC methods for calculating density of states.
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
     constructor(attributes: Map<string, string>, id: number, metadataList?: MetadataList, atoms?: AtomArray,
         bonds?: BondArray, properties?: PropertyList, energyTransferModel?: EnergyTransferModel,
-        dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethod?: ExtraDOSCMethod, 
+        dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[], 
         reservoirSize?: ReservoirSize, tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
         this.index = new Map();
+        this.edmindex = new Map();
         this.id = id;
         let i: number = 0;
         // MetadataList
@@ -2845,25 +2852,32 @@ export class Molecule extends NodeWithNodes {
         if (dOSCMethod) {
             this.nodes.set(i, dOSCMethod);
             this.index.set(DOSCMethod.tagName, i);
+            i++;
         }
         // DistributionCalcMethod
         if (distributionCalcMethod) {
             this.nodes.set(i, distributionCalcMethod);
             this.index.set(DistributionCalcMethod.tagName, i);
+            i++;
         }
         // ExtraDOSCMethod
-        if (extraDOSCMethod) {
-            this.nodes.set(i, extraDOSCMethod);
-            this.index.set(ExtraDOSCMethod.tagName, i);
+        if (extraDOSCMethods) {
+            extraDOSCMethods.forEach((edm) => {
+                this.nodes.set(i, edm);
+                this.edmindex.set(i, i);
+                i++;
+            });
         }
         // ReservoirSize
         if (reservoirSize) {
             this.nodes.set(i, reservoirSize);
             this.index.set(ReservoirSize.tagName, i);
+            i++;
         }
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
+
         }
     }
 
@@ -3128,11 +3142,9 @@ export class Molecule extends NodeWithNodes {
     /**
      * @returns The extra DOSC method of the molecule.
      */
-    getExtraDOSCMethod(): ExtraDOSCMethod | undefined {
-        let i: number | undefined = this.index.get(ExtraDOSCMethod.tagName);
-        if (i == undefined) {
-            return undefined;
-        } else {
+    getExtraDOSCMethod(index: number): ExtraDOSCMethod | undefined {
+        let i: number | undefined = this.edmindex.get(index);
+        if (i != undefined) {
             return this.nodes.get(i) as ExtraDOSCMethod;
         }
     }
@@ -3141,11 +3153,11 @@ export class Molecule extends NodeWithNodes {
      * Set the extra DOSC method.
      * @param extraDOSCMethod The extra DOSC method.
      */
-    setExtraDOSCMethod(extraDOSCMethod: ExtraDOSCMethod) {
-        let i: number | undefined = this.index.get(ExtraDOSCMethod.tagName);
+    setExtraDOSCMethod(index: number, extraDOSCMethod: ExtraDOSCMethod) {
+        let i: number | undefined = this.edmindex.get(index);
         if (i == undefined) {
-            this.index.set(ExtraDOSCMethod.tagName, this.nodes.size);
-            this.addNode(extraDOSCMethod);
+            this.edmindex.set(index, this.nodes.size);
+            this.nodes.set(this.nodes.size, extraDOSCMethod);
         } else {
             this.nodes.set(i, extraDOSCMethod);
         }

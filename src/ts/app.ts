@@ -1255,7 +1255,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 let edmcDiv: HTMLDivElement = getCollapsibleDiv(edmcDivID, mDiv, null, edmDiv,
                     ExtraDOSCMethod.tagName, boundary1, level1);
                 // Read bondRef.
-                let xml_brs: HTMLCollectionOf<Element> = xml_edms[0].getElementsByTagName(BondRef.tagName);
+                let xml_brs: HTMLCollectionOf<Element> = xml_edms[j].getElementsByTagName(BondRef.tagName);
                 if (xml_brs.length > 0) {
                     if (xml_brs.length != 1) {
                         throw new Error("Expecting only 1 bondRef, but there are " + xml_brs.length);
@@ -1269,7 +1269,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     edmDiv.appendChild(lws);
                 }
                 // Read hinderedRotorPotential.
-                let xml_hrps: HTMLCollectionOf<Element> = xml_edms[0].getElementsByTagName(HinderedRotorPotential.tagName);
+                let xml_hrps: HTMLCollectionOf<Element> = xml_edms[j].getElementsByTagName(HinderedRotorPotential.tagName);
                 if (xml_hrps.length > 0) {
                     if (xml_hrps.length != 1) {
                         throw new Error("Expecting only 1 HinderedRotorPotential, but there are " + xml_hrps.length);
@@ -1297,6 +1297,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                             let target = event.target as HTMLInputElement;
                             // Check the input is a number.
                             try {
+                                console.log("Setting " + HinderedRotorPotential.s_expansionSize + " to " + target.value);
                                 hrp.setExpansionSize(new Big(target.value));
                             } catch (e) {
                                 alert("Invalid value, resetting...");
@@ -1398,7 +1399,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                         }, valueString, Periodicity.tagName);
                     edmDiv.appendChild(lwi);
                 }
-                m.setExtraDOSCMethod(edm);
+                m.setExtraDOSCMethod(j, edm);
                 moleculeTagNames.delete(ExtraDOSCMethod.tagName);
             }
         }
