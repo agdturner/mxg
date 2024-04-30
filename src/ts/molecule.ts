@@ -2797,6 +2797,11 @@ export class Molecule extends NodeWithNodes {
     id: number;
 
     /**
+     * This is either just the attribute id, or a composite of the attribute id and the molecule id.
+     */
+    label: string;
+
+    /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
      * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
@@ -2814,6 +2819,7 @@ export class Molecule extends NodeWithNodes {
         dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[], 
         reservoirSize?: ReservoirSize, tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
+        this.label = this.getID();
         this.index = new Map();
         this.edmindex = new Map();
         this.id = id;
@@ -2886,6 +2892,7 @@ export class Molecule extends NodeWithNodes {
      */
     getLabel(): string {
         return this.getID() + " " + this.id.toString();
+        //return this.getID();
     }
 
     

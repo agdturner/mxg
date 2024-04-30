@@ -338,8 +338,25 @@ let defaults: Defaults;
 let libmols: Map<number, Molecule> = new Map();
 
 /**
+ * Adds a molecule to the map of molecules. The molecule label is updated if the molecule attribute id is not unique. 
+ * @param m The molecule to add
+ * @param ms The map of molecules to add the molecule to.
+ */
+function addMolecule(m: Molecule, ms: Map<number, Molecule>): void {
+    let id: string = m.getID();
+    for (let [key, v] of ms) {
+        if (id == v.getID()) {
+            id += " " + v.id.toString();
+            m.label = id;
+            break; // Stop iterating
+        }
+    }
+    ms.set(m.id, m);
+}
+
+/**
  * A map of molecules with id as key and Molecule as value.
- * If a molecule is removed, it is not deleted from the map.
+ * The key is a composite of the molecule ID and the index.
  */
 let molecules: Map<number, Molecule>;
 
@@ -350,36 +367,30 @@ let molecules: Map<number, Molecule>;
 function getMoleculeKeys(molecules: Map<number, Molecule>): Set<string> {
     let keys: Set<string> = new Set();
     molecules.forEach((v, k) => {
-        keys.add(v.getID() + "-" + k.toString());
+        let id = v.getID();
+        if (keys.has(id)) {
+            keys.add(id + "-" + k.toString());
+        } else {
+            keys.add(id);
+        }
     });
     return keys;
 }
 
 /**
- * This returns the first molecule found with the given id.
- * @param id The id of the molecule.
- * @returns The first molecule with the id attribute value equal to id.
+ * This returns the molecule found with the given label from ms.
+ * @param label The label of the molecule to find.
+ * @param ms The map of molecules to search.
+ * @returns The molecule with the lable in ms.
  */
-export function getMolecule(id: string): Molecule | null {
-    for (let [key, molecule] of molecules) {
-        if (molecule.getID() == id) {
-            console.log("Found molecule with id " + id);
-            return molecule;
+export function getMolecule(label: string, ms: Map<number, Molecule>): Molecule | null {
+    for (let [key, value] of ms) {
+        if (value.label == label) {
+            return value;
         }
     }
     return null;
 }
-/*
-export function getMolecule(id: string): Molecule | null {
-    molecules.forEach((v, k) => {
-        if (v.getID() == id) {
-            console.log("Found molecule with id " + id);
-            return v;
-        }
-    });
-    return null;
-}
-*/
 
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
@@ -440,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let ms: Map<number, Molecule> = await lm.readFile();
         // Add the molecules to the libmols map.
         ms.forEach((v, k) => {
-            libmols.set(libmols.size, v);
+            addMolecule(v, libmols);
         });
     });
 
@@ -887,11 +898,11 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         let mDiv: HTMLDivElement = createDiv(mDivID);
         let attributes: Map<string, string> = getAttributes(xml_ms[i]);
         let m = new Molecule(attributes, i);
-        molecules.set(i, m);
+        addMolecule(m, molecules);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = addRID(mDivID, s_container);
         let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, null, mDiv,
-            m.getLabel(), boundary1, level1);
+            m.label, boundary1, level1);
         // Create a set of molecule tag names.
         let moleculeTagNames: Set<string> = new Set();
         let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
@@ -1203,7 +1214,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                     addTableRow(t, dos.toStringArray());
                     //console.log("dos: " + dos.toString());
                 }
-                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, m.getLabel() + "_" + DensityOfStatesList.tagName, level1);
+                addSaveAsCSVButton(dosl.toCSV, doslDiv, t, m.getID() + "_" + DensityOfStatesList.tagName, level1);
             }
             moleculeTagNames.delete(DensityOfStatesList.tagName);
         }
@@ -1237,7 +1248,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
                 // Append the table to the div.
                 ttDiv.appendChild(t);
                 tt.init(tvs);
-                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, m.getLabel() + "_" + ThermoTable.tagName, level1);
+                addSaveAsCSVButton(tt.toCSV.bind(tt), ttDiv, t, m.getID() + "_" + ThermoTable.tagName, level1);
             }
             m.setThermoTable(tt);
             moleculeTagNames.delete(tvtn);
@@ -1416,7 +1427,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let reservoirSizeAttributes: Map<string, string> = getAttributes(xml_ReservoirSize[0]);
             let reservoirSize: ReservoirSize = new ReservoirSize(reservoirSizeAttributes, value);
             m.setReservoirSize(reservoirSize);
-            let inputDiv: HTMLDivElement = createLabelWithInput("number", m.getLabel() + "_" + ReservoirSize.tagName,
+            let inputDiv: HTMLDivElement = createLabelWithInput("number", m.getID() + "_" + ReservoirSize.tagName,
                 boundary1, level1, (event: Event) => {
                     let target = event.target as HTMLInputElement;
                     reservoirSize.value = new Big(target.value);
@@ -1442,10 +1453,10 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             mid = "";
         }
         let id: number = molecules.size;
-        let molecule: Molecule = new Molecule(new Map(), id);
-        molecule.setAtoms(new AtomArray(new Map()));
-        molecule.setBonds(new BondArray(new Map()));
-        molecules.set(molecules.size, molecule);
+        let m: Molecule = new Molecule(new Map(), id);
+        addMolecule(m, molecules);
+        m.setAtoms(new AtomArray(new Map()));
+        m.setBonds(new BondArray(new Map()));
         let moleculeDivID: string = addRID(Molecule.tagName, id);
         let moleculeDiv: HTMLDivElement = createDiv(moleculeDivID);
         // Create collapsible Molecule HTMLDivElement.
@@ -1455,23 +1466,23 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         // Add the molecule to the BathGas select elements.
         addOptionByClassName(BathGas.tagName, mid + " " + id);
         // Add edit Name button.
-        addEditIDButton(molecule, mcDiv.querySelector(s_button) as HTMLButtonElement, moleculeDiv, level1);
+        addEditIDButton(m, mcDiv.querySelector(s_button) as HTMLButtonElement, moleculeDiv, level1);
         // Description
-        moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), molecule.getDescription.bind(molecule),
-            molecule.setDescription.bind(molecule), boundary1, level1));
+        moleculeDiv.appendChild(processDescription(addRID(moleculeDivID, s_description), m.getDescription.bind(m),
+            m.setDescription.bind(m), boundary1, level1));
         // Create collapsible AtomArray HTMLDivElement.
         let aaDivID: string = addRID(moleculeDivID, AtomArray.tagName);
         let aaDiv: HTMLDivElement = createDiv(aaDivID);
         let aacDivID = addRID(aaDivID, s_container);
         let aacDiv: HTMLDivElement = getCollapsibleDiv(aacDivID, moleculeDiv, null, aaDiv, AtomArray.tagName, boundary1, level1);
-        aaDiv.appendChild(getAddAtomButton(molecule, aaDiv, Atom.tagName, boundary1, level1));
+        aaDiv.appendChild(getAddAtomButton(m, aaDiv, Atom.tagName, boundary1, level1));
         // Create collapsible BondArray HTMLDivElement.
         let baDivID: string = addRID(moleculeDivID, BondArray.tagName);
         let baDiv: HTMLDivElement = createDiv(baDivID);
         let bacDivID = addRID(baDivID, s_container);
         let bacDiv: HTMLDivElement = getCollapsibleDiv(bacDivID, moleculeDiv, null, baDiv, BondArray.tagName, boundary1, level1);
-        baDiv.appendChild(getAddBondButton(molecule, baDiv, Bond.tagName, boundary1, level1));
-        create3DViewer(molecule, moleculeDiv, boundary1, level1);
+        baDiv.appendChild(getAddBondButton(m, baDiv, Bond.tagName, boundary1, level1));
+        create3DViewer(m, moleculeDiv, boundary1, level1);
         // Create collapsible Properties HTMLDivElement.
         let plDivID: string = addRID(moleculeDivID, PropertyList.tagName);
         let plDiv: HTMLDivElement = createDiv(plDivID);
@@ -1506,8 +1517,8 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
         select.addEventListener('change', (event: Event) => {
             let target = event.target as HTMLSelectElement;
             let selectedOption: HTMLOptionElement = target.options[target.selectedIndex];
-            let mID: string = selectedOption.value;
-            let molecule: Molecule = libmols.get(parseInt(mID.split("-")[1]))!;
+            let label: string = selectedOption.value;
+            let molecule: Molecule = getMolecule(label, libmols)!;
             molecules.set(molecules.size, molecule);
             // Add molecule to the MoleculeList.
             let moleculeDivID: string = addRID(Molecule.tagName, molecules.size);
@@ -1517,7 +1528,7 @@ function processMoleculeList(xml: XMLDocument): HTMLDivElement {
             let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, addMoleculeButton, moleculeDiv,
                 molecule.getLabel(), boundary1, level1);
             // Add the molecule to the BathGas select elements.
-            addOptionByClassName(BathGas.tagName, molecule.getLabel());
+            addOptionByClassName(BathGas.tagName, molecule.getID());
             // Add edit Name button.
             addEditIDButton(molecule, mcDiv.querySelector(s_button) as HTMLButtonElement, moleculeDiv, level1);
             // Description
@@ -1599,11 +1610,10 @@ function addEditIDButton(molecule: Molecule, button: HTMLButtonElement, molecule
             newMoleculeId = "";
         }
         // Update the BathGas select elements.
-        removeOptionByClassName(BathGas.tagName, molecule.getLabel());
+        removeOptionByClassName(BathGas.tagName, molecule.getID());
         molecule.setID(newMoleculeId);
-        let moleculeLabel: string = molecule.getLabel();
-        addOptionByClassName(BathGas.tagName, moleculeLabel);
-        button.textContent = moleculeLabel + " " + sy_upTriangle;
+        addOptionByClassName(BathGas.tagName, molecule.getID());
+        button.textContent = molecule.getLabel() + " " + sy_upTriangle;
     });
 }
 
@@ -4380,7 +4390,7 @@ function processModelParameters(xml: XMLDocument): HTMLDivElement {
         processGrainSize(mp, xml_mps[i], mpDiv);
         //setGrainSize(mp, xml_mps[i], mpDiv);
         processModelParametersN(mp, xml_mps[i], mpDiv, AutomaticallySetMaxEne,
-            mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));    
+            mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));
         processModelParametersN(mp, xml_mps[i], mpDiv, EnergyAboveTheTopHill,
             mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill.bind(mp));
         processModelParametersN(mp, xml_mps[i], mpDiv, MaxTemperature,
@@ -5055,8 +5065,8 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, xml_control: E
     let divCm: HTMLDivElement = createFlexDiv(divCmId, boundary1);
     div.appendChild(divCm);
     let options: string[] = CalcMethod.options;
-    let divCmDetailsId = controlIDs.addID(cDiv.id, divCmId, "details");
-    let divCmDetailsSelectId = controlIDs.addID(cDiv.id, divCmDetailsId, "select");
+    let divCmDetailsId = controlIDs.addID(divCmId, "details");
+    let divCmDetailsSelectId = controlIDs.addID(divCmDetailsId, "select");
     let cm: CalcMethod;
     let first: boolean = true;
     if (xml_control != null) {
@@ -5560,7 +5570,7 @@ function processCalcMethodSensitivityAnalysis(divCmDetails: HTMLDivElement, cm: 
     function processNumberElement(ClassConstructor: any, getter: () => any, setter: (value: any) => void, tagName: string) {
         let element: any = getter() || new ClassConstructor(new Map(), NaN);
         setter(element);
-        divCmDetails.appendChild(createLabelWithInput("text", addRID(divCmDetails.id, tagName, s_input), boundary1, level0,
+        divCmDetails.appendChild(createLabelWithInput("text", getID(divCmDetails.id, tagName, s_input), boundary1, level0,
             handleEvent(element, tagName), element.value.toString(), tagName));
     }
     processNumberElement(SensitivityAnalysisSamples, cm.getSensitivityAnalysisSamples.bind(cm), cm.setSensitivityAnalysisSamples.bind(cm), SensitivityAnalysisSamples.tagName);
@@ -5571,7 +5581,7 @@ function processCalcMethodSensitivityAnalysis(divCmDetails: HTMLDivElement, cm: 
     cm.setSensitivityVarRedMethod(sensitivityVarRedMethod);
     let tagName: string = SensitivityVarRedMethod.tagName;
     divCmDetails.appendChild(createLabelWithSelect(tagName, SensitivityVarRedMethod.options, tagName, SensitivityVarRedMethod.options[0],
-        addRID(divCmDetails.id, tagName, 'select'), boundary1, boundary1));
+        getID(divCmDetails.id, tagName, 'select'), boundary1, boundary1));
     // Add event listener for the select element.
     let select: HTMLSelectElement = divCmDetails.querySelector('select') as HTMLSelectElement;
     select?.addEventListener('change', (event: Event) => {
@@ -6200,7 +6210,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
                 if (products.has(reactantsLabel)) {
                     intProducts.add(reactantsLabel);
                 }
-                let energy: Big = reaction.getReactantsEnergy(getMolecule);
+                let energy: Big = reaction.getReactantsEnergy(getMolecule, molecules);
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -6212,7 +6222,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
             let productsLabel: string | undefined = reaction.getProductsLabel();
             if (productsLabel != undefined) {
                 products.add(productsLabel);
-                let energy = reaction.getProductsEnergy(getMolecule);
+                let energy = reaction.getProductsEnergy(getMolecule, molecules);
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -6231,7 +6241,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
                             let ref: string = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
-                            energy = getMolecule(ref)?.getEnergy() ?? big0;
+                            energy = (getMolecule(ref, molecules) as Molecule).getEnergy() ?? big0;
                             energyMin = min(energyMin, energy);
                             energyMax = max(energyMax, energy);
                             energies.set(ref, energy);
@@ -6246,7 +6256,7 @@ function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, fo
                             let ref: string = ts.getMolecule().getRef();
                             transitionStates.add(ref);
                             orders.set(ref, i);
-                            energy = getMolecule(ref)?.getEnergy() ?? big0;
+                            energy = (getMolecule(ref, molecules) as Molecule).getEnergy() ?? big0;
                             energyMin = min(energyMin, energy);
                             energyMax = max(energyMax, energy);
                             energies.set(ref, energy);
