@@ -1,6 +1,6 @@
 {
-  "name": "mxg-pwa",
-  "description": "MESMER XML GUI PWA.",
+  "name": "mxg",
+  "description": "MESMER XML GUI.",
   "source": "src/index.html",
   "version": "0.11",
   "license": "MIT",
@@ -23,7 +23,7 @@
         ]
       },
       "distDir": "dist/main",
-      "publicUrl": "/mxg-pwa/dist/main"
+      "publicUrl": "/mxg/dist/main"
     },
     "0.11": {
       "context": "browser",
@@ -38,7 +38,7 @@
         ]
       },
       "distDir": "dist/0.11",
-      "publicUrl": "/mxg-pwa/dist/0.11"
+      "publicUrl": "/mxg/dist/0.11"
     }
   },
   "devDependencies": {
