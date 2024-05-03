@@ -5,8 +5,8 @@
 MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). [EPSRC](https://www.ukri.org/councils/epsrc/) funded development from January 2024 until April 2024.
 
 MXG can be used online and installed onto devices as a Progressive Web Application (PWA). The latest unstable release and alpha version are served from GitHub Pages from where the respective PWA can be installed:
- - [Latest unstable version](https://agdturner.github.io/mxg-pwa/dist/main/)
- - [Version 0.9](https://agdturner.github.io/mxg-pwa/dist/0.9)
+ - [Latest unstable version]([https://mesmer-kinetics.github.io/mxg/dist/main/)
+ - [Version 0.11]([https://agdturner.github.io/mxg-pwa](https://mesmer-kinetics.github.io/mxg)/dist/0.11)
 
 A PWA is a type of application software delivered via the Web and built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It should work on any platform with a standards-compliant browser. For more details about what a PWA is please see:
 - [Wikipedia Progressive Web App Article](https://en.wikipedia.org/wiki/Progressive_web_app)
@@ -69,7 +69,7 @@ The alpha versions are not recommended for general use, but please feel free to 
 - The user is expected to:
 1. Action `load`:
   - A File Input Dialogue should appear and a `save` button should appear.
-  - The user should locate and select [Acetyl_O2_associationEx.xml](https://agdturner.github.io/mxg-pwa/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
+  - The user should locate and select [Acetyl_O2_associationEx.xml]([https://mesmer-kinetics.github.io/mxg/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
   - A portrayal of the XML should appear.
     - This is similar to the portrayal provided by Extensible Stylesheet Language Transformation (XSLT) files that come with the main MESMER software. 
 2. Change the energy of one or more Molecules using the Inputs in the Molecules table section.
@@ -131,47 +131,6 @@ The alpha versions are not recommended for general use, but please feel free to 
 - A Web server should run on the local host on port 3458:
 [localhost:3458/](http://localhost:3458/)
 - To stop the Web server, kill the running process.
-
-### Deploy
-- To deploy over the current version push changes to the GitHub repository.
-- To deploy to a new version, update the `package.json` file and change the version target. For example, to change from releasing version 0.1 to 0.2 the following was changed:
-```
-    "0.1": {
-      "context": "browser",
-      "includeNodeModules": true,
-      "sourceMap": true,
-      "engines": {
-        "browsers": [
-          "last 2 Chrome versions",
-          "last 2 Firefox versions",
-          "last 2 Safari versions",
-          "last 2 Edge versions"
-        ]
-      },
-      "distDir": "dist/0.1",
-      "publicUrl": "/mxg-pwa/dist/0.1"
-    }
-```
-To:
-```
-    "0.2": {
-      "context": "browser",
-      "includeNodeModules": true,
-      "sourceMap": true,
-      "engines": {
-        "browsers": [
-          "last 2 Chrome versions",
-          "last 2 Firefox versions",
-          "last 2 Safari versions",
-          "last 2 Edge versions"
-        ]
-      },
-      "distDir": "dist/0.2",
-      "publicUrl": "/mxg-pwa/dist/0.2"
-    }
-```
-After adding, committing and pushing `dist/0.2`, the online version and PWA were automatically (but perhaps not instantaneously) became available at:
-[https://agdturner.github.io/mxg-pwa/dist/0.2](https://agdturner.github.io/mxg-pwa/dist/0.2)
 
 ### Trouble Shooting Guide
 1. Try deleting the `.parcel-cache` and launching again.
