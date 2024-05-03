@@ -1,4 +1,4 @@
-# [MESMER XML GUI (MXG)](https://github.com/agdturner/mxg-pwa)
+# [MESMER XML GUI (MXG)](https://github.com/mesmer-kinetics/mxg)
 
 ## Introduction
 
@@ -32,55 +32,6 @@ The alpha versions are not recommended for general use, but please feel free to 
   - Please uninstall any installed PWA before installing a different version or to test the PWA using a different Web browser.
     - Uninstalling a PWA can be done with the PWA running, then via the three stacked dots menu.
 - Please report issues with documentation/installation/use...
-
-### Version 0.9
-- Changes since 0.5:
-  - 3DMol.js is used to visualise molecules with 3D coordinates.
-  - Multiple Control elements can now be handled.
-  - Atom and Bond arrays are shown and editable.
-  - Rather than using labels and checkboxes, buttons with appropriate text are used.
-  - More detail has been added to Control, ModelParameter and Condition sections of the GUI.
-  - There is a menu and welcome text rather than just a load button.
-  - Various bugs were fixed.
-  - More numerical values are now output in exponential format.
-  - The reaction well diagram can be popped out and popped back.
-  - PTPairs can be added and removed, and there is a way to add multiple entries via a spreadsheet.
-
-### Version 0.5
-- This is a refactoring of Version 0.4.
-
-### Version 0.4
-- Changes since 0.3:
-  - More control options added.
-  - If the users edits a me:ZPE property, the reaction well diagram updates.
-
-### Version 0.3
-- Changes since 0.2.
-  - More details are revealed and made these editable.
-
-### Version 0.2
-- Changes since 0.1
-  - The rotation constants and vibration frequencies can be edited.
-  - Rather than present the data for molecules in a single table, the details are collapsible and editable via buttons.
-  - Additional tables present data for: Conditions, Model Parameters, and Control.
-
-### Version 0.1
-- A single `load` button should appear on the interface.
-- The user is expected to:
-1. Action `load`:
-  - A File Input Dialogue should appear and a `save` button should appear.
-  - The user should locate and select [Acetyl_O2_associationEx.xml]([https://mesmer-kinetics.github.io/mxg/data/examples/AcetylO2/Acetyl_O2_associationEx.xml).
-  - A portrayal of the XML should appear.
-    - This is similar to the portrayal provided by Extensible Stylesheet Language Transformation (XSLT) files that come with the main MESMER software. 
-2. Change the energy of one or more Molecules using the Inputs in the Molecules table section.
-  - Only the values in the table will change, the changes will not be reflected in the reactions diagram.  
-3. Action the `save` button.
-  - This should download a new XML file to the downloads location on the user device.
-- Notes
-  - Any saved XML file should be very similar to the input XML file, but there are some differences:
-    - Comments are not preserved.
-    - Additonal spaces are removed.
-    - Numbers may format differently, for example `2.25E16` appears as `22500000000000000`.
 
 ## Development RoadMap
 - Development is currently in an alpha phase...

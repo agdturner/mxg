@@ -68,7 +68,7 @@ let filename: string;
 /**
  * MXG.
  */
-let mxg_url: string = "https://github.com/agdturner/mxg-pwa";
+let mxg_url: string = "https://github.com/mesmer-kinetics/mxg";
 let mxg_a = document.createElement('a');
 mxg_a.href = mxg_url;
 mxg_a.textContent = mxg_url;
@@ -76,7 +76,7 @@ mxg_a.textContent = mxg_url;
 /**
  * Example data.
  */
-let mxgDataExamples_url: string = "https://github.com/agdturner/mxg-pwa/tree/main/data/examples";
+let mxgDataExamples_url: string = "https://github.com/mesmer-kinetics/mxg/tree/main/data/examples";
 let mxgDataExamples_a = document.createElement('a');
 mxgDataExamples_a.href = mxgDataExamples_url;
 mxgDataExamples_a.textContent = mxgDataExamples_url;
