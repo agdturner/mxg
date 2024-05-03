@@ -25,7 +25,11 @@ MXG uses Big.js under an MIT licence to handle decimal numbers. For details of B
 
 
 ## User Guide
-Alpha versions are not recommended for general use, but please feel free to test and submit issues. A community release supported by the MESMER community is hopefully coming soon... 
+MXG is being developed to support research and save MESMER users time in creating MESMER XML and in visualising MESMER data and compiling information into reports and other data sets.
+Any XML that is created should be checked.
+There is currently no undo button.
+Loading a MESMER file will lose any changes not yet saved.
+There is much about MGX that can be improved. Please test and report issues and comment on issues to help guide development.
 
 
 ## Development RoadMap
@@ -34,7 +38,8 @@ Alpha versions are not recommended for general use, but please feel free to test
   - Support selection of a molecule property to add (In Version 0.11 only loaded molecule properties can be changed. What is wanted is like what has been implmented for Control CalcMethod).
   - Support the specification (addition and deletion) of reactions.
   - Fix any issues reported as appropriate...
- 
+
+
 ## Developer Guide
 - This section contains instructions for setting up a development environment, and compiling and deploying new versions and provides some trouble shooting hints.
 - [Microsoft Visual Studio Code](https://code.visualstudio.com/) is suggested as a development environment, but other development environments are available...
