@@ -5,7 +5,7 @@
 MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for visualising and generating [Master Equation Solver for Multi Energy-well Reactions (MESMER)](https://sourceforge.net/projects/mesmer) [XML](https://en.wikipedia.org/wiki/XML) format data. MXG is been developed independently of other MESMER XML GUI development efforts (e.g. [http://www.mesmergui.cn/](http://www.mesmergui.cn/)). [EPSRC](https://www.ukri.org/councils/epsrc/) funded development from January 2024 until April 2024.
 
 MXG can be used online and installed onto devices as a Progressive Web Application (PWA). The latest unstable release and alpha version are served from GitHub Pages from where the respective PWA can be installed:
- - [Latest unstable version]([https://mesmer-kinetics.github.io/mxg/dist/main/)
+ - [Latest unstable version](https://mesmer-kinetics.github.io/mxg/dist/main/)
  - [Version 0.11]([https://agdturner.github.io/mxg-pwa](https://mesmer-kinetics.github.io/mxg/dist/0.11])
 
 A PWA is a type of application software delivered via the Web and built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It should work on any platform with a standards-compliant browser. For more details about what a PWA is please see:
