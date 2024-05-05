@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // p3.
     let p3 = document.createElement('p');
     wDiv.appendChild(p3);
-    p3.appendChild(document.createTextNode('MXG runs on on the latest Firefox, Chrome, Edge or Safari Web browsers. It can \
+    p3.appendChild(document.createTextNode('MXG runs on the latest Firefox, Chrome, Edge or Safari Web browsers. It can \
         be used offline if installed as a Progressive Web App (PWA). PWA installation varies by Web browser and device, it \
         should only require user permission and is effectively a form of Web browser bookmark. For guidance please see the \
         MXG main development repository README: '));
