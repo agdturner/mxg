@@ -22,12 +22,18 @@ MXG uses 3DMol.js under a BSD-3-Clause licence to visualise molecules with coord
 MXG uses Big.js under an MIT licence to handle decimal numbers. For details of Big.js please see the GitHub repository: [https://mikemcl.github.io/big.js/](https://mikemcl.github.io/big.js/).
 
 
-## User Guide
+## User/Contributor Guide
 MXG is being developed to support research and save MESMER users time in creating MESMER XML and in visualising MESMER data and compiling information into reports and other data sets.
 Any XML that is created should be checked.
 There is currently no undo button.
 Loading a MESMER file will lose any changes not yet saved.
 There is much about MGX that can be improved. Please test and report issues and comment on issues to help guide development.
+
+There is a Developer Guide below with set up instructions. To contribute, please use the following workflow:
+1. Fork the repository.
+2. Create an issue or comment on an issue to let others know you are working on that.
+3. Make changes to your fork.
+4. Submit a pull request linking to the issue.
 
 
 ## Development RoadMap
