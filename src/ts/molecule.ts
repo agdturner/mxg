@@ -882,6 +882,8 @@ export class Property extends NodeWithNodes {
                     dictRef = "basis";
                 } else if (title == "method") { // examples/AnalyticalRepresentation/Chebyshev.xml
                     dictRef = "method";
+                } else if (title == "File Format") { // examples/AnalyticalRepresentation/Chebyshev.xml
+                    dictRef = "method";
                 } else {
                     throw new Error('Title ' + title + 'not recognised!');
                 }
