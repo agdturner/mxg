@@ -5355,7 +5355,7 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
                 }
             }
         }
-        processElement(xml, Format, cmar.setFormat.bind(cmar), true);
+        processElement(xml, Format, cmar.setFormat.bind(cmar), false);
         processElement(xml, Precision, cmar.setPrecision.bind(cmar), false);
         processElement(xml, ChebNumTemp, cmar.setChebNumTemp.bind(cmar), true);
         processElement(xml, ChebNumConc, cmar.setChebNumConc.bind(cmar), true);
