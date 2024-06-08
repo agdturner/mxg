@@ -3254,12 +3254,33 @@ export class Molecule extends NodeWithNodes {
      * Get the ZPE value of the molecule.
      */
     getEnergy(): Big {
-        let p: Property | undefined = this.getProperty(ZPE.dictRef);
-        if (p == undefined) {
-            console.log(this.toString());
-            throw new Error(ZPE.dictRef + ' property not found!');
-            //return 0;
+        let p: Property | undefined ;
+
+        // Successively try different energy definitions.
+
+        try { 
+            p = this.getProperty(ZPE.dictRef); 
+        } catch (e) {
+            try {
+                p = this.getProperty(Hf0.dictRef); 
+            } catch (e) {
+                try {
+                    p = this.getProperty(Hf298.dictRef); 
+                } catch (e) {
+                    try {
+                        p = this.getProperty(HfAT0.dictRef); 
+                    } catch (e) {    
+                        console.log(this.toString());
+                        throw new Error(ZPE.dictRef + ' property not found!');  
+                    }
+                }
+            }
         }
-        return (p.getProperty() as PropertyScalarNumber).value;
+
+        if (p == undefined) {
+            return Big(0) ;
+        } else {
+            return (p.getProperty() as PropertyScalarNumber).value;
+        }
     }
 }
