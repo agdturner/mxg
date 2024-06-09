@@ -3174,148 +3174,147 @@ function processReactionList(xml: XMLDocument): HTMLDivElement {
             } else {
                 let mm: MCRCMethod;
                 let mmAttributes: Map<string, string> = getAttributes(xml_MCRCMethod[0]);
-                let name: string | undefined = mmAttributes.get("name");
+                let type: string | undefined = mmAttributes.get("xsi:type") as string;
+                if (type == undefined) {
+                    // If there is no xsi:type search for a name.
+                    type = mmAttributes.get("name");
+                }
                 let mmDivId: string = addRID(reactionDivID, MCRCMethod.tagName);
                 let mmDiv: HTMLDivElement = createDiv(mmDivId);
-                if (name == undefined || name == MesmerILT.xsiType2) {
+                if (type == MesmerILT.xsiType || type == MesmerILT.xsiType2) {
                     // Create a collapsible div.
                     let mmcDivId = addRID(mmDivId, s_container);
                     let mmcDiv: HTMLDivElement = getCollapsibleDiv(mmcDivId, reactionDiv, null, mmDiv, MCRCMethod.tagName, boundary1, level1);
                     reactionDiv.appendChild(mmcDiv);
                     //console.log(MCRCMethod.tagName + " name=" + name);
-                    let type: string = mmAttributes.get("xsi:type") as string;
                     mm = new MesmerILT(mmAttributes);
                     //console.log(MCRCMethod.tagName + "xsi:type=" + type);
-                    if (type == MesmerILT.xsiType || type == MesmerILT.xsiType2) {
-                        let xml_pe: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
-                        if (xml_pe != null) {
-                            if (xml_pe[0] != null) {
-                                let inputString: string = getInputString(xml_pe[0]);
-                                let value: Big = new Big(inputString);
-                                let peAttributes: Map<string, string> = getAttributes(xml_pe[0]);
-                                let pe: PreExponential = new PreExponential(peAttributes, value);
-                                (mm as MesmerILT).setPreExponential(pe);
-                                // Create a new div element for the input.
-                                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, PreExponential.tagName, s_input),
-                                    boundary1, level1,
-                                    (event: Event) => {
-                                        let target = event.target as HTMLInputElement;
-                                        setNumberNode(pe, target);
-                                    }, inputString, PreExponential.tagName);
-                                mmDiv.appendChild(lwi);
-                                let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
-                                input.value = inputString;
-                                resizeInputElement(input);
-                                input.addEventListener('change', (event: Event) => {
+                    let xml_pe: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(PreExponential.tagName);
+                    if (xml_pe != null) {
+                        if (xml_pe[0] != null) {
+                            let inputString: string = getInputString(xml_pe[0]);
+                            let value: Big = new Big(inputString);
+                            let peAttributes: Map<string, string> = getAttributes(xml_pe[0]);
+                            let pe: PreExponential = new PreExponential(peAttributes, value);
+                            (mm as MesmerILT).setPreExponential(pe);
+                            // Create a new div element for the input.
+                            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, PreExponential.tagName, s_input),
+                                boundary1, level1,
+                                (event: Event) => {
                                     let target = event.target as HTMLInputElement;
-                                    inputString = target.value;
-                                    pe.value = new Big(inputString);
-                                    console.log(PreExponential.tagName + " changed to " + inputString);
-                                    resizeInputElement(input);
-                                });
-                                addAnyUnits(undefined, peAttributes, lwi, null, addRID(mmDivId, PreExponential.tagName),
-                                    PreExponential.tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
-                        }
-                        //console.log("preExponential " + preExponential);
-                        let xml_ae: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
-                        if (xml_ae != null) {
-                            if (xml_ae[0] != null) {
-                                let inputString: string = getInputString(xml_ae[0]);
-                                let value: Big = new Big(inputString);
-                                let aeAttributes: Map<string, string> = getAttributes(xml_ae[0]);
-                                let ae: ActivationEnergy = new ActivationEnergy(aeAttributes, value);
-                                (mm as MesmerILT).setActivationEnergy(ae);
-                                // Create a new div element for the input.
-                                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, ActivationEnergy.tagName, s_input), boundary1, level1,
-                                    (event: Event) => {
-                                        let target = event.target as HTMLInputElement;
-                                        setNumberNode(ae, target);
-                                    }, inputString, ActivationEnergy.tagName);
-                                let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
-                                input.value = inputString;
+                                    setNumberNode(pe, target);
+                                }, inputString, PreExponential.tagName);
+                            mmDiv.appendChild(lwi);
+                            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+                            input.value = inputString;
+                            resizeInputElement(input);
+                            input.addEventListener('change', (event: Event) => {
+                                let target = event.target as HTMLInputElement;
+                                inputString = target.value;
+                                pe.value = new Big(inputString);
+                                console.log(PreExponential.tagName + " changed to " + inputString);
                                 resizeInputElement(input);
-                                input.addEventListener('change', (event: Event) => {
-                                    let target = event.target as HTMLInputElement;
-                                    inputString = target.value;
-                                    ae.value = new Big(inputString);
-                                    console.log(ActivationEnergy.tagName + " changed to " + inputString);
-                                    resizeInputElement(input);
-                                });
-                                addAnyUnits(undefined, aeAttributes, lwi, null, addRID(mmDivId, ActivationEnergy.tagName),
-                                    ActivationEnergy.tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, peAttributes, lwi, null, addRID(mmDivId, PreExponential.tagName),
+                                PreExponential.tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                        //console.log("activationEnergy " + activationEnergy);
-                        let xml_ti: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
-                        if (xml_ti != null) {
-                            if (xml_ti[0] != null) {
-                                let inputString: string = getInputString(xml_ti[0]);
-                                let value: Big = new Big(inputString);
-                                let tiAttributes: Map<string, string> = getAttributes(xml_ti[0]);
-                                let ti: TInfinity = new TInfinity(tiAttributes, value);
-                                (mm as MesmerILT).setTInfinity(ti);
-                                // Create a new div element for the input.
-                                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, TInfinity.tagName, s_input),
-                                    boundary1, level1,
-                                    (event: Event) => {
-                                        let target = event.target as HTMLInputElement;
-                                        setNumberNode(ti, target);
-                                    }, inputString, TInfinity.tagName);
-                                let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
-                                input.value = inputString;
+                    }
+                    //console.log("preExponential " + preExponential);
+                    let xml_ae: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(ActivationEnergy.tagName);
+                    if (xml_ae != null) {
+                        if (xml_ae[0] != null) {
+                            let inputString: string = getInputString(xml_ae[0]);
+                            let value: Big = new Big(inputString);
+                            let aeAttributes: Map<string, string> = getAttributes(xml_ae[0]);
+                            let ae: ActivationEnergy = new ActivationEnergy(aeAttributes, value);
+                            (mm as MesmerILT).setActivationEnergy(ae);
+                            // Create a new div element for the input.
+                            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, ActivationEnergy.tagName, s_input), boundary1, level1,
+                                (event: Event) => {
+                                    let target = event.target as HTMLInputElement;
+                                    setNumberNode(ae, target);
+                                }, inputString, ActivationEnergy.tagName);
+                            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+                            input.value = inputString;
+                            resizeInputElement(input);
+                            input.addEventListener('change', (event: Event) => {
+                                let target = event.target as HTMLInputElement;
+                                inputString = target.value;
+                                ae.value = new Big(inputString);
+                                console.log(ActivationEnergy.tagName + " changed to " + inputString);
                                 resizeInputElement(input);
-                                input.addEventListener('change', (event: Event) => {
-                                    let target = event.target as HTMLInputElement;
-                                    inputString = target.value;
-                                    ti.value = new Big(inputString);
-                                    console.log(TInfinity.tagName + " changed to " + inputString);
-                                    resizeInputElement(input);
-                                });
-                                addAnyUnits(undefined, tiAttributes, lwi, null, addRID(mmDivId, TInfinity.tagName), TInfinity.tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, aeAttributes, lwi, null, addRID(mmDivId, ActivationEnergy.tagName),
+                                ActivationEnergy.tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                        //console.log("tInfinity " + tInfinity);
-                        let xml_ni: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
-                        if (xml_ni != null) {
-                            if (xml_ni[0] != null) {
-                                let inputString: string = getInputString(xml_ni[0]);
-                                let value: Big = new Big(inputString);
-                                let niAttributes: Map<string, string> = getAttributes(xml_ni[0]);
-                                let ni: NInfinity = new NInfinity(niAttributes, value);
-                                (mm as MesmerILT).setNInfinity(ni);
-                                // Create a new div element for the input.
-                                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, NInfinity.tagName, s_input), boundary1, level1,
-                                    (event: Event) => {
-                                        let target = event.target as HTMLInputElement;
-                                        setNumberNode(ni, target);
-                                    }, inputString, NInfinity.tagName);
-                                mmDiv.appendChild(lwi);
-                                let inputElement: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
-                                inputElement.value = inputString;
+                    }
+                    //console.log("activationEnergy " + activationEnergy);
+                    let xml_ti: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(TInfinity.tagName);
+                    if (xml_ti != null) {
+                        if (xml_ti[0] != null) {
+                            let inputString: string = getInputString(xml_ti[0]);
+                            let value: Big = new Big(inputString);
+                            let tiAttributes: Map<string, string> = getAttributes(xml_ti[0]);
+                            let ti: TInfinity = new TInfinity(tiAttributes, value);
+                            (mm as MesmerILT).setTInfinity(ti);
+                            // Create a new div element for the input.
+                            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, TInfinity.tagName, s_input),
+                                boundary1, level1,
+                                (event: Event) => {
+                                    let target = event.target as HTMLInputElement;
+                                    setNumberNode(ti, target);
+                                }, inputString, TInfinity.tagName);
+                            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+                            input.value = inputString;
+                            resizeInputElement(input);
+                            input.addEventListener('change', (event: Event) => {
+                                let target = event.target as HTMLInputElement;
+                                inputString = target.value;
+                                ti.value = new Big(inputString);
+                                console.log(TInfinity.tagName + " changed to " + inputString);
+                                resizeInputElement(input);
+                            });
+                            addAnyUnits(undefined, tiAttributes, lwi, null, addRID(mmDivId, TInfinity.tagName), TInfinity.tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
+                        }
+                    }
+                    //console.log("tInfinity " + tInfinity);
+                    let xml_ni: HTMLCollectionOf<Element> = xml_MCRCMethod[0].getElementsByTagName(NInfinity.tagName);
+                    if (xml_ni != null) {
+                        if (xml_ni[0] != null) {
+                            let inputString: string = getInputString(xml_ni[0]);
+                            let value: Big = new Big(inputString);
+                            let niAttributes: Map<string, string> = getAttributes(xml_ni[0]);
+                            let ni: NInfinity = new NInfinity(niAttributes, value);
+                            (mm as MesmerILT).setNInfinity(ni);
+                            // Create a new div element for the input.
+                            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, NInfinity.tagName, s_input), boundary1, level1,
+                                (event: Event) => {
+                                    let target = event.target as HTMLInputElement;
+                                    setNumberNode(ni, target);
+                                }, inputString, NInfinity.tagName);
+                            mmDiv.appendChild(lwi);
+                            let inputElement: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+                            inputElement.value = inputString;
+                            resizeInputElement(inputElement);
+                            inputElement.addEventListener('change', (event: Event) => {
+                                let target = event.target as HTMLInputElement;
+                                inputString = target.value;
+                                ni.value = new Big(inputString);
+                                console.log(NInfinity.tagName + " set to " + inputString);
                                 resizeInputElement(inputElement);
-                                inputElement.addEventListener('change', (event: Event) => {
-                                    let target = event.target as HTMLInputElement;
-                                    inputString = target.value;
-                                    ni.value = new Big(inputString);
-                                    console.log(NInfinity.tagName + " set to " + inputString);
-                                    resizeInputElement(inputElement);
-                                });
-                                addAnyUnits(undefined, niAttributes, lwi, null, addRID(mmDivId, NInfinity.tagName), NInfinity.tagName,
-                                    boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, niAttributes, lwi, null, addRID(mmDivId, NInfinity.tagName), NInfinity.tagName,
+                                boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                    } else {
-                        throw new Error("Unexpected xsi:type=" + type);
                     }
                 } else {
                     mm = new MCRCMethod(mmAttributes);
                     let mCRCMethodLabel: HTMLLabelElement = document.createElement('label');
-                    mCRCMethodLabel.textContent = MCRCMethod.tagName + ": " + mmAttributes.get("name") as string;
+                    mCRCMethodLabel.textContent = MCRCMethod.tagName + ": " + type;
                     Object.assign(mCRCMethodLabel.style, level1);
                     mmDiv.appendChild(mCRCMethodLabel);
                     reactionDiv.appendChild(mmDiv);
