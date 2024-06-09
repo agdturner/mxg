@@ -5002,7 +5002,9 @@ function handleControl(control: Control, cDiv: HTMLDivElement, onOffControls: Ma
         if (xml.length == 1) {
             if (handleInput) {
                 let valueString = getNodeValue(getFirstChildNode(xml[0]));
-                let value: Big = new Big(valueString);
+                let value: Big ;
+                // Deal with the special case of eigenvalues, which can take either numerical or string values.
+                value = (valueString == "all") ?  new Big(0) : new Big(valueString);
                 controlInstance = new ControlClass(getAttributes(xml[0]), value);
                 createInputControlItem(control, div!, controlInstance, setControlMethod, id!, valueString);
             } else {
