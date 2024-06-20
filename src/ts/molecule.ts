@@ -3270,8 +3270,7 @@ export class Molecule extends NodeWithNodes {
                     try {
                         p = this.getProperty(HfAT0.dictRef); 
                     } catch (e) {    
-                        console.log(this.toString());
-                        throw new Error(ZPE.dictRef + ' property not found!');  
+                        p = undefined ; 
                     }
                 }
             }
