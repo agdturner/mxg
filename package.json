@@ -1,9 +1,11 @@
 {
   "name": "mxg",
-  "description": "MESMER XML GUI.",
-  "source": "src/index.html",
-  "version": "0.11",
+  "version": "0.12",
   "license": "MIT",
+  "description": "MESMER XML GUI.",
+  "keywords": ["reaction", "kinetics", "chemistry"],
+  "source": "src/index.html",
+  "homepage": "https://mesmer-kinetics.github.io/mxg/",
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "build": "parcel build",
@@ -37,8 +39,8 @@
           "last 2 Edge versions"
         ]
       },
-      "distDir": "dist/0.11",
-      "publicUrl": "/mxg/dist/0.11"
+      "distDir": "dist/0.12",
+      "publicUrl": "/mxg/dist/0.12"
     }
   },
   "devDependencies": {
@@ -51,5 +53,18 @@
     "parcel": "^2.11.0",
     "typescript": "^5.3.3"
   },
-  "author": "Andy Turner"
+  "author": {
+    "name": "Struan Robertson",
+    "url": "https://github.com/struanr"
+  },
+  "contributors": [
+    {
+      "name": "Struan Robertson",
+      "url": "https://github.com/struanr"
+    },
+    {
+      "name": "Andy Turner",
+      "url": "https://github.com/agdturner"
+    }
+  ]
 }
