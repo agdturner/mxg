@@ -620,13 +620,13 @@ var _librarymolsJs = require("./librarymols.js");
  */ let filename;
 /**
  * MXG.
- */ let mxg_url = "https://github.com/agdturner/mxg-pwa";
+ */ let mxg_url = "https://github.com/mesmer-kinetics/mxg";
 let mxg_a = document.createElement("a");
 mxg_a.href = mxg_url;
 mxg_a.textContent = mxg_url;
 /**
  * Example data.
- */ let mxgDataExamples_url = "https://github.com/agdturner/mxg-pwa/tree/main/data/examples";
+ */ let mxgDataExamples_url = "https://github.com/mesmer-kinetics/mxg/tree/main/data/examples";
 let mxgDataExamples_a = document.createElement("a");
 mxgDataExamples_a.href = mxgDataExamples_url;
 mxgDataExamples_a.textContent = mxgDataExamples_url;
@@ -1009,7 +1009,7 @@ let sp_font = "2em SensSerif";
     // p3.
     let p3 = document.createElement("p");
     wDiv.appendChild(p3);
-    p3.appendChild(document.createTextNode("MXG runs on on the latest Firefox, Chrome, Edge or Safari Web browsers. It can         be used offline if installed as a Progressive Web App (PWA). PWA installation varies by Web browser and device, it         should only require user permission and is effectively a form of Web browser bookmark. For guidance please see the         MXG main development repository README: "));
+    p3.appendChild(document.createTextNode("MXG runs on the latest Firefox, Chrome, Edge or Safari Web browsers. It can         be used offline if installed as a Progressive Web App (PWA). PWA installation varies by Web browser and device, it         should only require user permission and is effectively a form of Web browser bookmark. For guidance please see the         MXG main development repository README: "));
     p3.appendChild(mxg_a.cloneNode(true));
     p3.appendChild(document.createTextNode(". MXG may work on small screen devices, but it is recommended to use a device         with at least a standard laptop sized screen."));
     // p4.
@@ -3246,137 +3246,136 @@ function setNumberNode(node, input) {
             else {
                 let mm;
                 let mmAttributes = (0, _xmlJs.getAttributes)(xml_MCRCMethod[0]);
-                let name = mmAttributes.get("name");
+                let type = mmAttributes.get("xsi:type");
+                if (type == undefined) // If there is no xsi:type search for a name.
+                type = mmAttributes.get("name");
                 let mmDivId = addRID(reactionDivID, (0, _reactionJs.MCRCMethod).tagName);
                 let mmDiv = (0, _htmlJs.createDiv)(mmDivId);
-                if (name == undefined || name == (0, _reactionJs.MesmerILT).xsiType2) {
+                if (type == (0, _reactionJs.MesmerILT).xsiType || type == (0, _reactionJs.MesmerILT).xsiType2) {
                     // Create a collapsible div.
                     let mmcDivId = addRID(mmDivId, s_container);
                     let mmcDiv = (0, _htmlJs.getCollapsibleDiv)(mmcDivId, reactionDiv, null, mmDiv, (0, _reactionJs.MCRCMethod).tagName, boundary1, level1);
                     reactionDiv.appendChild(mmcDiv);
                     //console.log(MCRCMethod.tagName + " name=" + name);
-                    let type = mmAttributes.get("xsi:type");
                     mm = new (0, _reactionJs.MesmerILT)(mmAttributes);
                     //console.log(MCRCMethod.tagName + "xsi:type=" + type);
-                    if (type == (0, _reactionJs.MesmerILT).xsiType || type == (0, _reactionJs.MesmerILT).xsiType2) {
-                        let xml_pe = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.PreExponential).tagName);
-                        if (xml_pe != null) {
-                            if (xml_pe[0] != null) {
-                                let inputString = (0, _xmlJs.getInputString)(xml_pe[0]);
-                                let value = new (0, _bigJsDefault.default)(inputString);
-                                let peAttributes = (0, _xmlJs.getAttributes)(xml_pe[0]);
-                                let pe = new (0, _reactionJs.PreExponential)(peAttributes, value);
-                                mm.setPreExponential(pe);
-                                // Create a new div element for the input.
-                                let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.PreExponential).tagName, s_input), boundary1, level1, (event)=>{
-                                    let target = event.target;
-                                    setNumberNode(pe, target);
-                                }, inputString, (0, _reactionJs.PreExponential).tagName);
-                                mmDiv.appendChild(lwi);
-                                let input = lwi.querySelector("input");
-                                input.value = inputString;
+                    let xml_pe = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.PreExponential).tagName);
+                    if (xml_pe != null) {
+                        if (xml_pe[0] != null) {
+                            let inputString = (0, _xmlJs.getInputString)(xml_pe[0]);
+                            let value = new (0, _bigJsDefault.default)(inputString);
+                            let peAttributes = (0, _xmlJs.getAttributes)(xml_pe[0]);
+                            let pe = new (0, _reactionJs.PreExponential)(peAttributes, value);
+                            mm.setPreExponential(pe);
+                            // Create a new div element for the input.
+                            let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.PreExponential).tagName, s_input), boundary1, level1, (event)=>{
+                                let target = event.target;
+                                setNumberNode(pe, target);
+                            }, inputString, (0, _reactionJs.PreExponential).tagName);
+                            mmDiv.appendChild(lwi);
+                            let input = lwi.querySelector("input");
+                            input.value = inputString;
+                            (0, _htmlJs.resizeInputElement)(input);
+                            input.addEventListener("change", (event)=>{
+                                let target = event.target;
+                                inputString = target.value;
+                                pe.value = new (0, _bigJsDefault.default)(inputString);
+                                console.log((0, _reactionJs.PreExponential).tagName + " changed to " + inputString);
                                 (0, _htmlJs.resizeInputElement)(input);
-                                input.addEventListener("change", (event)=>{
-                                    let target = event.target;
-                                    inputString = target.value;
-                                    pe.value = new (0, _bigJsDefault.default)(inputString);
-                                    console.log((0, _reactionJs.PreExponential).tagName + " changed to " + inputString);
-                                    (0, _htmlJs.resizeInputElement)(input);
-                                });
-                                addAnyUnits(undefined, peAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.PreExponential).tagName), (0, _reactionJs.PreExponential).tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, peAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.PreExponential).tagName), (0, _reactionJs.PreExponential).tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                        //console.log("preExponential " + preExponential);
-                        let xml_ae = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.ActivationEnergy).tagName);
-                        if (xml_ae != null) {
-                            if (xml_ae[0] != null) {
-                                let inputString = (0, _xmlJs.getInputString)(xml_ae[0]);
-                                let value = new (0, _bigJsDefault.default)(inputString);
-                                let aeAttributes = (0, _xmlJs.getAttributes)(xml_ae[0]);
-                                let ae = new (0, _reactionJs.ActivationEnergy)(aeAttributes, value);
-                                mm.setActivationEnergy(ae);
-                                // Create a new div element for the input.
-                                let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.ActivationEnergy).tagName, s_input), boundary1, level1, (event)=>{
-                                    let target = event.target;
-                                    setNumberNode(ae, target);
-                                }, inputString, (0, _reactionJs.ActivationEnergy).tagName);
-                                let input = lwi.querySelector("input");
-                                input.value = inputString;
+                    }
+                    //console.log("preExponential " + preExponential);
+                    let xml_ae = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.ActivationEnergy).tagName);
+                    if (xml_ae != null) {
+                        if (xml_ae[0] != null) {
+                            let inputString = (0, _xmlJs.getInputString)(xml_ae[0]);
+                            let value = new (0, _bigJsDefault.default)(inputString);
+                            let aeAttributes = (0, _xmlJs.getAttributes)(xml_ae[0]);
+                            let ae = new (0, _reactionJs.ActivationEnergy)(aeAttributes, value);
+                            mm.setActivationEnergy(ae);
+                            // Create a new div element for the input.
+                            let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.ActivationEnergy).tagName, s_input), boundary1, level1, (event)=>{
+                                let target = event.target;
+                                setNumberNode(ae, target);
+                            }, inputString, (0, _reactionJs.ActivationEnergy).tagName);
+                            let input = lwi.querySelector("input");
+                            input.value = inputString;
+                            (0, _htmlJs.resizeInputElement)(input);
+                            input.addEventListener("change", (event)=>{
+                                let target = event.target;
+                                inputString = target.value;
+                                ae.value = new (0, _bigJsDefault.default)(inputString);
+                                console.log((0, _reactionJs.ActivationEnergy).tagName + " changed to " + inputString);
                                 (0, _htmlJs.resizeInputElement)(input);
-                                input.addEventListener("change", (event)=>{
-                                    let target = event.target;
-                                    inputString = target.value;
-                                    ae.value = new (0, _bigJsDefault.default)(inputString);
-                                    console.log((0, _reactionJs.ActivationEnergy).tagName + " changed to " + inputString);
-                                    (0, _htmlJs.resizeInputElement)(input);
-                                });
-                                addAnyUnits(undefined, aeAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.ActivationEnergy).tagName), (0, _reactionJs.ActivationEnergy).tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, aeAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.ActivationEnergy).tagName), (0, _reactionJs.ActivationEnergy).tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                        //console.log("activationEnergy " + activationEnergy);
-                        let xml_ti = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.TInfinity).tagName);
-                        if (xml_ti != null) {
-                            if (xml_ti[0] != null) {
-                                let inputString = (0, _xmlJs.getInputString)(xml_ti[0]);
-                                let value = new (0, _bigJsDefault.default)(inputString);
-                                let tiAttributes = (0, _xmlJs.getAttributes)(xml_ti[0]);
-                                let ti = new (0, _reactionJs.TInfinity)(tiAttributes, value);
-                                mm.setTInfinity(ti);
-                                // Create a new div element for the input.
-                                let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.TInfinity).tagName, s_input), boundary1, level1, (event)=>{
-                                    let target = event.target;
-                                    setNumberNode(ti, target);
-                                }, inputString, (0, _reactionJs.TInfinity).tagName);
-                                let input = lwi.querySelector("input");
-                                input.value = inputString;
+                    }
+                    //console.log("activationEnergy " + activationEnergy);
+                    let xml_ti = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.TInfinity).tagName);
+                    if (xml_ti != null) {
+                        if (xml_ti[0] != null) {
+                            let inputString = (0, _xmlJs.getInputString)(xml_ti[0]);
+                            let value = new (0, _bigJsDefault.default)(inputString);
+                            let tiAttributes = (0, _xmlJs.getAttributes)(xml_ti[0]);
+                            let ti = new (0, _reactionJs.TInfinity)(tiAttributes, value);
+                            mm.setTInfinity(ti);
+                            // Create a new div element for the input.
+                            let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.TInfinity).tagName, s_input), boundary1, level1, (event)=>{
+                                let target = event.target;
+                                setNumberNode(ti, target);
+                            }, inputString, (0, _reactionJs.TInfinity).tagName);
+                            let input = lwi.querySelector("input");
+                            input.value = inputString;
+                            (0, _htmlJs.resizeInputElement)(input);
+                            input.addEventListener("change", (event)=>{
+                                let target = event.target;
+                                inputString = target.value;
+                                ti.value = new (0, _bigJsDefault.default)(inputString);
+                                console.log((0, _reactionJs.TInfinity).tagName + " changed to " + inputString);
                                 (0, _htmlJs.resizeInputElement)(input);
-                                input.addEventListener("change", (event)=>{
-                                    let target = event.target;
-                                    inputString = target.value;
-                                    ti.value = new (0, _bigJsDefault.default)(inputString);
-                                    console.log((0, _reactionJs.TInfinity).tagName + " changed to " + inputString);
-                                    (0, _htmlJs.resizeInputElement)(input);
-                                });
-                                addAnyUnits(undefined, tiAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.TInfinity).tagName), (0, _reactionJs.TInfinity).tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, tiAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.TInfinity).tagName), (0, _reactionJs.TInfinity).tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                        //console.log("tInfinity " + tInfinity);
-                        let xml_ni = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.NInfinity).tagName);
-                        if (xml_ni != null) {
-                            if (xml_ni[0] != null) {
-                                let inputString = (0, _xmlJs.getInputString)(xml_ni[0]);
-                                let value = new (0, _bigJsDefault.default)(inputString);
-                                let niAttributes = (0, _xmlJs.getAttributes)(xml_ni[0]);
-                                let ni = new (0, _reactionJs.NInfinity)(niAttributes, value);
-                                mm.setNInfinity(ni);
-                                // Create a new div element for the input.
-                                let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.NInfinity).tagName, s_input), boundary1, level1, (event)=>{
-                                    let target = event.target;
-                                    setNumberNode(ni, target);
-                                }, inputString, (0, _reactionJs.NInfinity).tagName);
-                                mmDiv.appendChild(lwi);
-                                let inputElement = lwi.querySelector("input");
-                                inputElement.value = inputString;
+                    }
+                    //console.log("tInfinity " + tInfinity);
+                    let xml_ni = xml_MCRCMethod[0].getElementsByTagName((0, _reactionJs.NInfinity).tagName);
+                    if (xml_ni != null) {
+                        if (xml_ni[0] != null) {
+                            let inputString = (0, _xmlJs.getInputString)(xml_ni[0]);
+                            let value = new (0, _bigJsDefault.default)(inputString);
+                            let niAttributes = (0, _xmlJs.getAttributes)(xml_ni[0]);
+                            let ni = new (0, _reactionJs.NInfinity)(niAttributes, value);
+                            mm.setNInfinity(ni);
+                            // Create a new div element for the input.
+                            let lwi = (0, _htmlJs.createLabelWithInput)("number", addRID(mmDivId, (0, _reactionJs.NInfinity).tagName, s_input), boundary1, level1, (event)=>{
+                                let target = event.target;
+                                setNumberNode(ni, target);
+                            }, inputString, (0, _reactionJs.NInfinity).tagName);
+                            mmDiv.appendChild(lwi);
+                            let inputElement = lwi.querySelector("input");
+                            inputElement.value = inputString;
+                            (0, _htmlJs.resizeInputElement)(inputElement);
+                            inputElement.addEventListener("change", (event)=>{
+                                let target = event.target;
+                                inputString = target.value;
+                                ni.value = new (0, _bigJsDefault.default)(inputString);
+                                console.log((0, _reactionJs.NInfinity).tagName + " set to " + inputString);
                                 (0, _htmlJs.resizeInputElement)(inputElement);
-                                inputElement.addEventListener("change", (event)=>{
-                                    let target = event.target;
-                                    inputString = target.value;
-                                    ni.value = new (0, _bigJsDefault.default)(inputString);
-                                    console.log((0, _reactionJs.NInfinity).tagName + " set to " + inputString);
-                                    (0, _htmlJs.resizeInputElement)(inputElement);
-                                });
-                                addAnyUnits(undefined, niAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.NInfinity).tagName), (0, _reactionJs.NInfinity).tagName, boundary1, boundary1);
-                                mmDiv.appendChild(lwi);
-                            }
+                            });
+                            addAnyUnits(undefined, niAttributes, lwi, null, addRID(mmDivId, (0, _reactionJs.NInfinity).tagName), (0, _reactionJs.NInfinity).tagName, boundary1, boundary1);
+                            mmDiv.appendChild(lwi);
                         }
-                    } else throw new Error("Unexpected xsi:type=" + type);
+                    }
                 } else {
                     mm = new (0, _reactionJs.MCRCMethod)(mmAttributes);
                     let mCRCMethodLabel = document.createElement("label");
-                    mCRCMethodLabel.textContent = (0, _reactionJs.MCRCMethod).tagName + ": " + mmAttributes.get("name");
+                    mCRCMethodLabel.textContent = (0, _reactionJs.MCRCMethod).tagName + ": " + type;
                     Object.assign(mCRCMethodLabel.style, level1);
                     mmDiv.appendChild(mCRCMethodLabel);
                     reactionDiv.appendChild(mmDiv);
@@ -4946,7 +4945,9 @@ function getDefaultGrainsize(tagName) {
         if (xml.length == 1) {
             if (handleInput) {
                 let valueString = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml[0]));
-                let value = new (0, _bigJsDefault.default)(valueString);
+                let value;
+                // Deal with the special case of eigenvalues, which can take either numerical or string values.
+                value = valueString == "all" ? new (0, _bigJsDefault.default)(0) : new (0, _bigJsDefault.default)(valueString);
                 controlInstance = new ControlClass((0, _xmlJs.getAttributes)(xml[0]), value);
                 createInputControlItem(control, div, controlInstance, setControlMethod, id, valueString);
             } else {
@@ -5256,7 +5257,7 @@ function getDefaultGrainsize(tagName) {
                 } else throw new Error(`More than one ${tagName} element.`);
             }
         }
-        processElement(xml, (0, _controlJs.Format), cmar.setFormat.bind(cmar), true);
+        processElement(xml, (0, _controlJs.Format), cmar.setFormat.bind(cmar), false);
         processElement(xml, (0, _controlJs.Precision), cmar.setPrecision.bind(cmar), false);
         processElement(xml, (0, _controlJs.ChebNumTemp), cmar.setChebNumTemp.bind(cmar), true);
         processElement(xml, (0, _controlJs.ChebNumConc), cmar.setChebNumConc.bind(cmar), true);
@@ -8718,6 +8719,7 @@ class Property extends (0, _xmlJs.NodeWithNodes) {
                 else if (title == "program") dictRef = "program";
                 else if (title == "basis") dictRef = "basis";
                 else if (title == "method") dictRef = "method";
+                else if (title == "File Format") dictRef = "method";
                 else throw new Error("Title " + title + "not recognised!");
             }
         }
@@ -10376,13 +10378,27 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Get the ZPE value of the molecule.
      */ getEnergy() {
-        let p = this.getProperty(ZPE.dictRef);
-        if (p == undefined) {
-            console.log(this.toString());
-            throw new Error(ZPE.dictRef + " property not found!");
-        //return 0;
+        let p;
+        // Successively try different energy definitions.
+        try {
+            p = this.getProperty(ZPE.dictRef);
+        } catch (e) {
+            try {
+                p = this.getProperty(Hf0.dictRef);
+            } catch (e) {
+                try {
+                    p = this.getProperty(Hf298.dictRef);
+                } catch (e) {
+                    try {
+                        p = this.getProperty(HfAT0.dictRef);
+                    } catch (e) {
+                        p = undefined;
+                    }
+                }
+            }
         }
-        return p.getProperty().value;
+        if (p == undefined) return (0, _bigJsDefault.default)(0);
+        else return p.getProperty().value;
     }
 }
 
@@ -16851,6 +16867,6 @@ class LibraryMolecules {
     }
 }
 
-},{"big.js":"91nMZ","./mesmer":"kMp4Q","./metadata":"aKNnu","./molecule":"ahQNx","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequire1c89")
+},{"big.js":"91nMZ","./mesmer":"kMp4Q","./metadata":"aKNnu","./molecule":"ahQNx","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8AHG6","dPB9w"], "dPB9w", "parcelRequirec042")
 
 //# sourceMappingURL=index.50584fd7.js.map
