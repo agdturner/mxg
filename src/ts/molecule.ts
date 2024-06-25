@@ -2794,9 +2794,9 @@ export class Molecule extends NodeWithNodes {
     edmindex: Map<number, number>;
 
     /**
-     * This is the molecule ID which is unique and independent of the attribute id value.
+     * This is the molecule ID which is to be unique. It may have the same value as the attribute id.
      */
-    id: number;
+    id: string;
 
     /**
      * This is either just the attribute id, or a composite of the attribute id and the molecule id.
@@ -2807,6 +2807,8 @@ export class Molecule extends NodeWithNodes {
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
      * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
+     * @param id The molecule ID which is to be unique.
+     * @param metadataList The metadata list.
      * @param atoms The atom or atoms.
      * @param bonds The bonds.
      * @param properties The properties.
@@ -2816,7 +2818,7 @@ export class Molecule extends NodeWithNodes {
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
-    constructor(attributes: Map<string, string>, id: number, metadataList?: MetadataList, atoms?: AtomArray,
+    constructor(attributes: Map<string, string>, id: string, metadataList?: MetadataList, atoms?: AtomArray,
         bonds?: BondArray, properties?: PropertyList, energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[], 
         reservoirSize?: ReservoirSize, tt?: ThermoTable) {
@@ -2893,8 +2895,8 @@ export class Molecule extends NodeWithNodes {
      * @returns The id of the molecule.
      */
     getLabel(): string {
-        return this.getID() + " " + this.id.toString();
-        //return this.getID();
+        //return this.getID() + " " + this.id.toString();
+        return this.getID();
     }
 
     

@@ -1256,7 +1256,7 @@ export class Reaction extends NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
-    getReactantsEnergy(retrieveMolecule: Function, molecules: Map<number, Molecule>): Big {
+    getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants()).map(reactant => {
             let ref: string = reactant.getMolecule().getRef();
@@ -1273,7 +1273,7 @@ export class Reaction extends NodeWithNodes {
      * Returns the total energy of all products.
      * @returns The total energy of all products.
      */
-    getProductsEnergy(retrieveMolecule: Function, molecules: Map<number, Molecule>): Big {
+    getProductsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the products in the reaction
         return Array.from(this.getProducts()).map(product => {
             let molecule: Molecule = retrieveMolecule(product.getMolecule().getRef(), molecules);
