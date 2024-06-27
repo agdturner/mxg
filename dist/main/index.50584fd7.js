@@ -12662,10 +12662,10 @@ function processMoleculeList(xml, mIDM, molecules) {
         if (xml_mls.length > 0) {
             if (xml_mls.length > 1) console.warn("Expecting 1 or 0 " + (0, _xmlMetadataJs.MetadataList).tagName + " but finding " + xml_mls.length + ". Loading the first of these...");
             // Create collapsible MetadataList HTMLDivElement.
-            let mlDivID = mIDM.addID(mDivID, (0, _xmlMetadataJs.MetadataList).tagName);
-            let mlDiv = (0, _htmlJs.createDiv)(mlDivID);
-            let mlcDivID = mIDM.addID(mlDivID, (0, _appJs.s_container));
-            let mlcDiv = (0, _htmlJs.getCollapsibleDiv)(mlcDivID, mDiv, null, mlDiv, (0, _xmlMetadataJs.MetadataList).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
+            let mdlDivID = mIDM.addID(mDivID, (0, _xmlMetadataJs.MetadataList).tagName);
+            let mdlDiv = (0, _htmlJs.createDiv)(mdlDivID);
+            let mdlcDivID = mIDM.addID(mdlDivID, (0, _appJs.s_container));
+            let mdlcDiv = (0, _htmlJs.getCollapsibleDiv)(mdlcDivID, mDiv, null, mdlDiv, (0, _xmlMetadataJs.MetadataList).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
             let xml_ml = xml_mls[0];
             let xml_ms = xml_ml.getElementsByTagName((0, _xmlMetadataJs.Metadata).tagName);
             let ml = new (0, _xmlMetadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_mls[0]));
@@ -12673,7 +12673,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             for(let j = 0; j < xml_ms.length; j++){
                 // Create a new Metadata.
                 let md = new (0, _xmlMetadataJs.Metadata)((0, _xmlJs.getAttributes)(xml_ms[j]));
-                mlDiv.appendChild(addMetadata(m, md, ml, mIDM.addID(mlDivID, j), (0, _appJs.boundary1), (0, _appJs.level1)));
+                mdlDiv.appendChild(addMetadata(m, md, ml, mIDM.addID(mdlDivID, j), (0, _appJs.boundary1), (0, _appJs.level1)));
             }
             moleculeTagNames.delete((0, _xmlMetadataJs.MetadataList).tagName);
         }
@@ -13106,7 +13106,8 @@ function processMoleculeList(xml, mIDM, molecules) {
         }
         // Add a remove molecule button.
         (0, _appJs.addRemoveButton)(mDiv, (0, _appJs.level1), ()=>{
-            mlDiv.removeChild(mDiv);
+            mlDiv.removeChild(mcDiv);
+            //mlDiv.removeChild(mDiv);
             mIDM.removeIDs(mDivID);
             mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_description)));
             mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.AtomArray).tagName));

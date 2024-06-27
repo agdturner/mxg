@@ -43,8 +43,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         let mDiv: HTMLDivElement = createDiv(mDivID);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = mIDM.addID(mDivID, s_container);
-        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, addMoleculeButton, mDiv,
-            mid, boundary1, level1);
+        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, addMoleculeButton, mDiv, mid, boundary1, level1);
         // Add the molecule to the BathGas select elements.
         addOptionByClassName(BathGas.tagName, mid);
         // Add edit Name button.
@@ -749,8 +748,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
         addMolecule(m, molecules);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = mIDM.addID(mDivID, s_container);
-        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, null, mDiv,
-            m.label, boundary1, level1);
+        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, null, mDiv, m.label, boundary1, level1);
         // Create a set of molecule tag names.
         let moleculeTagNames: Set<string> = new Set();
         let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
@@ -784,10 +782,10 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
                 console.warn("Expecting 1 or 0 " + MetadataList.tagName + " but finding " + xml_mls.length + ". Loading the first of these...");
             }
             // Create collapsible MetadataList HTMLDivElement.
-            let mlDivID: string = mIDM.addID(mDivID, MetadataList.tagName);
-            let mlDiv: HTMLDivElement = createDiv(mlDivID);
-            let mlcDivID = mIDM.addID(mlDivID, s_container);
-            let mlcDiv: HTMLDivElement = getCollapsibleDiv(mlcDivID, mDiv, null, mlDiv, MetadataList.tagName, boundary1, level1);
+            let mdlDivID: string = mIDM.addID(mDivID, MetadataList.tagName);
+            let mdlDiv: HTMLDivElement = createDiv(mdlDivID);
+            let mdlcDivID = mIDM.addID(mdlDivID, s_container);
+            let mdlcDiv: HTMLDivElement = getCollapsibleDiv(mdlcDivID, mDiv, null, mdlDiv, MetadataList.tagName, boundary1, level1);
             let xml_ml: Element = xml_mls[0];
             let xml_ms: HTMLCollectionOf<Element> = xml_ml.getElementsByTagName(Metadata.tagName);
             let ml: MetadataList = new MetadataList(getAttributes(xml_mls[0]));
@@ -795,7 +793,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
             for (let j = 0; j < xml_ms.length; j++) {
                 // Create a new Metadata.
                 let md: Metadata = new Metadata(getAttributes(xml_ms[j]));
-                mlDiv.appendChild(addMetadata(m, md, ml, mIDM.addID(mlDivID, j), boundary1, level1));
+                mdlDiv.appendChild(addMetadata(m, md, ml, mIDM.addID(mdlDivID, j), boundary1, level1));
             }
             moleculeTagNames.delete(MetadataList.tagName);
         }
@@ -1292,7 +1290,8 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
         }
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
-            mlDiv.removeChild(mDiv);
+            mlDiv.removeChild(mcDiv);
+            //mlDiv.removeChild(mDiv);
             mIDM.removeIDs(mDivID);
             mIDM.removeIDs(getID(mDivID, s_description));
             mIDM.removeIDs(getID(mDivID, AtomArray.tagName));
