@@ -138,7 +138,8 @@ function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions:
             let attributes: Map<string, string> = getAttributes(xml_PTss[0]);
             let xml_PTpairs: HTMLCollectionOf<Element> = xml_PTss[0].getElementsByTagName(PTpair.tagName);
             if (xml_PTpairs.length == 0) {
-                throw new Error("Expecting 1 or more " + PTpair.tagName + " but finding 0!");
+                console.warn("Expecting 1 or more " + PTpair.tagName + " but finding 0! Please add some PTpairs in "
+                + Conditions.tagName + " " + conditions.id + ".");
             } else {
                 pTs = new PTs(attributes);
                 for (let i = 0; i < xml_PTpairs.length; i++) {

@@ -82,7 +82,7 @@ export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcH
 export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight: number, dark: boolean, font: string, lw: number, lwc: number,
     molecules: Map<string, Molecule>, reactions: Map<string, Reaction>): void {
     console.log("drawReactionDiagram");
-    if (canvas != null) {
+    if (canvas != null && reactions.size > 0) {
         // Set foreground and background colors.
         let foreground: string;
         let background: string;

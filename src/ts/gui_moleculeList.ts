@@ -73,9 +73,9 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, molecules: Map<strin
 /**
  * Create an add from library button.
  * @param mlDiv The MoleculeList HTMLDivElement.
- * @param mb The add molecule button.
+ * @param amb The add molecule button.
  */
-export function getAddFromLibraryButton(mlDiv: HTMLDivElement, mb: HTMLButtonElement, molecules: Map<string, Molecule>): HTMLButtonElement {
+export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonElement, molecules: Map<string, Molecule>): HTMLButtonElement {
     let addFromLibraryButton: HTMLButtonElement = createButton(s_Add_from_library, undefined, boundary1);
     mlDiv.appendChild(addFromLibraryButton);
     // Add event listener for the button.
@@ -97,7 +97,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, mb: HTMLButtonEle
             addRID(selectID), boundary1);
         select.classList.add(Molecule.tagName);
         selectDiv.appendChild(select);
-        mlDiv.insertBefore(selectDiv, mb);
+        mlDiv.insertBefore(selectDiv, amb);
         selectAnotherOptionEventListener(options, select);
         select.addEventListener('change', (event: Event) => {
             let target = event.target as HTMLSelectElement;
@@ -112,7 +112,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, mb: HTMLButtonEle
             let moleculeDiv: HTMLDivElement = createDiv(moleculeDivID);
             // Create collapsible Molecule HTMLDivElement.
             let mcDivID = addRID(moleculeDivID, s_container);
-            let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, mb, moleculeDiv,
+            let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, amb, moleculeDiv,
                 molecule.getLabel(), boundary1, level1);
             // Add the molecule to the BathGas select elements.
             addOptionByClassName(BathGas.tagName, molecule.getID());
@@ -701,7 +701,11 @@ export function processMoleculeList(xml: XMLDocument, molecules: Map<string, Mol
         }
     }
     if (!mlTagNames.has(Molecule.tagName)) {
-        console.warn("Expecting tags with \"" + Molecule.tagName + "\" tagName but there are none!");
+        console.warn("Expecting tags with \"" + Molecule.tagName + "\" tagName but there are none! Please add molecules to the moleculeList.");
+        // Add add molecule button.
+        let amb: HTMLButtonElement = mlDiv.appendChild(getAddMoleculeButton(mlDiv, molecules));
+        // Add add from library button.
+        mlDiv.appendChild(getAddFromLibraryButton(mlDiv, amb, molecules));
         return mlDiv;
     }
     // Process the XML "molecule" elements.

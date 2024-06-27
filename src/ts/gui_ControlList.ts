@@ -85,17 +85,11 @@ export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDiv
         // me:ForceMacroDetailedBalance
         let xml_fdb: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ForceMacroDetailedBalance.tagName);
         if (xml_fdb.length == 1) {
-            let fdb_attributes: Map<string, string> = getAttributes(xml_fdb[0]);
-
-            let s: string = getNodeValue(getFirstChildNode(xml_fdb[0]));
-            //console.log("ForceMacroDetailedBalance: " + s);
-            // Maybe there is no value for the ForceMacroDetailedBalance?
-
-            let fdb: ForceMacroDetailedBalance = new ForceMacroDetailedBalance(fdb_attributes, s);
+            let fdb: ForceMacroDetailedBalance = new ForceMacroDetailedBalance();
             control.setForceMacroDetailedBalance(fdb);
             let fdbDiv: HTMLDivElement = createFlexDiv(controlIDs.addID(cDivID, ForceMacroDetailedBalance.tagName), level1);
             cDiv.appendChild(fdbDiv);
-            let fdbl: HTMLLabelElement = createLabel(ForceMacroDetailedBalance.tagName + " " + mapToString(fdb_attributes) + " " + s, boundary1);
+            let fdbl: HTMLLabelElement = createLabel(ForceMacroDetailedBalance.tagName, boundary1);
             fdbDiv.appendChild(fdbl);
         }
         // Add a remove control button.
@@ -637,7 +631,9 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
                     let value: any = getNodeValue(getFirstChildNode(elementXml[0]));
                     if (isNumber) {
                         if (value != undefined) {
-                            value = new Big(value);
+                            if (value != "" && value != "NaN") {
+                                value = new Big(value);
+                            }
                         }
                     }
                     let instance = new ClassConstructor(getAttributes(elementXml[0]), value);

@@ -646,7 +646,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing rlDivID HTMLDivElement.
     remove(rlDivID);
     // Create collapsible content.
-    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, rlDiv, null, processReactionList(xml, reactions),
+    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, rlDiv, null, processReactionList(xml, reactions, molecules),
         ReactionList.tagName, boundary1, level0);
 
     // Reactions Diagram.

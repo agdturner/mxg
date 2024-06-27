@@ -287,21 +287,18 @@ export class UseTheSameCellNumberForAllConditions extends Tag {
 }
 
 /**
- * A class for "me:useTheSameGrainNumberForAllConditions.
+ * A class for "me:ForceMacroDetailedBalance.
  */
 
-export class ForceMacroDetailedBalance extends StringNode {
+export class ForceMacroDetailedBalance extends Tag {
 
     /**
      * The tag name.
      */
     static readonly tagName: string = "me:ForceMacroDetailedBalance";
 
-    /**
-     * @param attributes The attributes.
-     */
-    constructor(attributes: Map<string, string>, value: string) {
-        super(attributes, ForceMacroDetailedBalance.tagName, value);
+    constructor() {
+        super(ForceMacroDetailedBalance.tagName);
     }
 }
 

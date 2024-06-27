@@ -1219,7 +1219,7 @@ function load() {
     // Remove any existing rlDivID HTMLDivElement.
     remove(rlDivID);
     // Create collapsible content.
-    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, rlDiv, null, (0, _guiReactionListJs.processReactionList)(xml, reactions), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
+    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, rlDiv, null, (0, _guiReactionListJs.processReactionList)(xml, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
     // Reactions Diagram.
     let rddDiv = document.getElementById(reactionsDiagramDivID);
     let rdDivID = addRID(s_Reactions_Diagram);
@@ -8417,7 +8417,7 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for "me:useTheSameCellNumberForAllConditions.
  */ parcelHelpers.export(exports, "UseTheSameCellNumberForAllConditions", ()=>UseTheSameCellNumberForAllConditions);
 /**
- * A class for "me:useTheSameGrainNumberForAllConditions.
+ * A class for "me:ForceMacroDetailedBalance.
  */ parcelHelpers.export(exports, "ForceMacroDetailedBalance", ()=>ForceMacroDetailedBalance);
 /**
  * A class for "me:hideInactive".
@@ -8768,16 +8768,14 @@ class UseTheSameCellNumberForAllConditions extends (0, _xml.Tag) {
         super(UseTheSameCellNumberForAllConditions.tagName);
     }
 }
-class ForceMacroDetailedBalance extends (0, _xml.StringNode) {
+class ForceMacroDetailedBalance extends (0, _xml.Tag) {
     static{
         /**
      * The tag name.
      */ this.tagName = "me:ForceMacroDetailedBalance";
     }
-    /**
-     * @param attributes The attributes.
-     */ constructor(attributes, value){
-        super(attributes, ForceMacroDetailedBalance.tagName, value);
+    constructor(){
+        super(ForceMacroDetailedBalance.tagName);
     }
 }
 class HideInactive extends (0, _xml.Tag) {
@@ -11964,7 +11962,7 @@ parcelHelpers.defineInteropFlag(exports);
 /**
  * Create an add from library button.
  * @param mlDiv The MoleculeList HTMLDivElement.
- * @param mb The add molecule button.
+ * @param amb The add molecule button.
  */ parcelHelpers.export(exports, "getAddFromLibraryButton", ()=>getAddFromLibraryButton);
 /**
  * Parse XML and create HTMLDivElement for molecules.
@@ -12032,7 +12030,7 @@ function getAddMoleculeButton(mlDiv, molecules) {
     });
     return addMoleculeButton;
 }
-function getAddFromLibraryButton(mlDiv, mb, molecules) {
+function getAddFromLibraryButton(mlDiv, amb, molecules) {
     let addFromLibraryButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_from_library), undefined, (0, _appJs.boundary1));
     mlDiv.appendChild(addFromLibraryButton);
     // Add event listener for the button.
@@ -12053,7 +12051,7 @@ function getAddFromLibraryButton(mlDiv, mb, molecules) {
         let select = (0, _htmlJs.createSelectElement)(options, "Select molecule", (0, _appJs.s_selectOption), (0, _appJs.addRID)(selectID), (0, _appJs.boundary1));
         select.classList.add((0, _xmlMoleculeJs.Molecule).tagName);
         selectDiv.appendChild(select);
-        mlDiv.insertBefore(selectDiv, mb);
+        mlDiv.insertBefore(selectDiv, amb);
         (0, _appJs.selectAnotherOptionEventListener)(options, select);
         select.addEventListener("change", (event)=>{
             let target = event.target;
@@ -12068,7 +12066,7 @@ function getAddFromLibraryButton(mlDiv, mb, molecules) {
             let moleculeDiv = (0, _htmlJs.createDiv)(moleculeDivID);
             // Create collapsible Molecule HTMLDivElement.
             let mcDivID = (0, _appJs.addRID)(moleculeDivID, (0, _appJs.s_container));
-            let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, mb, moleculeDiv, molecule.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
+            let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, amb, moleculeDiv, molecule.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
             // Add the molecule to the BathGas select elements.
             (0, _appJs.addOptionByClassName)((0, _xmlConditionsJs.BathGas).tagName, molecule.getID());
             // Add edit Name button.
@@ -12573,7 +12571,11 @@ function processMoleculeList(xml, molecules) {
         }
     }
     if (!mlTagNames.has((0, _xmlMoleculeJs.Molecule).tagName)) {
-        console.warn('Expecting tags with "' + (0, _xmlMoleculeJs.Molecule).tagName + '" tagName but there are none!');
+        console.warn('Expecting tags with "' + (0, _xmlMoleculeJs.Molecule).tagName + '" tagName but there are none! Please add molecules to the moleculeList.');
+        // Add add molecule button.
+        let amb = mlDiv.appendChild(getAddMoleculeButton(mlDiv, molecules));
+        // Add add from library button.
+        mlDiv.appendChild(getAddFromLibraryButton(mlDiv, amb, molecules));
         return mlDiv;
     }
     // Process the XML "molecule" elements.
@@ -13377,7 +13379,7 @@ function getAddReactionButton(rlDiv, reactions, molecules) {
     });
     return rb;
 }
-function processReactionList(xml, reactions) {
+function processReactionList(xml, reactions, molecules) {
     // Create div to contain the reaction list.
     let reactionListDiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.boundary1));
     // Get the XML "reactionList" element.
@@ -13387,379 +13389,383 @@ function processReactionList(xml, reactions) {
     xml_reactionList.childNodes.forEach(function(node) {
         reactionListTagNames.add(node.nodeName);
     });
-    if (reactionListTagNames.size != 1) {
-        if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
-            console.error("reactionListTagNames:");
-            reactionListTagNames.forEach((x)=>console.error(x));
-            throw new Error("Additional tag names in reactionList:");
+    if (reactionListTagNames.size > 0) {
+        if (reactionListTagNames.size != 1) {
+            if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
+                console.error("reactionListTagNames:");
+                reactionListTagNames.forEach((x)=>console.error(x));
+                throw new Error("Additional tag names in reactionList:");
+            }
         }
-    }
-    if (!reactionListTagNames.has((0, _xmlReactionJs.Reaction).tagName)) throw new Error('Expecting tags with "' + (0, _xmlReactionJs.Reaction).tagName + '" tagName but there are none!');
-    // Process the XML "reaction" elements.
-    let xml_reactions = xml_reactionList.getElementsByTagName((0, _xmlReactionJs.Reaction).tagName);
-    let xml_reactions_length = xml_reactions.length;
-    console.log("Number of reactions=" + xml_reactions_length);
-    //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
-    for(let i = 0; i < xml_reactions.length; i++){
-        // Set attributes.
-        let reactionAttributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
-        // Create reaction.
-        let reaction = new (0, _xmlReactionJs.Reaction)(reactionAttributes);
-        reactions.set(reaction.id, reaction);
-        let reactionTagNames = new Set();
-        let cns = xml_reactions[i].childNodes;
-        // Create a new div for the reaction.
-        let reactionDivID = (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, i);
-        let reactionDiv = (0, _htmlJs.createDiv)(reactionDivID);
-        //console.log("cns.length=" + cns.length);
-        //cns.forEach(function (cn) {
-        for(let j = 0; j < cns.length; j++){
-            let cn = cns[j];
-            // Check for nodeName repeats that are not #text.
-            if (!reactionTagNames.has(cn.nodeName)) reactionTagNames.add(cn.nodeName);
-            else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
-            if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
-        //console.log(cn.nodeName);
-        }
-        // Reactions typically have one or more reactant and product. They may also have one or more "me:transitionState" and other things...
-        // Load reactants.
-        let xml_reactants = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Reactant).tagName);
-        reactionTagNames.delete((0, _xmlReactionJs.Reactant).tagName);
-        //console.log("xml_reactants.length=" + xml_reactants.length);
-        if (xml_reactants.length > 0) {
-            // Create a new collapsible div for the reactants.
-            let rsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
-            let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
-            let rscDivID = (0, _appJs.addRID)(rsDivID, (0, _appJs.s_container));
-            let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
-            let reactants = [];
-            for(let j = 0; j < xml_reactants.length; j++){
-                let reactantDivID = (0, _appJs.addRID)(rsDivID, (0, _xmlReactionJs.Reactant).tagName, j);
-                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _xmlMoleculeJs.Molecule).tagName);
-                let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
-                let reactant = new (0, _xmlReactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), molecule);
-                reactants.push(reactant);
-                // Create a new div for the role.
-                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", molecule.getRole(), (0, _appJs.addRID)(reactantDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
+        if (!reactionListTagNames.has((0, _xmlReactionJs.Reaction).tagName)) throw new Error('Expecting tags with "' + (0, _xmlReactionJs.Reaction).tagName + '" tagName but there are none!');
+        // Process the XML "reaction" elements.
+        let xml_reactions = xml_reactionList.getElementsByTagName((0, _xmlReactionJs.Reaction).tagName);
+        let xml_reactions_length = xml_reactions.length;
+        console.log("Number of reactions=" + xml_reactions_length);
+        //xml_reactions.forEach(function (xml_reaction) { // Cannot iterate over HTMLCollectionOf<Element> like this.
+        for(let i = 0; i < xml_reactions.length; i++){
+            // Set attributes.
+            let reactionAttributes = (0, _xmlJs.getAttributes)(xml_reactions[i]);
+            // Create reaction.
+            let reaction = new (0, _xmlReactionJs.Reaction)(reactionAttributes);
+            reactions.set(reaction.id, reaction);
+            let reactionTagNames = new Set();
+            let cns = xml_reactions[i].childNodes;
+            // Create a new div for the reaction.
+            let reactionDivID = (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, i);
+            let reactionDiv = (0, _htmlJs.createDiv)(reactionDivID);
+            //console.log("cns.length=" + cns.length);
+            //cns.forEach(function (cn) {
+            for(let j = 0; j < cns.length; j++){
+                let cn = cns[j];
+                // Check for nodeName repeats that are not #text.
+                if (!reactionTagNames.has(cn.nodeName)) reactionTagNames.add(cn.nodeName);
+                else // nodeName = #text are comments or white space/newlines in the XML which are ignored.
+                if (cn.nodeName != "#text") console.warn("Another ChildNode with nodeName=" + cn.nodeName);
+            //console.log(cn.nodeName);
+            }
+            // Reactions typically have one or more reactant and product. They may also have one or more "me:transitionState" and other things...
+            // Load reactants.
+            let xml_reactants = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Reactant).tagName);
+            reactionTagNames.delete((0, _xmlReactionJs.Reactant).tagName);
+            //console.log("xml_reactants.length=" + xml_reactants.length);
+            if (xml_reactants.length > 0) {
+                // Create a new collapsible div for the reactants.
+                let rsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
+                let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
+                let rscDivID = (0, _appJs.addRID)(rsDivID, (0, _appJs.s_container));
+                let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
+                let reactants = [];
+                for(let j = 0; j < xml_reactants.length; j++){
+                    let reactantDivID = (0, _appJs.addRID)(rsDivID, (0, _xmlReactionJs.Reactant).tagName, j);
+                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _xmlMoleculeJs.Molecule).tagName);
+                    let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
+                    let reactant = new (0, _xmlReactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), molecule);
+                    reactants.push(reactant);
+                    // Create a new div for the role.
+                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", molecule.getRole(), (0, _appJs.addRID)(reactantDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
+                    lws.querySelector("select")?.addEventListener("change", (event)=>{
+                        let target = event.target;
+                        molecule.setRole(target.value);
+                        console.log("Set Role to " + target.value);
+                        (0, _htmlJs.resizeSelectElement)(target);
+                    });
+                    rsDiv.appendChild(lws);
+                }
+                reaction.setReactants(reactants);
+            }
+            // Load products.
+            let xml_products = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Product).tagName);
+            reactionTagNames.delete((0, _xmlReactionJs.Product).tagName);
+            //console.log("xml_products.length=" + xml_products.length);
+            if (xml_products.length > 0) {
+                // Create collapsible div for the products.
+                let psDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Product).tagName);
+                let psDiv = (0, _htmlJs.createDiv)(psDivID);
+                let pscDivID = (0, _appJs.addRID)(psDivID, (0, _appJs.s_container));
+                let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, reactionDiv, null, psDiv, "Products", (0, _appJs.boundary1), (0, _appJs.level1));
+                let products = [];
+                for(let j = 0; j < xml_products.length; j++){
+                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _xmlMoleculeJs.Molecule).tagName);
+                    let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
+                    let product = new (0, _xmlReactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), molecule);
+                    products.push(product);
+                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, molecule.getRole(), molecule.getRef(), (0, _appJs.addRID)(psDivID, j, "Role"), (0, _appJs.boundary1), (0, _appJs.level1));
+                    let select = lws.querySelector("select");
+                    select.value = molecule.getRole();
+                    select.addEventListener("change", (event)=>{
+                        let target = event.target;
+                        molecule.setRole(target.value);
+                        console.log("Set Role to " + target.value);
+                        (0, _htmlJs.resizeSelectElement)(target);
+                    });
+                    (0, _htmlJs.resizeSelectElement)(select);
+                    psDiv.appendChild(lws);
+                }
+                reaction.setProducts(products);
+            }
+            // Create a new collapsible div for the reaction.
+            let reactioncDivID = (0, _appJs.addRID)(reactionDivID, (0, _appJs.s_container));
+            let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, reactionListDiv, null, reactionDiv, reaction.id + " (" + reaction.getLabel() + ")", (0, _appJs.boundary1), (0, _appJs.level1));
+            // Load tunneling.
+            let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Tunneling).tagName);
+            if (xml_tunneling.length > 0) {
+                if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
+                let tunneling = new (0, _xmlReactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
+                reaction.setTunneling(tunneling);
+                let lws = (0, _htmlJs.createLabelWithSelect)((0, _xmlReactionJs.Tunneling).tagName, (0, _xmlReactionJs.Tunneling).options, "Tunneling", tunneling.getName(), (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Tunneling).tagName), (0, _appJs.boundary1), (0, _appJs.level1));
                 lws.querySelector("select")?.addEventListener("change", (event)=>{
                     let target = event.target;
-                    molecule.setRole(target.value);
-                    console.log("Set Role to " + target.value);
+                    tunneling.setName(target.value);
+                    console.log("Set Tunneling to " + target.value);
                     (0, _htmlJs.resizeSelectElement)(target);
                 });
-                rsDiv.appendChild(lws);
+                reactionDiv.appendChild(lws);
             }
-            reaction.setReactants(reactants);
-        }
-        // Load products.
-        let xml_products = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Product).tagName);
-        reactionTagNames.delete((0, _xmlReactionJs.Product).tagName);
-        //console.log("xml_products.length=" + xml_products.length);
-        if (xml_products.length > 0) {
-            // Create collapsible div for the products.
-            let psDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Product).tagName);
-            let psDiv = (0, _htmlJs.createDiv)(psDivID);
-            let pscDivID = (0, _appJs.addRID)(psDivID, (0, _appJs.s_container));
-            let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, reactionDiv, null, psDiv, "Products", (0, _appJs.boundary1), (0, _appJs.level1));
-            let products = [];
-            for(let j = 0; j < xml_products.length; j++){
-                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _xmlMoleculeJs.Molecule).tagName);
-                let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
-                let product = new (0, _xmlReactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), molecule);
-                products.push(product);
-                let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, molecule.getRole(), molecule.getRef(), (0, _appJs.addRID)(psDivID, j, "Role"), (0, _appJs.boundary1), (0, _appJs.level1));
-                let select = lws.querySelector("select");
-                select.value = molecule.getRole();
-                select.addEventListener("change", (event)=>{
-                    let target = event.target;
-                    molecule.setRole(target.value);
-                    console.log("Set Role to " + target.value);
-                    (0, _htmlJs.resizeSelectElement)(target);
-                });
-                (0, _htmlJs.resizeSelectElement)(select);
-                psDiv.appendChild(lws);
+            // Load transition states.
+            let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.TransitionState).tagName);
+            //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
+            if (xml_transitionStates.length > 0) {
+                // Create collapsible div.
+                let tsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.TransitionState).tagName);
+                let tsDiv = (0, _htmlJs.createDiv)(tsDivID);
+                let tscDivID = (0, _appJs.addRID)(tsDivID, (0, _appJs.s_container));
+                let tscDiv = (0, _htmlJs.getCollapsibleDiv)(tscDivID, reactionDiv, null, tsDiv, "Transition States", (0, _appJs.boundary1), (0, _appJs.level1));
+                let transitionStates = [];
+                for(let j = 0; j < xml_transitionStates.length; j++){
+                    let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[j], (0, _xmlMoleculeJs.Molecule).tagName);
+                    let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
+                    let transitionState = new (0, _xmlReactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), molecule);
+                    transitionStates.push(transitionState);
+                    // Create a label for the Transition State.
+                    let label = (0, _htmlJs.createLabel)(molecule.getRef() + " role transitionState", (0, _appJs.level1));
+                    tsDiv.appendChild(label);
+                }
+                reaction.setTransitionStates(transitionStates);
             }
-            reaction.setProducts(products);
-        }
-        // Create a new collapsible div for the reaction.
-        let reactioncDivID = (0, _appJs.addRID)(reactionDivID, (0, _appJs.s_container));
-        let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, reactionListDiv, null, reactionDiv, reaction.id + " (" + reaction.getLabel() + ")", (0, _appJs.boundary1), (0, _appJs.level1));
-        // Load tunneling.
-        let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Tunneling).tagName);
-        if (xml_tunneling.length > 0) {
-            if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
-            let tunneling = new (0, _xmlReactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
-            reaction.setTunneling(tunneling);
-            let lws = (0, _htmlJs.createLabelWithSelect)((0, _xmlReactionJs.Tunneling).tagName, (0, _xmlReactionJs.Tunneling).options, "Tunneling", tunneling.getName(), (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Tunneling).tagName), (0, _appJs.boundary1), (0, _appJs.level1));
-            lws.querySelector("select")?.addEventListener("change", (event)=>{
-                let target = event.target;
-                tunneling.setName(target.value);
-                console.log("Set Tunneling to " + target.value);
-                (0, _htmlJs.resizeSelectElement)(target);
-            });
-            reactionDiv.appendChild(lws);
-        }
-        // Load transition states.
-        let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.TransitionState).tagName);
-        //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
-        if (xml_transitionStates.length > 0) {
-            // Create collapsible div.
-            let tsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.TransitionState).tagName);
-            let tsDiv = (0, _htmlJs.createDiv)(tsDivID);
-            let tscDivID = (0, _appJs.addRID)(tsDivID, (0, _appJs.s_container));
-            let tscDiv = (0, _htmlJs.getCollapsibleDiv)(tscDivID, reactionDiv, null, tsDiv, "Transition States", (0, _appJs.boundary1), (0, _appJs.level1));
-            let transitionStates = [];
-            for(let j = 0; j < xml_transitionStates.length; j++){
-                let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[j], (0, _xmlMoleculeJs.Molecule).tagName);
-                let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
-                let transitionState = new (0, _xmlReactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), molecule);
-                transitionStates.push(transitionState);
-                // Create a label for the Transition State.
-                let label = (0, _htmlJs.createLabel)(molecule.getRef() + " role transitionState", (0, _appJs.level1));
-                tsDiv.appendChild(label);
-            }
-            reaction.setTransitionStates(transitionStates);
-        }
-        // Load MCRCMethod.
-        //console.log("Load MCRCMethod...");
-        let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.MCRCMethod).tagName);
-        //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
-        //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
-        if (xml_MCRCMethod.length > 0) {
-            if (xml_MCRCMethod.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.MCRCMethod).tagName + " but finding " + xml_MCRCMethod.length + "!");
-            else {
-                let mm;
-                let mmAttributes = (0, _xmlJs.getAttributes)(xml_MCRCMethod[0]);
-                let type = mmAttributes.get("xsi:type");
-                if (type == undefined) // If there is no xsi:type search for a name.
-                type = mmAttributes.get("name");
-                let mmDivId = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.MCRCMethod).tagName);
-                let mmDiv = (0, _htmlJs.createDiv)(mmDivId);
-                if (type == (0, _xmlReactionJs.MesmerILT).xsiType || type == (0, _xmlReactionJs.MesmerILT).xsiType2) {
-                    // Create a collapsible div.
-                    let mmcDivId = (0, _appJs.addRID)(mmDivId, (0, _appJs.s_container));
-                    let mmcDiv = (0, _htmlJs.getCollapsibleDiv)(mmcDivId, reactionDiv, null, mmDiv, (0, _xmlReactionJs.MCRCMethod).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
-                    reactionDiv.appendChild(mmcDiv);
-                    //console.log(MCRCMethod.tagName + " name=" + name);
-                    mm = new (0, _xmlReactionJs.MesmerILT)(mmAttributes);
-                    //console.log(MCRCMethod.tagName + "xsi:type=" + type);
-                    let xml_pe = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.PreExponential).tagName);
-                    if (xml_pe != null) {
-                        if (xml_pe[0] != null) {
-                            let inputString = (0, _xmlJs.getInputString)(xml_pe[0]);
-                            let value = new (0, _bigJsDefault.default)(inputString);
-                            let peAttributes = (0, _xmlJs.getAttributes)(xml_pe[0]);
-                            let pe = new (0, _xmlReactionJs.PreExponential)(peAttributes, value);
-                            mm.setPreExponential(pe);
-                            // Create a new div element for the input.
-                            let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.PreExponential).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                                let target = event.target;
-                                (0, _appJs.setNumberNode)(pe, target);
-                            }, inputString, (0, _xmlReactionJs.PreExponential).tagName);
-                            mmDiv.appendChild(lwi);
-                            let input = lwi.querySelector("input");
-                            input.value = inputString;
-                            (0, _htmlJs.resizeInputElement)(input);
-                            input.addEventListener("change", (event)=>{
-                                let target = event.target;
-                                inputString = target.value;
-                                pe.value = new (0, _bigJsDefault.default)(inputString);
-                                console.log((0, _xmlReactionJs.PreExponential).tagName + " changed to " + inputString);
+            // Load MCRCMethod.
+            //console.log("Load MCRCMethod...");
+            let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.MCRCMethod).tagName);
+            //console.log("xml_MCRCMethod=" + xml_MCRCMethod);
+            //console.log("xml_MCRCMethod.length=" + xml_MCRCMethod.length);
+            if (xml_MCRCMethod.length > 0) {
+                if (xml_MCRCMethod.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.MCRCMethod).tagName + " but finding " + xml_MCRCMethod.length + "!");
+                else {
+                    let mm;
+                    let mmAttributes = (0, _xmlJs.getAttributes)(xml_MCRCMethod[0]);
+                    let type = mmAttributes.get("xsi:type");
+                    if (type == undefined) // If there is no xsi:type search for a name.
+                    type = mmAttributes.get("name");
+                    let mmDivId = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.MCRCMethod).tagName);
+                    let mmDiv = (0, _htmlJs.createDiv)(mmDivId);
+                    if (type == (0, _xmlReactionJs.MesmerILT).xsiType || type == (0, _xmlReactionJs.MesmerILT).xsiType2) {
+                        // Create a collapsible div.
+                        let mmcDivId = (0, _appJs.addRID)(mmDivId, (0, _appJs.s_container));
+                        let mmcDiv = (0, _htmlJs.getCollapsibleDiv)(mmcDivId, reactionDiv, null, mmDiv, (0, _xmlReactionJs.MCRCMethod).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
+                        reactionDiv.appendChild(mmcDiv);
+                        //console.log(MCRCMethod.tagName + " name=" + name);
+                        mm = new (0, _xmlReactionJs.MesmerILT)(mmAttributes);
+                        //console.log(MCRCMethod.tagName + "xsi:type=" + type);
+                        let xml_pe = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.PreExponential).tagName);
+                        if (xml_pe != null) {
+                            if (xml_pe[0] != null) {
+                                let inputString = (0, _xmlJs.getInputString)(xml_pe[0]);
+                                let value = new (0, _bigJsDefault.default)(inputString);
+                                let peAttributes = (0, _xmlJs.getAttributes)(xml_pe[0]);
+                                let pe = new (0, _xmlReactionJs.PreExponential)(peAttributes, value);
+                                mm.setPreExponential(pe);
+                                // Create a new div element for the input.
+                                let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.PreExponential).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+                                    let target = event.target;
+                                    (0, _appJs.setNumberNode)(pe, target);
+                                }, inputString, (0, _xmlReactionJs.PreExponential).tagName);
+                                mmDiv.appendChild(lwi);
+                                let input = lwi.querySelector("input");
+                                input.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(input);
-                            });
-                            (0, _appJs.addAnyUnits)(undefined, peAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.PreExponential).tagName), (0, _xmlReactionJs.PreExponential).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
-                            mmDiv.appendChild(lwi);
+                                input.addEventListener("change", (event)=>{
+                                    let target = event.target;
+                                    inputString = target.value;
+                                    pe.value = new (0, _bigJsDefault.default)(inputString);
+                                    console.log((0, _xmlReactionJs.PreExponential).tagName + " changed to " + inputString);
+                                    (0, _htmlJs.resizeInputElement)(input);
+                                });
+                                (0, _appJs.addAnyUnits)(undefined, peAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.PreExponential).tagName), (0, _xmlReactionJs.PreExponential).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
+                                mmDiv.appendChild(lwi);
+                            }
                         }
-                    }
-                    //console.log("preExponential " + preExponential);
-                    let xml_ae = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.ActivationEnergy).tagName);
-                    if (xml_ae != null) {
-                        if (xml_ae[0] != null) {
-                            let inputString = (0, _xmlJs.getInputString)(xml_ae[0]);
-                            let value = new (0, _bigJsDefault.default)(inputString);
-                            let aeAttributes = (0, _xmlJs.getAttributes)(xml_ae[0]);
-                            let ae = new (0, _xmlReactionJs.ActivationEnergy)(aeAttributes, value);
-                            mm.setActivationEnergy(ae);
-                            // Create a new div element for the input.
-                            let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.ActivationEnergy).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                                let target = event.target;
-                                (0, _appJs.setNumberNode)(ae, target);
-                            }, inputString, (0, _xmlReactionJs.ActivationEnergy).tagName);
-                            let input = lwi.querySelector("input");
-                            input.value = inputString;
-                            (0, _htmlJs.resizeInputElement)(input);
-                            input.addEventListener("change", (event)=>{
-                                let target = event.target;
-                                inputString = target.value;
-                                ae.value = new (0, _bigJsDefault.default)(inputString);
-                                console.log((0, _xmlReactionJs.ActivationEnergy).tagName + " changed to " + inputString);
+                        //console.log("preExponential " + preExponential);
+                        let xml_ae = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.ActivationEnergy).tagName);
+                        if (xml_ae != null) {
+                            if (xml_ae[0] != null) {
+                                let inputString = (0, _xmlJs.getInputString)(xml_ae[0]);
+                                let value = new (0, _bigJsDefault.default)(inputString);
+                                let aeAttributes = (0, _xmlJs.getAttributes)(xml_ae[0]);
+                                let ae = new (0, _xmlReactionJs.ActivationEnergy)(aeAttributes, value);
+                                mm.setActivationEnergy(ae);
+                                // Create a new div element for the input.
+                                let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.ActivationEnergy).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+                                    let target = event.target;
+                                    (0, _appJs.setNumberNode)(ae, target);
+                                }, inputString, (0, _xmlReactionJs.ActivationEnergy).tagName);
+                                let input = lwi.querySelector("input");
+                                input.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(input);
-                            });
-                            (0, _appJs.addAnyUnits)(undefined, aeAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.ActivationEnergy).tagName), (0, _xmlReactionJs.ActivationEnergy).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
-                            mmDiv.appendChild(lwi);
+                                input.addEventListener("change", (event)=>{
+                                    let target = event.target;
+                                    inputString = target.value;
+                                    ae.value = new (0, _bigJsDefault.default)(inputString);
+                                    console.log((0, _xmlReactionJs.ActivationEnergy).tagName + " changed to " + inputString);
+                                    (0, _htmlJs.resizeInputElement)(input);
+                                });
+                                (0, _appJs.addAnyUnits)(undefined, aeAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.ActivationEnergy).tagName), (0, _xmlReactionJs.ActivationEnergy).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
+                                mmDiv.appendChild(lwi);
+                            }
                         }
-                    }
-                    //console.log("activationEnergy " + activationEnergy);
-                    let xml_ti = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.TInfinity).tagName);
-                    if (xml_ti != null) {
-                        if (xml_ti[0] != null) {
-                            let inputString = (0, _xmlJs.getInputString)(xml_ti[0]);
-                            let value = new (0, _bigJsDefault.default)(inputString);
-                            let tiAttributes = (0, _xmlJs.getAttributes)(xml_ti[0]);
-                            let ti = new (0, _xmlReactionJs.TInfinity)(tiAttributes, value);
-                            mm.setTInfinity(ti);
-                            // Create a new div element for the input.
-                            let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.TInfinity).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                                let target = event.target;
-                                (0, _appJs.setNumberNode)(ti, target);
-                            }, inputString, (0, _xmlReactionJs.TInfinity).tagName);
-                            let input = lwi.querySelector("input");
-                            input.value = inputString;
-                            (0, _htmlJs.resizeInputElement)(input);
-                            input.addEventListener("change", (event)=>{
-                                let target = event.target;
-                                inputString = target.value;
-                                ti.value = new (0, _bigJsDefault.default)(inputString);
-                                console.log((0, _xmlReactionJs.TInfinity).tagName + " changed to " + inputString);
+                        //console.log("activationEnergy " + activationEnergy);
+                        let xml_ti = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.TInfinity).tagName);
+                        if (xml_ti != null) {
+                            if (xml_ti[0] != null) {
+                                let inputString = (0, _xmlJs.getInputString)(xml_ti[0]);
+                                let value = new (0, _bigJsDefault.default)(inputString);
+                                let tiAttributes = (0, _xmlJs.getAttributes)(xml_ti[0]);
+                                let ti = new (0, _xmlReactionJs.TInfinity)(tiAttributes, value);
+                                mm.setTInfinity(ti);
+                                // Create a new div element for the input.
+                                let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.TInfinity).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+                                    let target = event.target;
+                                    (0, _appJs.setNumberNode)(ti, target);
+                                }, inputString, (0, _xmlReactionJs.TInfinity).tagName);
+                                let input = lwi.querySelector("input");
+                                input.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(input);
-                            });
-                            (0, _appJs.addAnyUnits)(undefined, tiAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.TInfinity).tagName), (0, _xmlReactionJs.TInfinity).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
-                            mmDiv.appendChild(lwi);
+                                input.addEventListener("change", (event)=>{
+                                    let target = event.target;
+                                    inputString = target.value;
+                                    ti.value = new (0, _bigJsDefault.default)(inputString);
+                                    console.log((0, _xmlReactionJs.TInfinity).tagName + " changed to " + inputString);
+                                    (0, _htmlJs.resizeInputElement)(input);
+                                });
+                                (0, _appJs.addAnyUnits)(undefined, tiAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.TInfinity).tagName), (0, _xmlReactionJs.TInfinity).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
+                                mmDiv.appendChild(lwi);
+                            }
                         }
-                    }
-                    //console.log("tInfinity " + tInfinity);
-                    let xml_ni = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.NInfinity).tagName);
-                    if (xml_ni != null) {
-                        if (xml_ni[0] != null) {
-                            let inputString = (0, _xmlJs.getInputString)(xml_ni[0]);
-                            let value = new (0, _bigJsDefault.default)(inputString);
-                            let niAttributes = (0, _xmlJs.getAttributes)(xml_ni[0]);
-                            let ni = new (0, _xmlReactionJs.NInfinity)(niAttributes, value);
-                            mm.setNInfinity(ni);
-                            // Create a new div element for the input.
-                            let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.NInfinity).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                                let target = event.target;
-                                (0, _appJs.setNumberNode)(ni, target);
-                            }, inputString, (0, _xmlReactionJs.NInfinity).tagName);
-                            mmDiv.appendChild(lwi);
-                            let inputElement = lwi.querySelector("input");
-                            inputElement.value = inputString;
-                            (0, _htmlJs.resizeInputElement)(inputElement);
-                            inputElement.addEventListener("change", (event)=>{
-                                let target = event.target;
-                                inputString = target.value;
-                                ni.value = new (0, _bigJsDefault.default)(inputString);
-                                console.log((0, _xmlReactionJs.NInfinity).tagName + " set to " + inputString);
+                        //console.log("tInfinity " + tInfinity);
+                        let xml_ni = xml_MCRCMethod[0].getElementsByTagName((0, _xmlReactionJs.NInfinity).tagName);
+                        if (xml_ni != null) {
+                            if (xml_ni[0] != null) {
+                                let inputString = (0, _xmlJs.getInputString)(xml_ni[0]);
+                                let value = new (0, _bigJsDefault.default)(inputString);
+                                let niAttributes = (0, _xmlJs.getAttributes)(xml_ni[0]);
+                                let ni = new (0, _xmlReactionJs.NInfinity)(niAttributes, value);
+                                mm.setNInfinity(ni);
+                                // Create a new div element for the input.
+                                let lwi = (0, _htmlJs.createLabelWithInput)("number", (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.NInfinity).tagName, (0, _appJs.s_input)), (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+                                    let target = event.target;
+                                    (0, _appJs.setNumberNode)(ni, target);
+                                }, inputString, (0, _xmlReactionJs.NInfinity).tagName);
+                                mmDiv.appendChild(lwi);
+                                let inputElement = lwi.querySelector("input");
+                                inputElement.value = inputString;
                                 (0, _htmlJs.resizeInputElement)(inputElement);
-                            });
-                            (0, _appJs.addAnyUnits)(undefined, niAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.NInfinity).tagName), (0, _xmlReactionJs.NInfinity).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
-                            mmDiv.appendChild(lwi);
+                                inputElement.addEventListener("change", (event)=>{
+                                    let target = event.target;
+                                    inputString = target.value;
+                                    ni.value = new (0, _bigJsDefault.default)(inputString);
+                                    console.log((0, _xmlReactionJs.NInfinity).tagName + " set to " + inputString);
+                                    (0, _htmlJs.resizeInputElement)(inputElement);
+                                });
+                                (0, _appJs.addAnyUnits)(undefined, niAttributes, lwi, null, (0, _appJs.addRID)(mmDivId, (0, _xmlReactionJs.NInfinity).tagName), (0, _xmlReactionJs.NInfinity).tagName, (0, _appJs.boundary1), (0, _appJs.boundary1));
+                                mmDiv.appendChild(lwi);
+                            }
                         }
+                    } else {
+                        mm = new (0, _xmlReactionJs.MCRCMethod)(mmAttributes);
+                        let mCRCMethodLabel = document.createElement("label");
+                        mCRCMethodLabel.textContent = (0, _xmlReactionJs.MCRCMethod).tagName + ": " + type;
+                        Object.assign(mCRCMethodLabel.style, (0, _appJs.level1));
+                        mmDiv.appendChild(mCRCMethodLabel);
+                        reactionDiv.appendChild(mmDiv);
                     }
-                } else {
-                    mm = new (0, _xmlReactionJs.MCRCMethod)(mmAttributes);
-                    let mCRCMethodLabel = document.createElement("label");
-                    mCRCMethodLabel.textContent = (0, _xmlReactionJs.MCRCMethod).tagName + ": " + type;
-                    Object.assign(mCRCMethodLabel.style, (0, _appJs.level1));
-                    mmDiv.appendChild(mCRCMethodLabel);
-                    reactionDiv.appendChild(mmDiv);
+                    reaction.setMCRCMethod(mm);
                 }
-                reaction.setMCRCMethod(mm);
             }
-        }
-        // me:excessReactantConc
-        let xml_erc = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.ExcessReactantConc).tagName);
-        //console.log("n_me:excessReactantConc=" + xml_erc.length);
-        if (xml_erc.length > 0) {
-            if (xml_erc.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.ExcessReactantConc).tagName + " but finding " + xml_erc.length + "!");
-            let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_erc[0])));
-            let erc = new (0, _xmlReactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_erc[0]), value);
-            reaction.setExcessReactantConc(erc);
-            let id = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.ExcessReactantConc).tagName);
-            let lwi = (0, _htmlJs.createLabelWithInput)("number", id, (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                let target = event.target;
-                (0, _appJs.setNumberNode)(erc, target);
-            }, value.toExponential(), (0, _xmlReactionJs.ExcessReactantConc).tagName);
-            reactionDiv.appendChild(lwi);
-        }
-        // me:canonicalRateList
-        let xml_crl = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.CanonicalRateList).tagName);
-        //console.log("n_me:canonicalRateList=" + xml_crl.length);
-        if (xml_crl.length > 0) {
-            if (xml_crl.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.CanonicalRateList).tagName + " but finding " + xml_crl.length + "!");
-            let clr_attributes = (0, _xmlJs.getAttributes)(xml_crl[0]);
-            let crl = new (0, _xmlReactionJs.CanonicalRateList)(clr_attributes);
-            reaction.setCanonicalRateList(crl);
-            // Create a new collapsible div for the canonicalRateList.
-            let crlDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.CanonicalRateList).tagName);
-            let crlDiv = (0, _htmlJs.createDiv)(crlDivID);
-            let crlcDivID = (0, _appJs.addRID)(crlDivID, (0, _appJs.s_container));
-            let crlcDiv = (0, _htmlJs.getCollapsibleDiv)(crlcDivID, reactionDiv, null, crlDiv, (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
-            reactionDiv.appendChild(crlcDiv);
-            //let id = addID(reaction.id, CanonicalRateList.tagName);
-            // me:description.
-            let xml_d = xml_crl[0].getElementsByTagName((0, _xmlMesmerJs.Description).tagName);
-            //console.log("xml_d.length=" + xml_d.length);
-            if (xml_d.length > 0) {
-                if (xml_d.length > 1) throw new Error("Expecting 1 " + (0, _xmlMesmerJs.Description).tagName + " but finding " + xml_d.length + "!");
-                let description = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_d[0]));
-                //console.log("description=" + description);
-                crl.setDescription(new (0, _xmlMesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), description));
-                let l = (0, _htmlJs.createLabel)(description + " (" + (0, _utilJs.mapToString)(clr_attributes) + ")", (0, _appJs.boundary1));
-                let ldiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.level1));
-                ldiv.appendChild(l);
-                crlDiv.appendChild(ldiv);
+            // me:excessReactantConc
+            let xml_erc = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.ExcessReactantConc).tagName);
+            //console.log("n_me:excessReactantConc=" + xml_erc.length);
+            if (xml_erc.length > 0) {
+                if (xml_erc.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.ExcessReactantConc).tagName + " but finding " + xml_erc.length + "!");
+                let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_erc[0])));
+                let erc = new (0, _xmlReactionJs.ExcessReactantConc)((0, _xmlJs.getAttributes)(xml_erc[0]), value);
+                reaction.setExcessReactantConc(erc);
+                let id = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.ExcessReactantConc).tagName);
+                let lwi = (0, _htmlJs.createLabelWithInput)("number", id, (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+                    let target = event.target;
+                    (0, _appJs.setNumberNode)(erc, target);
+                }, value.toExponential(), (0, _xmlReactionJs.ExcessReactantConc).tagName);
+                reactionDiv.appendChild(lwi);
             }
-            // me:kinf.
-            let xml_k = xml_crl[0].getElementsByTagName((0, _xmlReactionJs.Kinf).tagName);
-            //console.log("xml_k.length=" + xml_k.length);
-            if (xml_k.length > 0) {
-                // Create a table for the kinf.
-                let t = (0, _htmlJs.createTable)((0, _appJs.addRID)(crlDivID, (0, _xmlReactionJs.Kinf).tagName, (0, _appJs.s_table)), (0, _appJs.level1));
-                crlDiv.appendChild(t);
-                for(let j = 0; j < xml_k.length; j++){
-                    let k = new (0, _xmlReactionJs.Kinf)((0, _xmlJs.getAttributes)(xml_k[j]));
-                    crl.addKinf(k);
-                    // T.
-                    let xml_T = xml_k[j].getElementsByTagName((0, _xmlMesmerJs.T).tagName);
-                    //console.log("xml_T.length=" + xml_T.length);
-                    if (xml_T.length > 0) {
-                        if (xml_T.length > 1) throw new Error("Expecting 1 " + (0, _xmlMesmerJs.T).tagName + " but finding " + xml_T.length + "!");
-                        let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_T[0])));
-                        k.setT(new (0, _xmlMesmerJs.T)((0, _xmlJs.getAttributes)(xml_T[0]), value));
-                    }
-                    // Val.
-                    let xml_Val = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Val).tagName);
-                    //console.log("xml_Val.length=" + xml_Val.length);
-                    if (xml_Val.length > 0) {
-                        if (xml_Val.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Val).tagName + " but finding " + xml_Val.length + "!");
-                        let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Val[0])));
-                        k.setVal(new (0, _xmlReactionJs.Val)((0, _xmlJs.getAttributes)(xml_Val[0]), value));
-                    }
-                    // Rev.
-                    let xml_Rev = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Rev).tagName);
-                    //console.log("xml_Rev.length=" + xml_Rev.length);
-                    if (xml_Rev.length > 0) {
-                        if (xml_Rev.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Rev).tagName + " but finding " + xml_Rev.length + "!");
-                        let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Rev[0])));
-                        k.setRev(new (0, _xmlReactionJs.Rev)((0, _xmlJs.getAttributes)(xml_Rev[0]), value));
-                    }
-                    // Keq.
-                    let xml_Keq = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Keq).tagName);
-                    //console.log("xml_Keq.length=" + xml_Keq.length);
-                    if (xml_Keq.length > 0) {
-                        if (xml_Keq.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Keq).tagName + " but finding " + xml_Keq.length + "!");
-                        let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Keq[0])));
-                        k.setKeq(new (0, _xmlReactionJs.Keq)((0, _xmlJs.getAttributes)(xml_Keq[0]), value));
-                    }
-                    if (j == 0) // It maybe that only the first kinf contains unit details!
-                    (0, _htmlJs.addTableRow)(t, k.getHeader());
-                    (0, _htmlJs.addTableRow)(t, k.toStringArray());
+            // me:canonicalRateList
+            let xml_crl = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.CanonicalRateList).tagName);
+            //console.log("n_me:canonicalRateList=" + xml_crl.length);
+            if (xml_crl.length > 0) {
+                if (xml_crl.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.CanonicalRateList).tagName + " but finding " + xml_crl.length + "!");
+                let clr_attributes = (0, _xmlJs.getAttributes)(xml_crl[0]);
+                let crl = new (0, _xmlReactionJs.CanonicalRateList)(clr_attributes);
+                reaction.setCanonicalRateList(crl);
+                // Create a new collapsible div for the canonicalRateList.
+                let crlDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.CanonicalRateList).tagName);
+                let crlDiv = (0, _htmlJs.createDiv)(crlDivID);
+                let crlcDivID = (0, _appJs.addRID)(crlDivID, (0, _appJs.s_container));
+                let crlcDiv = (0, _htmlJs.getCollapsibleDiv)(crlcDivID, reactionDiv, null, crlDiv, (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
+                reactionDiv.appendChild(crlcDiv);
+                //let id = addID(reaction.id, CanonicalRateList.tagName);
+                // me:description.
+                let xml_d = xml_crl[0].getElementsByTagName((0, _xmlMesmerJs.Description).tagName);
+                //console.log("xml_d.length=" + xml_d.length);
+                if (xml_d.length > 0) {
+                    if (xml_d.length > 1) throw new Error("Expecting 1 " + (0, _xmlMesmerJs.Description).tagName + " but finding " + xml_d.length + "!");
+                    let description = (0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_d[0]));
+                    //console.log("description=" + description);
+                    crl.setDescription(new (0, _xmlMesmerJs.Description)((0, _xmlJs.getAttributes)(xml_d[0]), description));
+                    let l = (0, _htmlJs.createLabel)(description + " (" + (0, _utilJs.mapToString)(clr_attributes) + ")", (0, _appJs.boundary1));
+                    let ldiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.level1));
+                    ldiv.appendChild(l);
+                    crlDiv.appendChild(ldiv);
                 }
-                (0, _appJs.addSaveAsCSVButton)(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.level1));
+                // me:kinf.
+                let xml_k = xml_crl[0].getElementsByTagName((0, _xmlReactionJs.Kinf).tagName);
+                //console.log("xml_k.length=" + xml_k.length);
+                if (xml_k.length > 0) {
+                    // Create a table for the kinf.
+                    let t = (0, _htmlJs.createTable)((0, _appJs.addRID)(crlDivID, (0, _xmlReactionJs.Kinf).tagName, (0, _appJs.s_table)), (0, _appJs.level1));
+                    crlDiv.appendChild(t);
+                    for(let j = 0; j < xml_k.length; j++){
+                        let k = new (0, _xmlReactionJs.Kinf)((0, _xmlJs.getAttributes)(xml_k[j]));
+                        crl.addKinf(k);
+                        // T.
+                        let xml_T = xml_k[j].getElementsByTagName((0, _xmlMesmerJs.T).tagName);
+                        //console.log("xml_T.length=" + xml_T.length);
+                        if (xml_T.length > 0) {
+                            if (xml_T.length > 1) throw new Error("Expecting 1 " + (0, _xmlMesmerJs.T).tagName + " but finding " + xml_T.length + "!");
+                            let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_T[0])));
+                            k.setT(new (0, _xmlMesmerJs.T)((0, _xmlJs.getAttributes)(xml_T[0]), value));
+                        }
+                        // Val.
+                        let xml_Val = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Val).tagName);
+                        //console.log("xml_Val.length=" + xml_Val.length);
+                        if (xml_Val.length > 0) {
+                            if (xml_Val.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Val).tagName + " but finding " + xml_Val.length + "!");
+                            let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Val[0])));
+                            k.setVal(new (0, _xmlReactionJs.Val)((0, _xmlJs.getAttributes)(xml_Val[0]), value));
+                        }
+                        // Rev.
+                        let xml_Rev = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Rev).tagName);
+                        //console.log("xml_Rev.length=" + xml_Rev.length);
+                        if (xml_Rev.length > 0) {
+                            if (xml_Rev.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Rev).tagName + " but finding " + xml_Rev.length + "!");
+                            let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Rev[0])));
+                            k.setRev(new (0, _xmlReactionJs.Rev)((0, _xmlJs.getAttributes)(xml_Rev[0]), value));
+                        }
+                        // Keq.
+                        let xml_Keq = xml_k[j].getElementsByTagName((0, _xmlReactionJs.Keq).tagName);
+                        //console.log("xml_Keq.length=" + xml_Keq.length);
+                        if (xml_Keq.length > 0) {
+                            if (xml_Keq.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Keq).tagName + " but finding " + xml_Keq.length + "!");
+                            let value = new (0, _bigJsDefault.default)((0, _xmlJs.getNodeValue)((0, _xmlJs.getFirstChildNode)(xml_Keq[0])));
+                            k.setKeq(new (0, _xmlReactionJs.Keq)((0, _xmlJs.getAttributes)(xml_Keq[0]), value));
+                        }
+                        if (j == 0) // It maybe that only the first kinf contains unit details!
+                        (0, _htmlJs.addTableRow)(t, k.getHeader());
+                        (0, _htmlJs.addTableRow)(t, k.toStringArray());
+                    }
+                    (0, _appJs.addSaveAsCSVButton)(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.level1));
+                }
             }
         }
-    }
+    } else console.warn("No reaction elements found! Please add a reaction in reactionList.");
+    // Add a button to add a reaction.
+    getAddReactionButton(reactionListDiv, reactions, molecules);
     return reactionListDiv;
 }
 
@@ -14898,7 +14904,7 @@ function processConditions(xml, conditionsIDs, molecules) {
             if (xml_PTss.length > 1) throw new Error("Expecting 1 " + (0, _xmlConditions.PTs).tagName + " but finding " + xml_PTss.length + "!");
             let attributes = (0, _xml.getAttributes)(xml_PTss[0]);
             let xml_PTpairs = xml_PTss[0].getElementsByTagName((0, _xmlConditions.PTpair).tagName);
-            if (xml_PTpairs.length == 0) throw new Error("Expecting 1 or more " + (0, _xmlConditions.PTpair).tagName + " but finding 0!");
+            if (xml_PTpairs.length == 0) console.warn("Expecting 1 or more " + (0, _xmlConditions.PTpair).tagName + " but finding 0! Please add some PTpairs in " + (0, _xmlConditions.Conditions).tagName + " " + conditions.id + ".");
             else {
                 pTs = new (0, _xmlConditions.PTs)(attributes);
                 for(let i = 0; i < xml_PTpairs.length; i++){
@@ -16015,15 +16021,11 @@ function processControl(xml, controlIDs) {
         // me:ForceMacroDetailedBalance
         let xml_fdb = xml_control.getElementsByTagName((0, _xmlControl.ForceMacroDetailedBalance).tagName);
         if (xml_fdb.length == 1) {
-            let fdb_attributes = (0, _xml.getAttributes)(xml_fdb[0]);
-            let s = (0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml_fdb[0]));
-            //console.log("ForceMacroDetailedBalance: " + s);
-            // Maybe there is no value for the ForceMacroDetailedBalance?
-            let fdb = new (0, _xmlControl.ForceMacroDetailedBalance)(fdb_attributes, s);
+            let fdb = new (0, _xmlControl.ForceMacroDetailedBalance)();
             control.setForceMacroDetailedBalance(fdb);
             let fdbDiv = (0, _html.createFlexDiv)(controlIDs.addID(cDivID, (0, _xmlControl.ForceMacroDetailedBalance).tagName), (0, _app.level1));
             cDiv.appendChild(fdbDiv);
-            let fdbl = (0, _html.createLabel)((0, _xmlControl.ForceMacroDetailedBalance).tagName + " " + (0, _util.mapToString)(fdb_attributes) + " " + s, (0, _app.boundary1));
+            let fdbl = (0, _html.createLabel)((0, _xmlControl.ForceMacroDetailedBalance).tagName, (0, _app.boundary1));
             fdbDiv.appendChild(fdbl);
         }
         // Add a remove control button.
@@ -16595,7 +16597,9 @@ function createAddControlButton(controlsDiv, controlIDs) {
                 if (elementXml.length == 1) {
                     let value = (0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(elementXml[0]));
                     if (isNumber) {
-                        if (value != undefined) value = new (0, _bigJsDefault.default)(value);
+                        if (value != undefined) {
+                            if (value != "" && value != "NaN") value = new (0, _bigJsDefault.default)(value);
+                        }
                     }
                     let instance = new ClassConstructor((0, _xml.getAttributes)(elementXml[0]), value);
                     setterMethod(instance);
@@ -16940,7 +16944,7 @@ function createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd
 }
 function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, reactions) {
     console.log("drawReactionDiagram");
-    if (canvas != null) {
+    if (canvas != null && reactions.size > 0) {
         // Set foreground and background colors.
         let foreground;
         let background;
