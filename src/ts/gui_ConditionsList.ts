@@ -128,7 +128,7 @@ function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions:
     let pTsDiv: HTMLDivElement = createDiv(pTsDivId);
     let pTscDivId = conditionsIDs.addID(cDiv.id, pTsDivId, s_container);
     let pTscDiv: HTMLDivElement = getCollapsibleDiv(pTscDivId, cDiv, null, pTsDiv, PTs.tagName, boundary1, level1);
-    let pTs: PTs;
+    let pTs: PTs = new PTs(new Map());
     if (xml_conditions) {
         let xml_PTss: HTMLCollectionOf<Element> = xml_conditions.getElementsByTagName(PTs.tagName);
         if (xml_PTss.length > 0) {
@@ -187,11 +187,7 @@ function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions:
                     pTsDiv.appendChild(createPTpairDiv(pTs, pTsDiv, pTpair, cDiv.id, i, moleculeKeys, level1));
                 }
             }
-        } else {
-            pTs = new PTs(new Map());
         }
-    } else {
-        pTs = new PTs(new Map());
     }
     conditions.setPTs(pTs);
     // Create a buttons div for the add, add from spreadsheet and remove all buttons.
