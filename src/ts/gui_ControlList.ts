@@ -1,7 +1,23 @@
 import Big from "big.js";
-import { boundary1, addRID, s_container, level1, addRemoveButton, mesmer, remove, s_Add_sy_add, setNumberNode, sy_selected, sy_deselected, s_optionOn, s_optionOff, s_input, s_selectOption, level0, big0, selectAnotherOptionEventListener, IDManager } from "./app";
-import { Control, ForceMacroDetailedBalance, CalculateRateCoefficientsOnly, PrintCellDOS, PrintCellTransitionStateFlux, PrintReactionOperatorColumnSums, PrintGrainBoltzmann, PrintGrainDOS, PrintGrainkbE, PrintGrainkfE, PrintTSsos, PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux, PrintReactionOperatorSize, PrintSpeciesProfile, PrintPhenomenologicalEvolution, PrintTunnelingCoefficients, PrintCrossingCoefficients, TestDOS, TestRateConstant, UseTheSameCellNumberForAllConditions, Eigenvalues, ShortestTimeOfInterest, MaximumEvolutionTime, AutomaticallySetMaxEne, DiagramEnergyOffset, CalcMethod, TestMicroRates, Tmax, Tmin, Tstep, CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations, CalcMethodMarquardt, MarquardtIterations, MarquardtTolerance, MarquardtDerivDelta, CalcMethodAnalyticalRepresentation, Format, Precision, ChebNumTemp, ChebNumConc, ChebMaxTemp, ChebMinTemp, ChebMaxConc, ChebMinConc, ChebTExSize, ChebPExSize, CalcMethodThermodynamicTable, Tmid, CalcMethodSensitivityAnalysis, SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters, SensitivityVarRedMethod } from "./xml_control";
-import { createDiv, getCollapsibleDiv, createFlexDiv, createLabel, createButton, createInput, resizeInputElement, s_button, createLabelWithInput, createLabelWithSelect, resizeSelectElement, createSelectElement } from "./html";
+import { boundary1, s_container, level1, addRemoveButton, mesmer, remove, s_Add_sy_add, setNumberNode, 
+    sy_selected, sy_deselected, s_optionOn, s_optionOff, s_input, s_selectOption, level0, big0, 
+    selectAnotherOptionEventListener, IDManager } from "./app";
+import { Control, ForceMacroDetailedBalance, CalculateRateCoefficientsOnly, PrintCellDOS, 
+    PrintCellTransitionStateFlux, PrintReactionOperatorColumnSums, PrintGrainBoltzmann, PrintGrainDOS, 
+    PrintGrainkbE, PrintGrainkfE, PrintTSsos, PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux, 
+    PrintReactionOperatorSize, PrintSpeciesProfile, PrintPhenomenologicalEvolution, 
+    PrintTunnelingCoefficients, PrintCrossingCoefficients, TestDOS, TestRateConstant, 
+    UseTheSameCellNumberForAllConditions, Eigenvalues, ShortestTimeOfInterest, MaximumEvolutionTime, 
+    AutomaticallySetMaxEne, DiagramEnergyOffset, CalcMethod, TestMicroRates, Tmax, Tmin, Tstep, 
+    CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations, CalcMethodMarquardt, 
+    MarquardtIterations, MarquardtTolerance, MarquardtDerivDelta, CalcMethodAnalyticalRepresentation, 
+    Format, Precision, ChebNumTemp, ChebNumConc, ChebMaxTemp, ChebMinTemp, ChebMaxConc, ChebMinConc, 
+    ChebTExSize, ChebPExSize, CalcMethodThermodynamicTable, Tmid, CalcMethodSensitivityAnalysis, 
+    SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters, 
+    SensitivityVarRedMethod } from "./xml_control";
+import { createDiv, getCollapsibleDiv, createFlexDiv, createLabel, createButton, createInput, 
+    resizeInputElement, s_button, createLabelWithInput, createLabelWithSelect, resizeSelectElement, 
+    createSelectElement } from "./html";
 import { Mesmer } from "./xml_mesmer";
 import { mapToString, getID, isNumeric } from "./util";
 import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
@@ -47,7 +63,7 @@ import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
  * me:automaticallySetMaxEne
  * me:diagramEnergyOffset
  */
-export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDivElement {
+export function processControl(xml: XMLDocument, controlIDM: IDManager): HTMLDivElement {
     console.log(Control.tagName);
     // Create a div for the controls.
     let controlsDiv: HTMLDivElement = createDiv(undefined, boundary1);
@@ -57,17 +73,17 @@ export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDiv
         //console.log("Control " + i);
         let xml_control: Element = xml_controls[i];
         // Create a collapsible divfor the control.
-        let cDivID: string = addRID(Control.tagName, i.toString());
+        let cDivID: string = controlIDM.addID(Control.tagName, i.toString());
         let cDiv: HTMLDivElement = createDiv(cDivID, boundary1);
         controlsDiv.appendChild(cDiv);
-        let ccDivID = addRID(cDivID, s_container);
+        let ccDivID = controlIDM.addID(cDivID, s_container);
         let ccDiv: HTMLDivElement = getCollapsibleDiv(ccDivID, controlsDiv, null, cDiv, Control.tagName + " " + i.toString(),
             boundary1, level1);
         let control: Control = addControl(getAttributes(xml_control), i);
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
         getControlOptionsSimple(control).forEach(option => {
-            handleControl(control, cDiv, controlIDs, onOffControls, xml_control, null, option.class, option.setMethod, option.removeMethod);
+            handleControl(control, cDiv, controlIDM, onOffControls, xml_control, null, option.class, option.setMethod, option.removeMethod);
         });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level1);
@@ -77,17 +93,17 @@ export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDiv
         });
         cDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        handleTestMicroRates(control, cDiv, controlIDs, null, level1);
-        handleCalcMethod(control, cDiv, controlIDs, xml_control, level1);
+        handleTestMicroRates(control, cDiv, controlIDM, null, level1);
+        handleCalcMethod(control, cDiv, controlIDM, xml_control, level1);
         getControlItems(control).forEach(item => {
-            handleControl(control, cDiv, controlIDs, onOffControls, xml_control, level1, item.class, item.setMethod, item.removeMethod, true);
+            handleControl(control, cDiv, controlIDM, onOffControls, xml_control, level1, item.class, item.setMethod, item.removeMethod, true);
         });
         // me:ForceMacroDetailedBalance
         let xml_fdb: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(ForceMacroDetailedBalance.tagName);
         if (xml_fdb.length == 1) {
             let fdb: ForceMacroDetailedBalance = new ForceMacroDetailedBalance();
             control.setForceMacroDetailedBalance(fdb);
-            let fdbDiv: HTMLDivElement = createFlexDiv(controlIDs.addID(cDivID, ForceMacroDetailedBalance.tagName), level1);
+            let fdbDiv: HTMLDivElement = createFlexDiv(controlIDM.addID(cDivID, ForceMacroDetailedBalance.tagName), level1);
             cDiv.appendChild(fdbDiv);
             let fdbl: HTMLLabelElement = createLabel(ForceMacroDetailedBalance.tagName, boundary1);
             fdbDiv.appendChild(fdbl);
@@ -97,11 +113,17 @@ export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDiv
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the control.
             remove(ccDivID);
-            controlIDs.removeIDs(cDivID);
+            controlIDM.removeIDs(cDivID);
+            let divCmId = getID(cDivID, CalcMethod.tagName);
+            controlIDM.removeIDs(divCmId);
+            let divCmDetailsId = getID(divCmId, "details");
+            controlIDM.removeIDs(divCmDetailsId);
+            let divCmDetailsSelectId = getID(divCmDetailsId, "select");
+            controlIDM.removeIDs(divCmDetailsSelectId);
         });
     }
     // Create an add button to add a control.
-    createAddControlButton(controlsDiv, controlIDs);
+    createAddControlButton(controlsDiv, controlIDM);
     return controlsDiv;
 }
 
@@ -153,16 +175,16 @@ function getControlItems(control: Control): { class: any, setMethod: (value: any
 /**
  * Create an add control button and append to controlsDiv.
  * @param controlsDiv The controls div.
- * @param controlIDs The control IDs.
+ * @param controlIDM The control IDs.
  * @returns A button.
  */
-export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: IDManager): HTMLButtonElement {
+export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDM: IDManager): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     controlsDiv.appendChild(button);
     button.addEventListener('click', (event: MouseEvent) => {
         let i: number = mesmer.getNextControlID();
         console.log("Add Control " + i.toString());
-        let cDivID: string = addRID(Control.tagName, i.toString());
+        let cDivID: string = controlIDM.addID(Control.tagName, i.toString());
         let cDiv: HTMLDivElement = createDiv(cDivID, boundary1);
         // ElementToInsert before is element after the control div with the previous index.
         let elementToInsertBefore: Element | null;
@@ -183,7 +205,7 @@ export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: 
             elementToInsertBefore = button;
         }
         // Create a collapsible div for each conditions.
-        let ccDivID = addRID(cDivID, s_container);
+        let ccDivID = controlIDM.addID(cDivID, s_container);
         let ccDiv: HTMLDivElement = getCollapsibleDiv(ccDivID, controlsDiv, elementToInsertBefore, cDiv, Control.tagName + " " + i.toString(),
             boundary1, level1);
         // Add the control
@@ -191,7 +213,7 @@ export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: 
         // Create a map of the on/off control options. The keys are the tag names and the values are the buttons.
         let onOffControls: Map<string, HTMLButtonElement> = new Map();
         getControlOptionsSimple(control).forEach(option => {
-            handleControl(control, cDiv, controlIDs, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
+            handleControl(control, cDiv, controlIDM, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
         });
         // Create a div for the on/off controls.
         let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level1);
@@ -201,17 +223,23 @@ export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: 
         });
         cDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        handleTestMicroRates(control, cDiv, controlIDs, null, level1);
-        handleCalcMethod(control, cDiv, controlIDs, null, level1);
+        handleTestMicroRates(control, cDiv, controlIDM, null, level1);
+        handleCalcMethod(control, cDiv, controlIDM, null, level1);
         getControlItems(control).forEach(item => {
-            handleControl(control, cDiv, controlIDs, onOffControls, null, level1, item.class, item.setMethod, item.removeMethod, true);
+            handleControl(control, cDiv, controlIDM, onOffControls, null, level1, item.class, item.setMethod, item.removeMethod, true);
         });
         // Add a remove control button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeControl.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the control.
             remove(ccDivID);
-            controlIDs.removeIDs(cDivID);
+            controlIDM.removeIDs(cDivID);
+            let divCmId = getID(cDivID, CalcMethod.tagName);
+            controlIDM.removeIDs(divCmId);
+            let divCmDetailsId = getID(divCmId, "details");
+            controlIDM.removeIDs(divCmDetailsId);
+            let divCmDetailsSelectId = getID(divCmDetailsId, "select");
+            controlIDM.removeIDs(divCmDetailsSelectId);
         });
     });
     return button;
@@ -334,7 +362,7 @@ function handleControl(control: Control, cDiv: HTMLDivElement, controlIDs: IDMan
  * @param xml_control The xml control. 
  * @param level The level.
  */
-function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDs: IDManager, xml_control: Element | null,
+function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDM: IDManager, xml_control: Element | null,
     level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
     //console.log("handleCalcMethod " + (xml_control == null));
     let div: HTMLDivElement = createFlexDiv(undefined, level);
@@ -347,12 +375,12 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDs: ID
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     // Add the div for the CalcMethod.
-    let divCmId = controlIDs.addID(cDiv.id, tagName);
+    let divCmId = controlIDM.addID(cDiv.id, tagName);
     let divCm: HTMLDivElement = createFlexDiv(divCmId, boundary1);
     div.appendChild(divCm);
     let options: string[] = CalcMethod.options;
-    let divCmDetailsId = controlIDs.addID(divCmId, "details");
-    let divCmDetailsSelectId = controlIDs.addID(divCmDetailsId, "select");
+    let divCmDetailsId = controlIDM.addID(divCmId, "details");
+    let divCmDetailsSelectId = controlIDM.addID(divCmDetailsId, "select");
     let cm: CalcMethod;
     let first: boolean = true;
     if (xml_control != null) {
@@ -389,8 +417,8 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDs: ID
             }
             // Remove select.
             //remove(divCmId);
-            remove(divCmDetailsId);
-            remove(divCmDetailsSelectId);
+            controlIDM.removeIDs(divCmDetailsId);
+            controlIDM.removeIDs(divCmDetailsSelectId);
             // Create the select element.
             let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, s_selectOption, divCmDetailsId, divCmDetailsSelectId);
             divCm.appendChild(select);
@@ -402,10 +430,10 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDs: ID
                 control.removeCalcMethod();
                 // Remove any existing div.
                 //remove(divCmId);
-                remove(divCmDetailsId);
+                controlIDM.removeIDs(divCmDetailsId);
                 //console.log("remove(divCmDetailsSelectId) " + divCmDetailsSelectId);
                 //console.log("button.textContent " + button.textContent);
-                remove(divCmDetailsSelectId);
+                controlIDM.removeIDs(divCmDetailsSelectId);
                 button.textContent = buttonTextContentDeselected;
                 button.classList.toggle(s_optionOn)
                 button.classList.toggle(s_optionOff);
@@ -421,21 +449,21 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDs: ID
  * @param xml_control The xml control.
  * @param level The level.
  */
-function handleTestMicroRates(control: Control, cDiv: HTMLDivElement, controlIDs: IDManager, xml_control: Element | null,
+function handleTestMicroRates(control: Control, cDiv: HTMLDivElement, controlIDM: IDManager, xml_control: Element | null,
     level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
     let tagName: string = TestMicroRates.tagName;
-    let divID = controlIDs.addID(cDiv.id, tagName);
+    let divID = controlIDM.addID(cDiv.id, tagName);
     let div: HTMLDivElement = createFlexDiv(divID, level);
     cDiv.appendChild(div);
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
-    let button = createButton(tagName, controlIDs.addID(cDiv.id, tagName, s_button), boundary1);
+    let button = createButton(tagName, controlIDM.addID(cDiv.id, tagName, s_button), boundary1);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let idTmax = controlIDs.addID(cDiv.id, tagName, Tmax.tagName);
-    let idTmin = controlIDs.addID(cDiv.id, tagName, Tmin.tagName);
-    let idTstep = controlIDs.addID(cDiv.id, tagName, Tstep.tagName);
+    let idTmax = controlIDM.addID(cDiv.id, tagName, Tmax.tagName);
+    let idTmin = controlIDM.addID(cDiv.id, tagName, Tmin.tagName);
+    let idTstep = controlIDM.addID(cDiv.id, tagName, Tstep.tagName);
     if (xml_control) {
         let xml: HTMLCollectionOf<Element> = xml_control.getElementsByTagName(tagName);
         if (xml.length == 1) {
@@ -899,6 +927,7 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, op
         let divCmDetails: HTMLDivElement = document.getElementById(divCmDetailsId) as HTMLDivElement;
         if (divCmDetails != null) {
             divCmDetails.remove();
+            control.idManager.removeIDs(divCmDetailsId);
         }
         divCmDetails = createFlexDiv(divCmDetailsId, boundary1);
         div.appendChild(divCmDetails);

@@ -21,8 +21,7 @@ export const s_select: string = "select";
  * @returns A HTMLDivElement containing a HTMLButtonElement and the content.
  */
 export function getCollapsibleDiv(id: string, divToAddTo: HTMLDivElement, elementToInsertBefore: Element | null,
-            content: HTMLElement, 
-            buttonLabel: string, 
+            content: HTMLElement, buttonLabel: string, 
             componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
             margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createDiv(id, margin);

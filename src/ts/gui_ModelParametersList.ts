@@ -11,37 +11,37 @@ import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
  * Parses xml to initialise modelParameters.
  * @param xml The XML document.
  */
-export function processModelParameters(xml: XMLDocument, modelParametersIDs: IDManager): HTMLDivElement {
+export function processModelParameters(xml: XMLDocument, mpIDM: IDManager): HTMLDivElement {
     console.log(ModelParameters.tagName);
     // Create a div for the modelParameterss.
     let mpsDiv: HTMLDivElement = createDiv(undefined, boundary1);
     let xml_mps: HTMLCollectionOf<Element> = xml.getElementsByTagName(ModelParameters.tagName);
     for (let i = 0; i < xml_mps.length; i++) {
         // Create a collapsible div for the model parameters.
-        let mpDivID: string = addRID(ModelParameters.tagName, i.toString());
+        let mpDivID: string = mpIDM.addID(ModelParameters.tagName, i.toString());
         let mpDiv: HTMLDivElement = createDiv(mpDivID, boundary1);
-        let mpcDivID = addRID(mpDivID, s_container);
+        let mpcDivID = mpIDM.addID(mpDivID, s_container);
         let mpcDiv: HTMLDivElement = getCollapsibleDiv(mpcDivID, mpsDiv, null, mpDiv,
             ModelParameters.tagName + " " + i.toString(), boundary1, level1);
         let mp: ModelParameters = addModelParameters(getAttributes(xml_mps[i]), i);
-        processGrainSize(mp, xml_mps[i], mpDiv, modelParametersIDs);
+        processGrainSize(mp, xml_mps[i], mpDiv, mpIDM);
         //setGrainSize(mp, xml_mps[i], mpDiv);
-        processModelParametersN(mp, modelParametersIDs, xml_mps[i], mpDiv, AutomaticallySetMaxEne,
+        processModelParametersN(mp, mpIDM, xml_mps[i], mpDiv, AutomaticallySetMaxEne,
             mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne.bind(mp));
-        processModelParametersN(mp, modelParametersIDs, xml_mps[i], mpDiv, EnergyAboveTheTopHill,
+        processModelParametersN(mp, mpIDM, xml_mps[i], mpDiv, EnergyAboveTheTopHill,
             mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill.bind(mp));
-        processModelParametersN(mp, modelParametersIDs, xml_mps[i], mpDiv, MaxTemperature,
+        processModelParametersN(mp, mpIDM, xml_mps[i], mpDiv, MaxTemperature,
             mp.setMaxTemperature, mp.removeMaxTemperature.bind(mp));
         // Add a remove modelParameters button.
         let removeButton: HTMLButtonElement = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the modelParameters.
             remove(mpcDivID);
-            modelParametersIDs.removeIDs(mpDivID);
+            mpIDM.removeIDs(mpDivID);
         });
     }
     // Create an add button to add a modelParameters.
-    createAddModelParametersButton(mpsDiv, modelParametersIDs);
+    createAddModelParametersButton(mpsDiv, mpIDM);
     return mpsDiv;
 }
 
@@ -264,7 +264,7 @@ function processModelParametersN<T extends { new(attributes: Map<string, string>
             //valueString = mp.value.toExponential();
             removeModelParameter();
             remove(idi);
-            modelParametersIDs.removeID(idi);
+            modelParametersIDs.removeIDs(idi);
             button.textContent = buttonTextContentDeselected;
         }
         button.classList.toggle(s_optionOn)
@@ -300,10 +300,10 @@ function createInputModelParameters(mps: ModelParameters, div: HTMLDivElement, e
 /**
  * Create an add modelParameters button.
  * @param mpsDiv The modelParameters div.
- * @param modelParametersIDs The modelParameters IDs.
+ * @param mpIDM The modelParameters IDs.
  * @returns A button.
  */
-export function createAddModelParametersButton(mpsDiv: HTMLDivElement, modelParametersIDs: IDManager): HTMLButtonElement {
+export function createAddModelParametersButton(mpsDiv: HTMLDivElement, mpIDM: IDManager): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     let tn: string = ModelParameters.tagName;
     mpsDiv.appendChild(button);
@@ -334,19 +334,19 @@ export function createAddModelParametersButton(mpsDiv: HTMLDivElement, modelPara
             tn + " " + i.toString(), boundary1, level1);
         // Add the modelParameters.
         let mp: ModelParameters = addModelParameters(new Map(), i);
-        addGrainSize(mp, mpDiv, modelParametersIDs);
-        processModelParametersN(mp, modelParametersIDs, null, mpDiv, AutomaticallySetMaxEne,
+        addGrainSize(mp, mpDiv, mpIDM);
+        processModelParametersN(mp, mpIDM, null, mpDiv, AutomaticallySetMaxEne,
             mp.setAutomaticallySetMaxEne, mp.removeAutomaticallySetMaxEne);
-        processModelParametersN(mp, modelParametersIDs, null, mpDiv, EnergyAboveTheTopHill,
+        processModelParametersN(mp, mpIDM, null, mpDiv, EnergyAboveTheTopHill,
             mp.setEnergyAboveTheTopHill, mp.removeEnergyAboveTheTopHill);
-        processModelParametersN(mp, modelParametersIDs, null, mpDiv, MaxTemperature,
+        processModelParametersN(mp, mpIDM, null, mpDiv, MaxTemperature,
             mp.setMaxTemperature, mp.removeMaxTemperature);
         // Add a remove modelParameters button.
         let removeButton: HTMLButtonElement = addRemoveButton(mpDiv, level1, mesmer.removeModelParameters.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the modelParameters.
             remove(mpcDivID);
-            modelParametersIDs.removeIDs(mpDivID);
+            mpIDM.removeIDs(mpDivID);
         });
     });
     return button;
