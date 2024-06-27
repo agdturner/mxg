@@ -1,9 +1,9 @@
 import Big from "big.js";
 import { boundary1, addRID, s_container, level1, addRemoveButton, mesmer, remove, sy_selected, sy_deselected, s_optionOn, s_optionOff, s_input, defaults, big0, setNumberNode, addAnyUnits, s_Add_sy_add, IDManager, s_units } from "./app";
-import { AutomaticallySetMaxEne } from "./control";
+import { AutomaticallySetMaxEne } from "./xml_control";
 import { createDiv, getCollapsibleDiv, createFlexDiv, createButton, s_button, resizeInputElement, createInput } from "./html";
-import { Mesmer } from "./mesmer";
-import { ModelParameters, EnergyAboveTheTopHill, MaxTemperature, GrainSize } from "./modelParameters";
+import { Mesmer } from "./xml_mesmer";
+import { ModelParameters, EnergyAboveTheTopHill, MaxTemperature, GrainSize } from "./xml_modelParameters";
 import { getID } from "./util";
 import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
 
@@ -298,11 +298,12 @@ function createInputModelParameters(mps: ModelParameters, div: HTMLDivElement, e
 }
 
 /**
- * @param controlsDiv 
- * @param level The level.
+ * Create an add modelParameters button.
+ * @param mpsDiv The modelParameters div.
+ * @param modelParametersIDs The modelParameters IDs.
  * @returns A button.
  */
-function createAddModelParametersButton(mpsDiv: HTMLDivElement, modelParametersIDs: IDManager): HTMLButtonElement {
+export function createAddModelParametersButton(mpsDiv: HTMLDivElement, modelParametersIDs: IDManager): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     let tn: string = ModelParameters.tagName;
     mpsDiv.appendChild(button);
@@ -313,12 +314,10 @@ function createAddModelParametersButton(mpsDiv: HTMLDivElement, modelParametersI
         let mpDivID: string = addRID(tn, i.toString());
         let mpDiv: HTMLDivElement = createDiv(mpDivID, boundary1);
         let mpcDivID = addRID(mpDivID, s_container);
-        // ElementToInsert before is element after the conditions div with the previous index.
         let elementToInsertBefore: Element | null;
         if (i > 0) {
             let aboveElement = document.getElementById(getID(tn, (i - 1).toString(), s_container)) as Element;
             let nextElementSibling: Element | null = aboveElement.nextElementSibling;
-            // If nextElementSibling is not a child of conditionssDiv the element.
             if (nextElementSibling != null) {
                 if (nextElementSibling.parentElement == mpsDiv) {
                     elementToInsertBefore = nextElementSibling;

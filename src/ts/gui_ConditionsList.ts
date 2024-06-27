@@ -2,11 +2,11 @@ import Big from "big.js";
 import { boundary1, addRID, s_container, level1, addRemoveButton, mesmer, remove, s_Add_sy_add, s_selectOption, 
     getMoleculeKeys, addAnyUnits, level0, sy_selected, sy_deselected, s_optionOn, s_optionOff, s_input, 
     selectAnotherOptionEventListener, setNumberNode, IDManager, s_Add_from_spreadsheet, big0 } from "./app";
-import { Conditions, BathGas, PTs, PTpair, ExperimentalRate, ExperimentalYield, ExperimentalEigenvalue } from "./conditions";
+import { Conditions, BathGas, PTs, PTpair, ExperimentalRate, ExperimentalYield, ExperimentalEigenvalue } from "./xml_conditions";
 import { createDiv, getCollapsibleDiv, createButton, s_button, createFlexDiv, createInput, createLabelWithInput, 
     resizeInputElement, createSelectElement, resizeSelectElement, s_select } from "./html";
-import { Mesmer } from "./mesmer";
-import { Molecule } from "./molecule";
+import { Mesmer } from "./xml_mesmer";
+import { Molecule } from "./xml_molecule";
 import { getID } from "./util";
 import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
 
@@ -357,11 +357,13 @@ function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions:
 }
 
 /**
- * @param controlsDiv 
- * @param level The level.
- * @returns A button.
+ * Create an add conditions button and append it to conditionssDiv.
+ * @param conditionssDiv The conditionss div.
+ * @param conditionsIDs The conditions IDs.
+ * @param molecules The molecules.
+ * @returns The button.
  */
-function createAddConditionsButton(conditionssDiv: HTMLDivElement, conditionsIDs: IDManager,
+export function createAddConditionsButton(conditionssDiv: HTMLDivElement, conditionsIDs: IDManager,
     molecules: Map<string, Molecule>): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     conditionssDiv.appendChild(button);
@@ -813,6 +815,12 @@ function createSelectElementBathGas(options: string[], bathGas: BathGas | undefi
     return select;
 }
 
+/**
+ * Create a div for the experimental rate details.
+ * @param id The id.
+ * @param pTpair The PTpair.
+ * @returns A div.
+ */
 function createExperimentalRateDetails(id: string, pTpair: PTpair): HTMLDivElement {
     return addExperimentalDetails(
         pTpair,
@@ -850,6 +858,12 @@ function createExperimentalRateDetails(id: string, pTpair: PTpair): HTMLDivEleme
     );
 }
 
+/**
+ * Create a div for the experimental yield details.
+ * @param id The id.
+ * @param pTpair The PTpair.
+ * @returns A div.
+ */
 function createExperimentalYieldDetails(id: string, pTpair: PTpair): HTMLDivElement {
     return addExperimentalDetails(
         pTpair,
@@ -882,6 +896,12 @@ function createExperimentalYieldDetails(id: string, pTpair: PTpair): HTMLDivElem
     );
 }
 
+/**
+ * Create a div for the experimental eigenvalue.
+ * @param id The id.
+ * @param pTpair The PTpair.
+ * @returns A div.
+ */
 function createExperimentalEigenvalueDetails(id: string, pTpair: PTpair): HTMLDivElement {
     return addExperimentalDetails(
         pTpair,

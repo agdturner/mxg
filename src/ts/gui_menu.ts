@@ -1,7 +1,7 @@
 import { createButton, sy_downTriangle, sy_upTriangle } from "./html.js";
 import { addID, addMolecule, boundary1, defaults, libmols, load, menuDivID, saveXML } from "./app.js";
 import { LibraryMolecules } from './librarymols.js';
-import { Molecule } from "./molecule.js";
+import { Molecule } from "./xml_molecule.js";
 import { Defaults } from './defaults.js';
 
 

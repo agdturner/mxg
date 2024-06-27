@@ -1,5 +1,5 @@
 
-import { Description } from './mesmer.js';
+import { Description } from './xml_mesmer.js';
 import { NodeWithNodes, NumberNode } from './xml.js';
 
 /**

@@ -1,8 +1,6 @@
 import Big from "big.js";
-import {
-    getSelfClosingTag
-} from "./html";
-import { bigArrayToString } from "./util";
+import { getSelfClosingTag } from "./html.js";
+import { bigArrayToString } from "./util.js";
 
 /**
  * Get the attribute of an xml element.

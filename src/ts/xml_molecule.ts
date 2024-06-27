@@ -1,9 +1,9 @@
-import Big from 'big.js';
-import { RangeNode } from './range.js';
+import { Big } from 'big.js';
+import { RangeNode } from './xml_range.js';
 import { get } from './util.js';
 import { TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode } from './xml.js';
-import { Description, T } from './mesmer.js';
-import { MetadataList } from './metadata.js';
+import { Description, T } from './xml_mesmer.js';
+import { MetadataList } from './xml_metadata.js';
 
 /**
  * Atom data.

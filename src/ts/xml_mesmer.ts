@@ -1,10 +1,10 @@
-import { Analysis } from "./analysis.js";
-import { Conditions } from "./conditions.js";
-import { Control } from "./control.js";
-import { MetadataList } from "./metadata.js";
-import { ModelParameters } from "./modelParameters.js";
-import { Molecule } from "./molecule.js";
-import { Reaction } from "./reaction.js";
+import { Analysis } from "./xml_analysis.js";
+import { Conditions } from "./xml_conditions.js";
+import { Control } from "./xml_control.js";
+import { MetadataList } from "./xml_metadata.js";
+import { ModelParameters } from "./xml_modelParameters.js";
+import { Molecule } from "./xml_molecule.js";
+import { Reaction } from "./xml_reaction.js";
 import { arrayToString, mapToString } from "./util.js";
 import { NodeWithNodes, NumberNode, StringNode } from "./xml.js";
 

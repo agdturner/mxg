@@ -4,19 +4,19 @@ import { sy_add, s_Add_sy_add, addMolecule, addRID, level1, s_container, boundar
     s_selectOption, selectAnotherOptionEventListener, sy_edit, sy_deselected, sy_selected, s_input, s_optionOff, s_optionOn, 
     processNumber, addRemoveButton, processPropertyScalarNumber, setNumberNode, processPropertyScalarString, s_table, 
     addSaveAsCSVButton, s_undefined, addAnyUnits, s_Add_from_library } from './app.js';
-import { BathGas } from './conditions.js';
+import { BathGas } from './xml_conditions.js';
 import {
     createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
     createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv,
     createLabelWithTextArea, resizeTextAreaElement, s_button, sy_upTriangle, sy_downTriangle, createTextArea,
     createTable, addTableRow, s_select } from './html.js';
-import { Description, Mesmer, MoleculeList, T } from './mesmer.js';
-import { MetadataList, Metadata } from './metadata.js';
+import { Description, Mesmer, MoleculeList, T } from './xml_mesmer.js';
+import { MetadataList, Metadata } from './xml_metadata.js';
 import { Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList, 
     DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, ExtraDOSCMethod, FrequenciesScaleFactor, 
     Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity, PotentialPoint, Property, PropertyArray, 
     PropertyList, Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber, 
-    ThermoTable, ThermoValue, VibFreqs, ZPE } from './molecule.js';
+    ThermoTable, ThermoValue, VibFreqs, ZPE } from './xml_molecule.js';
 import { getID, isNumeric, mapToString } from './util.js';
 import { getSingularElement, getAttributes, getNodeValue, getFirstChildNode, getInputString } from './xml.js';
 

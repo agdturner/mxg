@@ -1,12 +1,7 @@
-import Big from 'big.js';
-import {
-    Molecule, ZPE
-} from './molecule.js';
-
-import {
-    TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode, getAttribute
-} from './xml.js';
-import { Description, T } from './mesmer.js';
+import { Big } from 'big.js';
+import { Molecule, ZPE } from './xml_molecule.js';
+import { TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode, getAttribute } from './xml.js';
+import { Description, T } from './xml_mesmer.js';
 
 /**
  * A reference to a molecule, not to be confused with a Molecule.
@@ -21,6 +16,16 @@ export class ReactionMolecule extends TagWithAttributes {
      * The tag name.
      */
     static readonly tagName: string = "molecule";
+
+    /**
+     * The ref string.
+     */
+    static readonly s_ref: string = "ref";
+
+    /**
+     * The role string.
+     */
+    static readonly s_role: string = "role";
 
     /**
      * The ref attribute.
@@ -39,8 +44,8 @@ export class ReactionMolecule extends TagWithAttributes {
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, ReactionMolecule.tagName);
-        this.ref = attributes.get("ref") as string;
-        this.role = attributes.get("role") as string;
+        this.ref = attributes.get(ReactionMolecule.s_ref) as string;
+        this.role = attributes.get(ReactionMolecule.s_role) as string;
     }
 
     /**
@@ -89,7 +94,10 @@ export class Reactant extends NodeWithNodes {
     /**
      * The role options.
      */
-    static readonly roleOptions: string[] = ["deficientReactant", "excessReactant", "modelled"];
+    static readonly s_deficientReactant = "deficientReactant";
+    static readonly s_excessReactant = "excessReactant";
+    static readonly s_modelled = "modelled";
+    static readonly roleOptions: string[] = [Reactant.s_deficientReactant, Reactant.s_excessReactant, Reactant.s_modelled];
 
     /**
      * @param attributes The attributes.

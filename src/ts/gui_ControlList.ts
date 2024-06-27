@@ -1,8 +1,8 @@
 import Big from "big.js";
 import { boundary1, addRID, s_container, level1, addRemoveButton, mesmer, remove, s_Add_sy_add, setNumberNode, sy_selected, sy_deselected, s_optionOn, s_optionOff, s_input, s_selectOption, level0, big0, selectAnotherOptionEventListener, IDManager } from "./app";
-import { Control, ForceMacroDetailedBalance, CalculateRateCoefficientsOnly, PrintCellDOS, PrintCellTransitionStateFlux, PrintReactionOperatorColumnSums, PrintGrainBoltzmann, PrintGrainDOS, PrintGrainkbE, PrintGrainkfE, PrintTSsos, PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux, PrintReactionOperatorSize, PrintSpeciesProfile, PrintPhenomenologicalEvolution, PrintTunnelingCoefficients, PrintCrossingCoefficients, TestDOS, TestRateConstant, UseTheSameCellNumberForAllConditions, Eigenvalues, ShortestTimeOfInterest, MaximumEvolutionTime, AutomaticallySetMaxEne, DiagramEnergyOffset, CalcMethod, TestMicroRates, Tmax, Tmin, Tstep, CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations, CalcMethodMarquardt, MarquardtIterations, MarquardtTolerance, MarquardtDerivDelta, CalcMethodAnalyticalRepresentation, Format, Precision, ChebNumTemp, ChebNumConc, ChebMaxTemp, ChebMinTemp, ChebMaxConc, ChebMinConc, ChebTExSize, ChebPExSize, CalcMethodThermodynamicTable, Tmid, CalcMethodSensitivityAnalysis, SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters, SensitivityVarRedMethod } from "./control";
+import { Control, ForceMacroDetailedBalance, CalculateRateCoefficientsOnly, PrintCellDOS, PrintCellTransitionStateFlux, PrintReactionOperatorColumnSums, PrintGrainBoltzmann, PrintGrainDOS, PrintGrainkbE, PrintGrainkfE, PrintTSsos, PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux, PrintReactionOperatorSize, PrintSpeciesProfile, PrintPhenomenologicalEvolution, PrintTunnelingCoefficients, PrintCrossingCoefficients, TestDOS, TestRateConstant, UseTheSameCellNumberForAllConditions, Eigenvalues, ShortestTimeOfInterest, MaximumEvolutionTime, AutomaticallySetMaxEne, DiagramEnergyOffset, CalcMethod, TestMicroRates, Tmax, Tmin, Tstep, CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations, CalcMethodMarquardt, MarquardtIterations, MarquardtTolerance, MarquardtDerivDelta, CalcMethodAnalyticalRepresentation, Format, Precision, ChebNumTemp, ChebNumConc, ChebMaxTemp, ChebMinTemp, ChebMaxConc, ChebMinConc, ChebTExSize, ChebPExSize, CalcMethodThermodynamicTable, Tmid, CalcMethodSensitivityAnalysis, SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters, SensitivityVarRedMethod } from "./xml_control";
 import { createDiv, getCollapsibleDiv, createFlexDiv, createLabel, createButton, createInput, resizeInputElement, s_button, createLabelWithInput, createLabelWithSelect, resizeSelectElement, createSelectElement } from "./html";
-import { Mesmer } from "./mesmer";
+import { Mesmer } from "./xml_mesmer";
 import { mapToString, getID, isNumeric } from "./util";
 import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
 
@@ -107,7 +107,7 @@ export function processControl(xml: XMLDocument, controlIDs: IDManager): HTMLDiv
         });
     }
     // Create an add button to add a control.
-    createAddControlButton(controlsDiv, controlIDs, level1);
+    createAddControlButton(controlsDiv, controlIDs);
     return controlsDiv;
 }
 
@@ -157,12 +157,12 @@ function getControlItems(control: Control): { class: any, setMethod: (value: any
 }
 
 /**
- * @param controlsDiv 
- * @param level The level.
+ * Create an add control button and append to controlsDiv.
+ * @param controlsDiv The controls div.
+ * @param controlIDs The control IDs.
  * @returns A button.
  */
-function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: IDManager,
-    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): HTMLButtonElement {
+export function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: IDManager): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     controlsDiv.appendChild(button);
     button.addEventListener('click', (event: MouseEvent) => {
@@ -200,17 +200,17 @@ function createAddControlButton(controlsDiv: HTMLDivElement, controlIDs: IDManag
             handleControl(control, cDiv, controlIDs, onOffControls, null, null, option.class, option.setMethod, option.removeMethod);
         });
         // Create a div for the on/off controls.
-        let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level);
+        let onOffControlsDiv: HTMLDivElement = createFlexDiv(undefined, level1);
         let orderedOnOffControls = new Map([...onOffControls.entries()].sort());
         orderedOnOffControls.forEach((button: HTMLButtonElement) => {
             onOffControlsDiv.appendChild(button);
         });
         cDiv.appendChild(onOffControlsDiv);
         // Controls with additional things to set.
-        handleTestMicroRates(control, cDiv, controlIDs, null, level);
-        handleCalcMethod(control, cDiv, controlIDs, null, level);
+        handleTestMicroRates(control, cDiv, controlIDs, null, level1);
+        handleCalcMethod(control, cDiv, controlIDs, null, level1);
         getControlItems(control).forEach(item => {
-            handleControl(control, cDiv, controlIDs, onOffControls, null, level, item.class, item.setMethod, item.removeMethod, true);
+            handleControl(control, cDiv, controlIDs, onOffControls, null, level1, item.class, item.setMethod, item.removeMethod, true);
         });
         // Add a remove control button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeControl.bind(mesmer), i);

@@ -11,13 +11,14 @@ import {
 } from './xml.js';
 
 import {
-    Molecule, Property, PropertyList, PropertyScalarString, PropertyScalarNumber, PropertyArray, PropertyMatrix, 
-    ZPE} from './molecule.js';
+    Molecule, Property, PropertyList, PropertyScalarString, PropertyScalarNumber, PropertyArray, PropertyMatrix,
+    ZPE
+} from './xml_molecule.js';
 
 import {
     Reaction, TransitionState, ReactionMolecule, Reactant, Product, MCRCMethod, MesmerILT, PreExponential,
     ActivationEnergy, NInfinity, Tunneling, TInfinity, ExcessReactantConc, CanonicalRateList, Kinf, Val, Rev, Keq
-} from './reaction.js';
+} from './xml_reaction.js';
 
 import { createMenu } from './gui_menu.js';
 
@@ -32,9 +33,9 @@ import { drawLevel, drawLine, getTextHeight, getTextWidth } from './canvas.js';
 
 import {
     BathGas, Conditions, ExperimentalRate, ExperimentalEigenvalue, PTpair, PTs, ExperimentalYield
-} from './conditions.js';
+} from './xml_conditions.js';
 
-import { EnergyAboveTheTopHill, GrainSize, MaxTemperature, ModelParameters } from './modelParameters.js';
+import { EnergyAboveTheTopHill, GrainSize, MaxTemperature, ModelParameters } from './xml_modelParameters.js';
 
 import {
     Control, DiagramEnergyOffset, Eigenvalues, HideInactive, TestDOS, PrintSpeciesProfile, TestMicroRates, TestRateConstant,
@@ -48,18 +49,19 @@ import {
     Tmin, Tmid, Tstep, Tmax, CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations,
     CalcMethodSensitivityAnalysis, SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters,
     SensitivityVarRedMethod
-} from './control.js';
+} from './xml_control.js';
 
-import { Mesmer, MoleculeList, ReactionList, Title, T, Description } from './mesmer.js';
+import { Mesmer, MoleculeList, ReactionList, Title, T, Description } from './xml_mesmer.js';
 import Big from 'big.js';
-import { Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population, PopulationList, RateList } from './analysis.js';
-import { DCCreator, MetadataList, DCSource, DCDate, DCContributor, Metadata } from './metadata.js';
+import { Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population, PopulationList, RateList } from './xml_analysis.js';
+import { DCCreator, MetadataList, DCSource, DCDate, DCContributor, Metadata } from './xml_metadata.js';
 import { Defaults } from './defaults.js';
-import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList } from './gui_molecules.js';
-import { getAddReactionButton, processReactionList } from './gui_reactions.js';
-import { processConditions } from './gui_conditionsList.js';
-import { processModelParameters } from './gui_modelParameters.js';
-import { processControl } from './gui_controlList.js';
+import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList } from './gui_moleculeList.js';
+import { getAddReactionButton, processReactionList } from './gui_reactionList.js';
+import { createAddConditionsButton, processConditions } from './gui_ConditionsList.js';
+import { createAddModelParametersButton, processModelParameters } from './gui_ModelParametersList.js';
+import { createAddControlButton, processControl } from './gui_ControlList.js';
+import { createReactionDiagram, drawReactionDiagram } from './gui_reactionDiagram.js';
 //import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
 
 /**
@@ -192,7 +194,7 @@ const controlDivID: string = addID(s_control);
 const metadataListDivID: string = addID(s_metadata);
 const analysisDivID: string = addID(s_analysis);
 const xmlDivID: string = addID(s_xml);
-const welcomeDivID: string = addID(s_welcome);
+//const welcomeDivID: string = addID(s_welcome);
 
 // For dark/light mode.
 let dark: boolean;
@@ -347,14 +349,17 @@ let reactions: Map<string, Reaction> = new Map();
  */
 let scatterPlots: ScatterPlot[];
 
-// IDs for the reactions diagram.
-const s_Reactions_Diagram: string = "Reactions Diagram";
+/**
+ * Reaction Diagram variables.
+ */
+// IDs.
+export const s_Reactions_Diagram: string = "Reactions Diagram";
 const rdDivID: string = addRID(s_Reactions_Diagram);
 const rdcID: string = addRID(rdDivID, "Canvas");
 //let rd_canvas_width: number = 800;
 let rdcHeight: number = 400;
-let rd_lw: number = 4;
-let rd_lwc: number = 2;
+let rd_lw: number = 4; // Line width of reactants, transition states and products.
+let rd_lwc: number = 2; // Line width of connectors.
 let rd_font: string = "1em SensSerif";
 let rdWindow: Window | null;
 
@@ -362,7 +367,7 @@ let rdWindow: Window | null;
 let sp_font: string = "2em SensSerif";
 
 /**
- * Once the DOM is loaded, add a menu and welcome text.
+ * Once the DOM is loaded, add the menu and collapsed buttons for content
  */
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -402,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let mb: HTMLButtonElement = getAddMoleculeButton(mlDiv, molecules);
     // Add add from library button.
     let lb: HTMLButtonElement = getAddFromLibraryButton(mlDiv, mb, molecules);
-    
+
     // Reactions.
     let reactionsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
     let rlDivID: string = addRID(ReactionList.tagName);
@@ -416,55 +421,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reactions Diagram.
     let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
-    let rdDiv: HTMLDivElement = createDiv(rdDivID);
+    let rdDiv: HTMLDivElement = createDiv(undefined, level1);
     rddDiv.appendChild(rdDiv);
     // Create collapsible content.
     let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
         s_Reactions_Diagram, boundary1, level0);
-    // Create a pop diagram button in its own div.
-    let bDivId = addRID(rdDivID, s_button + 's');
-    let bDiv = createDiv(bDivId);
-    rdDiv.appendChild(bDiv);
-    let pbID = addRID(bDivId, s_button);
-    let pb: HTMLButtonElement = createButton("Pop into a new Window", pbID);
-    bDiv.appendChild(pb);
-    let rdCanvas: HTMLCanvasElement = document.createElement('canvas');
-    rdCanvas.id = rdcID;
-    rdDiv.appendChild(rdCanvas);
-    //rd_canvas.width = rd_canvas_width;
-    rdCanvas.height = rdcHeight;
-    rdCanvas.style.border = "1px solid black";
-    //rdCanvas.style.margin = "1px";
-    //drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
-    // Add action listener to the pop diagram button.
-    pb.addEventListener('click', () => {
-        if (rdWindow == null) {
-            let popWindowRDCanvas: HTMLCanvasElement = document.createElement('canvas');
-            popWindowRDCanvas.id = rdcID;
-            rdWindow = window.open("", s_Reactions_Diagram, "width=" + rdCanvas.width + ", height=" + rdCanvas.height) as Window;
-            rdWindow.document.body.appendChild(popWindowRDCanvas);
-            drawReactionDiagram(popWindowRDCanvas, dark, rd_font, rd_lw, rd_lwc);
-            remove(rdcID);
-            pb.textContent = "Pop into this Window";
-        } else {
-            rdCanvas = document.createElement('canvas');
-            rdCanvas.id = rdcID;
-            rdDiv.appendChild(rdCanvas);
-            drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
-            rdWindow.close();
-            rdWindow = null;
-            pb.textContent = "Pop into a new Window";
-        }
-    });
-    addSaveAsPNGButton(rdCanvas, bDiv, null, s_Reactions_Diagram);
+    createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
 
     // Conditions.
     let conditionsDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
     let cdlDivID: string = addRID(Conditions.tagName);
     let cdlDiv: HTMLDivElement = createDiv(cdlDivID);
     conditionsDiv.appendChild(cdlDiv);
+    // Create a div for the conditionss.
+    let conditionssDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    // Create an add button to add a conditions.
+    createAddConditionsButton(conditionssDiv, conditionsIDs, molecules);
     // Create collapsible content.
-    let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, conditionsDiv, null, cdlDiv,
+    let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, cdlDiv, null, conditionssDiv,
         "ConditionsList", boundary1, level0);
 
     // Model Parameters.
@@ -472,8 +446,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let mplDivID: string = addRID(ModelParameters.tagName, "list");
     let mplDiv: HTMLDivElement = createDiv(mplDivID);
     modelParametersDiv.appendChild(mplDiv);
+    // Create a div for the model parameterss.
+    let modelParameterssDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    // Create an add button to add a model parameters.
+    createAddModelParametersButton(modelParameterssDiv, modelParametersIDs);
     // Create collapsible content.
-    let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, modelParametersDiv, null, mplDiv,
+    let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, mplDiv, null, modelParameterssDiv,
         "ModelParametersList", boundary1, level0);
 
     // Control.
@@ -481,10 +459,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let clDivID: string = addRID(Control.tagName);
     let clDiv: HTMLDivElement = createDiv(clDivID);
     controlDiv.appendChild(clDiv);
+    // Create a div for the controls.
+    let controlsDiv: HTMLDivElement = createDiv(undefined, boundary1);
+    // Create an add button to add a control.
+    createAddControlButton(controlsDiv, controlIDs);
     // Create collapsible content.
-    let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, controlDiv, null, clDiv,
+    let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, clDiv, null, controlsDiv,
         "ControlList", boundary1, level0);
 
+    /*
     // MetadataList.
     let metadataListDiv: HTMLDivElement = document.getElementById(metadataListDivID) as HTMLDivElement;
     let mdDivID: string = addRID(MetadataList.tagName);
@@ -511,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create collapsible content.
     let xcDiv: HTMLDivElement = getCollapsibleDiv(xDivID, xmlDiv, null, xDiv,
         s_xml, boundary1, level0);
+    */
 });
 
 /**
@@ -541,10 +525,10 @@ function createTitle(title: string, attributes: Map<string, string>) {
 function redrawReactionsDiagram() {
     if (rdWindow == null) {
         let rdCanvas: HTMLCanvasElement = document.getElementById(rdcID) as HTMLCanvasElement;
-        drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
+        drawReactionDiagram(rdCanvas, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     } else {
         let c: HTMLCanvasElement = rdWindow.document.getElementById(rdcID) as HTMLCanvasElement;
-        drawReactionDiagram(c, dark, rd_font, rd_lw, rd_lwc);
+        drawReactionDiagram(c, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     }
 }
 
@@ -679,45 +663,7 @@ function parse(xml: XMLDocument) {
     let rdDiv: HTMLDivElement = createDiv(undefined, level1);
     let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
         s_Reactions_Diagram, boundary1, level0);
-    // Create a pop diagram button in its own div.
-    let bDivId = addRID(rdDivID, s_button + 's');
-    //remove(popButtonDivId);
-    let bDiv = createDiv(bDivId);
-    rdDiv.appendChild(bDiv);
-    let pbID = addRID(bDivId, s_button);
-    let popOutText: string = "Pop into a new Window";
-    let pb: HTMLButtonElement = createButton(popOutText, pbID);
-    bDiv.appendChild(pb);
-    let rdCanvas: HTMLCanvasElement = document.createElement('canvas');
-    rdCanvas.id = rdcID;
-    rdDiv.appendChild(rdCanvas);
-    //rd_canvas.width = rd_canvas_width;
-    rdCanvas.height = rdcHeight;
-    rdCanvas.style.border = "1px solid black";
-    //rdCanvas.style.margin = "1px";
-    drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
-    // Add action listener to the pop diagram button.
-    pb.addEventListener('click', () => {
-        //if (rdWindow == null || rdWindow.closed) {
-        if (rdWindow == null) {
-            let popWindowRDCanvas: HTMLCanvasElement = document.createElement('canvas');
-            popWindowRDCanvas.id = rdcID;
-            rdWindow = window.open("", s_Reactions_Diagram, "width=" + rdCanvas.width + ", height=" + rdCanvas.height) as Window;
-            rdWindow.document.body.appendChild(popWindowRDCanvas);
-            drawReactionDiagram(popWindowRDCanvas, dark, rd_font, rd_lw, rd_lwc);
-            remove(rdcID);
-            pb.textContent = "Pop into this Window";
-        } else {
-            rdCanvas = document.createElement('canvas');
-            rdCanvas.id = rdcID;
-            rdDiv.appendChild(rdCanvas);
-            drawReactionDiagram(rdCanvas, dark, rd_font, rd_lw, rd_lwc);
-            rdWindow.close();
-            rdWindow = null;
-            pb.textContent = popOutText;
-        }
-    });
-    addSaveAsPNGButton(rdCanvas, bDiv, null, s_Reactions_Diagram);
+    createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
     // Conditions.
     let cdlDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
@@ -747,22 +693,28 @@ function parse(xml: XMLDocument) {
         "ControlList", boundary1, level0);
 
     // MetadataList.
-    let mdDiv: HTMLDivElement = document.getElementById(metadataListDivID) as HTMLDivElement;
-    let mdDivID: string = addRID(MetadataList.tagName);
-    // Remove any existing mdDivID HTMLDivElement.
-    remove(mdDivID);
-    // Create collapsible content.
-    let mdcDiv: HTMLDivElement = getCollapsibleDiv(mdDivID, mdDiv, null, processMetadataList(xml),
-        MetadataList.tagName, boundary1, level0);
+    // Check if xml contains metadata.
+    if (xml.getElementsByTagName(MetadataList.tagName).length > 0) {
+        let mdDiv: HTMLDivElement = document.getElementById(metadataListDivID) as HTMLDivElement;
+        let mdDivID: string = addRID(MetadataList.tagName);
+        // Remove any existing mdDivID HTMLDivElement.
+        remove(mdDivID);
+        // Create collapsible content.
+        let mdcDiv: HTMLDivElement = getCollapsibleDiv(mdDivID, mdDiv, null, processMetadataList(xml),
+            MetadataList.tagName, boundary1, level0);
+    }
 
     // Analysis.
-    let aDiv: HTMLDivElement = document.getElementById(analysisDivID) as HTMLDivElement;
-    let aDivID: string = addRID(Analysis.tagName);
-    // Remove any existing aDivID HTMLDivElement.
-    remove(aDivID);
-    // Create collapsible content.
-    let acDiv: HTMLDivElement = getCollapsibleDiv(aDivID, aDiv, null, processAnalysis(xml),
-        Analysis.tagName, boundary1, level0);
+    // Check if xml contains analysis.
+    if (xml.getElementsByTagName(Analysis.tagName).length > 0) {
+        let aDiv: HTMLDivElement = document.getElementById(analysisDivID) as HTMLDivElement;
+        let aDivID: string = addRID(Analysis.tagName);
+        // Remove any existing aDivID HTMLDivElement.
+        remove(aDivID);
+        // Create collapsible content.
+        let acDiv: HTMLDivElement = getCollapsibleDiv(aDivID, aDiv, null, processAnalysis(xml),
+            Analysis.tagName, boundary1, level0);
+    }
 }
 
 /**
@@ -1935,257 +1887,6 @@ function tableToCSV(t: HTMLTableElement): string {
 }
 
 /**
- * Create a diagram.
- * @param canvas The canvas.
- * @param dark True for dark mode.
- * @param font The font to use.
- * @param lw The line width of reactants, transition states and products.
- * @param lwc The line width color to use.
- */
-function drawReactionDiagram(canvas: HTMLCanvasElement | null, dark: boolean, font: string, lw: number, lwc: number): void {
-    console.log("drawReactionDiagram");
-    if (canvas != null) {
-        // Set foreground and background colors.
-        let foreground: string;
-        let background: string;
-        let blue: string;
-        let orange: string;
-        if (dark) {
-            foreground = "lightgrey";
-            background = "darkgrey";
-            blue = "lightblue";
-            orange = "orange";
-        } else {
-            foreground = "darkgrey";
-            background = "lightgrey";
-            blue = "blue";
-            orange = "darkorange";
-        }
-        let green = "green";
-        let red = "red";
-        const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas.
-        //ctx.fillStyle = background;
-        // Make font bold.
-        ctx.font = "bold " + font;
-        // Get text height for font size.
-        let th = getTextHeight(ctx, "Aj", ctx.font);
-        //console.log("th=" + th);
-        // Go through reactions:
-        // 1. Create sets of reactants, end products, intermediate products and transition states.
-        // 2. Create maps of orders and energies.
-        // 3. Calculate maximum energy.
-        let reactants: string[] = [];
-        let products: Set<string> = new Set();
-        let intProducts: Set<string> = new Set();
-        let transitionStates: Set<string> = new Set();
-        let orders: Map<string, number> = new Map();
-        let energies: Map<string, Big> = new Map();
-        let i: number = 0;
-        let energyMin: Big;
-        let energyMax: Big;
-        reactions.forEach(function (reaction, id) {
-            // Get TransitionStates.
-            let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
-            //console.log("reactant=" + reactant);
-            let reactantsLabel: string | undefined = reaction.getReactantsLabel();
-            if (reactantsLabel != undefined) {
-                reactants.push(reactantsLabel);
-                if (products.has(reactantsLabel)) {
-                    intProducts.add(reactantsLabel);
-                }
-                let energy: Big = reaction.getReactantsEnergy(getMolecule, molecules);
-                energyMin = min(energyMin, energy);
-                energyMax = max(energyMax, energy);
-                energies.set(reactantsLabel, energy);
-                if (!orders.has(reactantsLabel)) {
-                    orders.set(reactantsLabel, i);
-                    i++;
-                }
-            }
-            let productsLabel: string | undefined = reaction.getProductsLabel();
-            if (productsLabel != undefined) {
-                products.add(productsLabel);
-                let energy = reaction.getProductsEnergy(getMolecule, molecules);
-                energyMin = min(energyMin, energy);
-                energyMax = max(energyMax, energy);
-                energies.set(productsLabel, energy);
-                if (orders.has(productsLabel)) {
-                    i--;
-                    let j: number = get(orders, productsLabel);
-                    // Move product to end and shift everything back.
-                    orders.forEach(function (value, key) {
-                        if (value > j) {
-                            orders.set(key, value - 1);
-                        }
-                    });
-                    // Insert transition states.
-                    if (reactionTransitionStates != undefined) {
-                        reactionTransitionStates.forEach(function (ts) {
-                            let ref: string = ts.getMolecule().getRef();
-                            transitionStates.add(ref);
-                            orders.set(ref, i);
-                            energy = (getMolecule(ref, molecules) as Molecule).getEnergy() ?? big0;
-                            energyMin = min(energyMin, energy);
-                            energyMax = max(energyMax, energy);
-                            energies.set(ref, energy);
-                            i++;
-                        });
-                        orders.set(productsLabel, i);
-                        i++
-                    }
-                } else {
-                    if (reactionTransitionStates != undefined) {
-                        reactionTransitionStates.forEach(function (ts) {
-                            let ref: string = ts.getMolecule().getRef();
-                            transitionStates.add(ref);
-                            orders.set(ref, i);
-                            energy = (getMolecule(ref, molecules) as Molecule).getEnergy() ?? big0;
-                            energyMin = min(energyMin, energy);
-                            energyMax = max(energyMax, energy);
-                            energies.set(ref, energy);
-                            i++;
-                        });
-                    }
-                    orders.set(productsLabel, i);
-                    i++;
-                }
-            }
-        });
-        //console.log("orders=" + mapToString(orders));
-        //console.log("energies=" + mapToString(energies));
-        //console.log("energyMax=" + energyMax);
-        //console.log("energyMin=" + energyMin);
-        let energyRange: number = (energyMax!.minus(energyMin!)).toNumber();
-        //console.log("energyRange=" + energyRange);
-        //console.log("reactants=" + reactants);
-        //console.log("products=" + products);
-        //console.log("transitionStates=" + transitionStates);
-        // Create a lookup from order to label.
-        let reorders: string[] = [];
-        orders.forEach(function (value, key) {
-            reorders[value] = key;
-        });
-        //console.log("reorders=" + arrayToString(reorders));
-        // Iterate through the reorders:
-        // 1. Capture coordinates for connecting lines.
-        // 2. Store maximum x.
-        let x0: number = 0;
-        let y0: number;
-        let x1: number;
-        let y1: number;
-        let xmax: number = 0;
-        let tw: number;
-        let textSpacing: number = 5; // Spacing between end of line and start of text.
-        let stepSpacing: number = 10; // Spacing between steps.
-        let reactantsInXY: Map<string, number[]> = new Map();
-        let reactantsOutXY: Map<string, number[]> = new Map();
-        let productsInXY: Map<string, number[]> = new Map();
-        let productsOutXY: Map<string, number[]> = new Map();
-        let transitionStatesInXY: Map<string, number[]> = new Map();
-        let transitionStatesOutXY: Map<string, number[]> = new Map();
-        reorders.forEach(function (value) {
-            //console.log("value=" + value + ".");
-            //console.log("energies=" + mapToString(energies));
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, rdcHeight, energy);
-            // Get text width.
-            tw = Math.max(getTextWidth(ctx, energy.toString(), font), getTextWidth(ctx, value, font));
-            x1 = x0 + tw + textSpacing;
-            y0 = energyRescaled + lw;
-            y1 = y0;
-            // Draw horizontal line and add label.
-            // (The drawing is now not done here but done later so labels are on top of lines, but
-            // the code is left here commented out for code comprehension.)
-            //drawLevel(ctx, green, 4, x0, y0, x1, y1, th, value);
-            reactantsInXY.set(value, [x0, y0]);
-            reactantsOutXY.set(value, [x1, y1]);
-            if (products.has(value)) {
-                productsInXY.set(value, [x0, y0]);
-                productsOutXY.set(value, [x1, y1]);
-            }
-            if (transitionStates.has(value)) {
-                transitionStatesInXY.set(value, [x0, y0]);
-                transitionStatesOutXY.set(value, [x1, y1]);
-            }
-            x0 = x1 + stepSpacing;
-            xmax = x1;
-        });
-        // Set canvas width to maximum x.
-        canvas.width = xmax;
-        //console.log("canvas.width=" + canvas.width);
-        // Set canvas height to maximum energy plus the label.
-        let canvasHeightWithBorder = rdcHeight + (4 * th) + (2 * lw);
-        //console.log("canvasHeightWithBorder=" + canvasHeightWithBorder);
-        let originalCanvasHeight = rdcHeight;
-        // Update the canvas height.
-        canvas.height = canvasHeightWithBorder;
-        // Set the transformation matrix.
-        //ctx.transform(1, 0, 0, 1, 0, canvasHeightWithBorder);
-        ctx.transform(1, 0, 0, -1, 0, canvasHeightWithBorder)
-        // Go through reactions and draw connecting lines.
-        reactions.forEach(function (reaction, id) {
-            //console.log("id=" + id);
-            //console.log("reaction=" + reaction);
-            // Get TransitionState if there is one.
-            let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
-            //console.log("reactant=" + reactant);
-            let reactantsLabel: string | undefined = reaction.getReactantsLabel();
-            let productsLabel: string | undefined = reaction.getProductsLabel();
-            let reactantOutXY: number[] = get(reactantsOutXY, reactantsLabel);
-            let productInXY: number[] = get(productsInXY, productsLabel);
-            if (reactionTransitionStates.length > 0) {
-                reactionTransitionStates.forEach(function (ts) {
-                    let transitionStateLabel: string = ts.getMolecule().getRef();
-                    let transitionStateInXY: number[] = get(transitionStatesInXY, transitionStateLabel);
-                    drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0],
-                        transitionStateInXY[1]);
-                    let transitionStateOutXY: number[] = get(transitionStatesOutXY, transitionStateLabel);
-                    drawLine(ctx, foreground, lwc, transitionStateOutXY[0], transitionStateOutXY[1],
-                        productInXY[0], productInXY[1]);
-                });
-            } else {
-                drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1],
-                    productInXY[0], productInXY[1]);
-            }
-        });
-        // Draw horizontal lines and labels.
-        // (This is done last so that the labels are on top of the vertical lines.)
-        reactants.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(reactantsInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(reactantsOutXY, value)[0];
-            let energyString: string = energy.toString();
-            drawLevel(ctx, blue, lw, x0, y, x1, y, font, th, value, energyString);
-        });
-        products.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(productsInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(productsOutXY, value)[0];
-            let energyString: string = energy.toString();
-            if (intProducts.has(value)) {
-                drawLevel(ctx, orange, lw, x0, y, x1, y, font, th, value, energyString);
-            } else {
-                drawLevel(ctx, green, lw, x0, y, x1, y, font, th, value, energyString);
-            }
-        });
-        transitionStates.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(transitionStatesInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(transitionStatesOutXY, value)[0];
-            let energyString: string = energy.toString();
-            drawLevel(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
-        });
-    }
-}
-
-/**
  * For saving data to a file.
  * 
  * @param data The data.
@@ -2269,7 +1970,7 @@ function getFilename(name: string): string {
  * @param elementToInsertBefore The element to insert before.
  * @param name The name to be appended to the file.
  */
-function addSaveAsPNGButton(canvas: HTMLCanvasElement, divToAddTo: HTMLElement, elementToInsertBefore: HTMLElement | null, name: string) {
+export function addSaveAsPNGButton(canvas: HTMLCanvasElement, divToAddTo: HTMLElement, elementToInsertBefore: HTMLElement | null, name: string) {
     // Add a save button to save the canvas as an image.
     let saveButtonID = addRID(divToAddTo.id, 'saveButton');
     let saveButton: HTMLButtonElement = createButton("Save as PNG", saveButtonID, boundary1);

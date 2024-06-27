@@ -1,22 +1,30 @@
 import Big from "big.js";
-import { s_Add_sy_add, addRID, level1, s_container, boundary1, getMoleculeKeys, addAnyUnits, 
-    addSaveAsCSVButton, s_input, s_table, setNumberNode } from "./app.js";
-import { createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select, 
-    addTableRow, createLabel, createLabelWithInput, createLabelWithSelect, createTable, 
-    resizeInputElement, resizeSelectElement } from "./html.js";
-import { ReactionList, Description, T } from "./mesmer";
-import { Molecule } from "./molecule.js";
-import { Reaction, Reactant, ActivationEnergy, CanonicalRateList, ExcessReactantConc, Keq, Kinf, 
-    MCRCMethod, MesmerILT, NInfinity, PreExponential, Product, ReactionMolecule, Rev, TInfinity, 
-    TransitionState, Tunneling, Val } from "./reaction.js";
+import {
+    s_Add_sy_add, addRID, level1, s_container, boundary1, getMoleculeKeys, addAnyUnits,
+    addSaveAsCSVButton, s_input, s_table, setNumberNode
+} from "./app.js";
+import {
+    createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select,
+    addTableRow, createLabel, createLabelWithInput, createLabelWithSelect, createTable,
+    resizeInputElement, resizeSelectElement
+} from "./html.js";
+import { ReactionList, Description, T } from "./xml_mesmer.js";
+import { Molecule } from "./xml_molecule.js";
+import {
+    Reaction, Reactant, ActivationEnergy, CanonicalRateList, ExcessReactantConc, Keq, Kinf,
+    MCRCMethod, MesmerILT, NInfinity, PreExponential, Product, ReactionMolecule, Rev, TInfinity,
+    TransitionState, Tunneling, Val
+} from "./xml_reaction.js";
 import { mapToString } from "./util.js";
-import { getFirstElement, getFirstChildNode, getNodeValue, getInputString, getAttributes, 
-    getSingularElement} from './xml.js';
+import {
+    getFirstElement, getFirstChildNode, getNodeValue, getInputString, getAttributes,
+    getSingularElement
+} from './xml.js';
 
 /**
  * Create an add reaction button.
  */
-export function getAddReactionButton(rlDiv: HTMLDivElement, reactions: Map<string, Reaction>, 
+export function getAddReactionButton(rlDiv: HTMLDivElement, reactions: Map<string, Reaction>,
     molecules: Map<string, Molecule>): HTMLButtonElement {
     let rb: HTMLButtonElement = createButton(s_Add_sy_add, addRID(Reaction.tagName, s_button), level1);
     rlDiv.appendChild(rb);
@@ -30,14 +38,40 @@ export function getAddReactionButton(rlDiv: HTMLDivElement, reactions: Map<strin
         rlDiv.appendChild(rDiv);
         // Create collapsible content.
         let rcDivID: string = addRID(rDivID, s_container);
-        let rcDiv: HTMLDivElement = getCollapsibleDiv(rcDivID, rlDiv, rb, rDiv,
-            r.getLabel(), boundary1, level1);
-        // Create a selector to select a molecule as a reactant.
-        let selectReactant: HTMLSelectElement = createSelectElement(getMoleculeKeys(molecules), "select", "", 
-            addRID(rcDivID, Reactant.tagName, s_select), level1);
-        rcDiv.appendChild(selectReactant);
+        let rcDiv: HTMLDivElement = getCollapsibleDiv(rcDivID, rlDiv, rb, rDiv, r.getLabel(), boundary1, level1);
+        // Create collapsible content for reactants.
+        // Add an add button to add a reactant.
+        let addReactantButton: HTMLButtonElement = createButton(s_Add_sy_add + " Reactant",
+            addRID(Reactant.tagName, reactions.size, s_button), level1);
+        rDiv.appendChild(addReactantButton);
+        addReactantButton.addEventListener('click', () => {
+            // Create a selector to select a molecule as a reactant.
+            let selectReactant: HTMLSelectElement = createSelectElement(getMoleculeKeys(molecules), "select", "",
+                addRID(rcDivID, Reactant.tagName, s_select), level1);
+            rDiv.insertBefore(selectReactant, addReactantButton);
+            // Add an event listener to the select element.
+            selectReactant.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLSelectElement;
+                let molecule: Molecule = molecules.get(target.value) as Molecule;
+                let rmAttributes: Map<string, string> = new Map();
+                rmAttributes.set(ReactionMolecule.s_ref, molecule.getID());
+                rmAttributes.set(ReactionMolecule.s_role, Reactant.s_deficientReactant);
+                let rm = new ReactionMolecule(rmAttributes);
+            });
+        });
+
+        // Create collapsible content for products.
+
+        // Create collapsible content for transition states.
+
+        // Create collapsible content for MCRCMethod.
+
+        // Create collapsible content for excessReactantConc.
+
+        // Create collapsible content for canonicalRateList.
+
     });
-    return rb;   
+    return rb;
 }
 
 /**
