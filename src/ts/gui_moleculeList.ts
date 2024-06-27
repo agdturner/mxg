@@ -1263,6 +1263,8 @@ export function processMoleculeList(xml: XMLDocument, molecules: Map<string, Mol
             moleculeTagNames.forEach(x => console.warn(x));
             //throw new Error("Unexpected tags in molecule.");
         }
+        // Add a remove molecule button.
+        mDiv.appendChild(getRemoveMoleculeButton(mDiv, molecules));
     }
 
     // Create an add molecule button.
