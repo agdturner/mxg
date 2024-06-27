@@ -72,7 +72,7 @@ function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_condi
         div.appendChild(select);
         addRemoveButton(div, boundary1, (bathGas) => {
             bsDiv.removeChild(div);
-            conditionsIDs.removeID(id),
+            conditionsIDs.removeIDs(id),
                 conditions.removeBathGas(bathGas);
         });
         bsDiv.insertBefore(div, addBathGasButton);
@@ -92,7 +92,7 @@ function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_condi
                 div.appendChild(createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), bathGas, false, id));
                 addRemoveButton(div, boundary1, (bathGas) => {
                     bsDiv.removeChild(div);
-                    conditionsIDs.removeID(id);
+                    conditionsIDs.removeIDs(id);
                     conditions.removeBathGas(bathGas);
                 });
                 bsDiv.insertBefore(div, addBathGasButton);
@@ -103,7 +103,7 @@ function handleBathGases(conditions: Conditions, cDiv: HTMLDivElement, xml_condi
             div.appendChild(createSelectElementBathGas(Array.from(getMoleculeKeys(molecules)), undefined, false, id));
             addRemoveButton(div, boundary1, (bathGas) => {
                 bsDiv.removeChild(div);
-                conditionsIDs.removeID(id);
+                conditionsIDs.removeIDs(id);
                 conditions.removeBathGas(bathGas);
             });
             bsDiv.insertBefore(div, addBathGasButton);
@@ -356,11 +356,11 @@ function handlePTs(conditions: Conditions, cDiv: HTMLDivElement, xml_conditions:
 /**
  * Create an add conditions button and append it to conditionssDiv.
  * @param conditionssDiv The conditionss div.
- * @param conditionsIDs The conditions IDs.
+ * @param conditionsDivIDs The conditions IDs.
  * @param molecules The molecules.
  * @returns The button.
  */
-export function createAddConditionsButton(conditionssDiv: HTMLDivElement, conditionsIDs: IDManager,
+export function createAddConditionsButton(conditionssDiv: HTMLDivElement, conditionsDivIDs: IDManager,
     molecules: Map<string, Molecule>): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     conditionssDiv.appendChild(button);
@@ -368,7 +368,7 @@ export function createAddConditionsButton(conditionssDiv: HTMLDivElement, condit
         let i: number = mesmer.getNextConditionsID();
         console.log("Add Conditions " + i.toString());
         // Create collapsible div.
-        let cDivID: string = addRID(Conditions.tagName, i.toString());
+        let cDivID: string = conditionsDivIDs.addID(Conditions.tagName, i.toString());
         let cDiv: HTMLDivElement = createDiv(cDivID, boundary1);
         let ccDivID = addRID(cDivID, s_container);
         // ElementToInsert before is element after the conditions div with the previous index.
@@ -393,14 +393,14 @@ export function createAddConditionsButton(conditionssDiv: HTMLDivElement, condit
             Conditions.tagName + " " + i.toString(), boundary1, level1);
         // Add the conditions
         let conditions: Conditions = addConditions(new Map(), i);
-        handleBathGases(conditions, cDiv, null, conditionsIDs, molecules);
-        handlePTs(conditions, cDiv, null, conditionsIDs, molecules);
+        handleBathGases(conditions, cDiv, null, conditionsDivIDs, molecules);
+        handlePTs(conditions, cDiv, null, conditionsDivIDs, molecules);
         // Add a remove conditions button.
         let removeButton: HTMLButtonElement = addRemoveButton(cDiv, level1, mesmer.removeConditions.bind(mesmer), i);
         removeButton.addEventListener('click', (event: MouseEvent) => {
             // Remove the conditions.
             remove(ccDivID);
-            conditionsIDs.removeIDs(cDivID);
+            conditionsDivIDs.removeIDs(cDivID);
         });
     });
     return button;

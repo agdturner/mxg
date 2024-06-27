@@ -131,6 +131,7 @@ const s_textarea: string = "textarea";
 export const s_undefined: string = "undefined";
 export const s_units: string = "units";
 const s_xml: string = "xml";
+export const s_viewer: string = "viewer";
 const s_welcome: string = "welcome";
 
 /**
@@ -218,6 +219,10 @@ console.log("dark=" + dark);
  * For ID management.
  */
 export class IDManager {
+
+    /**
+     * A map of IDs with the key ID as the key and a set of IDs as the value.
+     */
     private ids: Map<string, Set<string>> = new Map();
 
     /**
@@ -235,7 +240,13 @@ export class IDManager {
         return id;
     }
 
-    removeID(iD: string): void {
+    /**
+     * Remove the IDs to the map.
+     * @param iD The key ID.
+     * @param parts The parts of the ID to be created.
+     * @returns The ID created.
+     */
+    private removeID(iD: string): void {
         rIDs.delete(iD);
         allIDs.delete(iD);
     }
@@ -245,29 +256,50 @@ export class IDManager {
      * @param iD The ID key for the IDs to remove.
      */
     removeIDs(iD: string): void {
+        if (!this.ids.has(iD)) {
+            return;
+        }
         this.ids.get(iD)!.forEach(id => {
             console.log("remove id " + id);
-            rIDs.delete(id);
-            allIDs.delete(id);
+            this.removeID(id);
         });
         this.ids.delete(iD);
+    }
+
+    /**
+     * Remove all IDs.
+     */
+    removeAllIDs(): void {
+        this.ids.forEach((value, key) => {
+            this.removeIDs(key);
+        }); 
     }
 }
 
 /**
- * For conditions ID management.
+ * For moleculeList Div ID management.
  */
-let conditionsIDs: IDManager = new IDManager();
+let mIDM: IDManager = new IDManager();
 
 /**
- * For modelParameters ID management.
+ * For reactionList Div ID management.
  */
-let modelParametersIDs: IDManager = new IDManager();
+let rIDM: IDManager = new IDManager();
 
 /**
- * For control ID management.
+ * For conditionsList Div ID management.
  */
-let controlIDs: IDManager = new IDManager();
+let conditionsIDM: IDManager = new IDManager();
+
+/**
+ * For ModelParametersList Div ID management.
+ */
+let mpIDM: IDManager = new IDManager();
+
+/**
+ * For ControlList Div ID management.
+ */
+let controlIDM: IDManager = new IDManager();
 
 /**
  * For mesmer.
@@ -285,18 +317,17 @@ export let defaults: Defaults = new Defaults();
 export let libmols: Map<string, Molecule> = new Map();
 
 /**
- * Adds a molecule to the map of molecules. The molecule label is updated if the molecule attribute id is not unique. 
+ * Adds a molecule to the map of molecules.
+ * The molecule label is updated if the molecule attribute id is not unique. 
  * @param m The molecule to add
  * @param ms The map of molecules to add the molecule to.
  */
 export function addMolecule(m: Molecule, ms: Map<string, Molecule>): void {
     let id: string = m.getID();
-    for (let [key, v] of ms) {
-        if (id == v.getID()) {
-            id += " " + v.id.toString();
-            m.label = id;
-            break; // Stop iterating
-        }
+    let n: number = 1;
+    while (ms.has(m.id)) {
+        m.id = m.id + n;
+        n++;
     }
     ms.set(m.id, m);
 }
@@ -404,9 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let mlcDiv: HTMLDivElement = getCollapsibleDiv(mlDivID, moleculesDiv, null, mlDiv,
         MoleculeList.tagName, boundary1, level0);
     // Add add molecule button.
-    let mb: HTMLButtonElement = getAddMoleculeButton(mlDiv, molecules);
+    let mb: HTMLButtonElement = getAddMoleculeButton(mlDiv, mIDM, molecules);
     // Add add from library button.
-    let lb: HTMLButtonElement = getAddFromLibraryButton(mlDiv, mb, molecules);
+    let lb: HTMLButtonElement = getAddFromLibraryButton(mlDiv, mb, mIDM, molecules);
 
     // Reactions.
     let reactionsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
@@ -436,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a div for the conditionss.
     let conditionssDiv: HTMLDivElement = createDiv(undefined, boundary1);
     // Create an add button to add a conditions.
-    createAddConditionsButton(conditionssDiv, conditionsIDs, molecules);
+    createAddConditionsButton(conditionssDiv, conditionsIDM, molecules);
     // Create collapsible content.
     let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, cdlDiv, null, conditionssDiv,
         "ConditionsList", boundary1, level0);
@@ -449,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a div for the model parameterss.
     let modelParameterssDiv: HTMLDivElement = createDiv(undefined, boundary1);
     // Create an add button to add a model parameters.
-    createAddModelParametersButton(modelParameterssDiv, modelParametersIDs);
+    createAddModelParametersButton(modelParameterssDiv, mpIDM);
     // Create collapsible content.
     let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, mplDiv, null, modelParameterssDiv,
         "ModelParametersList", boundary1, level0);
@@ -462,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create a div for the controls.
     let controlsDiv: HTMLDivElement = createDiv(undefined, boundary1);
     // Create an add button to add a control.
-    createAddControlButton(controlsDiv, controlIDs);
+    createAddControlButton(controlsDiv, controlIDM);
     // Create collapsible content.
     let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, clDiv, null, controlsDiv,
         "ControlList", boundary1, level0);
@@ -636,7 +667,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing mlDivID HTMLDivElement.
     remove(mlDivID);
     // Create collapsible content.
-    let mlcDiv: HTMLDivElement = getCollapsibleDiv(mlDivID, mlDiv, null, processMoleculeList(xml, molecules),
+    let mlcDiv: HTMLDivElement = getCollapsibleDiv(mlDivID, mlDiv, null, processMoleculeList(xml, mIDM, molecules),
         MoleculeList.tagName, boundary1, level0);
     //document.body.appendChild(mlcDiv);
 
@@ -671,7 +702,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing cdlDivID HTMLDivElement.
     remove(cdlDivID);
     // Create collapsible content.
-    let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, cdlDiv, null, processConditions(xml, conditionsIDs, molecules),
+    let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, cdlDiv, null, processConditions(xml, conditionsIDM, molecules),
         "ConditionsList", boundary1, level0);
 
     // Model Parameters.
@@ -680,7 +711,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing mpDivID HTMLDivElement.
     remove(mplDivID);
     // Create collapsible content.
-    let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, mplDiv, null, processModelParameters(xml, modelParametersIDs),
+    let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, mplDiv, null, processModelParameters(xml, mpIDM),
         "ModelParametersList", boundary1, level0);
 
     // Control.
@@ -689,7 +720,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing clDivID HTMLDivElement.
     remove(clDivID);
     // Create collapsible content.
-    let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, clDiv, null, processControl(xml, controlIDs),
+    let controlcDiv: HTMLDivElement = getCollapsibleDiv(clDivID, clDiv, null, processControl(xml, controlIDM),
         "ControlList", boundary1, level0);
 
     // MetadataList.
