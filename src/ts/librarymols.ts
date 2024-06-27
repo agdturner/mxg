@@ -1,7 +1,7 @@
 import Big from "big.js";
-import { Description, MoleculeList, T } from "./mesmer";
-import { Metadata, MetadataList } from "./metadata";
-import { Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList, DistributionCalcMethod, EnergyTransferModel, Molecule, Property, PropertyList, Qtot, Sumc, Sumg } from "./molecule";
+import { Description, MoleculeList, T } from "./xml_mesmer";
+import { Metadata, MetadataList } from "./xml_metadata";
+import { Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList, DistributionCalcMethod, EnergyTransferModel, Molecule, Property, PropertyList, Qtot, Sumc, Sumg } from "./xml_molecule";
 import { getAttributes, getFirstChildNode, getNodeValue, getSingularElement } from "./xml";
 import { getID } from "./util";
 import { createFlexDiv } from "./html";

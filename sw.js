@@ -1,5 +1,5 @@
 // The version of the cache.
-const VERSION = "v0.11.0";
+const VERSION = "v0.12.0";
 
 // The name of the cache
 const CACHE_NAME = `mxg-${VERSION}`;
@@ -15,6 +15,7 @@ const APP_STATIC_RESOURCES = [
     "src/index.html",
     "src/style.css",
     "src/ts/app.js",
+    "src/images/UoL_Logo.png",
 ];
 
 // On install, cache the static resources
