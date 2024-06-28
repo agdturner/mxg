@@ -38,7 +38,6 @@ There is a Developer Guide below with set up instructions. To contribute, please
 
 ## Development RoadMap
 - Version 1.0
-  - Remove button for molecules (In Version 0.11 molecules can be added, but not removed).
   - Support selection of a molecule property to add (In Version 0.11 only loaded molecule properties can be changed. What is wanted is like what has been implemented for Control CalcMethod).
   - Support the specification (addition and deletion) of reactions.
 
