@@ -393,7 +393,7 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDM: ID
             }
             let attributes: Map<string, string> = getAttributes(xml[0]);
             let xsi_type: string = attributes.get("xsi:type") as string;
-            cm = getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
+            cm = getCalcMethod(controlIDM, control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
             control.setCalcMethod(cm);
             button.classList.toggle(s_optionOff);
             button.textContent = buttonTextContentSelected;
@@ -420,7 +420,7 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDM: ID
             controlIDM.removeIDs(divCmDetailsId);
             controlIDM.removeIDs(divCmDetailsSelectId);
             // Create the select element.
-            let select: HTMLSelectElement = createSelectElementCalcMethod(control, div, options, tagName, s_selectOption, divCmDetailsId, divCmDetailsSelectId);
+            let select: HTMLSelectElement = createSelectElementCalcMethod(controlIDM, control, div, options, tagName, s_selectOption, divCmDetailsId, divCmDetailsSelectId);
             divCm.appendChild(select);
             button.textContent = buttonTextContentSelected;
             button.classList.toggle(s_optionOn)
@@ -594,13 +594,13 @@ function createTestMicroRates(control: Control, div: HTMLDivElement, xml_tmr: HT
  * @param divCmDetailsSelectId The div cm details select id.
  * @returns The CalcMethod.
  */
-function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollectionOf<Element>, options: string[],
+function getCalcMethod(controlIDM: IDManager, control: Control, divCm: HTMLDivElement, xml: HTMLCollectionOf<Element>, options: string[],
     attributes: Map<string, string>, tagName: string, xsi_type: string,
     divCmDetailsId: string, divCmDetailsSelectId: string): CalcMethod {
     //console.log("getCalcMethod");
     let cm: CalcMethod;
     // Create the select element.
-    let select: HTMLSelectElement = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId,
+    let select: HTMLSelectElement = createSelectElementCalcMethod(controlIDM, control, divCm, options, tagName, xsi_type, divCmDetailsId,
         divCmDetailsSelectId);
     // Set the select element to the correct value.
     select.value = xsi_type;
@@ -733,7 +733,7 @@ function getCalcMethod(control: Control, divCm: HTMLDivElement, xml: HTMLCollect
         if (name != undefined && name !== xsi_type) {
             attributes.set("xsi:type", name);
             console.warn(`Using name attribute as xsi:type: ${name}`);
-            return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId,
+            return getCalcMethod(controlIDM, control, divCm, xml, options, attributes, tagName, name, divCmDetailsId,
                 divCmDetailsSelectId);
         } else {
             throw new Error(`Unable to determine calculation method for xsi_type: ${xsi_type}`);
@@ -917,7 +917,7 @@ function processCalcMethodSensitivityAnalysis(divCmDetails: HTMLDivElement, cm: 
  * @param id The id for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
  */
-function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, options: string[],
+function createSelectElementCalcMethod(controlIDM: IDManager, control: Control, div: HTMLDivElement, options: string[],
     tagName: string, value: string, divCmDetailsId: string, divCmDetailsSelectId: string): HTMLSelectElement {
     let select: HTMLSelectElement = createSelectElement(options, tagName, value, divCmDetailsSelectId, boundary1);
     div.appendChild(select);
@@ -927,7 +927,7 @@ function createSelectElementCalcMethod(control: Control, div: HTMLDivElement, op
         let divCmDetails: HTMLDivElement = document.getElementById(divCmDetailsId) as HTMLDivElement;
         if (divCmDetails != null) {
             divCmDetails.remove();
-            control.idManager.removeIDs(divCmDetailsId);
+            controlIDM.removeIDs(divCmDetailsId);
         }
         divCmDetails = createFlexDiv(divCmDetailsId, boundary1);
         div.appendChild(divCmDetails);
