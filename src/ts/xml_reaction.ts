@@ -874,7 +874,7 @@ export class Reaction extends NodeWithNodes {
      * @param canonicalRateList The canonical rate list (optional).
      */
     constructor(attributes: Map<string, string>,
-        reactants?: Reactant[], products?: Product[], tunneling?: Tunneling,
+        reactants?: Map<number, Reactant>, products?: Product[], tunneling?: Tunneling,
         transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
         excessReactantConc?: ExcessReactantConc, canonicalRateList?: CanonicalRateList) {
         super(attributes, Reaction.tagName);
@@ -888,7 +888,7 @@ export class Reaction extends NodeWithNodes {
         }
         this.id = id;
         if (reactants != undefined) {
-            reactants.forEach(reactant => {
+            reactants.forEach((reactant, key) => {
                 this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
                 this.addNode(reactant);
             });
@@ -961,8 +961,8 @@ export class Reaction extends NodeWithNodes {
     /**
      * Set the reactants.
      */
-    setReactants(reactants: Reactant[]): void {
-        reactants.forEach(reactant => {
+    setReactants(reactants: Map<string, Reactant>): void {
+        reactants.forEach((reactant, key) => {
             this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
             this.addNode(reactant);
         });
@@ -1256,7 +1256,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The label of the reaction.
      */
     getLabel(): string {
-        let label: string = this.getReactantsLabel() + ' -> ' + this.getProductsLabel();
+        let label: string = this.id + ' (' + this.getReactantsLabel() + ' -> ' + this.getProductsLabel() + ')';
         return label;
     }
 

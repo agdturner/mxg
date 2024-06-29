@@ -2887,7 +2887,6 @@ export class Molecule extends NodeWithNodes {
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
-
         }
     }
 

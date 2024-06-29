@@ -1051,7 +1051,7 @@ let sp_font = "2em SensSerif";
     // Create collapsible content.
     let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, reactionsDiv, null, rlDiv, (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
     // Add add reaction button.
-    let rb = (0, _guiReactionListJs.getAddReactionButton)(rlDiv, reactions, molecules);
+    let rb = (0, _guiReactionListJs.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
     // Reactions Diagram.
     let rddDiv = document.getElementById(reactionsDiagramDivID);
     let rdDiv = (0, _htmlJs.createDiv)(undefined, level1);
@@ -1242,7 +1242,7 @@ function load() {
     // Remove any existing rlDivID HTMLDivElement.
     remove(rlDivID);
     // Create collapsible content.
-    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, rlDiv, null, (0, _guiReactionListJs.processReactionList)(xml, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
+    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, rlDiv, null, (0, _guiReactionListJs.processReactionList)(xml, rIDM, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
     // Reactions Diagram.
     let rddDiv = document.getElementById(reactionsDiagramDivID);
     let rdDivID = addRID(s_Reactions_Diagram);
@@ -6646,6 +6646,28 @@ class ReactionList extends (0, _xmlJs.NodeWithNodes) {
             this.index.set(reaction.id, this.nodes.size - 1);
         }
     }
+    /**
+     * @returns The next control id.
+     */ getNextReactionID() {
+        let id = 1;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.index.keys()).sort((a, b)=>{
+            // Extract the number parts from the keys
+            let matchA = a.match(/\d+/);
+            let matchB = b.match(/\d+/);
+            let numberA = matchA ? parseInt(matchA[0]) : 0;
+            let numberB = matchB ? parseInt(matchB[0]) : 0;
+            // Compare the number parts
+            return numberA - numberB;
+        });
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key)=>{
+            let key2 = parseInt(key.match(/\d+/)[0]);
+            if (key2 > id) return id;
+            id++;
+        });
+        return id;
+    }
 }
 class ConditionsList extends (0, _xmlJs.NodeWithNodes) {
     static{
@@ -7140,6 +7162,12 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
      */ getMoleculeList() {
         let i = this.index.get(MoleculeList.tagName);
         if (i != undefined) return this.nodes.get(i);
+        else {
+            let moleculeList = new MoleculeList(new Map());
+            this.index.set(MoleculeList.tagName, this.nodes.size);
+            this.addNode(moleculeList);
+            return moleculeList;
+        }
     }
     /**
      * Set the molecule list.
@@ -7153,10 +7181,70 @@ class Mesmer extends (0, _xmlJs.NodeWithNodes) {
         }
     }
     /**
+     * @returns The next control id.
+     *
+    getNextReactionID(): number {
+        let id = 1;
+        if (this.getReactionList() == undefined) {
+            return id;
+        }
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.getReactionList()!.index.keys()).sort((a, b) => {
+            // Extract the number parts from the keys
+            let matchA = a.match(/\d+/);
+            let matchB = b.match(/\d+/);
+            let numberA = matchA ? parseInt(matchA[0]) : 0;
+            let numberB = matchB ? parseInt(matchB[0]) : 0;
+            // Compare the number parts
+            return numberA - numberB;
+        });
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            let key2 = parseInt(key.match(/\d+/)![0]);
+            if (key2 > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
+
+    /**
+     * @param reaction The reaction to add.
+     *
+    addReaction(reaction: Reaction) {
+        let id = Reaction.tagName + reaction.id;
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.set(i, reaction);
+        } else {
+            this.index.set(id, this.nodes.size);
+            this.addNode(reaction);
+        }
+    }
+
+    /**
+     * @param reactionID The id of the reaction to remove.
+     *
+    removeReaction(reactionID: number) {
+        let i: number | undefined = this.index.get(Reaction.tagName + reactionID);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Reaction.tagName + reactionID);
+        }
+    }
+
+    /**
      * @returns The reaction list.
      */ getReactionList() {
         let i = this.index.get(ReactionList.tagName);
         if (i != undefined) return this.nodes.get(i);
+        else {
+            let reactionList = new ReactionList(new Map());
+            this.index.set(ReactionList.tagName, this.nodes.size);
+            this.addNode(reactionList);
+            return reactionList;
+        }
     }
     /**
      * Set the reaction list.
@@ -12019,9 +12107,10 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     let addMoleculeButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), undefined, (0, _appJs.level1));
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener("click", ()=>{
-        let mid = "Kr";
+        let mid = setMoleculeID(undefined, undefined, molecules);
+        console.log("mid=" + mid);
         let m = new (0, _xmlMoleculeJs.Molecule)(new Map(), mid);
-        mid = setMoleculeID(mid, m, molecules);
+        m.setID(mid);
         (0, _appJs.addMolecule)(m, molecules);
         m.setAtoms(new (0, _xmlMoleculeJs.AtomArray)(new Map()));
         m.setBonds(new (0, _xmlMoleculeJs.BondArray)(new Map()));
@@ -12057,14 +12146,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         // Add code to add propertyArray...
         // Add a remove molecule button.
         (0, _appJs.addRemoveButton)(mDiv, (0, _appJs.level1), ()=>{
-            mlDiv.removeChild(mcDiv);
-            mIDM.removeIDs(mDivID);
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_description)));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.AtomArray).tagName));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.BondArray).tagName));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_viewer)));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.PropertyList).tagName));
-            molecules.delete(m.getID());
+            removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     });
     return addMoleculeButton;
@@ -12158,14 +12240,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             selectDiv.remove();
             // Add a remove molecule button.
             (0, _appJs.addRemoveButton)(moleculeDiv, (0, _appJs.level1), ()=>{
-                mlDiv.removeChild(mcDiv);
-                mIDM.removeIDs(mDivID);
-                mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_description)));
-                mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.AtomArray).tagName));
-                mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.BondArray).tagName));
-                mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_viewer)));
-                mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.PropertyList).tagName));
-                molecules.delete(molecule.getID());
+                removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, molecule);
             });
         });
     });
@@ -12183,10 +12258,10 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
         // Ask the user to specify the molecule ID.
         let mid2 = prompt("Please enter a name for the molecule", mid);
         if (mid2 == null) alert("The molecule ID cannot be null.");
-        else if (molecules.has(mid2)) alert("The molecule ID " + mid + " is already in use.");
+        else if (molecules.has(mid2)) alert("The molecule ID " + mid2 + " is already in use.");
         else {
             mid = mid2;
-            molecule.setID(mid);
+            if (molecule != undefined) molecule.setID(mid);
             return mid;
         }
     }
@@ -13106,15 +13181,7 @@ function processMoleculeList(xml, mIDM, molecules) {
         }
         // Add a remove molecule button.
         (0, _appJs.addRemoveButton)(mDiv, (0, _appJs.level1), ()=>{
-            mlDiv.removeChild(mcDiv);
-            //mlDiv.removeChild(mDiv);
-            mIDM.removeIDs(mDivID);
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_description)));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.AtomArray).tagName));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.BondArray).tagName));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_viewer)));
-            mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.PropertyList).tagName));
-            molecules.delete(m.getID());
+            removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     }
     // Create an add molecule button.
@@ -13122,6 +13189,25 @@ function processMoleculeList(xml, mIDM, molecules) {
     // Create add from library button.
     let lb = getAddFromLibraryButton(mlDiv, mb, mIDM, molecules);
     return mlDiv;
+}
+/**
+ * Remove a molecule.
+ * @param mlDiv The MoleculeList div.
+ * @param mcDiv The MoleculeContainer div.
+ * @param mIDM The molecule IDManager.
+ * @param molecules The molecules.
+ * @param mDivID The molecule div ID.
+ * @param m The molecule.
+ */ function removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m) {
+    mlDiv.removeChild(mcDiv);
+    //mlDiv.removeChild(mDiv);
+    mIDM.removeIDs(mDivID);
+    mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_description)));
+    mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.AtomArray).tagName));
+    mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.BondArray).tagName));
+    mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _appJs.s_viewer)));
+    mIDM.removeIDs((0, _utilJs.getID)(mDivID, (0, _xmlMoleculeJs.PropertyList).tagName));
+    molecules.delete(m.getID());
 }
 /**
  * @param pl The PropertyList.
@@ -13397,49 +13483,136 @@ var _xmlMoleculeJs = require("./xml_molecule.js");
 var _xmlReactionJs = require("./xml_reaction.js");
 var _utilJs = require("./util.js");
 var _xmlJs = require("./xml.js");
-function getAddReactionButton(rlDiv, reactions, molecules) {
+var _xmlConditionsJs = require("./xml_conditions.js");
+function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
     let rb = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
     rlDiv.appendChild(rb);
     rb.addEventListener("click", ()=>{
         let reactionAttributes = new Map();
-        reactionAttributes.set((0, _xmlReactionJs.Reaction).s_id, "R" + reactions.size);
+        // Get Reaction ID.
+        let rl = (0, _appJs.mesmer).getReactionList();
+        let i = rl.getNextReactionID();
+        console.log("Next Reaction ID=" + i);
+        reactionAttributes.set((0, _xmlReactionJs.Reaction).s_id, "R" + i);
         let r = new (0, _xmlReactionJs.Reaction)(reactionAttributes);
         reactions.set(r.id, r);
-        let rDivID = (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, r.id);
+        // Add to mesmer.
+        rl.addReaction(r);
+        let rDivID = rIDM.addID((0, _xmlReactionJs.Reaction).tagName, r.id);
         let rDiv = (0, _htmlJs.createDiv)(rDivID);
         rlDiv.appendChild(rDiv);
         // Create collapsible content.
-        let rcDivID = (0, _appJs.addRID)(rDivID, (0, _appJs.s_container));
+        let rcDivID = rIDM.addID(rDivID, (0, _appJs.s_container));
         let rcDiv = (0, _htmlJs.getCollapsibleDiv)(rcDivID, rlDiv, rb, rDiv, r.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
         // Create collapsible content for reactants.
-        // Add an add button to add a reactant.
-        let addReactantButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add) + " Reactant", (0, _appJs.addRID)((0, _xmlReactionJs.Reactant).tagName, reactions.size, (0, _htmlJs.s_button)), (0, _appJs.level1));
-        rDiv.appendChild(addReactantButton);
-        addReactantButton.addEventListener("click", ()=>{
-            // Create a selector to select a molecule as a reactant.
-            let selectReactant = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), "select", "", (0, _appJs.addRID)(rcDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
-            rDiv.insertBefore(selectReactant, addReactantButton);
-            // Add an event listener to the select element.
-            selectReactant.addEventListener("change", (event)=>{
-                let target = event.target;
-                let molecule = molecules.get(target.value);
-                let rmAttributes = new Map();
-                rmAttributes.set((0, _xmlReactionJs.ReactionMolecule).s_ref, molecule.getID());
-                rmAttributes.set((0, _xmlReactionJs.ReactionMolecule).s_role, (0, _xmlReactionJs.Reactant).s_deficientReactant);
-                let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
-            });
+        let rsDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName);
+        let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
+        let rscDivID = rIDM.addID(rsDivID, (0, _appJs.s_container));
+        let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, rDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
+        let reactants = new Map();
+        r.setReactants(reactants);
+        addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants);
+        // Create collapsible content for products.
+        // Create collapsible content for transition states.
+        // Create collapsible content for MCRCMethod.
+        // Create collapsible content for excessReactantConc.
+        // Create collapsible content for canonicalRateList.
+        // Add a remove reaction button.
+        (0, _appJs.addRemoveButton)(rDiv, (0, _appJs.level1), ()=>{
+            removeReaction(rlDiv, rcDiv, rIDM, rDivID, reactions, r);
         });
-    // Create collapsible content for products.
-    // Create collapsible content for transition states.
-    // Create collapsible content for MCRCMethod.
-    // Create collapsible content for excessReactantConc.
-    // Create collapsible content for canonicalRateList.
     });
     return rb;
 }
-function processReactionList(xml, reactions, molecules) {
+function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
+    // Add an add button to add a reactant.
+    let addReactantButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _htmlJs.s_button)), (0, _appJs.level1));
+    rsDiv.appendChild(addReactantButton);
+    addReactantButton.addEventListener("click", ()=>{
+        if (molecules.size === 0) {
+            // Instruct user to add a molecule.
+            alert("Please add a molecule to the moleculeList first.");
+            return;
+        }
+        //let reactantDivID: string = rIDM.addID(rDivID, Reactant.tagName, mid);
+        //let reactantDiv: HTMLDivElement = createDiv(reactantDivID);
+        let reactantDiv = (0, _htmlJs.createFlexDiv)(undefined);
+        rsDiv.insertBefore(reactantDiv, addReactantButton);
+        // Create a selector to select a molecule as a reactant.
+        let selectReactant = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), "select", "", (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
+        // Have the select element update options if new molecules are added.
+        selectReactant.classList.add((0, _xmlConditionsJs.BathGas).tagName);
+        reactantDiv.appendChild(selectReactant);
+        // Add an event listener to the select element.
+        selectReactant.addEventListener("click", (event)=>{
+            if (selectReactant.options.length === 1) {
+                // If there is only one option then select it.
+                alert("As there is only one molecule it will be selected.");
+                selectReactant.selectedIndex = 0;
+                selectReactant.dispatchEvent(new Event("change"));
+            }
+        });
+        selectReactant.addEventListener("change", (event)=>{
+            let target = event.target;
+            let molecule = molecules.get(target.value);
+            let rmAttributes = new Map();
+            let mid = molecule.getID();
+            let id = (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName, mid);
+            if (reactants.has(mid)) {
+                alert("Molecule already selected as a reactant. Please select a different molecule (you may want to add more molecules to the moleculeList).");
+                // Remove the select element.
+                reactantDiv.removeChild(selectReactant);
+                return;
+            }
+            reactantDiv.id = rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName, mid);
+            rmAttributes.set((0, _xmlReactionJs.ReactionMolecule).s_ref, mid);
+            let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
+            let reactant = new (0, _xmlReactionJs.Reactant)(new Map(), rm);
+            reactants.set(mid, reactant);
+            // Create a new div for the role selector.
+            let lws = (0, _htmlJs.createLabelWithSelect)(rm.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", rm.getRole(), (0, _utilJs.getID)(rDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
+            let select = lws.querySelector("select");
+            select?.addEventListener("change", (event)=>{
+                let target = event.target;
+                rm.setRole(target.value);
+                console.log("Set Role to " + target.value);
+                (0, _htmlJs.resizeSelectElement)(target);
+            });
+            reactantDiv.appendChild(lws);
+            // Remove the select element.
+            reactantDiv.removeChild(selectReactant);
+            // Add a remove button to remove the reactant.
+            let rrb = (0, _appJs.addRemoveButton)(reactantDiv, (0, _appJs.boundary1), ()=>{
+                rsDiv.removeChild(reactantDiv);
+                reactants.delete(mid);
+            });
+        });
+        if (selectReactant.options.length === 1) {
+            // If there is only one option then select it.
+            selectReactant.selectedIndex = 0;
+            selectReactant.dispatchEvent(new Event("change"));
+        }
+    });
+}
+/**
+ * 
+ * @param rlDiv The reaction list div.
+ * @param rcDiv The reaction collapsible div.
+ * @param rIDM The reaction list IDManager.
+ * @param rDivID The reaction div ID.
+ * @param reactions The reactions map.
+ * @param r The reaction to remove.
+ */ function removeReaction(rlDiv, rcDiv, rIDM, rDivID, reactions, r) {
+    rlDiv.removeChild(rcDiv);
+    rIDM.removeIDs(rDivID);
+    rIDM.removeIDs((0, _utilJs.getID)(rDivID, (0, _appJs.s_container)));
+    rIDM.removeIDs((0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName));
+    reactions.delete(r.id);
+    (0, _appJs.mesmer).getReactionList().removeReaction(r.id);
+}
+function processReactionList(xml, rIDM, reactions, molecules) {
     // Create div to contain the reaction list.
-    let reactionListDiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.boundary1));
+    let rlDiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.boundary1));
     // Get the XML "reactionList" element.
     let xml_reactionList = (0, _xmlJs.getSingularElement)(xml, (0, _xmlMesmerJs.ReactionList).tagName);
     // Check the XML "reactionList" element has one or more "reaction" elements and no other elements.
@@ -13487,19 +13660,22 @@ function processReactionList(xml, reactions, molecules) {
             let xml_reactants = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Reactant).tagName);
             reactionTagNames.delete((0, _xmlReactionJs.Reactant).tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
+            // Create a new collapsible div for the reactants.
+            let rsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
+            let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
+            let rscDivID = (0, _appJs.addRID)(rsDivID, (0, _appJs.s_container));
+            let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
+            let reactants = new Map();
             if (xml_reactants.length > 0) {
-                // Create a new collapsible div for the reactants.
-                let rsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
-                let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
-                let rscDivID = (0, _appJs.addRID)(rsDivID, (0, _appJs.s_container));
-                let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
-                let reactants = [];
                 for(let j = 0; j < xml_reactants.length; j++){
                     let reactantDivID = (0, _appJs.addRID)(rsDivID, (0, _xmlReactionJs.Reactant).tagName, j);
+                    let reactantDiv = (0, _htmlJs.createFlexDiv)(reactantDivID);
+                    rsDiv.appendChild(reactantDiv);
                     let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _xmlMoleculeJs.Molecule).tagName);
-                    let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
+                    let rmAttributes = (0, _xmlJs.getAttributes)(xml_molecule);
+                    let molecule = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
                     let reactant = new (0, _xmlReactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), molecule);
-                    reactants.push(reactant);
+                    reactants.set(molecule.getRef(), reactant);
                     // Create a new div for the role.
                     let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", molecule.getRole(), (0, _appJs.addRID)(reactantDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
                     lws.querySelector("select")?.addEventListener("change", (event)=>{
@@ -13508,10 +13684,16 @@ function processReactionList(xml, reactions, molecules) {
                         console.log("Set Role to " + target.value);
                         (0, _htmlJs.resizeSelectElement)(target);
                     });
-                    rsDiv.appendChild(lws);
+                    reactantDiv.appendChild(lws);
+                    // Add a remove button to remove the reactant.
+                    let rrb = (0, _appJs.addRemoveButton)(reactantDiv, (0, _appJs.boundary1), ()=>{
+                        rsDiv.removeChild(reactantDiv);
+                        reactants.delete(molecule.getRef());
+                    });
                 }
                 reaction.setReactants(reactants);
             }
+            addAddReactantButton(rIDM, reactionDivID, rsDiv, molecules, reactants);
             // Load products.
             let xml_products = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Product).tagName);
             reactionTagNames.delete((0, _xmlReactionJs.Product).tagName);
@@ -13544,7 +13726,7 @@ function processReactionList(xml, reactions, molecules) {
             }
             // Create a new collapsible div for the reaction.
             let reactioncDivID = (0, _appJs.addRID)(reactionDivID, (0, _appJs.s_container));
-            let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, reactionListDiv, null, reactionDiv, reaction.id + " (" + reaction.getLabel() + ")", (0, _appJs.boundary1), (0, _appJs.level1));
+            let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, rlDiv, null, reactionDiv, reaction.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
             // Load tunneling.
             let xml_tunneling = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Tunneling).tagName);
             if (xml_tunneling.length > 0) {
@@ -13820,14 +14002,18 @@ function processReactionList(xml, reactions, molecules) {
                     (0, _appJs.addSaveAsCSVButton)(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.level1));
                 }
             }
+            // Add a remove reaction button.
+            (0, _appJs.addRemoveButton)(reactionDiv, (0, _appJs.level1), ()=>{
+                removeReaction(rlDiv, reactioncDiv, rIDM, reactionDivID, reactions, reaction);
+            });
         }
     } else console.warn("No reaction elements found! Please add a reaction in reactionList.");
     // Add a button to add a reaction.
-    getAddReactionButton(reactionListDiv, reactions, molecules);
-    return reactionListDiv;
+    getAddReactionButton(rIDM, rlDiv, reactions, molecules);
+    return rlDiv;
 }
 
-},{"big.js":"91nMZ","./app.js":"dPB9w","./html.js":"aLPSL","./xml_mesmer.js":"8G2m7","./xml_molecule.js":"cg9tc","./xml_reaction.js":"1VvKr","./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1VvKr":[function(require,module,exports) {
+},{"big.js":"91nMZ","./app.js":"dPB9w","./html.js":"aLPSL","./xml_mesmer.js":"8G2m7","./xml_molecule.js":"cg9tc","./xml_reaction.js":"1VvKr","./util.js":"f0Rnl","./xml.js":"7znDa","./xml_conditions.js":"cZv1r","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1VvKr":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -14510,7 +14696,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         if (id == undefined) throw new Error(Reaction.s_id + " is undefined!");
         this.id = id;
         if (reactants != undefined) {
-            reactants.forEach((reactant)=>{
+            reactants.forEach((reactant, key)=>{
                 this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
                 this.addNode(reactant);
             });
@@ -14573,7 +14759,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Set the reactants.
      */ setReactants(reactants) {
-        reactants.forEach((reactant)=>{
+        reactants.forEach((reactant, key)=>{
             this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
             this.addNode(reactant);
         });
@@ -14784,7 +14970,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Get the label of the reaction.
      * @returns The label of the reaction.
      */ getLabel() {
-        let label = this.getReactantsLabel() + " -> " + this.getProductsLabel();
+        let label = this.id + " (" + this.getReactantsLabel() + " -> " + this.getProductsLabel() + ")";
         return label;
     }
     /**

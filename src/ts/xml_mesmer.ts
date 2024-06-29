@@ -181,6 +181,32 @@ export class ReactionList extends NodeWithNodes {
             this.index.set(reaction.id, this.nodes.size - 1);
         }
     }
+
+    /**
+     * @returns The next control id.
+     */
+    getNextReactionID(): number {
+        let id = 1;
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.index.keys()).sort((a, b) => {
+            // Extract the number parts from the keys
+            let matchA = a.match(/\d+/);
+            let matchB = b.match(/\d+/);
+            let numberA = matchA ? parseInt(matchA[0]) : 0;
+            let numberB = matchB ? parseInt(matchB[0]) : 0;
+            // Compare the number parts
+            return numberA - numberB;
+        });
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            let key2 = parseInt(key.match(/\d+/)![0]);
+            if (key2 > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
 }
 
 /**
@@ -589,10 +615,15 @@ export class Mesmer extends NodeWithNodes {
     /**
      * @returns The molecule list.
      */
-    getMoleculeList(): MoleculeList | undefined {
+    getMoleculeList(): MoleculeList {
         let i: number | undefined = this.index.get(MoleculeList.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as MoleculeList;
+        } else {
+            let moleculeList = new MoleculeList(new Map());
+            this.index.set(MoleculeList.tagName, this.nodes.size);
+            this.addNode(moleculeList);
+            return moleculeList;
         }
     }
 
@@ -611,12 +642,71 @@ export class Mesmer extends NodeWithNodes {
     }
 
     /**
+     * @returns The next control id.
+     *
+    getNextReactionID(): number {
+        let id = 1;
+        if (this.getReactionList() == undefined) {
+            return id;
+        }
+        // Sort the control index by key and go through these and take the next available id.
+        let sortedKeys = Array.from(this.getReactionList()!.index.keys()).sort((a, b) => {
+            // Extract the number parts from the keys
+            let matchA = a.match(/\d+/);
+            let matchB = b.match(/\d+/);
+            let numberA = matchA ? parseInt(matchA[0]) : 0;
+            let numberB = matchB ? parseInt(matchB[0]) : 0;
+            // Compare the number parts
+            return numberA - numberB;
+        });
+        //console.log("sortedKeys " + arrayToString(sortedKeys));
+        sortedKeys.forEach((key) => {
+            let key2 = parseInt(key.match(/\d+/)![0]);
+            if (key2 > id) {
+                return id;
+            }
+            id++;
+        });
+        return id;
+    }
+
+    /**
+     * @param reaction The reaction to add.
+     *
+    addReaction(reaction: Reaction) {
+        let id = Reaction.tagName + reaction.id;
+        let i: number | undefined = this.index.get(id);
+        if (i != undefined) {
+            this.nodes.set(i, reaction);
+        } else {
+            this.index.set(id, this.nodes.size);
+            this.addNode(reaction);
+        }
+    }
+
+    /**
+     * @param reactionID The id of the reaction to remove.
+     *
+    removeReaction(reactionID: number) {
+        let i: number | undefined = this.index.get(Reaction.tagName + reactionID);
+        if (i != undefined) {
+            this.nodes.delete(i);
+            this.index.delete(Reaction.tagName + reactionID);
+        }
+    }
+
+    /**
      * @returns The reaction list.
      */
-    getReactionList(): ReactionList | undefined {
+    getReactionList(): ReactionList {
         let i: number | undefined = this.index.get(ReactionList.tagName);
         if (i != undefined) {
             return this.nodes.get(i) as ReactionList;
+        } else {
+            let reactionList = new ReactionList(new Map());
+            this.index.set(ReactionList.tagName, this.nodes.size);
+            this.addNode(reactionList);
+            return reactionList;
         }
     }
 
