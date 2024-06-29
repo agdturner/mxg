@@ -14703,7 +14703,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
-            products.forEach((product)=>{
+            products.forEach((product, key)=>{
                 this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
                 this.addNode(product);
             });
@@ -14750,11 +14750,16 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * @returns The reactants.
      */ getReactants() {
         let i = this.index.get(Reactant.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
+        if (i == undefined) return new Map();
+        let reactants = new Map();
+        if (i instanceof Map) i.forEach((index, ref)=>{
+            reactants.set(ref, this.nodes.get(index));
+        });
+        else {
+            let r = this.nodes.get(i);
+            reactants.set(r.getMolecule().getRef(), r);
+        }
+        return reactants;
     }
     /**
      * Set the reactants.
@@ -14958,7 +14963,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Get the label of the reactants.
      * @returns The label of the reactants.
      */ getReactantsLabel() {
-        return this.getReactants().map((reactant)=>reactant.getMolecule().getRef()).join(" + ");
+        return Array.from(this.getReactants().values()).map((reactant)=>reactant.getMolecule().getRef()).join(" + ");
     }
     /**
      * Returns the label for the products.
@@ -14978,7 +14983,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * @returns The total energy of all reactants.
      */ getReactantsEnergy(retrieveMolecule, molecules) {
         // Sum up the energy values of all the reactants in the reaction
-        return Array.from(this.getReactants()).map((reactant)=>{
+        return Array.from(this.getReactants().values()).map((reactant)=>{
             let ref = reactant.getMolecule().getRef();
             console.log('ref="' + ref + '"');
             let molecule = retrieveMolecule(reactant.getMolecule().getRef(), molecules);
