@@ -594,10 +594,12 @@ parcelHelpers.export(exports, "s_Add_from_library", ()=>s_Add_from_library);
 parcelHelpers.export(exports, "s_Add_from_spreadsheet", ()=>s_Add_from_spreadsheet);
 parcelHelpers.export(exports, "s_container", ()=>s_container);
 parcelHelpers.export(exports, "s_description", ()=>s_description);
-parcelHelpers.export(exports, "s_molecules", ()=>s_molecules);
 parcelHelpers.export(exports, "s_input", ()=>s_input);
+parcelHelpers.export(exports, "s_molecules", ()=>s_molecules);
 parcelHelpers.export(exports, "s_optionOn", ()=>s_optionOn);
 parcelHelpers.export(exports, "s_optionOff", ()=>s_optionOff);
+parcelHelpers.export(exports, "s_Products", ()=>s_Products);
+parcelHelpers.export(exports, "s_Reactants", ()=>s_Reactants);
 parcelHelpers.export(exports, "s_reactions", ()=>s_reactions);
 parcelHelpers.export(exports, "s_Remove_sy_remove", ()=>s_Remove_sy_remove);
 parcelHelpers.export(exports, "s_save", ()=>s_save);
@@ -842,13 +844,15 @@ const s_container = "container";
 const s_control = "control";
 const s_description = "description";
 const s_graph = "graph";
+const s_input = "input";
 const s_menu = "menu";
 const s_metadata = "metadata";
 const s_modelParameters = "modelParameters";
 const s_molecules = "molecules";
-const s_input = "input";
 const s_optionOn = "optionOn";
 const s_optionOff = "optionOff";
+const s_Products = "Products";
+const s_Reactants = "Reactants";
 const s_reactions = "reactions";
 const s_reactionsDiagram = "reactionsDiagram";
 const s_Remove_sy_remove = "Remove " + sy_remove;
@@ -13508,11 +13512,18 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         let rsDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName);
         let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
         let rscDivID = rIDM.addID(rsDivID, (0, _appJs.s_container));
-        let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, rDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
+        let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, rDiv, null, rsDiv, (0, _appJs.s_Reactants), (0, _appJs.boundary1), (0, _appJs.level1));
         let reactants = new Map();
         r.setReactants(reactants);
         addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants);
         // Create collapsible content for products.
+        let psDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.Product).tagName);
+        let psDiv = (0, _htmlJs.createDiv)(psDivID);
+        let pscDivID = rIDM.addID(psDivID, (0, _appJs.s_container));
+        let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, rDiv, null, psDiv, (0, _appJs.s_Products), (0, _appJs.boundary1), (0, _appJs.level1));
+        let products = new Map();
+        r.setProducts(products);
+        addAddProductButton(rIDM, rDivID, psDiv, molecules, products);
         // Create collapsible content for transition states.
         // Create collapsible content for MCRCMethod.
         // Create collapsible content for excessReactantConc.
@@ -13524,9 +13535,16 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
     });
     return rb;
 }
-function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
+/**
+ * For adding an add reactant button.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rDivID The reaction div ID.
+ * @param rsDiv The reactants div.
+ * @param molecules The molecules map.
+ * @param reactants The reactants map.
+ */ function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
     // Add an add button to add a reactant.
-    let addReactantButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _htmlJs.s_button)), (0, _appJs.level1));
+    let addReactantButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
     rsDiv.appendChild(addReactantButton);
     addReactantButton.addEventListener("click", ()=>{
         if (molecules.size === 0) {
@@ -13539,7 +13557,7 @@ function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
         let reactantDiv = (0, _htmlJs.createFlexDiv)(undefined);
         rsDiv.insertBefore(reactantDiv, addReactantButton);
         // Create a selector to select a molecule as a reactant.
-        let selectReactant = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), "select", "", (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
+        let selectReactant = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), (0, _htmlJs.s_select), "", (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
         // Have the select element update options if new molecules are added.
         selectReactant.classList.add((0, _xmlConditionsJs.BathGas).tagName);
         reactantDiv.appendChild(selectReactant);
@@ -13595,7 +13613,84 @@ function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
     });
 }
 /**
- * 
+ * For adding an add product button.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rDivID The reaction div ID.
+ * @param psDiv The products div.
+ * @param molecules The molecules map.
+ * @param products The products map.
+ */ function addAddProductButton(rIDM, rDivID, psDiv, molecules, products) {
+    // Add an add button to add a product.
+    let addProductButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _xmlReactionJs.Product).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
+    psDiv.appendChild(addProductButton);
+    addProductButton.addEventListener("click", ()=>{
+        if (molecules.size === 0) {
+            // Instruct user to add a molecule.
+            alert("Please add a molecule to the moleculeList first.");
+            return;
+        }
+        //let productDivID: string = rIDM.addID(rDivID, Product.tagName, mid);
+        //let productDiv: HTMLDivElement = createDiv(productDivID);
+        let productDiv = (0, _htmlJs.createFlexDiv)(undefined);
+        psDiv.insertBefore(productDiv, addProductButton);
+        // Create a selector to select a molecule as a product.
+        let selectProduct = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), (0, _htmlJs.s_select), "", (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Product).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
+        // Have the select element update options if new molecules are added.
+        selectProduct.classList.add((0, _xmlConditionsJs.BathGas).tagName);
+        productDiv.appendChild(selectProduct);
+        // Add an event listener to the select element.
+        selectProduct.addEventListener("click", (event)=>{
+            if (selectProduct.options.length === 1) {
+                // If there is only one option then select it.
+                alert("As there is only one molecule it will be selected.");
+                selectProduct.selectedIndex = 0;
+                selectProduct.dispatchEvent(new Event("change"));
+            }
+        });
+        selectProduct.addEventListener("change", (event)=>{
+            let target = event.target;
+            let molecule = molecules.get(target.value);
+            let rmAttributes = new Map();
+            let mid = molecule.getID();
+            let id = (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Product).tagName, mid);
+            if (products.has(mid)) {
+                alert("Molecule already selected as a product. Please select a different molecule (you may want to add more molecules to the moleculeList).");
+                // Remove the select element.
+                productDiv.removeChild(selectProduct);
+                return;
+            }
+            productDiv.id = rIDM.addID(rDivID, (0, _xmlReactionJs.Product).tagName, mid);
+            rmAttributes.set((0, _xmlReactionJs.ReactionMolecule).s_ref, mid);
+            let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
+            let product = new (0, _xmlReactionJs.Product)(new Map(), rm);
+            products.set(mid, product);
+            // Create a new div for the role selector.
+            let lws = (0, _htmlJs.createLabelWithSelect)(rm.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, "Role", rm.getRole(), (0, _utilJs.getID)(rDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
+            let select = lws.querySelector("select");
+            select?.addEventListener("change", (event)=>{
+                let target = event.target;
+                rm.setRole(target.value);
+                console.log("Set Role to " + target.value);
+                (0, _htmlJs.resizeSelectElement)(target);
+            });
+            productDiv.appendChild(lws);
+            // Remove the select element.
+            productDiv.removeChild(selectProduct);
+            // Add a remove button to remove the product.
+            let prb = (0, _appJs.addRemoveButton)(productDiv, (0, _appJs.boundary1), ()=>{
+                psDiv.removeChild(productDiv);
+                products.delete(mid);
+            });
+        });
+        if (selectProduct.options.length === 1) {
+            // If there is only one option then select it.
+            selectProduct.selectedIndex = 0;
+            selectProduct.dispatchEvent(new Event("change"));
+        }
+    });
+}
+/**
+ * Remove a reaction.
  * @param rlDiv The reaction list div.
  * @param rcDiv The reaction collapsible div.
  * @param rIDM The reaction list IDManager.
@@ -13661,14 +13756,14 @@ function processReactionList(xml, rIDM, reactions, molecules) {
             reactionTagNames.delete((0, _xmlReactionJs.Reactant).tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             // Create a new collapsible div for the reactants.
-            let rsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
+            let rsDivID = rIDM.addID(reactionDivID, (0, _xmlReactionJs.Reactant).tagName);
             let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
-            let rscDivID = (0, _appJs.addRID)(rsDivID, (0, _appJs.s_container));
-            let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, "Reactants", (0, _appJs.boundary1), (0, _appJs.level1));
+            let rscDivID = (0, _utilJs.getID)(rsDivID, (0, _appJs.s_container));
+            let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, reactionDiv, null, rsDiv, (0, _appJs.s_Reactants), (0, _appJs.boundary1), (0, _appJs.level1));
             let reactants = new Map();
             if (xml_reactants.length > 0) {
                 for(let j = 0; j < xml_reactants.length; j++){
-                    let reactantDivID = (0, _appJs.addRID)(rsDivID, (0, _xmlReactionJs.Reactant).tagName, j);
+                    let reactantDivID = (0, _utilJs.getID)(rsDivID, (0, _xmlReactionJs.Reactant).tagName, j);
                     let reactantDiv = (0, _htmlJs.createFlexDiv)(reactantDivID);
                     rsDiv.appendChild(reactantDiv);
                     let xml_molecule = (0, _xmlJs.getFirstElement)(xml_reactants[j], (0, _xmlMoleculeJs.Molecule).tagName);
@@ -13677,7 +13772,7 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                     let reactant = new (0, _xmlReactionJs.Reactant)((0, _xmlJs.getAttributes)(xml_reactants[j]), molecule);
                     reactants.set(molecule.getRef(), reactant);
                     // Create a new div for the role.
-                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", molecule.getRole(), (0, _appJs.addRID)(reactantDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
+                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", molecule.getRole(), rIDM.addID(reactantDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
                     lws.querySelector("select")?.addEventListener("change", (event)=>{
                         let target = event.target;
                         molecule.setRole(target.value);
@@ -13688,6 +13783,7 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                     // Add a remove button to remove the reactant.
                     let rrb = (0, _appJs.addRemoveButton)(reactantDiv, (0, _appJs.boundary1), ()=>{
                         rsDiv.removeChild(reactantDiv);
+                        rIDM.removeIDs(reactantDivID);
                         reactants.delete(molecule.getRef());
                     });
                 }
@@ -13698,19 +13794,21 @@ function processReactionList(xml, rIDM, reactions, molecules) {
             let xml_products = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Product).tagName);
             reactionTagNames.delete((0, _xmlReactionJs.Product).tagName);
             //console.log("xml_products.length=" + xml_products.length);
+            // Create collapsible div for the products.
+            let psDivID = rIDM.addID(reactionDivID, (0, _xmlReactionJs.Product).tagName);
+            let psDiv = (0, _htmlJs.createFlexDiv)(psDivID);
+            let pscDivID = (0, _utilJs.getID)(psDivID, (0, _appJs.s_container));
+            let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, reactionDiv, null, psDiv, (0, _appJs.s_Products), (0, _appJs.boundary1), (0, _appJs.level1));
+            //let products: Product[] = [];
+            let products = new Map();
             if (xml_products.length > 0) {
-                // Create collapsible div for the products.
-                let psDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Product).tagName);
-                let psDiv = (0, _htmlJs.createDiv)(psDivID);
-                let pscDivID = (0, _appJs.addRID)(psDivID, (0, _appJs.s_container));
-                let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, reactionDiv, null, psDiv, "Products", (0, _appJs.boundary1), (0, _appJs.level1));
-                let products = [];
                 for(let j = 0; j < xml_products.length; j++){
                     let xml_molecule = (0, _xmlJs.getFirstElement)(xml_products[j], (0, _xmlMoleculeJs.Molecule).tagName);
                     let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
                     let product = new (0, _xmlReactionJs.Product)((0, _xmlJs.getAttributes)(xml_products[j]), molecule);
-                    products.push(product);
-                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, molecule.getRole(), molecule.getRef(), (0, _appJs.addRID)(psDivID, j, "Role"), (0, _appJs.boundary1), (0, _appJs.level1));
+                    //products.push(product);
+                    products.set(molecule.getRef(), product);
+                    let lws = (0, _htmlJs.createLabelWithSelect)(molecule.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, molecule.getRole(), molecule.getRef(), rIDM.addID(psDivID, j, "Role"), (0, _appJs.boundary1), (0, _appJs.level1));
                     let select = lws.querySelector("select");
                     select.value = molecule.getRole();
                     select.addEventListener("change", (event)=>{
@@ -13721,9 +13819,16 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                     });
                     (0, _htmlJs.resizeSelectElement)(select);
                     psDiv.appendChild(lws);
+                    // Add a remove button to remove the product.
+                    let prb = (0, _appJs.addRemoveButton)(psDiv, (0, _appJs.boundary1), ()=>{
+                        psDiv.removeChild(lws);
+                        rIDM.removeIDs(psDivID);
+                        products.delete(molecule.getRef());
+                    });
                 }
                 reaction.setProducts(products);
             }
+            addAddProductButton(rIDM, reactionDivID, psDiv, molecules, products);
             // Create a new collapsible div for the reaction.
             let reactioncDivID = (0, _appJs.addRID)(reactionDivID, (0, _appJs.s_container));
             let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, rlDiv, null, reactionDiv, reaction.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
@@ -14798,17 +14903,31 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @returns The products.
      */ getProducts() {
-        let i = this.index.get(Product.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
+        /*
+        let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
+        if (i == undefined) {
+            return [];
+        }
+        if (i instanceof Map) {
+            return Array.from(i.values()).map(index => this.nodes.get(index) as Product);
+        } else {
+            return [this.nodes.get(i) as Product];
+        }*/ let i = this.index.get(Product.tagName);
+        if (i == undefined) return new Map();
+        let products = new Map();
+        if (i instanceof Map) i.forEach((index, ref)=>{
+            products.set(ref, this.nodes.get(index));
+        });
+        else {
+            let r = this.nodes.get(i);
+            products.set(r.getMolecule().getRef(), r);
+        }
+        return products;
     }
     /**
      * Set the products.
      */ setProducts(products) {
-        products.forEach((product)=>{
+        products.forEach((product, key)=>{
             this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
             this.addNode(product);
         });
@@ -14969,7 +15088,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * Returns the label for the products.
      * @returns The label for the products.
      */ getProductsLabel() {
-        return this.getProducts().map((product)=>product.getMolecule().getRef()).join(" + ");
+        //return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
+        return Array.from(this.getProducts().values()).map((product)=>product.getMolecule().getRef()).join(" + ");
     }
     /**
      * Get the label of the reaction.
@@ -14985,9 +15105,9 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map((reactant)=>{
             let ref = reactant.getMolecule().getRef();
-            console.log('ref="' + ref + '"');
-            let molecule = retrieveMolecule(reactant.getMolecule().getRef(), molecules);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
+            //console.log("ref=\"" + ref + "\"");
+            let molecule = retrieveMolecule(ref, molecules);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${ref} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJs.Big)(0));
     }
@@ -14996,9 +15116,12 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * @returns The total energy of all products.
      */ getProductsEnergy(retrieveMolecule, molecules) {
         // Sum up the energy values of all the products in the reaction
-        return Array.from(this.getProducts()).map((product)=>{
-            let molecule = retrieveMolecule(product.getMolecule().getRef(), molecules);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
+        //return Array.from(this.getProducts()).map(product => {
+        return Array.from(this.getProducts().values()).map((product)=>{
+            let ref = product.getMolecule().getRef();
+            //console.log("ref=\"" + ref + "\"");
+            let molecule = retrieveMolecule(ref, molecules);
+            if (molecule == undefined) throw new Error(`Molecule with ref ${ref} not found`);
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJs.Big)(0));
     }
@@ -16620,7 +16743,7 @@ function createAddControlButton(controlsDiv, controlIDM) {
             if (xml.length > 1) throw new Error("More than one CalcMethod element.");
             let attributes = (0, _xml.getAttributes)(xml[0]);
             let xsi_type = attributes.get("xsi:type");
-            cm = getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
+            cm = getCalcMethod(controlIDM, control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
             control.setCalcMethod(cm);
             button.classList.toggle((0, _app.s_optionOff));
             button.textContent = buttonTextContentSelected;
@@ -16644,7 +16767,7 @@ function createAddControlButton(controlsDiv, controlIDM) {
             controlIDM.removeIDs(divCmDetailsId);
             controlIDM.removeIDs(divCmDetailsSelectId);
             // Create the select element.
-            let select = createSelectElementCalcMethod(control, div, options, tagName, (0, _app.s_selectOption), divCmDetailsId, divCmDetailsSelectId);
+            let select = createSelectElementCalcMethod(controlIDM, control, div, options, tagName, (0, _app.s_selectOption), divCmDetailsId, divCmDetailsSelectId);
             divCm.appendChild(select);
             button.textContent = buttonTextContentSelected;
             button.classList.toggle((0, _app.s_optionOn));
@@ -16803,11 +16926,11 @@ function createAddControlButton(controlsDiv, controlIDM) {
  * @param divCmDetailsId The div cm details id.
  * @param divCmDetailsSelectId The div cm details select id.
  * @returns The CalcMethod.
- */ function getCalcMethod(control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId) {
+ */ function getCalcMethod(controlIDM, control, divCm, xml, options, attributes, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId) {
     //console.log("getCalcMethod");
     let cm;
     // Create the select element.
-    let select = createSelectElementCalcMethod(control, divCm, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
+    let select = createSelectElementCalcMethod(controlIDM, control, divCm, options, tagName, xsi_type, divCmDetailsId, divCmDetailsSelectId);
     // Set the select element to the correct value.
     select.value = xsi_type;
     divCm.appendChild(select);
@@ -16923,7 +17046,7 @@ function createAddControlButton(controlsDiv, controlIDM) {
         if (name != undefined && name !== xsi_type) {
             attributes.set("xsi:type", name);
             console.warn(`Using name attribute as xsi:type: ${name}`);
-            return getCalcMethod(control, divCm, xml, options, attributes, tagName, name, divCmDetailsId, divCmDetailsSelectId);
+            return getCalcMethod(controlIDM, control, divCm, xml, options, attributes, tagName, name, divCmDetailsId, divCmDetailsSelectId);
         } else throw new Error(`Unable to determine calculation method for xsi_type: ${xsi_type}`);
     }
     return cm;
@@ -17083,7 +17206,7 @@ function handleEvent(element, tagName) {
  * @param value The value.
  * @param id The id for the HTMLSelectElement.
  * @returns An HTMLSelectElement.
- */ function createSelectElementCalcMethod(control, div, options, tagName, value, divCmDetailsId, divCmDetailsSelectId) {
+ */ function createSelectElementCalcMethod(controlIDM, control, div, options, tagName, value, divCmDetailsId, divCmDetailsSelectId) {
     let select = (0, _html.createSelectElement)(options, tagName, value, divCmDetailsSelectId, (0, _app.boundary1));
     div.appendChild(select);
     (0, _app.selectAnotherOptionEventListener)(options, select);
@@ -17092,7 +17215,7 @@ function handleEvent(element, tagName) {
         let divCmDetails = document.getElementById(divCmDetailsId);
         if (divCmDetails != null) {
             divCmDetails.remove();
-            control.idManager.removeIDs(divCmDetailsId);
+            controlIDM.removeIDs(divCmDetailsId);
         }
         divCmDetails = (0, _html.createFlexDiv)(divCmDetailsId, (0, _app.boundary1));
         div.appendChild(divCmDetails);

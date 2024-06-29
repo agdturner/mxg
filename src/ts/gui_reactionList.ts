@@ -1,7 +1,7 @@
 import Big from "big.js";
 import {
     s_Add_sy_add, addRID, level1, s_container, boundary1, getMoleculeKeys, addAnyUnits,
-    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer
+    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer, s_Reactants, s_Products
 } from "./app.js";
 import {
     createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select,
@@ -50,14 +50,18 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
         let rsDivID: string = rIDM.addID(rDivID, Reactant.tagName);
         let rsDiv: HTMLDivElement = createDiv(rsDivID);
         let rscDivID = rIDM.addID(rsDivID, s_container);
-        let rscDiv: HTMLDivElement = getCollapsibleDiv(rscDivID, rDiv, null, rsDiv, "Reactants", boundary1, level1);
+        let rscDiv: HTMLDivElement = getCollapsibleDiv(rscDivID, rDiv, null, rsDiv, s_Reactants, boundary1, level1);
         let reactants: Map<string, Reactant> = new Map();
         r.setReactants(reactants);
         addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants);
-
-        
-
         // Create collapsible content for products.
+        let psDivID: string = rIDM.addID(rDivID, Product.tagName);
+        let psDiv: HTMLDivElement = createDiv(psDivID);
+        let pscDivID = rIDM.addID(psDivID, s_container);
+        let pscDiv: HTMLDivElement = getCollapsibleDiv(pscDivID, rDiv, null, psDiv, s_Products, boundary1, level1);
+        let products: Map<string, Product> = new Map();
+        r.setProducts(products);
+        addAddProductButton(rIDM, rDivID, psDiv, molecules, products);
 
         // Create collapsible content for transition states.
 
@@ -76,11 +80,19 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
     return rb;
 }
 
+/**
+ * For adding an add reactant button.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rDivID The reaction div ID.
+ * @param rsDiv The reactants div.
+ * @param molecules The molecules map.
+ * @param reactants The reactants map.
+ */
 function addAddReactantButton(rIDM: IDManager, rDivID: string, rsDiv: HTMLDivElement, molecules: Map<string, Molecule>,
- reactants: Map<string, Reactant>) {
+    reactants: Map<string, Reactant>) {
     // Add an add button to add a reactant.
     let addReactantButton: HTMLButtonElement = createButton(s_Add_sy_add,
-        rIDM.addID(rDivID, s_button), level1);
+        rIDM.addID(rDivID, Reactant.tagName, s_button), level1);
     rsDiv.appendChild(addReactantButton);
     addReactantButton.addEventListener('click', () => {
         if (molecules.size === 0) {
@@ -93,7 +105,7 @@ function addAddReactantButton(rIDM: IDManager, rDivID: string, rsDiv: HTMLDivEle
         let reactantDiv: HTMLDivElement = createFlexDiv(undefined);
         rsDiv.insertBefore(reactantDiv, addReactantButton);
         // Create a selector to select a molecule as a reactant.
-        let selectReactant: HTMLSelectElement = createSelectElement(getMoleculeKeys(molecules), "select", "",
+        let selectReactant: HTMLSelectElement = createSelectElement(getMoleculeKeys(molecules), s_select, "",
             getID(rDivID, Reactant.tagName, s_select), level1);
         // Have the select element update options if new molecules are added.
         selectReactant.classList.add(BathGas.tagName);
@@ -115,9 +127,9 @@ function addAddReactantButton(rIDM: IDManager, rDivID: string, rsDiv: HTMLDivEle
             let id: string = getID(rDivID, Reactant.tagName, mid);
             if (reactants.has(mid)) {
                 alert("Molecule already selected as a reactant. Please select a different molecule (you may want to add more molecules to the moleculeList).");
-            // Remove the select element.
-            reactantDiv.removeChild(selectReactant);
-            return;
+                // Remove the select element.
+                reactantDiv.removeChild(selectReactant);
+                return;
             }
             reactantDiv.id = rIDM.addID(rDivID, Reactant.tagName, mid);
             rmAttributes.set(ReactionMolecule.s_ref, mid);
@@ -152,7 +164,90 @@ function addAddReactantButton(rIDM: IDManager, rDivID: string, rsDiv: HTMLDivEle
 }
 
 /**
- * 
+ * For adding an add product button.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rDivID The reaction div ID.
+ * @param psDiv The products div.
+ * @param molecules The molecules map.
+ * @param products The products map.
+ */
+function addAddProductButton(rIDM: IDManager, rDivID: string, psDiv: HTMLDivElement, molecules: Map<string, Molecule>,
+    products: Map<string, Product>) {
+    // Add an add button to add a product.
+    let addProductButton: HTMLButtonElement = createButton(s_Add_sy_add,
+        rIDM.addID(rDivID, Product.tagName, s_button), level1);
+    psDiv.appendChild(addProductButton);
+    addProductButton.addEventListener('click', () => {
+        if (molecules.size === 0) {
+            // Instruct user to add a molecule.
+            alert("Please add a molecule to the moleculeList first.");
+            return;
+        }
+        //let productDivID: string = rIDM.addID(rDivID, Product.tagName, mid);
+        //let productDiv: HTMLDivElement = createDiv(productDivID);
+        let productDiv: HTMLDivElement = createFlexDiv(undefined);
+        psDiv.insertBefore(productDiv, addProductButton);
+        // Create a selector to select a molecule as a product.
+        let selectProduct: HTMLSelectElement = createSelectElement(getMoleculeKeys(molecules), s_select, "",
+            getID(rDivID, Product.tagName, s_select), level1);
+        // Have the select element update options if new molecules are added.
+        selectProduct.classList.add(BathGas.tagName);
+        productDiv.appendChild(selectProduct);
+        // Add an event listener to the select element.
+        selectProduct.addEventListener('click', (event: Event) => {
+            if (selectProduct.options.length === 1) {
+                // If there is only one option then select it.
+                alert("As there is only one molecule it will be selected.");
+                selectProduct.selectedIndex = 0;
+                selectProduct.dispatchEvent(new Event('change'));
+            }
+        });
+        selectProduct.addEventListener('change', (event: Event) => {
+            let target = event.target as HTMLSelectElement;
+            let molecule: Molecule = molecules.get(target.value) as Molecule;
+            let rmAttributes: Map<string, string> = new Map();
+            let mid: string = molecule.getID();
+            let id: string = getID(rDivID, Product.tagName, mid);
+            if (products.has(mid)) {
+                alert("Molecule already selected as a product. Please select a different molecule (you may want to add more molecules to the moleculeList).");
+                // Remove the select element.
+                productDiv.removeChild(selectProduct);
+                return;
+            }
+            productDiv.id = rIDM.addID(rDivID, Product.tagName, mid);
+            rmAttributes.set(ReactionMolecule.s_ref, mid);
+            let rm: ReactionMolecule = new ReactionMolecule(rmAttributes);
+            let product: Product = new Product(new Map(), rm);
+            products.set(mid, product);
+            // Create a new div for the role selector.
+            let lws: HTMLDivElement = createLabelWithSelect(rm.getRef() + " role", Product.roleOptions, "Role",
+                rm.getRole(), getID(rDivID, s_select), boundary1, level1);
+            let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
+            select?.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLSelectElement;
+                rm.setRole(target.value);
+                console.log("Set Role to " + target.value);
+                resizeSelectElement(target);
+            });
+            productDiv.appendChild(lws);
+            // Remove the select element.
+            productDiv.removeChild(selectProduct);
+            // Add a remove button to remove the product.
+            let prb: HTMLButtonElement = addRemoveButton(productDiv, boundary1, () => {
+                psDiv.removeChild(productDiv);
+                products.delete(mid);
+            });
+        });
+        if (selectProduct.options.length === 1) {
+            // If there is only one option then select it.
+            selectProduct.selectedIndex = 0;
+            selectProduct.dispatchEvent(new Event('change'));
+        }
+    });
+}
+
+/**
+ * Remove a reaction.
  * @param rlDiv The reaction list div.
  * @param rcDiv The reaction collapsible div.
  * @param rIDM The reaction list IDManager.
@@ -235,14 +330,14 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, reactions
             reactionTagNames.delete(Reactant.tagName);
             //console.log("xml_reactants.length=" + xml_reactants.length);
             // Create a new collapsible div for the reactants.
-            let rsDivID: string = addRID(reactionDivID, Reactant.tagName);
+            let rsDivID: string = rIDM.addID(reactionDivID, Reactant.tagName);
             let rsDiv: HTMLDivElement = createDiv(rsDivID);
-            let rscDivID = addRID(rsDivID, s_container);
-            let rscDiv: HTMLDivElement = getCollapsibleDiv(rscDivID, reactionDiv, null, rsDiv, "Reactants", boundary1, level1);
+            let rscDivID = getID(rsDivID, s_container);
+            let rscDiv: HTMLDivElement = getCollapsibleDiv(rscDivID, reactionDiv, null, rsDiv, s_Reactants, boundary1, level1);
             let reactants: Map<string, Reactant> = new Map();
             if (xml_reactants.length > 0) {
                 for (let j = 0; j < xml_reactants.length; j++) {
-                    let reactantDivID = addRID(rsDivID, Reactant.tagName, j);
+                    let reactantDivID = getID(rsDivID, Reactant.tagName, j);
                     let reactantDiv: HTMLDivElement = createFlexDiv(reactantDivID);
                     rsDiv.appendChild(reactantDiv);
                     let xml_molecule: Element = getFirstElement(xml_reactants[j], Molecule.tagName);
@@ -252,7 +347,7 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, reactions
                     reactants.set(molecule.getRef(), reactant);
                     // Create a new div for the role.
                     let lws: HTMLDivElement = createLabelWithSelect(molecule.getRef() + " role", Reactant.roleOptions, "Role",
-                        molecule.getRole(), addRID(reactantDivID, s_select), boundary1, level1);
+                        molecule.getRole(), rIDM.addID(reactantDivID, s_select), boundary1, level1);
                     lws.querySelector('select')?.addEventListener('change', (event: Event) => {
                         let target = event.target as HTMLSelectElement;
                         molecule.setRole(target.value);
@@ -263,6 +358,7 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, reactions
                     // Add a remove button to remove the reactant.
                     let rrb: HTMLButtonElement = addRemoveButton(reactantDiv, boundary1, () => {
                         rsDiv.removeChild(reactantDiv);
+                        rIDM.removeIDs(reactantDivID);
                         reactants.delete(molecule.getRef());
                     });
                 }
@@ -273,21 +369,23 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, reactions
             let xml_products: HTMLCollectionOf<Element> = xml_reactions[i].getElementsByTagName(Product.tagName);
             reactionTagNames.delete(Product.tagName);
             //console.log("xml_products.length=" + xml_products.length);
+            // Create collapsible div for the products.
+            let psDivID: string = rIDM.addID(reactionDivID, Product.tagName);
+            let psDiv: HTMLDivElement = createFlexDiv(psDivID);
+            let pscDivID = getID(psDivID, s_container);
+            let pscDiv: HTMLDivElement = getCollapsibleDiv(pscDivID, reactionDiv, null, psDiv,
+                s_Products, boundary1, level1);
+            //let products: Product[] = [];
+            let products: Map<string, Product> = new Map();
             if (xml_products.length > 0) {
-                // Create collapsible div for the products.
-                let psDivID: string = addRID(reactionDivID, Product.tagName);
-                let psDiv: HTMLDivElement = createDiv(psDivID);
-                let pscDivID = addRID(psDivID, s_container);
-                let pscDiv: HTMLDivElement = getCollapsibleDiv(pscDivID, reactionDiv, null, psDiv,
-                    "Products", boundary1, level1);
-                let products: Product[] = [];
                 for (let j = 0; j < xml_products.length; j++) {
                     let xml_molecule: Element = getFirstElement(xml_products[j], Molecule.tagName);
                     let molecule: ReactionMolecule = new ReactionMolecule(getAttributes(xml_molecule));
                     let product: Product = new Product(getAttributes(xml_products[j]), molecule);
-                    products.push(product);
+                    //products.push(product);
+                    products.set(molecule.getRef(), product);
                     let lws: HTMLDivElement = createLabelWithSelect(molecule.getRef() + " role", Product.roleOptions, molecule.getRole(),
-                        molecule.getRef(), addRID(psDivID, j, "Role"), boundary1, level1);
+                        molecule.getRef(), rIDM.addID(psDivID, j, "Role"), boundary1, level1);
                     let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
                     select.value = molecule.getRole();
                     select.addEventListener('change', (event: Event) => {
@@ -298,9 +396,16 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, reactions
                     });
                     resizeSelectElement(select);
                     psDiv.appendChild(lws);
+                    // Add a remove button to remove the product.
+                    let prb: HTMLButtonElement = addRemoveButton(psDiv, boundary1, () => {
+                        psDiv.removeChild(lws);
+                        rIDM.removeIDs(psDivID);
+                        products.delete(molecule.getRef());
+                    });
                 }
                 reaction.setProducts(products);
             }
+            addAddProductButton(rIDM, reactionDivID, psDiv, molecules, products);
             // Create a new collapsible div for the reaction.
             let reactioncDivID = addRID(reactionDivID, s_container);
             let reactioncDiv: HTMLDivElement = getCollapsibleDiv(reactioncDivID, rlDiv, null, reactionDiv,

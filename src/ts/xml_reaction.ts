@@ -1011,7 +1011,8 @@ export class Reaction extends NodeWithNodes {
     /**
      * @returns The products.
      */
-    getProducts(): Product[] {
+    getProducts(): Map<string, Product> {
+        /*
         let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
         if (i == undefined) {
             return [];
@@ -1020,14 +1021,28 @@ export class Reaction extends NodeWithNodes {
             return Array.from(i.values()).map(index => this.nodes.get(index) as Product);
         } else {
             return [this.nodes.get(i) as Product];
+        }*/
+        let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
+        if (i == undefined) {
+            return new Map();
         }
+        let products: Map<string, Product> = new Map();
+        if (i instanceof Map) {
+            (i as Map<string, number>).forEach((index, ref) => {
+                products.set(ref, this.nodes.get(index) as Product);
+            });
+        } else {
+            let r: Product = this.nodes.get(i) as Product;
+            products.set(r.getMolecule().getRef(), r);
+        }
+        return products;
     }
 
     /**
      * Set the products.
      */
-    setProducts(products: Product[]): void {
-        products.forEach(product => {
+    setProducts(products: Map<string, Product>): void {
+        products.forEach((product, key) => {
             this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
             this.addNode(product);
         });
@@ -1253,7 +1268,8 @@ export class Reaction extends NodeWithNodes {
      * @returns The label for the products.
      */
     getProductsLabel(): string {
-        return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
+        //return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
+        return Array.from(this.getProducts().values()).map(product => product.getMolecule().getRef()).join(' + ');
     }
 
     /**
@@ -1273,10 +1289,10 @@ export class Reaction extends NodeWithNodes {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map(reactant => {
             let ref: string = reactant.getMolecule().getRef();
-            console.log("ref=\"" + ref + "\"");
-            let molecule: Molecule = retrieveMolecule(reactant.getMolecule().getRef(), molecules);
+            //console.log("ref=\"" + ref + "\"");
+            let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
+                throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new Big(0));
@@ -1288,10 +1304,13 @@ export class Reaction extends NodeWithNodes {
      */
     getProductsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the products in the reaction
-        return Array.from(this.getProducts()).map(product => {
-            let molecule: Molecule = retrieveMolecule(product.getMolecule().getRef(), molecules);
+        //return Array.from(this.getProducts()).map(product => {
+        return Array.from(this.getProducts().values()).map(product => {
+            let ref: string = product.getMolecule().getRef();
+            //console.log("ref=\"" + ref + "\"");
+            let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
+                throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new Big(0));
