@@ -874,7 +874,7 @@ export class Reaction extends NodeWithNodes {
      * @param canonicalRateList The canonical rate list (optional).
      */
     constructor(attributes: Map<string, string>,
-        reactants?: Map<number, Reactant>, products?: Product[], tunneling?: Tunneling,
+        reactants?: Map<number, Reactant>, products?: Map<number, Product>, tunneling?: Tunneling,
         transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
         excessReactantConc?: ExcessReactantConc, canonicalRateList?: CanonicalRateList) {
         super(attributes, Reaction.tagName);
@@ -895,7 +895,7 @@ export class Reaction extends NodeWithNodes {
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
-            products.forEach(product => {
+            products.forEach((product, key) => {
                 this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
                 this.addNode(product);
             });
@@ -946,16 +946,21 @@ export class Reaction extends NodeWithNodes {
     /**
      * @returns The reactants.
      */
-    getReactants(): Reactant[] {
+    getReactants(): Map<string, Reactant> {
         let i: Map<string, number> | number | undefined = this.index.get(Reactant.tagName);
         if (i == undefined) {
-            return [];
+            return new Map();
         }
+        let reactants: Map<string, Reactant> = new Map();
         if (i instanceof Map) {
-            return Array.from(i.values()).map(index => this.nodes.get(index) as Reactant);
+            (i as Map<string, number>).forEach((index, ref) => {
+                reactants.set(ref, this.nodes.get(index) as Reactant);
+            });
         } else {
-            return [this.nodes.get(i) as Reactant];
+            let r: Reactant = this.nodes.get(i) as Reactant;
+            reactants.set(r.getMolecule().getRef(), r);
         }
+        return reactants;
     }
 
     /**
@@ -1240,7 +1245,7 @@ export class Reaction extends NodeWithNodes {
      * @returns The label of the reactants.
      */
     getReactantsLabel(): string {
-        return this.getReactants().map(reactant => reactant.getMolecule().getRef()).join(' + ');
+        return Array.from(this.getReactants().values()).map(reactant => reactant.getMolecule().getRef()).join(' + ');
     }
 
     /**
@@ -1266,7 +1271,7 @@ export class Reaction extends NodeWithNodes {
      */
     getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the reactants in the reaction
-        return Array.from(this.getReactants()).map(reactant => {
+        return Array.from(this.getReactants().values()).map(reactant => {
             let ref: string = reactant.getMolecule().getRef();
             console.log("ref=\"" + ref + "\"");
             let molecule: Molecule = retrieveMolecule(reactant.getMolecule().getRef(), molecules);
