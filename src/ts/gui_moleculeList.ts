@@ -33,9 +33,10 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
-        let mid: string = "Kr";
+        let mid = setMoleculeID(undefined, undefined, molecules);
+        console.log("mid=" + mid);
         let m: Molecule = new Molecule(new Map(), mid);
-        mid = setMoleculeID(mid, m, molecules);
+        m.setID(mid);
         addMolecule(m, molecules);
         m.setAtoms(new AtomArray(new Map()));
         m.setBonds(new BondArray(new Map()));
@@ -72,14 +73,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         // Add code to add propertyArray...
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
-            mlDiv.removeChild(mcDiv);
-            mIDM.removeIDs(mDivID);
-            mIDM.removeIDs(getID(mDivID, s_description));
-            mIDM.removeIDs(getID(mDivID, AtomArray.tagName));
-            mIDM.removeIDs(getID(mDivID, BondArray.tagName));
-            mIDM.removeIDs(getID(mDivID, s_viewer));
-            mIDM.removeIDs(getID(mDivID, PropertyList.tagName));
-            molecules.delete(m.getID());
+            removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     });
     return addMoleculeButton;
@@ -193,14 +187,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             selectDiv.remove();
             // Add a remove molecule button.
             addRemoveButton(moleculeDiv, level1, () => {
-                mlDiv.removeChild(mcDiv);
-                mIDM.removeIDs(mDivID);
-                mIDM.removeIDs(getID(mDivID, s_description));
-                mIDM.removeIDs(getID(mDivID, AtomArray.tagName));
-                mIDM.removeIDs(getID(mDivID, BondArray.tagName));
-                mIDM.removeIDs(getID(mDivID, s_viewer));
-                mIDM.removeIDs(getID(mDivID, PropertyList.tagName));
-                molecules.delete(molecule.getID());
+                removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, molecule);
             });
         });
     });
@@ -215,17 +202,19 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
-function setMoleculeID(mid: string, molecule: Molecule, molecules: Map<string, Molecule>): string {
+function setMoleculeID(mid: string | undefined, molecule: Molecule | undefined, molecules: Map<string, Molecule>): string {
     while (true) {
         // Ask the user to specify the molecule ID.
         let mid2: string | null = prompt("Please enter a name for the molecule", mid);
         if (mid2 == null) {
             alert("The molecule ID cannot be null.");
         } else if (molecules.has(mid2)) {
-            alert("The molecule ID " + mid + " is already in use.");
+            alert("The molecule ID " + mid2 + " is already in use.");
         } else {
             mid = mid2;
-            molecule.setID(mid);
+            if (molecule != undefined) {
+                molecule.setID(mid);
+            }
             return mid;
         }
     }
@@ -1290,24 +1279,36 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
         }
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
-            mlDiv.removeChild(mcDiv);
-            //mlDiv.removeChild(mDiv);
-            mIDM.removeIDs(mDivID);
-            mIDM.removeIDs(getID(mDivID, s_description));
-            mIDM.removeIDs(getID(mDivID, AtomArray.tagName));
-            mIDM.removeIDs(getID(mDivID, BondArray.tagName));
-            mIDM.removeIDs(getID(mDivID, s_viewer));
-            mIDM.removeIDs(getID(mDivID, PropertyList.tagName));
-            molecules.delete(m.getID());
+            removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     }
-
     // Create an add molecule button.
     let mb: HTMLButtonElement = getAddMoleculeButton(mlDiv, mIDM, molecules);
-
     // Create add from library button.
     let lb: HTMLButtonElement = getAddFromLibraryButton(mlDiv, mb, mIDM, molecules);
     return mlDiv;
+}
+
+/**
+ * Remove a molecule.
+ * @param mlDiv The MoleculeList div.
+ * @param mcDiv The MoleculeContainer div.
+ * @param mIDM The molecule IDManager.
+ * @param molecules The molecules.
+ * @param mDivID The molecule div ID.
+ * @param m The molecule.
+ */
+function removeMolecule(mlDiv: HTMLDivElement, mcDiv: HTMLDivElement, mIDM: IDManager, 
+    molecules: Map<string, Molecule>, mDivID: string, m: Molecule) {
+    mlDiv.removeChild(mcDiv);
+    //mlDiv.removeChild(mDiv);
+    mIDM.removeIDs(mDivID);
+    mIDM.removeIDs(getID(mDivID, s_description));
+    mIDM.removeIDs(getID(mDivID, AtomArray.tagName));
+    mIDM.removeIDs(getID(mDivID, BondArray.tagName));
+    mIDM.removeIDs(getID(mDivID, s_viewer));
+    mIDM.removeIDs(getID(mDivID, PropertyList.tagName));
+    molecules.delete(m.getID());
 }
 
 /**

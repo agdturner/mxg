@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, reactionsDiv, null, rlDiv,
         ReactionList.tagName, boundary1, level0);
     // Add add reaction button.
-    let rb: HTMLButtonElement = getAddReactionButton(rlDiv, reactions, molecules);
+    let rb: HTMLButtonElement = getAddReactionButton(rIDM, rlDiv, reactions, molecules);
 
     // Reactions Diagram.
     let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
@@ -677,7 +677,7 @@ function parse(xml: XMLDocument) {
     // Remove any existing rlDivID HTMLDivElement.
     remove(rlDivID);
     // Create collapsible content.
-    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, rlDiv, null, processReactionList(xml, reactions, molecules),
+    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, rlDiv, null, processReactionList(xml, rIDM, reactions, molecules),
         ReactionList.tagName, boundary1, level0);
 
     // Reactions Diagram.
