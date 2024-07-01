@@ -7,7 +7,8 @@ import { Description, T } from './xml_mesmer.js';
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
  * The attribute "role" is the role of the molecule in the reaction. Expected values are:
- * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
+ * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend 
+ * on whether the molecule is a reactant, product or transition state.
  * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
  */
 export class ReactionMolecule extends TagWithAttributes {
@@ -160,6 +161,11 @@ export class TransitionState extends NodeWithNodes {
      * The tag name.
      */
     static readonly tagName: string = "me:transitionState";
+
+    /**
+     * The role.
+     */
+    static readonly role: string = "transitionState";
 
     /**
      * @param attributes The attributes.
@@ -874,8 +880,8 @@ export class Reaction extends NodeWithNodes {
      * @param canonicalRateList The canonical rate list (optional).
      */
     constructor(attributes: Map<string, string>,
-        reactants?: Map<number, Reactant>, products?: Map<number, Product>, tunneling?: Tunneling,
-        transitionStates?: TransitionState[], mCRCMethod?: MCRCMethod,
+        reactants?: Map<string, Reactant>, products?: Map<string, Product>, tunneling?: Tunneling,
+        transitionStates?: Map<string, TransitionState>, mCRCMethod?: MCRCMethod,
         excessReactantConc?: ExcessReactantConc, canonicalRateList?: CanonicalRateList) {
         super(attributes, Reaction.tagName);
         this.index = new Map();
@@ -888,16 +894,16 @@ export class Reaction extends NodeWithNodes {
         }
         this.id = id;
         if (reactants != undefined) {
-            reactants.forEach((reactant, key) => {
-                this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
-                this.addNode(reactant);
+            reactants.forEach((r, key) => {
+                this.reactantsIndex.set(r.getMolecule().getRef(), this.nodes.size);
+                this.addNode(r);
             });
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
-            products.forEach((product, key) => {
-                this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
-                this.addNode(product);
+            products.forEach((p, key) => {
+                this.productsIndex.set(p.getMolecule().getRef(), this.nodes.size);
+                this.addNode(p);
             });
             this.index.set(Product.tagName, this.productsIndex);
         }
@@ -906,9 +912,9 @@ export class Reaction extends NodeWithNodes {
             this.addNode(tunneling);
         }
         if (transitionStates != undefined) {
-            transitionStates.forEach(transitionState => {
-                this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
-                this.addNode(transitionState);
+            transitionStates.forEach((t, key) => {
+                this.transitionStatesIndex.set(t.getMolecule().getRef(), this.nodes.size);
+                this.addNode(t);
             });
             this.index.set(TransitionState.tagName, this.transitionStatesIndex);
         }
@@ -1011,7 +1017,8 @@ export class Reaction extends NodeWithNodes {
     /**
      * @returns The products.
      */
-    getProducts(): Product[] {
+    getProducts(): Map<string, Product> {
+        /*
         let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
         if (i == undefined) {
             return [];
@@ -1020,14 +1027,28 @@ export class Reaction extends NodeWithNodes {
             return Array.from(i.values()).map(index => this.nodes.get(index) as Product);
         } else {
             return [this.nodes.get(i) as Product];
+        }*/
+        let i: Map<string, number> | number | undefined = this.index.get(Product.tagName);
+        if (i == undefined) {
+            return new Map();
         }
+        let products: Map<string, Product> = new Map();
+        if (i instanceof Map) {
+            (i as Map<string, number>).forEach((index, ref) => {
+                products.set(ref, this.nodes.get(index) as Product);
+            });
+        } else {
+            let r: Product = this.nodes.get(i) as Product;
+            products.set(r.getMolecule().getRef(), r);
+        }
+        return products;
     }
 
     /**
      * Set the products.
      */
-    setProducts(products: Product[]): void {
-        products.forEach(product => {
+    setProducts(products: Map<string, Product>): void {
+        products.forEach((product, key) => {
             this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
             this.addNode(product);
         });
@@ -1099,23 +1120,28 @@ export class Reaction extends NodeWithNodes {
     /**
      * @returns The transition states.
      */
-    getTransitionStates(): TransitionState[] {
+    getTransitionStates(): Map<string, TransitionState> {
         let i: Map<string, number> | number | undefined = this.index.get(TransitionState.tagName);
         if (i == undefined) {
-            return [];
+            return new Map();
         }
+        let transitionStates: Map<string, TransitionState> = new Map();
         if (i instanceof Map) {
-            return Array.from(i.values()).map(index => this.nodes.get(index) as TransitionState);
+            (i as Map<string, number>).forEach((index, ref) => {
+                transitionStates.set(ref, this.nodes.get(index) as TransitionState);
+            });
         } else {
-            return [this.nodes.get(i) as TransitionState];
+            let r: TransitionState = this.nodes.get(i) as TransitionState;
+            transitionStates.set(r.getMolecule().getRef(), r);
         }
+        return transitionStates;
     }
 
     /**
      * Set the transition states.
      */
-    setTransitionStates(transitionStates: TransitionState[]): void {
-        transitionStates.forEach(transitionState => {
+    setTransitionStates(transitionStates: Map<string, TransitionState>): void {
+        transitionStates.forEach((transitionState, key) => {
             this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
             this.addNode(transitionState);
         });
@@ -1253,7 +1279,8 @@ export class Reaction extends NodeWithNodes {
      * @returns The label for the products.
      */
     getProductsLabel(): string {
-        return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
+        //return this.getProducts().map(product => product.getMolecule().getRef()).join(' + ');
+        return Array.from(this.getProducts().values()).map(product => product.getMolecule().getRef()).join(' + ');
     }
 
     /**
@@ -1273,10 +1300,10 @@ export class Reaction extends NodeWithNodes {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map(reactant => {
             let ref: string = reactant.getMolecule().getRef();
-            console.log("ref=\"" + ref + "\"");
-            let molecule: Molecule = retrieveMolecule(reactant.getMolecule().getRef(), molecules);
+            //console.log("ref=\"" + ref + "\"");
+            let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${reactant.getMolecule().getRef()} not found`);
+                throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new Big(0));
@@ -1288,10 +1315,13 @@ export class Reaction extends NodeWithNodes {
      */
     getProductsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
         // Sum up the energy values of all the products in the reaction
-        return Array.from(this.getProducts()).map(product => {
-            let molecule: Molecule = retrieveMolecule(product.getMolecule().getRef(), molecules);
+        //return Array.from(this.getProducts()).map(product => {
+        return Array.from(this.getProducts().values()).map(product => {
+            let ref: string = product.getMolecule().getRef();
+            //console.log("ref=\"" + ref + "\"");
+            let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${product.getMolecule().getRef()} not found`);
+                throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new Big(0));
