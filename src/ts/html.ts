@@ -25,22 +25,23 @@ export function getCollapsibleDiv(id: string, divToAddTo: HTMLDivElement, elemen
             componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
             margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createDiv(id, margin);
-    let buttonId: string = getID(id, s_button);
-    let button: HTMLButtonElement = createButton(buttonLabel + " " + sy_downTriangle, buttonId, componentMargin);
-    button.className = s_collapsible;
-    button.addEventListener('click', function () {
-        let parts = button.textContent!.split(' ');
+    let bid: string = getID(id, s_button);
+    let b: HTMLButtonElement = createButton(buttonLabel + " " + sy_downTriangle, bid, componentMargin);
+    b.className = s_collapsible;
+    b.addEventListener('click', function () {
+        let parts = b.textContent!.split(' ');
         parts[parts.length - 1] = parts[parts.length - 1] === sy_downTriangle ? sy_upTriangle : sy_downTriangle;
-        button.textContent = parts.join(' ');
+        b.textContent = parts.join(' ');
     });
-    div.appendChild(button);
+    // Add the button and content to the div.
+    div.appendChild(b);
     div.appendChild(content);
     if (elementToInsertBefore != null) {
         divToAddTo.insertBefore(div, elementToInsertBefore);
     } else {
         divToAddTo.appendChild(div);
     }
-    setCollapsibleEventListener(button);
+    setCollapsibleEventListener(b);
     return div;
 }
 

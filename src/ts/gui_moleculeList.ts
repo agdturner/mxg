@@ -33,7 +33,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
-        let mid = setMoleculeID(undefined, undefined, molecules);
+        let mid: string = setMoleculeID(undefined, undefined, molecules);
         console.log("mid=" + mid);
         let m: Molecule = new Molecule(new Map(), mid);
         m.setID(mid);
@@ -117,7 +117,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let label: string = selectedOption.value;
             let molecule: Molecule = getMolecule(label, libmols)!;
             let mid: string = molecule.getID();
-            mid = setMoleculeID(mid, molecule, molecules);
+            mid = setMoleculeID(true, mid, molecule, molecules);
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID: string = mIDM.addID(Molecule.tagName, molecules.size);
@@ -197,15 +197,23 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
 /**
  * For setting the molecule ID.
  * 
+ * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter 
+ * which must not be undefined.
  * @param mid The initial molecule ID before checks.
  * @param molecule The molecule to set the ID foradd.
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
-function setMoleculeID(mid: string | undefined, molecule: Molecule | undefined, molecules: Map<string, Molecule>): string {
+export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: Molecule | undefined, 
+    molecules: Map<string, Molecule>): string {
     while (true) {
         // Ask the user to specify the molecule ID.
-        let mid2: string | null = prompt("Please enter a name for the molecule", mid);
+        let mid2: string | null;
+        if (ask) {
+            mid2 = prompt("Please enter a name for the molecule", mid);
+        } else {
+            mid2 = mid!;
+        }
         if (mid2 == null) {
             alert("The molecule ID cannot be null.");
         } else if (molecules.has(mid2)) {

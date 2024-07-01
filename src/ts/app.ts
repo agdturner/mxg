@@ -126,10 +126,12 @@ const s_reactionsDiagram: string = "reactionsDiagram";
 export const s_Remove_sy_remove: string = "Remove " + sy_remove;
 export const s_save: string = "save";
 //const s_select: string = "select";
-export const s_selectOption: string = "Select an option (use keys to cycle through options)...";
+export const s_selectOption: string = "Select an option (press a letter key to cycle through options for it)...";
 export const s_table: string = "table";
 const s_title: string = "title";
+export const s_Transition_States: string = "Transition States";
 const s_textarea: string = "textarea";
+export const s_Tunneling: string = "Tunneling";
 export const s_undefined: string = "undefined";
 export const s_units: string = "units";
 const s_xml: string = "xml";
@@ -274,7 +276,7 @@ export class IDManager {
     removeAllIDs(): void {
         this.ids.forEach((value, key) => {
             this.removeIDs(key);
-        }); 
+        });
     }
 }
 
@@ -663,7 +665,7 @@ function parse(xml: XMLDocument) {
     }
     createTitle(title, attributes);
 
-    // Molecules.
+    // moleculeList.
     let mlDiv: HTMLDivElement = document.getElementById(moleculesDivID) as HTMLDivElement;
     let mlDivID = addRID(MoleculeList.tagName);
     // Remove any existing mlDivID HTMLDivElement.
@@ -673,15 +675,13 @@ function parse(xml: XMLDocument) {
         MoleculeList.tagName, boundary1, level0);
     //document.body.appendChild(mlcDiv);
 
-    // Reactions.
-    let rlDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
-    let rlDivID: string = addRID(ReactionList.tagName);
+    // reactionList.
+    let rsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
+    let rsDivID: string = addRID(ReactionList.tagName);
     // Remove any existing rlDivID HTMLDivElement.
-    remove(rlDivID);
-    // Create collapsible content.
-    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, rlDiv, null, processReactionList(xml, rIDM, reactions, molecules),
+    remove(rsDivID);
+    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rsDivID, rsDiv, null, processReactionList(xml, rIDM, rsDivID, reactions, molecules),
         ReactionList.tagName, boundary1, level0);
-
     // Reactions Diagram.
     let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
     let rdDivID: string = addRID(s_Reactions_Diagram);
@@ -698,7 +698,7 @@ function parse(xml: XMLDocument) {
         s_Reactions_Diagram, boundary1, level0);
     createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
-    // Conditions.
+    // ConditionsList.
     let cdlDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
     let cdlDivID: string = addRID(Conditions.tagName);
     // Remove any existing cdlDivID HTMLDivElement.
@@ -707,7 +707,7 @@ function parse(xml: XMLDocument) {
     let cdlcDiv: HTMLDivElement = getCollapsibleDiv(cdlDivID, cdlDiv, null, processConditions(xml, conditionsIDM, molecules),
         "ConditionsList", boundary1, level0);
 
-    // Model Parameters.
+    // ModelParametersList.
     let mplDiv: HTMLDivElement = document.getElementById(modelParametersDivID) as HTMLDivElement;
     let mplDivID: string = addRID(ModelParameters.tagName, "list");
     // Remove any existing mpDivID HTMLDivElement.
@@ -716,7 +716,7 @@ function parse(xml: XMLDocument) {
     let mplcDiv: HTMLDivElement = getCollapsibleDiv(mplDivID, mplDiv, null, processModelParameters(xml, mpIDM),
         "ModelParametersList", boundary1, level0);
 
-    // Control.
+    // ControlList.
     let clDiv: HTMLDivElement = document.getElementById(controlDivID) as HTMLDivElement;
     let clDivID: string = addRID(Control.tagName);
     // Remove any existing clDivID HTMLDivElement.

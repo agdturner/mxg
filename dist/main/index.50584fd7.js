@@ -605,6 +605,8 @@ parcelHelpers.export(exports, "s_Remove_sy_remove", ()=>s_Remove_sy_remove);
 parcelHelpers.export(exports, "s_save", ()=>s_save);
 parcelHelpers.export(exports, "s_selectOption", ()=>s_selectOption);
 parcelHelpers.export(exports, "s_table", ()=>s_table);
+parcelHelpers.export(exports, "s_Transition_States", ()=>s_Transition_States);
+parcelHelpers.export(exports, "s_Tunneling", ()=>s_Tunneling);
 parcelHelpers.export(exports, "s_undefined", ()=>s_undefined);
 parcelHelpers.export(exports, "s_units", ()=>s_units);
 parcelHelpers.export(exports, "s_viewer", ()=>s_viewer);
@@ -857,10 +859,12 @@ const s_reactions = "reactions";
 const s_reactionsDiagram = "reactionsDiagram";
 const s_Remove_sy_remove = "Remove " + sy_remove;
 const s_save = "save";
-const s_selectOption = "Select an option (use keys to cycle through options)...";
+const s_selectOption = "Select an option (press a letter key to cycle through options for it)...";
 const s_table = "table";
 const s_title = "title";
+const s_Transition_States = "Transition States";
 const s_textarea = "textarea";
+const s_Tunneling = "Tunneling";
 const s_undefined = "undefined";
 const s_units = "units";
 const s_xml = "xml";
@@ -1232,7 +1236,7 @@ function load() {
         attributes = new Map();
     }
     createTitle(title, attributes);
-    // Molecules.
+    // moleculeList.
     let mlDiv = document.getElementById(moleculesDivID);
     let mlDivID = addRID((0, _xmlMesmerJs.MoleculeList).tagName);
     // Remove any existing mlDivID HTMLDivElement.
@@ -1240,13 +1244,12 @@ function load() {
     // Create collapsible content.
     let mlcDiv = (0, _htmlJs.getCollapsibleDiv)(mlDivID, mlDiv, null, (0, _guiMoleculeListJs.processMoleculeList)(xml, mIDM, molecules), (0, _xmlMesmerJs.MoleculeList).tagName, boundary1, level0);
     //document.body.appendChild(mlcDiv);
-    // Reactions.
-    let rlDiv = document.getElementById(reactionsDivID);
-    let rlDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
+    // reactionList.
+    let rsDiv = document.getElementById(reactionsDivID);
+    let rsDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
     // Remove any existing rlDivID HTMLDivElement.
-    remove(rlDivID);
-    // Create collapsible content.
-    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, rlDiv, null, (0, _guiReactionListJs.processReactionList)(xml, rIDM, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
+    remove(rsDivID);
+    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rsDivID, rsDiv, null, (0, _guiReactionListJs.processReactionList)(xml, rIDM, rsDivID, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
     // Reactions Diagram.
     let rddDiv = document.getElementById(reactionsDiagramDivID);
     let rdDivID = addRID(s_Reactions_Diagram);
@@ -1261,21 +1264,21 @@ function load() {
     let rdDiv = (0, _htmlJs.createDiv)(undefined, level1);
     let rdcDiv = (0, _htmlJs.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, s_Reactions_Diagram, boundary1, level0);
     (0, _guiReactionDiagramJs.createReactionDiagram)(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
-    // Conditions.
+    // ConditionsList.
     let cdlDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID((0, _xmlConditionsJs.Conditions).tagName);
     // Remove any existing cdlDivID HTMLDivElement.
     remove(cdlDivID);
     // Create collapsible content.
     let cdlcDiv = (0, _htmlJs.getCollapsibleDiv)(cdlDivID, cdlDiv, null, (0, _guiConditionsListJs.processConditions)(xml, conditionsIDM, molecules), "ConditionsList", boundary1, level0);
-    // Model Parameters.
+    // ModelParametersList.
     let mplDiv = document.getElementById(modelParametersDivID);
     let mplDivID = addRID((0, _xmlModelParametersJs.ModelParameters).tagName, "list");
     // Remove any existing mpDivID HTMLDivElement.
     remove(mplDivID);
     // Create collapsible content.
     let mplcDiv = (0, _htmlJs.getCollapsibleDiv)(mplDivID, mplDiv, null, (0, _guiModelParametersListJs.processModelParameters)(xml, mpIDM), "ModelParametersList", boundary1, level0);
-    // Control.
+    // ControlList.
     let clDiv = document.getElementById(controlDivID);
     let clDivID = addRID((0, _xmlControlJs.Control).tagName);
     // Remove any existing clDivID HTMLDivElement.
@@ -3608,19 +3611,20 @@ const sy_upTriangle = "\u25B2"; // ▲
 const s_select = "select";
 function getCollapsibleDiv(id, divToAddTo, elementToInsertBefore, content, buttonLabel, componentMargin, margin) {
     let div = createDiv(id, margin);
-    let buttonId = (0, _util.getID)(id, s_button);
-    let button = createButton(buttonLabel + " " + sy_downTriangle, buttonId, componentMargin);
-    button.className = s_collapsible;
-    button.addEventListener("click", function() {
-        let parts = button.textContent.split(" ");
+    let bid = (0, _util.getID)(id, s_button);
+    let b = createButton(buttonLabel + " " + sy_downTriangle, bid, componentMargin);
+    b.className = s_collapsible;
+    b.addEventListener("click", function() {
+        let parts = b.textContent.split(" ");
         parts[parts.length - 1] = parts[parts.length - 1] === sy_downTriangle ? sy_upTriangle : sy_downTriangle;
-        button.textContent = parts.join(" ");
+        b.textContent = parts.join(" ");
     });
-    div.appendChild(button);
+    // Add the button and content to the div.
+    div.appendChild(b);
     div.appendChild(content);
     if (elementToInsertBefore != null) divToAddTo.insertBefore(div, elementToInsertBefore);
     else divToAddTo.appendChild(div);
-    setCollapsibleEventListener(button);
+    setCollapsibleEventListener(b);
     return div;
 }
 /**
@@ -11590,6 +11594,7 @@ var _xmlMesmer = require("./xml_mesmer");
 var _xmlMetadata = require("./xml_metadata");
 var _xmlMolecule = require("./xml_molecule");
 var _xml = require("./xml");
+var _guiMoleculeList = require("./gui_moleculeList");
 class LibraryMolecules {
     /**
      * @param defaults The defaults.
@@ -11674,9 +11679,9 @@ class LibraryMolecules {
             // console.log("i=" + i);
             // Create a new Molecule.
             let attributes = (0, _xml.getAttributes)(xml_ms[i]);
-            let mID = attributes.get((0, _xmlMolecule.Molecule).s_id);
+            let mid = attributes.get((0, _xmlMolecule.Molecule).s_id);
             //console.log("mID=" + mID);
-            if (mID == undefined) throw new Error((0, _xmlMolecule.Molecule).s_id + " is undefined");
+            if (mid == undefined) throw new Error((0, _xmlMolecule.Molecule).s_id + " is undefined");
             let cns = xml_ms[i].childNodes;
             //console.log("cns.length=" + cns.length);
             // Check if there are any child elements. If not, then this molecule is an alias.
@@ -11687,7 +11692,7 @@ class LibraryMolecules {
                 if (ref == undefined) throw new Error("ref is undefined");
                 continue;
             }
-            let id = molecules.size;
+            let id = (0, _guiMoleculeList.setMoleculeID)(false, mid, undefined, molecules);
             let m = new (0, _xmlMolecule.Molecule)(attributes, id);
             molecules.set(id, m);
             // Create a set of molecule tag names.
@@ -11879,195 +11884,7 @@ class LibraryMolecules {
     }
 }
 
-},{"big.js":"91nMZ","./xml_mesmer":"8G2m7","./xml_metadata":"5YFPw","./xml_molecule":"cg9tc","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d6DU0":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-/**
- * Defaults are stored in a defaults.xml file. MESMER version 7.0 has the following:
- * <me:activationEnergy units="kJ/mol" default="NEEDS TO BE CHECKED**">0.0</me:activationEnergy>
- * <me:preExponential default="NEEDS TO BE CHECKED**">6.00e-12</me:preExponential>
- * <property dictRef="me:spinMultiplicity" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:symmetryNumber" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:frequenciesScaleFactor" default="true">
- *  <scalar>1</scalar>
- * </property>
- * <property dictRef="me:epsilon" default="true">
- *  <scalar>50.0</scalar>
- * </property>
- * <property dictRef="me:sigma" default="true">
- *  <scalar>5.0</scalar>
- * </property>
- * <me:deltaEDown default="NEEDS TO BE CHECKED**">130.0</me:deltaEDown>
- * <property dictRef="me:deltaEDownTExponent" default="true">
- *  <scalar referenceTemperature="298">0.0</scalar>
- * </property>
- * <molecule spinMultiplicity="1" default="true"/>
- * <molecule me:type="deficientReactant excessReactant modelled transitionState sink"
- *           default="is unsatisfactory. Choose one from list: "></molecule>
- * <molecule role="deficientReactant excessReactant modelled transitionState sink"
- *           default="is unsatisfactory. Choose one from list: "></molecule>
- * <property dictRef="me:MW" default="IS UNSATISFACTORY. A VALUE NEEDS TO BE PROVIDED**">
- *  <scalar>0.0</scalar>
- * </property>
- * <me:MCRCMethod default="NEEDS TO BE CHECKED. COULD BE** " name="RRKM"/>
- * <me:DOSCMethod default="true" name="ClassicalRotors"/>
- * <me:DOSCType default="true">external</me:DOSCType>
- * <me:DistributionCalcMethod default="true" name="Boltzmann"/>
- * <me:excessReactantConc default="NEEDS TO BE CHECKED**">2.25e+16</me:excessReactantConc>
- * <me:PTpair units="PPCC" precision="d" P="1.01E17" T="299" timeUnits ="microsec" default="true"/>
- * <me:PTset units="PPCC" precision="d" default="true"/>
- * <me:bathgas default="true">He</me:bathgas>
- * <me:TInfinity default="true">298</me:TInfinity>
- * <me:grainSize units="cm-1" default="true">100</me:grainSize>
- * <me:energyAboveTheTopHill units="kT" default="true">25</me:energyAboveTheTopHill>
- * <me:calcMethod default="true" name="simpleCalc"/>
- * <me:fittingTolerance default="true">0.01</me:fittingTolerance>
- * <me:fittingIterations default="true">10</me:fittingIterations>
- * <me:energyTransferModel name="ExponentialDown" default="true"/>
- * <me:FragmentDist name="Prior" default="true"/>
- * <me:MarquardtDerivDelta default="true">1.e-03</me:MarquardtDerivDelta>
- * <me:MarquardtTolerance default="true">1.e-03</me:MarquardtTolerance>
- * <me:MarquardtLambda default="true">1.0</me:MarquardtLambda>
- * <me:MarquardtLambdaScale default="true">10.0</me:MarquardtLambdaScale>
- * <me:ConstraintFactor default="true">1.0</me:ConstraintFactor>
- * <me:ConstraintAddand default="true">0.0</me:ConstraintAddand>
- * <me:sensitivityAnalysisSamples default="true">256</me:sensitivityAnalysisSamples>
- * <me:sensitivityGenerateData default="true">true</me:sensitivityGenerateData>
- * <me:chebMinConc units="particles per cubic centimeter" default="true"/>
- * <me:calcMethod units="kJ/mol" default="true"/>
- * <me:Tmin default="true">200</me:Tmin>
- * <me:Tmax default="true">1500</me:Tmax>
- * <me:Tstep default="true">50</me:Tstep>
- * <me:Tmid default="true">1000</me:Tmid>
- * <me:shortestTimeOfInterest default="true">1.0e-11</me:shortestTimeOfInterest>
- * <me:MaximumEvolutionTime default="true">1.0e+05</me:MaximumEvolutionTime>
- * <me:errorPropagationSamples default="true">300</me:errorPropagationSamples>
- * <property dictRef="me:Hf298">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <property dictRef="me:Hf0">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <property dictRef="me:ZPE">
- *  <scalar units="kJ/mol" default="true"/>
- * </property>
- * <me:RMS_SOC_element units="cm-1" default="true">10.0</me:RMS_SOC_element>
- * <me:GradientDifferenceMagnitude units="a.u./Bohr" default="true">0.1</me:GradientDifferenceMagnitude>
- * <me:GradientReducedMass units="a.m.u." default="true">16.0</me:GradientReducedMass>
- * <me:AverageSlope units="a.u./Bohr" default="true">0.1</me:AverageSlope>
- * <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
- * <me:testMicroRates Tmin = "100" Tmax = "2000" Tstep = "100" default="true"/>
- * <me:experimentalRate error ="0.0" default="true"/>
- */ parcelHelpers.export(exports, "Defaults", ()=>Defaults);
-var _util = require("./util");
-var _xml = require("./xml");
-class Defaults {
-    /**
-     * Construct a new M_Defaults object.
-     */ constructor(){
-        /**
-     * TagName.
-     */ this.tagName = "defaults";
-        this.values = new Map();
-        this.attributess = new Map();
-    }
-    /**
-     * Read the defaults.xml file.
-     */ readFile() {
-        // Create a file input element to prompt the user to select the default.xml file.
-        let input = document.createElement("input");
-        input.type = "file";
-        let self = this;
-        input.onchange = function() {
-            if (input.files) {
-                for(let i = 0; i < input.files.length; i++)console.log("inputElement.files[" + i + "]=" + input.files[i]);
-                let file = input.files[0];
-                //console.log("file=" + file);
-                console.log(file.name);
-                let inputFilename = file.name;
-                let reader = new FileReader();
-                let chunkSize = 1048576; // 1MB
-                let start = 0;
-                let contents = "";
-                reader.onload = function(e) {
-                    if (e.target == null) throw new Error("Event target is null");
-                    contents += e.target.result;
-                    if (file != null) {
-                        if (start < file.size) {
-                            // Read the next chunk
-                            let blob = file.slice(start, start + chunkSize);
-                            reader.readAsText(blob);
-                            start += chunkSize;
-                        } else {
-                            // All chunks have been read
-                            contents = contents.trim();
-                            //console.log('contents ' + contents);
-                            let parser = new DOMParser();
-                            let xml = parser.parseFromString(contents, "text/xml");
-                            self.parse(xml);
-                        }
-                    }
-                };
-                // Read the first chunk
-                let blob = file.slice(start, start + chunkSize);
-                reader.readAsText(blob);
-                start += chunkSize;
-            }
-        };
-        input.click();
-    }
-    /**
-     * Parses the xml loading data into attributess and values.
-     * @param xml The XML document.
-     */ parse(xml) {
-        // Process the XML.
-        let xml_defaults = (0, _xml.getSingularElement)(xml, this.tagName);
-        let attributes = (0, _xml.getAttributes)(xml_defaults);
-        console.log("Default attributes: " + (0, _util.mapToString)(attributes));
-        let children = xml_defaults.children;
-        console.log("children.length=" + children.length);
-        for(let i = 0; i < children.length; i++){
-            let child = children[i];
-            let tagName = child.tagName;
-            console.log("tagName=" + tagName);
-            let attributes = (0, _xml.getAttributes)(child);
-            this.attributess.set(tagName, attributes);
-            console.log("Attributes: " + (0, _util.mapToString)(attributes));
-            if (tagName == "property") {
-                let dictRef = child.getAttribute("dictRef");
-                try {
-                    let xml_scalar = (0, _xml.getSingularElement)(child, "scalar");
-                    let v = xml_scalar.innerHTML;
-                    if (v != null) {
-                        console.log("v=" + v);
-                        this.values.set(dictRef, v);
-                    } else console.log("v is null");
-                } catch (e) {
-                    console.log("Error: " + e);
-                }
-            } else {
-                //let v: string | null = child.nodeValue;
-                //let v: string | null = child.nodeName;
-                let v = child.innerHTML;
-                if (v != null) {
-                    console.log("v=" + v);
-                    this.values.set(tagName, v);
-                } else console.log("v is null");
-            }
-        }
-        // Some tests.
-        console.log("values: " + (0, _util.mapToString)(this.values));
-        this.attributess.forEach((value, key)=>{
-            console.log("key=" + key + " value=" + (0, _util.mapToString)(value));
-        });
-    }
-}
-
-},{"./util":"f0Rnl","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"66Fjc":[function(require,module,exports) {
+},{"big.js":"91nMZ","./xml_mesmer":"8G2m7","./xml_metadata":"5YFPw","./xml_molecule":"cg9tc","./xml":"7znDa","./gui_moleculeList":"66Fjc","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"66Fjc":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -12084,6 +11901,16 @@ parcelHelpers.defineInteropFlag(exports);
  * @param molecules The molecules map.
  * @returns The add from library button.
  */ parcelHelpers.export(exports, "getAddFromLibraryButton", ()=>getAddFromLibraryButton);
+/**
+ * For setting the molecule ID.
+ * 
+ * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter 
+ * which must not be undefined.
+ * @param mid The initial molecule ID before checks.
+ * @param molecule The molecule to set the ID foradd.
+ * @param molecules The molecules map.
+ * @returns The molecule ID set.
+ */ parcelHelpers.export(exports, "setMoleculeID", ()=>setMoleculeID);
 /**
  * Parse XML and create HTMLDivElement for molecules.
  * @param xml The XML.
@@ -12184,7 +12011,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let label = selectedOption.value;
             let molecule = (0, _appJs.getMolecule)(label, (0, _appJs.libmols));
             let mid = molecule.getID();
-            mid = setMoleculeID(mid, molecule, molecules);
+            mid = setMoleculeID(true, mid, molecule, molecules);
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID = mIDM.addID((0, _xmlMoleculeJs.Molecule).tagName, molecules.size);
@@ -12250,17 +12077,12 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
     });
     return addFromLibraryButton;
 }
-/**
- * For setting the molecule ID.
- * 
- * @param mid The initial molecule ID before checks.
- * @param molecule The molecule to set the ID foradd.
- * @param molecules The molecules map.
- * @returns The molecule ID set.
- */ function setMoleculeID(mid, molecule, molecules) {
+function setMoleculeID(ask, mid, molecule, molecules) {
     while(true){
         // Ask the user to specify the molecule ID.
-        let mid2 = prompt("Please enter a name for the molecule", mid);
+        let mid2;
+        if (ask) mid2 = prompt("Please enter a name for the molecule", mid);
+        else mid2 = mid;
         if (mid2 == null) alert("The molecule ID cannot be null.");
         else if (molecules.has(mid2)) alert("The molecule ID " + mid2 + " is already in use.");
         else {
@@ -13468,7 +13290,195 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
     viewerContainerDiv.appendChild(saveButton);
 }
 
-},{"big.js":"91nMZ","./app.js":"dPB9w","./xml_conditions.js":"cZv1r","./html.js":"aLPSL","./xml_mesmer.js":"8G2m7","./xml_metadata.js":"5YFPw","./xml_molecule.js":"cg9tc","./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bQ6KF":[function(require,module,exports) {
+},{"big.js":"91nMZ","./app.js":"dPB9w","./xml_conditions.js":"cZv1r","./html.js":"aLPSL","./xml_mesmer.js":"8G2m7","./xml_metadata.js":"5YFPw","./xml_molecule.js":"cg9tc","./util.js":"f0Rnl","./xml.js":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"d6DU0":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+/**
+ * Defaults are stored in a defaults.xml file. MESMER version 7.0 has the following:
+ * <me:activationEnergy units="kJ/mol" default="NEEDS TO BE CHECKED**">0.0</me:activationEnergy>
+ * <me:preExponential default="NEEDS TO BE CHECKED**">6.00e-12</me:preExponential>
+ * <property dictRef="me:spinMultiplicity" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:symmetryNumber" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:frequenciesScaleFactor" default="true">
+ *  <scalar>1</scalar>
+ * </property>
+ * <property dictRef="me:epsilon" default="true">
+ *  <scalar>50.0</scalar>
+ * </property>
+ * <property dictRef="me:sigma" default="true">
+ *  <scalar>5.0</scalar>
+ * </property>
+ * <me:deltaEDown default="NEEDS TO BE CHECKED**">130.0</me:deltaEDown>
+ * <property dictRef="me:deltaEDownTExponent" default="true">
+ *  <scalar referenceTemperature="298">0.0</scalar>
+ * </property>
+ * <molecule spinMultiplicity="1" default="true"/>
+ * <molecule me:type="deficientReactant excessReactant modelled transitionState sink"
+ *           default="is unsatisfactory. Choose one from list: "></molecule>
+ * <molecule role="deficientReactant excessReactant modelled transitionState sink"
+ *           default="is unsatisfactory. Choose one from list: "></molecule>
+ * <property dictRef="me:MW" default="IS UNSATISFACTORY. A VALUE NEEDS TO BE PROVIDED**">
+ *  <scalar>0.0</scalar>
+ * </property>
+ * <me:MCRCMethod default="NEEDS TO BE CHECKED. COULD BE** " name="RRKM"/>
+ * <me:DOSCMethod default="true" name="ClassicalRotors"/>
+ * <me:DOSCType default="true">external</me:DOSCType>
+ * <me:DistributionCalcMethod default="true" name="Boltzmann"/>
+ * <me:excessReactantConc default="NEEDS TO BE CHECKED**">2.25e+16</me:excessReactantConc>
+ * <me:PTpair units="PPCC" precision="d" P="1.01E17" T="299" timeUnits ="microsec" default="true"/>
+ * <me:PTset units="PPCC" precision="d" default="true"/>
+ * <me:bathgas default="true">He</me:bathgas>
+ * <me:TInfinity default="true">298</me:TInfinity>
+ * <me:grainSize units="cm-1" default="true">100</me:grainSize>
+ * <me:energyAboveTheTopHill units="kT" default="true">25</me:energyAboveTheTopHill>
+ * <me:calcMethod default="true" name="simpleCalc"/>
+ * <me:fittingTolerance default="true">0.01</me:fittingTolerance>
+ * <me:fittingIterations default="true">10</me:fittingIterations>
+ * <me:energyTransferModel name="ExponentialDown" default="true"/>
+ * <me:FragmentDist name="Prior" default="true"/>
+ * <me:MarquardtDerivDelta default="true">1.e-03</me:MarquardtDerivDelta>
+ * <me:MarquardtTolerance default="true">1.e-03</me:MarquardtTolerance>
+ * <me:MarquardtLambda default="true">1.0</me:MarquardtLambda>
+ * <me:MarquardtLambdaScale default="true">10.0</me:MarquardtLambdaScale>
+ * <me:ConstraintFactor default="true">1.0</me:ConstraintFactor>
+ * <me:ConstraintAddand default="true">0.0</me:ConstraintAddand>
+ * <me:sensitivityAnalysisSamples default="true">256</me:sensitivityAnalysisSamples>
+ * <me:sensitivityGenerateData default="true">true</me:sensitivityGenerateData>
+ * <me:chebMinConc units="particles per cubic centimeter" default="true"/>
+ * <me:calcMethod units="kJ/mol" default="true"/>
+ * <me:Tmin default="true">200</me:Tmin>
+ * <me:Tmax default="true">1500</me:Tmax>
+ * <me:Tstep default="true">50</me:Tstep>
+ * <me:Tmid default="true">1000</me:Tmid>
+ * <me:shortestTimeOfInterest default="true">1.0e-11</me:shortestTimeOfInterest>
+ * <me:MaximumEvolutionTime default="true">1.0e+05</me:MaximumEvolutionTime>
+ * <me:errorPropagationSamples default="true">300</me:errorPropagationSamples>
+ * <property dictRef="me:Hf298">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <property dictRef="me:Hf0">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <property dictRef="me:ZPE">
+ *  <scalar units="kJ/mol" default="true"/>
+ * </property>
+ * <me:RMS_SOC_element units="cm-1" default="true">10.0</me:RMS_SOC_element>
+ * <me:GradientDifferenceMagnitude units="a.u./Bohr" default="true">0.1</me:GradientDifferenceMagnitude>
+ * <me:GradientReducedMass units="a.m.u." default="true">16.0</me:GradientReducedMass>
+ * <me:AverageSlope units="a.u./Bohr" default="true">0.1</me:AverageSlope>
+ * <me:ForceMacroDetailedBalance default="true">true</me:ForceMacroDetailedBalance>
+ * <me:testMicroRates Tmin = "100" Tmax = "2000" Tstep = "100" default="true"/>
+ * <me:experimentalRate error ="0.0" default="true"/>
+ */ parcelHelpers.export(exports, "Defaults", ()=>Defaults);
+var _util = require("./util");
+var _xml = require("./xml");
+class Defaults {
+    /**
+     * Construct a new M_Defaults object.
+     */ constructor(){
+        /**
+     * TagName.
+     */ this.tagName = "defaults";
+        this.values = new Map();
+        this.attributess = new Map();
+    }
+    /**
+     * Read the defaults.xml file.
+     */ readFile() {
+        // Create a file input element to prompt the user to select the default.xml file.
+        let input = document.createElement("input");
+        input.type = "file";
+        let self = this;
+        input.onchange = function() {
+            if (input.files) {
+                for(let i = 0; i < input.files.length; i++)console.log("inputElement.files[" + i + "]=" + input.files[i]);
+                let file = input.files[0];
+                //console.log("file=" + file);
+                console.log(file.name);
+                let inputFilename = file.name;
+                let reader = new FileReader();
+                let chunkSize = 1048576; // 1MB
+                let start = 0;
+                let contents = "";
+                reader.onload = function(e) {
+                    if (e.target == null) throw new Error("Event target is null");
+                    contents += e.target.result;
+                    if (file != null) {
+                        if (start < file.size) {
+                            // Read the next chunk
+                            let blob = file.slice(start, start + chunkSize);
+                            reader.readAsText(blob);
+                            start += chunkSize;
+                        } else {
+                            // All chunks have been read
+                            contents = contents.trim();
+                            //console.log('contents ' + contents);
+                            let parser = new DOMParser();
+                            let xml = parser.parseFromString(contents, "text/xml");
+                            self.parse(xml);
+                        }
+                    }
+                };
+                // Read the first chunk
+                let blob = file.slice(start, start + chunkSize);
+                reader.readAsText(blob);
+                start += chunkSize;
+            }
+        };
+        input.click();
+    }
+    /**
+     * Parses the xml loading data into attributess and values.
+     * @param xml The XML document.
+     */ parse(xml) {
+        // Process the XML.
+        let xml_defaults = (0, _xml.getSingularElement)(xml, this.tagName);
+        let attributes = (0, _xml.getAttributes)(xml_defaults);
+        console.log("Default attributes: " + (0, _util.mapToString)(attributes));
+        let children = xml_defaults.children;
+        console.log("children.length=" + children.length);
+        for(let i = 0; i < children.length; i++){
+            let child = children[i];
+            let tagName = child.tagName;
+            console.log("tagName=" + tagName);
+            let attributes = (0, _xml.getAttributes)(child);
+            this.attributess.set(tagName, attributes);
+            console.log("Attributes: " + (0, _util.mapToString)(attributes));
+            if (tagName == "property") {
+                let dictRef = child.getAttribute("dictRef");
+                try {
+                    let xml_scalar = (0, _xml.getSingularElement)(child, "scalar");
+                    let v = xml_scalar.innerHTML;
+                    if (v != null) {
+                        console.log("v=" + v);
+                        this.values.set(dictRef, v);
+                    } else console.log("v is null");
+                } catch (e) {
+                    console.log("Error: " + e);
+                }
+            } else {
+                //let v: string | null = child.nodeValue;
+                //let v: string | null = child.nodeName;
+                let v = child.innerHTML;
+                if (v != null) {
+                    console.log("v=" + v);
+                    this.values.set(tagName, v);
+                } else console.log("v is null");
+            }
+        }
+        // Some tests.
+        console.log("values: " + (0, _util.mapToString)(this.values));
+        this.attributess.forEach((value, key)=>{
+            console.log("key=" + key + " value=" + (0, _util.mapToString)(value));
+        });
+    }
+}
+
+},{"./util":"f0Rnl","./xml":"7znDa","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bQ6KF":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -13476,7 +13486,11 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "getAddReactionButton", ()=>getAddReactionButton);
 /**
  * Parse XML and create HTMLDivElement for reactions.
- * @param {XMLDocument} xml The XML document.
+ * @param xml The XML document.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rb The reaction button.
+ * @param reactions The reactions map.
+ * @param molecules The molecules map.
  */ parcelHelpers.export(exports, "processReactionList", ()=>processReactionList);
 var _bigJs = require("big.js");
 var _bigJsDefault = parcelHelpers.interopDefault(_bigJs);
@@ -13489,7 +13503,7 @@ var _utilJs = require("./util.js");
 var _xmlJs = require("./xml.js");
 var _xmlConditionsJs = require("./xml_conditions.js");
 function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
-    let rb = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
+    let rb = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), (0, _appJs.addRID)((0, _xmlReactionJs.Reaction).tagName, "add", (0, _htmlJs.s_button)), (0, _appJs.level1));
     rlDiv.appendChild(rb);
     rb.addEventListener("click", ()=>{
         let reactionAttributes = new Map();
@@ -13508,6 +13522,7 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         // Create collapsible content.
         let rcDivID = rIDM.addID(rDivID, (0, _appJs.s_container));
         let rcDiv = (0, _htmlJs.getCollapsibleDiv)(rcDivID, rlDiv, rb, rDiv, r.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
+        let rcb = rcDiv.querySelector("button");
         // Create collapsible content for reactants.
         let rsDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName);
         let rsDiv = (0, _htmlJs.createDiv)(rsDivID);
@@ -13515,7 +13530,7 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         let rscDiv = (0, _htmlJs.getCollapsibleDiv)(rscDivID, rDiv, null, rsDiv, (0, _appJs.s_Reactants), (0, _appJs.boundary1), (0, _appJs.level1));
         let reactants = new Map();
         r.setReactants(reactants);
-        addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants);
+        addAddReactantButton(r, rcb, rIDM, rDivID, rsDiv, molecules, reactants);
         // Create collapsible content for products.
         let psDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.Product).tagName);
         let psDiv = (0, _htmlJs.createDiv)(psDivID);
@@ -13523,8 +13538,15 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         let pscDiv = (0, _htmlJs.getCollapsibleDiv)(pscDivID, rDiv, null, psDiv, (0, _appJs.s_Products), (0, _appJs.boundary1), (0, _appJs.level1));
         let products = new Map();
         r.setProducts(products);
-        addAddProductButton(rIDM, rDivID, psDiv, molecules, products);
+        addAddProductButton(r, rcb, rIDM, rDivID, psDiv, molecules, products);
         // Create collapsible content for transition states.
+        let tsDivID = rIDM.addID(rDivID, (0, _xmlReactionJs.TransitionState).tagName);
+        let tsDiv = (0, _htmlJs.createDiv)(tsDivID);
+        let tscDivID = rIDM.addID(tsDivID, (0, _appJs.s_container));
+        let tscDiv = (0, _htmlJs.getCollapsibleDiv)(tscDivID, rDiv, null, tsDiv, (0, _appJs.s_Transition_States), (0, _appJs.boundary1), (0, _appJs.level1));
+        let transitionStates = new Map();
+        r.setTransitionStates(transitionStates);
+        addAddTransitionStateButton(rIDM, rDivID, tsDiv, molecules, transitionStates);
         // Create collapsible content for MCRCMethod.
         // Create collapsible content for excessReactantConc.
         // Create collapsible content for canonicalRateList.
@@ -13537,12 +13559,13 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
 }
 /**
  * For adding an add reactant button.
+ * @param r The reaction.
  * @param rIDM The IDManager for the reaction list.
  * @param rDivID The reaction div ID.
  * @param rsDiv The reactants div.
  * @param molecules The molecules map.
  * @param reactants The reactants map.
- */ function addAddReactantButton(rIDM, rDivID, rsDiv, molecules, reactants) {
+ */ function addAddReactantButton(r, rcb, rIDM, rDivID, rsDiv, molecules, reactants) {
     // Add an add button to add a reactant.
     let addReactantButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _xmlReactionJs.Reactant).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
     rsDiv.appendChild(addReactantButton);
@@ -13575,9 +13598,8 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
             let molecule = molecules.get(target.value);
             let rmAttributes = new Map();
             let mid = molecule.getID();
-            let id = (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Reactant).tagName, mid);
             if (reactants.has(mid)) {
-                alert("Molecule already selected as a reactant. Please select a different molecule (you may want to add more molecules to the moleculeList).");
+                alert("Molecule already selected as a reactant. Please select a different molecule                 (you may want to add more molecules to the moleculeList).");
                 // Remove the select element.
                 reactantDiv.removeChild(selectReactant);
                 return;
@@ -13587,6 +13609,10 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
             let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
             let reactant = new (0, _xmlReactionJs.Reactant)(new Map(), rm);
             reactants.set(mid, reactant);
+            r.addReactant(reactant);
+            // Update the collapsible button label with the molecule name.
+            rcb.textContent = r.getLabel();
+            console.log("ReactionLabel=" + r.getLabel());
             // Create a new div for the role selector.
             let lws = (0, _htmlJs.createLabelWithSelect)(rm.getRef() + " role", (0, _xmlReactionJs.Reactant).roleOptions, "Role", rm.getRole(), (0, _utilJs.getID)(rDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
             let select = lws.querySelector("select");
@@ -13614,12 +13640,13 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
 }
 /**
  * For adding an add product button.
+ * @param rcb The reaction button.
  * @param rIDM The IDManager for the reaction list.
  * @param rDivID The reaction div ID.
  * @param psDiv The products div.
  * @param molecules The molecules map.
  * @param products The products map.
- */ function addAddProductButton(rIDM, rDivID, psDiv, molecules, products) {
+ */ function addAddProductButton(r, rcb, rIDM, rDivID, psDiv, molecules, products) {
     // Add an add button to add a product.
     let addProductButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _xmlReactionJs.Product).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
     psDiv.appendChild(addProductButton);
@@ -13652,7 +13679,6 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
             let molecule = molecules.get(target.value);
             let rmAttributes = new Map();
             let mid = molecule.getID();
-            let id = (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.Product).tagName, mid);
             if (products.has(mid)) {
                 alert("Molecule already selected as a product. Please select a different molecule (you may want to add more molecules to the moleculeList).");
                 // Remove the select element.
@@ -13664,6 +13690,10 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
             let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
             let product = new (0, _xmlReactionJs.Product)(new Map(), rm);
             products.set(mid, product);
+            r.addProduct(product);
+            // Update the collapsible button label with the molecule name.
+            rcb.textContent = r.getLabel();
+            console.log("ReactionLabel=" + r.getLabel());
             // Create a new div for the role selector.
             let lws = (0, _htmlJs.createLabelWithSelect)(rm.getRef() + " role", (0, _xmlReactionJs.Product).roleOptions, "Role", rm.getRole(), (0, _utilJs.getID)(rDivID, (0, _htmlJs.s_select)), (0, _appJs.boundary1), (0, _appJs.level1));
             let select = lws.querySelector("select");
@@ -13690,6 +13720,73 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
     });
 }
 /**
+ * For adding an add transition state button.
+ * @param rIDM The IDManager for the reaction list.
+ * @param rDivID The reaction div ID.
+ * @param tsDiv The transition state div.
+ * @param molecules The molecules map.
+ * @param transitionStates The transition states map.
+ */ function addAddTransitionStateButton(rIDM, rDivID, tsDiv, molecules, transitionStates) {
+    // Add an add button to add a transition state.
+    let addTSButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), rIDM.addID(rDivID, (0, _xmlReactionJs.TransitionState).tagName, (0, _htmlJs.s_button)), (0, _appJs.level1));
+    tsDiv.appendChild(addTSButton);
+    addTSButton.addEventListener("click", ()=>{
+        if (molecules.size === 0) {
+            // Instruct user to add a molecule.
+            alert("Please add a molecule to the moleculeList first.");
+            return;
+        }
+        let ts2Div = (0, _htmlJs.createFlexDiv)(undefined);
+        tsDiv.insertBefore(ts2Div, addTSButton);
+        // Create a selector to select a molecule as a reactant.
+        let selectTS = (0, _htmlJs.createSelectElement)((0, _appJs.getMoleculeKeys)(molecules), (0, _htmlJs.s_select), "", (0, _utilJs.getID)(rDivID, (0, _xmlReactionJs.TransitionState).tagName, (0, _htmlJs.s_select)), (0, _appJs.level1));
+        // Have the select element update options if new molecules are added.
+        selectTS.classList.add((0, _xmlConditionsJs.BathGas).tagName);
+        ts2Div.appendChild(selectTS);
+        // Add an event listener to the select element.
+        selectTS.addEventListener("click", (event)=>{
+            if (selectTS.options.length === 1) {
+                // If there is only one option then select it.
+                alert("As there is only one molecule it will be selected.");
+                selectTS.selectedIndex = 0;
+                selectTS.dispatchEvent(new Event("change"));
+            }
+        });
+        selectTS.addEventListener("change", (event)=>{
+            let target = event.target;
+            let molecule = molecules.get(target.value);
+            let rmAttributes = new Map();
+            let mid = molecule.getID();
+            if (transitionStates.has(mid)) {
+                alert("Molecule already selected as a transitionState. Please select a different molecule (you may want to add more molecules to the moleculeList).");
+                // Remove the select element.
+                tsDiv.removeChild(selectTS);
+                return;
+            }
+            ts2Div.id = rIDM.addID(rDivID, (0, _xmlReactionJs.TransitionState).tagName, mid);
+            rmAttributes.set((0, _xmlReactionJs.ReactionMolecule).s_ref, mid);
+            let rm = new (0, _xmlReactionJs.ReactionMolecule)(rmAttributes);
+            let reactant = new (0, _xmlReactionJs.TransitionState)(new Map(), rm);
+            transitionStates.set(mid, reactant);
+            // Create a label for the Transition State role.
+            let label = (0, _htmlJs.createLabel)(rm.getRef() + " role " + (0, _xmlReactionJs.TransitionState).role, (0, _appJs.level1));
+            ts2Div.appendChild(label);
+            // Remove the select element.
+            ts2Div.removeChild(selectTS);
+            // Add a remove button to remove the transition state.
+            let rrb = (0, _appJs.addRemoveButton)(ts2Div, (0, _appJs.boundary1), ()=>{
+                ts2Div.removeChild(tsDiv);
+                transitionStates.delete(mid);
+            });
+        });
+        if (selectTS.options.length === 1) {
+            // If there is only one option then select it.
+            selectTS.selectedIndex = 0;
+            selectTS.dispatchEvent(new Event("change"));
+        }
+    });
+}
+/**
  * Remove a reaction.
  * @param rlDiv The reaction list div.
  * @param rcDiv The reaction collapsible div.
@@ -13705,7 +13802,9 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
     reactions.delete(r.id);
     (0, _appJs.mesmer).getReactionList().removeReaction(r.id);
 }
-function processReactionList(xml, rIDM, reactions, molecules) {
+function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
+    let bid = (0, _utilJs.getID)(rsDivID, (0, _htmlJs.s_button));
+    let rcb = document.querySelector(bid);
     // Create div to contain the reaction list.
     let rlDiv = (0, _htmlJs.createDiv)(undefined, (0, _appJs.boundary1));
     // Get the XML "reactionList" element.
@@ -13789,7 +13888,7 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                 }
                 reaction.setReactants(reactants);
             }
-            addAddReactantButton(rIDM, reactionDivID, rsDiv, molecules, reactants);
+            addAddReactantButton(reaction, rcb, rIDM, reactionDivID, rsDiv, molecules, reactants);
             // Load products.
             let xml_products = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.Product).tagName);
             reactionTagNames.delete((0, _xmlReactionJs.Product).tagName);
@@ -13828,7 +13927,7 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                 }
                 reaction.setProducts(products);
             }
-            addAddProductButton(rIDM, reactionDivID, psDiv, molecules, products);
+            addAddProductButton(reaction, rcb, rIDM, reactionDivID, psDiv, molecules, products);
             // Create a new collapsible div for the reaction.
             let reactioncDivID = (0, _appJs.addRID)(reactionDivID, (0, _appJs.s_container));
             let reactioncDiv = (0, _htmlJs.getCollapsibleDiv)(reactioncDivID, rlDiv, null, reactionDiv, reaction.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
@@ -13838,7 +13937,7 @@ function processReactionList(xml, rIDM, reactions, molecules) {
                 if (xml_tunneling.length > 1) throw new Error("Expecting 1 " + (0, _xmlReactionJs.Tunneling).tagName + " but finding " + xml_tunneling.length + "!");
                 let tunneling = new (0, _xmlReactionJs.Tunneling)((0, _xmlJs.getAttributes)(xml_tunneling[0]));
                 reaction.setTunneling(tunneling);
-                let lws = (0, _htmlJs.createLabelWithSelect)((0, _xmlReactionJs.Tunneling).tagName, (0, _xmlReactionJs.Tunneling).options, "Tunneling", tunneling.getName(), (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Tunneling).tagName), (0, _appJs.boundary1), (0, _appJs.level1));
+                let lws = (0, _htmlJs.createLabelWithSelect)((0, _xmlReactionJs.Tunneling).tagName, (0, _xmlReactionJs.Tunneling).options, (0, _appJs.s_Tunneling), tunneling.getName(), (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.Tunneling).tagName), (0, _appJs.boundary1), (0, _appJs.level1));
                 lws.querySelector("select")?.addEventListener("change", (event)=>{
                     let target = event.target;
                     tunneling.setName(target.value);
@@ -13850,24 +13949,25 @@ function processReactionList(xml, rIDM, reactions, molecules) {
             // Load transition states.
             let xml_transitionStates = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.TransitionState).tagName);
             //console.log("xml_transitionStates.length=" + xml_transitionStates.length);
+            // Create collapsible div.
+            let tsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.TransitionState).tagName);
+            let tsDiv = (0, _htmlJs.createDiv)(tsDivID);
+            let tscDivID = (0, _appJs.addRID)(tsDivID, (0, _appJs.s_container));
+            let tscDiv = (0, _htmlJs.getCollapsibleDiv)(tscDivID, reactionDiv, null, tsDiv, (0, _appJs.s_Transition_States), (0, _appJs.boundary1), (0, _appJs.level1));
+            let transitionStates = new Map();
             if (xml_transitionStates.length > 0) {
-                // Create collapsible div.
-                let tsDivID = (0, _appJs.addRID)(reactionDivID, (0, _xmlReactionJs.TransitionState).tagName);
-                let tsDiv = (0, _htmlJs.createDiv)(tsDivID);
-                let tscDivID = (0, _appJs.addRID)(tsDivID, (0, _appJs.s_container));
-                let tscDiv = (0, _htmlJs.getCollapsibleDiv)(tscDivID, reactionDiv, null, tsDiv, "Transition States", (0, _appJs.boundary1), (0, _appJs.level1));
-                let transitionStates = [];
                 for(let j = 0; j < xml_transitionStates.length; j++){
                     let xml_molecule = (0, _xmlJs.getFirstElement)(xml_transitionStates[j], (0, _xmlMoleculeJs.Molecule).tagName);
                     let molecule = new (0, _xmlReactionJs.ReactionMolecule)((0, _xmlJs.getAttributes)(xml_molecule));
                     let transitionState = new (0, _xmlReactionJs.TransitionState)((0, _xmlJs.getAttributes)(xml_transitionStates[j]), molecule);
-                    transitionStates.push(transitionState);
-                    // Create a label for the Transition State.
-                    let label = (0, _htmlJs.createLabel)(molecule.getRef() + " role transitionState", (0, _appJs.level1));
+                    transitionStates.set(molecule.getRef(), transitionState);
+                    // Create a label for the Transition State role.
+                    let label = (0, _htmlJs.createLabel)(molecule.getRef() + " role " + (0, _xmlReactionJs.TransitionState).role, (0, _appJs.level1));
                     tsDiv.appendChild(label);
                 }
                 reaction.setTransitionStates(transitionStates);
             }
+            addAddTransitionStateButton(rIDM, reactionDivID, tsDiv, molecules, transitionStates);
             // Load MCRCMethod.
             //console.log("Load MCRCMethod...");
             let xml_MCRCMethod = xml_reactions[i].getElementsByTagName((0, _xmlReactionJs.MCRCMethod).tagName);
@@ -14125,7 +14225,8 @@ parcelHelpers.defineInteropFlag(exports);
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
  * The attribute "role" is the role of the molecule in the reaction. Expected values are:
- * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend on whether the molecule is a reactant, product or transition state.
+ * ["deficientReactant", "excessReactant", "modelled", "transitionState", "sink"], but this may depend 
+ * on whether the molecule is a reactant, product or transition state.
  * In the XML, a "molecule" node is a child of a "reactant", "product" or "me:transitionState" node.
  */ parcelHelpers.export(exports, "ReactionMolecule", ()=>ReactionMolecule);
 /**
@@ -14311,6 +14412,11 @@ class TransitionState extends (0, _xmlJs.NodeWithNodes) {
         /**
      * The tag name.
      */ this.tagName = "me:transitionState";
+    }
+    static{
+        /**
+     * The role.
+     */ this.role = "transitionState";
     }
     /**
      * @param attributes The attributes.
@@ -14801,16 +14907,16 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         if (id == undefined) throw new Error(Reaction.s_id + " is undefined!");
         this.id = id;
         if (reactants != undefined) {
-            reactants.forEach((reactant, key)=>{
-                this.reactantsIndex.set(reactant.getMolecule().getRef(), this.nodes.size);
-                this.addNode(reactant);
+            reactants.forEach((r, key)=>{
+                this.reactantsIndex.set(r.getMolecule().getRef(), this.nodes.size);
+                this.addNode(r);
             });
             this.index.set(Reactant.tagName, this.reactantsIndex);
         }
         if (products != undefined) {
-            products.forEach((product, key)=>{
-                this.productsIndex.set(product.getMolecule().getRef(), this.nodes.size);
-                this.addNode(product);
+            products.forEach((p, key)=>{
+                this.productsIndex.set(p.getMolecule().getRef(), this.nodes.size);
+                this.addNode(p);
             });
             this.index.set(Product.tagName, this.productsIndex);
         }
@@ -14819,9 +14925,9 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
             this.addNode(tunneling);
         }
         if (transitionStates != undefined) {
-            transitionStates.forEach((transitionState)=>{
-                this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
-                this.addNode(transitionState);
+            transitionStates.forEach((t, key)=>{
+                this.transitionStatesIndex.set(t.getMolecule().getRef(), this.nodes.size);
+                this.addNode(t);
             });
             this.index.set(TransitionState.tagName, this.transitionStatesIndex);
         }
@@ -14981,16 +15087,21 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
      * @returns The transition states.
      */ getTransitionStates() {
         let i = this.index.get(TransitionState.tagName);
-        if (i == undefined) return [];
-        if (i instanceof Map) return Array.from(i.values()).map((index)=>this.nodes.get(index));
-        else return [
-            this.nodes.get(i)
-        ];
+        if (i == undefined) return new Map();
+        let transitionStates = new Map();
+        if (i instanceof Map) i.forEach((index, ref)=>{
+            transitionStates.set(ref, this.nodes.get(index));
+        });
+        else {
+            let r = this.nodes.get(i);
+            transitionStates.set(r.getMolecule().getRef(), r);
+        }
+        return transitionStates;
     }
     /**
      * Set the transition states.
      */ setTransitionStates(transitionStates) {
-        transitionStates.forEach((transitionState)=>{
+        transitionStates.forEach((transitionState, key)=>{
             this.transitionStatesIndex.set(transitionState.getMolecule().getRef(), this.nodes.size);
             this.addNode(transitionState);
         });

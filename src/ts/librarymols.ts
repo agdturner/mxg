@@ -5,6 +5,7 @@ import { Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityO
 import { getAttributes, getFirstChildNode, getNodeValue, getSingularElement } from "./xml";
 import { getID } from "./util";
 import { createFlexDiv } from "./html";
+import { setMoleculeID } from "./gui_moleculeList";
 
 export class LibraryMolecules {
 
@@ -71,7 +72,7 @@ export class LibraryMolecules {
         /**
          * The molecules.
          */
-        let molecules: Map<number, Molecule> = new Map();
+        let molecules: Map<string, Molecule> = new Map();
         // Get the XML "moleculeList" element.
         let xml_ml: Element = getSingularElement(xml, MoleculeList.tagName);
         // Check the XML "moleculeList" element has one or more "molecule" elements and no other elements.
@@ -102,9 +103,9 @@ export class LibraryMolecules {
             // console.log("i=" + i);
             // Create a new Molecule.
             let attributes: Map<string, string> = getAttributes(xml_ms[i]);
-            let mID: string | undefined = attributes.get(Molecule.s_id);
+            let mid: string | undefined = attributes.get(Molecule.s_id);
             //console.log("mID=" + mID);
-            if (mID == undefined) {
+            if (mid == undefined) {
                 throw new Error(Molecule.s_id + ' is undefined');
             }
             let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
@@ -119,7 +120,7 @@ export class LibraryMolecules {
                 }
                 continue;
             }
-            let id = molecules.size;
+            let id: string = setMoleculeID(false, mid, undefined, molecules);
             let m = new Molecule(attributes, id);
             molecules.set(id, m);
             // Create a set of molecule tag names.
