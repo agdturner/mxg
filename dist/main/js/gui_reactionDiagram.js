@@ -1,10 +1,10 @@
-import { addRID, addSaveAsPNGButton, big0, getMolecule, remove, s_Reactions_Diagram } from "./app";
-import { getTextHeight, getTextWidth, drawLine, drawLevel } from "./canvas";
-import { s_button, createDiv, createButton } from "./html";
-import { Molecule } from "./xml_molecule";
-import { Reaction, TransitionState } from "./xml_reaction";
-import { min, max, get, rescale } from "./util";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.drawReactionDiagram = exports.createReactionDiagram = void 0;
+const app_1 = require("./app");
+const canvas_1 = require("./canvas");
+const html_1 = require("./html");
+const util_1 = require("./util");
 /**
  * Create the reaction diagram.
  * @param rdDiv The reaction diagram div.
@@ -17,18 +17,16 @@ import { min, max, get, rescale } from "./util";
  * @param rdWindow The window to pop the diagram into.
  * @param draw Whether to draw the reaction diagram.
  */
-export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcHeight: number, dark: boolean,
-    rd_font: string, rd_lw: number, rd_lwc: number, rdWindow: Window | null, molecules: Map<string, Molecule>,
-    reactions: Map<string, Reaction>, draw: boolean): void {
+function createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, draw) {
     // Create a pop diagram button in its own div.
-    let bDivId = addRID(rdDiv.id, s_button + 's');
-    let bDiv = createDiv(bDivId);
+    let bDivId = (0, app_1.addRID)(rdDiv.id, html_1.s_button + 's');
+    let bDiv = (0, html_1.createDiv)(bDivId);
     rdDiv.appendChild(bDiv);
-    let pbID = addRID(bDivId, s_button);
-    let popOutText: string = "Pop into a new Window";
-    let pb: HTMLButtonElement = createButton(popOutText, pbID);
+    let pbID = (0, app_1.addRID)(bDivId, html_1.s_button);
+    let popOutText = "Pop into a new Window";
+    let pb = (0, html_1.createButton)(popOutText, pbID);
     bDiv.appendChild(pb);
-    let rdCanvas: HTMLCanvasElement = document.createElement('canvas');
+    let rdCanvas = document.createElement('canvas');
     rdCanvas.id = rdcID;
     rdDiv.appendChild(rdCanvas);
     //rd_canvas.width = rd_canvas_width;
@@ -42,16 +40,17 @@ export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcH
     pb.addEventListener('click', () => {
         //if (rdWindow == null || rdWindow.closed) {
         if (rdWindow == null) {
-            let popWindowRDCanvas: HTMLCanvasElement = document.createElement('canvas');
+            let popWindowRDCanvas = document.createElement('canvas');
             popWindowRDCanvas.id = rdcID;
-            rdWindow = window.open("", s_Reactions_Diagram, "width=" + rdCanvas.width + ", height=" + rdCanvas.height) as Window;
+            rdWindow = window.open("", app_1.s_Reactions_Diagram, "width=" + rdCanvas.width + ", height=" + rdCanvas.height);
             rdWindow.document.body.appendChild(popWindowRDCanvas);
             if (draw) {
                 drawReactionDiagram(popWindowRDCanvas, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
             }
-            remove(rdcID);
+            (0, app_1.remove)(rdcID);
             pb.textContent = "Pop into this Window";
-        } else {
+        }
+        else {
             rdCanvas = document.createElement('canvas');
             rdCanvas.id = rdcID;
             rdDiv.appendChild(rdCanvas);
@@ -65,9 +64,9 @@ export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcH
             pb.textContent = popOutText;
         }
     });
-    addSaveAsPNGButton(rdCanvas, bDiv, null, s_Reactions_Diagram);
+    (0, app_1.addSaveAsPNGButton)(rdCanvas, bDiv, null, app_1.s_Reactions_Diagram);
 }
-
+exports.createReactionDiagram = createReactionDiagram;
 /**
  * Create a diagram.
  * @param canvas The canvas.
@@ -79,21 +78,21 @@ export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcH
  * @param molecules The molecules.
  * @param reactions The reactions.
  */
-export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight: number, dark: boolean, font: string, lw: number, lwc: number,
-    molecules: Map<string, Molecule>, reactions: Map<string, Reaction>): void {
+function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, reactions) {
     console.log("drawReactionDiagram");
     if (canvas != null && reactions.size > 0) {
         // Set foreground and background colors.
-        let foreground: string;
-        let background: string;
-        let blue: string;
-        let orange: string;
+        let foreground;
+        let background;
+        let blue;
+        let orange;
         if (dark) {
             foreground = "lightgrey";
             background = "darkgrey";
             blue = "lightblue";
             orange = "orange";
-        } else {
+        }
+        else {
             foreground = "darkgrey";
             background = "lightgrey";
             blue = "blue";
@@ -101,57 +100,57 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         }
         let green = "green";
         let red = "red";
-        const ctx: CanvasRenderingContext2D = canvas.getContext("2d") as CanvasRenderingContext2D;
+        const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas.
         //ctx.fillStyle = background;
         // Make font bold.
         ctx.font = "bold " + font;
         // Get text height for font size.
-        let th = getTextHeight(ctx, "Aj", ctx.font);
+        let th = (0, canvas_1.getTextHeight)(ctx, "Aj", ctx.font);
         //console.log("th=" + th);
         // Go through reactions:
         // 1. Create sets of reactants, end products, intermediate products and transition states.
         // 2. Create maps of orders and energies.
         // 3. Calculate maximum energy.
-        let reactants: string[] = [];
-        let products: Set<string> = new Set();
-        let intProducts: Set<string> = new Set();
-        let tss: Set<string> = new Set();
-        let orders: Map<string, number> = new Map();
-        let energies: Map<string, Big> = new Map();
-        let i: number = 0;
-        let energyMin: Big;
-        let energyMax: Big;
+        let reactants = [];
+        let products = new Set();
+        let intProducts = new Set();
+        let tss = new Set();
+        let orders = new Map();
+        let energies = new Map();
+        let i = 0;
+        let energyMin;
+        let energyMax;
         reactions.forEach(function (reaction, id) {
             // Get TransitionStates.
             //let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
-            let tss: Map<string, TransitionState> = reaction.getTransitionStates();
+            let tss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
-            let reactantsLabel: string | undefined = reaction.getReactantsLabel();
+            let reactantsLabel = reaction.getReactantsLabel();
             if (reactantsLabel != undefined) {
                 reactants.push(reactantsLabel);
                 if (products.has(reactantsLabel)) {
                     intProducts.add(reactantsLabel);
                 }
-                let energy: Big = reaction.getReactantsEnergy(getMolecule, molecules);
-                energyMin = min(energyMin, energy);
-                energyMax = max(energyMax, energy);
+                let energy = reaction.getReactantsEnergy(app_1.getMolecule, molecules);
+                energyMin = (0, util_1.min)(energyMin, energy);
+                energyMax = (0, util_1.max)(energyMax, energy);
                 energies.set(reactantsLabel, energy);
                 if (!orders.has(reactantsLabel)) {
                     orders.set(reactantsLabel, i);
                     i++;
                 }
             }
-            let productsLabel: string | undefined = reaction.getProductsLabel();
+            let productsLabel = reaction.getProductsLabel();
             if (productsLabel != undefined) {
                 products.add(productsLabel);
-                let energy = reaction.getProductsEnergy(getMolecule, molecules);
-                energyMin = min(energyMin, energy);
-                energyMax = max(energyMax, energy);
+                let energy = reaction.getProductsEnergy(app_1.getMolecule, molecules);
+                energyMin = (0, util_1.min)(energyMin, energy);
+                energyMax = (0, util_1.max)(energyMax, energy);
                 energies.set(productsLabel, energy);
                 if (orders.has(productsLabel)) {
                     i--;
-                    let j: number = get(orders, productsLabel);
+                    let j = (0, util_1.get)(orders, productsLabel);
                     // Move product to end and shift everything back.
                     orders.forEach(function (value, key) {
                         if (value > j) {
@@ -161,27 +160,28 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                     // Insert transition states.
                     if (tss != undefined) {
                         tss.forEach(function (ts, ref) {
-                            let moleculeRef: string = ts.getMolecule().getRef();
+                            let moleculeRef = ts.getMolecule().getRef();
                             tss.set(moleculeRef, ts);
                             orders.set(moleculeRef, i);
-                            energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
-                            energyMin = min(energyMin, energy);
-                            energyMax = max(energyMax, energy);
+                            energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
+                            energyMin = (0, util_1.min)(energyMin, energy);
+                            energyMax = (0, util_1.max)(energyMax, energy);
                             energies.set(moleculeRef, energy);
                             i++;
                         });
                         orders.set(productsLabel, i);
-                        i++
+                        i++;
                     }
-                } else {
+                }
+                else {
                     if (tss != undefined) {
                         tss.forEach(function (ts, ref) {
-                            let moleculeRef: string = ts.getMolecule().getRef();
+                            let moleculeRef = ts.getMolecule().getRef();
                             tss.set(moleculeRef, ts);
                             orders.set(moleculeRef, i);
-                            energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
-                            energyMin = min(energyMin, energy);
-                            energyMax = max(energyMax, energy);
+                            energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
+                            energyMin = (0, util_1.min)(energyMin, energy);
+                            energyMax = (0, util_1.max)(energyMax, energy);
                             energies.set(moleculeRef, energy);
                             i++;
                         });
@@ -195,13 +195,13 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         //console.log("energies=" + mapToString(energies));
         //console.log("energyMax=" + energyMax);
         //console.log("energyMin=" + energyMin);
-        let energyRange: number = (energyMax!.minus(energyMin!)).toNumber();
+        let energyRange = (energyMax.minus(energyMin)).toNumber();
         //console.log("energyRange=" + energyRange);
         //console.log("reactants=" + reactants);
         //console.log("products=" + products);
         //console.log("transitionStates=" + transitionStates);
         // Create a lookup from order to label.
-        let reorders: string[] = [];
+        let reorders = [];
         orders.forEach(function (value, key) {
             reorders[value] = key;
         });
@@ -209,27 +209,27 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         // Iterate through the reorders:
         // 1. Capture coordinates for connecting lines.
         // 2. Store maximum x.
-        let x0: number = 0;
-        let y0: number;
-        let x1: number;
-        let y1: number;
-        let xmax: number = 0;
-        let tw: number;
-        let textSpacing: number = 5; // Spacing between end of line and start of text.
-        let stepSpacing: number = 10; // Spacing between steps.
-        let reactantsInXY: Map<string, number[]> = new Map();
-        let reactantsOutXY: Map<string, number[]> = new Map();
-        let productsInXY: Map<string, number[]> = new Map();
-        let productsOutXY: Map<string, number[]> = new Map();
-        let tssInXY: Map<string, number[]> = new Map();
-        let tssOutXY: Map<string, number[]> = new Map();
+        let x0 = 0;
+        let y0;
+        let x1;
+        let y1;
+        let xmax = 0;
+        let tw;
+        let textSpacing = 5; // Spacing between end of line and start of text.
+        let stepSpacing = 10; // Spacing between steps.
+        let reactantsInXY = new Map();
+        let reactantsOutXY = new Map();
+        let productsInXY = new Map();
+        let productsOutXY = new Map();
+        let tssInXY = new Map();
+        let tssOutXY = new Map();
         reorders.forEach(function (value) {
             //console.log("value=" + value + ".");
             //console.log("energies=" + mapToString(energies));
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, rdcHeight, energy);
+            let energy = (0, util_1.get)(energies, value);
+            let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, rdcHeight, energy);
             // Get text width.
-            tw = Math.max(getTextWidth(ctx, energy.toString(), font), getTextWidth(ctx, value, font));
+            tw = Math.max((0, canvas_1.getTextWidth)(ctx, energy.toString(), font), (0, canvas_1.getTextWidth)(ctx, value, font));
             x1 = x0 + tw + textSpacing;
             y0 = energyRescaled + lw;
             y1 = y0;
@@ -261,65 +261,66 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         canvas.height = canvasHeightWithBorder;
         // Set the transformation matrix.
         //ctx.transform(1, 0, 0, 1, 0, canvasHeightWithBorder);
-        ctx.transform(1, 0, 0, -1, 0, canvasHeightWithBorder)
+        ctx.transform(1, 0, 0, -1, 0, canvasHeightWithBorder);
         // Go through reactions and draw connecting lines.
         reactions.forEach(function (reaction, id) {
             //console.log("id=" + id);
             //console.log("reaction=" + reaction);
             // Get TransitionState if there is one.
             //let tss: TransitionState[] = reaction.getTransitionStates();
-            let tss: Map<string, TransitionState> = reaction.getTransitionStates();
+            let tss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
-            let reactantsLabel: string | undefined = reaction.getReactantsLabel();
-            let productsLabel: string | undefined = reaction.getProductsLabel();
-            let reactantOutXY: number[] = get(reactantsOutXY, reactantsLabel);
-            let productInXY: number[] = get(productsInXY, productsLabel);
+            let reactantsLabel = reaction.getReactantsLabel();
+            let productsLabel = reaction.getProductsLabel();
+            let reactantOutXY = (0, util_1.get)(reactantsOutXY, reactantsLabel);
+            let productInXY = (0, util_1.get)(productsInXY, productsLabel);
             if (tss.size > 0) {
                 tss.forEach(function (ts, ref) {
-                    let tsInXY: number[] = get(tssInXY, ref);
-                    drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], tsInXY[0],
-                        tsInXY[1]);
-                    let tsOutXY: number[] = get(tssOutXY, ref);
-                    drawLine(ctx, foreground, lwc, tsOutXY[0], tsOutXY[1],
-                        productInXY[0], productInXY[1]);
+                    let tsInXY = (0, util_1.get)(tssInXY, ref);
+                    (0, canvas_1.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], tsInXY[0], tsInXY[1]);
+                    let tsOutXY = (0, util_1.get)(tssOutXY, ref);
+                    (0, canvas_1.drawLine)(ctx, foreground, lwc, tsOutXY[0], tsOutXY[1], productInXY[0], productInXY[1]);
                 });
-            } else {
-                drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1],
-                    productInXY[0], productInXY[1]);
+            }
+            else {
+                (0, canvas_1.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
             }
         });
         // Draw horizontal lines and labels.
         // (This is done last so that the labels are on top of the vertical lines.)
         reactants.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(reactantsInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(reactantsOutXY, value)[0];
-            let energyString: string = energy.toString();
-            drawLevel(ctx, blue, lw, x0, y, x1, y, font, th, value, energyString);
+            let energy = (0, util_1.get)(energies, value);
+            let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            let x0 = (0, util_1.get)(reactantsInXY, value)[0];
+            let y = energyRescaled + lw;
+            let x1 = (0, util_1.get)(reactantsOutXY, value)[0];
+            let energyString = energy.toString();
+            (0, canvas_1.drawLevel)(ctx, blue, lw, x0, y, x1, y, font, th, value, energyString);
         });
         products.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(productsInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(productsOutXY, value)[0];
-            let energyString: string = energy.toString();
+            let energy = (0, util_1.get)(energies, value);
+            let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            let x0 = (0, util_1.get)(productsInXY, value)[0];
+            let y = energyRescaled + lw;
+            let x1 = (0, util_1.get)(productsOutXY, value)[0];
+            let energyString = energy.toString();
             if (intProducts.has(value)) {
-                drawLevel(ctx, orange, lw, x0, y, x1, y, font, th, value, energyString);
-            } else {
-                drawLevel(ctx, green, lw, x0, y, x1, y, font, th, value, energyString);
+                (0, canvas_1.drawLevel)(ctx, orange, lw, x0, y, x1, y, font, th, value, energyString);
+            }
+            else {
+                (0, canvas_1.drawLevel)(ctx, green, lw, x0, y, x1, y, font, th, value, energyString);
             }
         });
         tss.forEach(function (value) {
-            let energy: number = get(energies, value);
-            let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0: number = get(tssInXY, value)[0];
-            let y: number = energyRescaled + lw;
-            let x1: number = get(tssOutXY, value)[0];
-            let energyString: string = energy.toString();
-            drawLevel(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
+            let energy = (0, util_1.get)(energies, value);
+            let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            let x0 = (0, util_1.get)(tssInXY, value)[0];
+            let y = energyRescaled + lw;
+            let x1 = (0, util_1.get)(tssOutXY, value)[0];
+            let energyString = energy.toString();
+            (0, canvas_1.drawLevel)(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
         });
     }
 }
+exports.drawReactionDiagram = drawReactionDiagram;
+//# sourceMappingURL=gui_reactionDiagram.js.map

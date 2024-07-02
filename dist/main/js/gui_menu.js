@@ -1,81 +1,73 @@
-import { createButton, sy_downTriangle, sy_upTriangle } from "./html.js";
-import { addID, addMolecule, boundary1, defaults, libmols, load, menuDivID, saveXML } from "./app.js";
-import { LibraryMolecules } from './librarymols.js';
-import { Molecule } from "./xml_molecule.js";
-import { Defaults } from './defaults.js';
-
-
-let mk_url: string = "https://github.com/MESMER-kinetics";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createMenu = void 0;
+const html_js_1 = require("./html.js");
+const app_js_1 = require("./app.js");
+const librarymols_js_1 = require("./librarymols.js");
+let mk_url = "https://github.com/MESMER-kinetics";
 /**
  * MXG.
  */
-let mxg_url: string = mk_url + "/mxg";
+let mxg_url = mk_url + "/mxg";
 let mxg_a = document.createElement('a');
 mxg_a.href = mxg_url;
 mxg_a.textContent = mxg_url;
-
 /**
  * Example data.
  */
-let mxgDataExamples_url: string = mxg_url + "/tree/main/data/examples";
+let mxgDataExamples_url = mxg_url + "/tree/main/data/examples";
 let mxgDataExamples_a = document.createElement('a');
 mxgDataExamples_a.href = mxgDataExamples_url;
 mxgDataExamples_a.textContent = mxgDataExamples_url;
-
 /**
  * MESMER.
  */
-let mesmer_url: string = mk_url + "/MESMER-code";
+let mesmer_url = mk_url + "/MESMER-code";
 let mesmer_a = document.createElement('a');
 mesmer_a.href = mesmer_url;
 mesmer_a.textContent = mesmer_url;
-
 /**
  * EPSRC.
  */
-let epsrc_url: string = "https://epsrc.ukri.org/";
+let epsrc_url = "https://epsrc.ukri.org/";
 let epsrc_a = document.createElement('a');
 epsrc_a.href = epsrc_url;
 epsrc_a.textContent = "The UK Engineering and Physical Sciences Research Council (EPSRC)";
-
 /**
  * University of Leeds
  */
-let uol_url: string = "https://www.leeds.ac.uk/";
+let uol_url = "https://www.leeds.ac.uk/";
 let uol_a = document.createElement('a');
 uol_a.href = uol_url;
 uol_a.textContent = "The University of Leeds";
-
 /**
  * 3DMol.
  */
-let t3Dmol_url: string = "https://github.com/3dmol/3Dmol.js";
+let t3Dmol_url = "https://github.com/3dmol/3Dmol.js";
 let t3Dmol_a = document.createElement('a');
 t3Dmol_a.href = t3Dmol_url;
 t3Dmol_a.textContent = t3Dmol_url;
-let t3Dmol_citation_url: string = "http://doi.org/10.1093/bioinformatics/btu829";
+let t3Dmol_citation_url = "http://doi.org/10.1093/bioinformatics/btu829";
 let t3Dmol_citation_a = document.createElement('a');
 t3Dmol_citation_a.href = t3Dmol_citation_url;
 t3Dmol_citation_a.textContent = "doi:10.1093/bioinformatics/btu829";
-
 /**
  * Big.js.
  */
-let bigjs_url: string = "https://mikemcl.github.io/big.js/";
+let bigjs_url = "https://mikemcl.github.io/big.js/";
 let bigjs_a = document.createElement('a');
 bigjs_a.href = bigjs_url;
 bigjs_a.textContent = bigjs_url;
-
 /**
  * Get a div with details about MXG.
  */
-function about(w: Window | null) {
+function about(w) {
     if (w == null) {
         return;
     }
     w.document.title = "About MXG";
     // Welcome Text.
-    let wDiv: HTMLDivElement = document.createElement('div');
+    let wDiv = document.createElement('div');
     w.document.body.appendChild(wDiv);
     // p1.
     let p1 = w.document.createElement('p');
@@ -134,8 +126,8 @@ function about(w: Window | null) {
     p5.appendChild(w.document.createTextNode('The "me:title" value is presented in an input alongside an associated label. \
         The input can be used to change the value which is also used to compose filenames for files saved from MXG. \
         Details are presented via buttons which contain a triangular symbol. A triangle orientated with a point down: '
-        + sy_downTriangle + ' can be actioned to show more details (if there are any). A triangle orientated with a point \
-        up: ' + sy_upTriangle + ' can be actioned to hide those details again.'));
+        + html_js_1.sy_downTriangle + ' can be actioned to show more details (if there are any). A triangle orientated with a point \
+        up: ' + html_js_1.sy_upTriangle + ' can be actioned to hide those details again.'));
     // p6.
     let p6 = w.document.createElement('p');
     wDiv.appendChild(p6);
@@ -159,55 +151,49 @@ function about(w: Window | null) {
     p8.appendChild(bigjs_a);
     p8.appendChild(w.document.createTextNode('.'));
 }
-
-export function createMenu(): HTMLDivElement {
+function createMenu() {
     // Create Menu.
-    let menuDiv: HTMLDivElement = document.getElementById(menuDivID) as HTMLDivElement;
+    let menuDiv = document.getElementById(app_js_1.menuDivID);
     menuDiv.style.display = 'flex';
     menuDiv.style.justifyContent = 'center';
     menuDiv.style.margin = '5px';
     menuDiv.style.padding = '5px';
     menuDiv.style.border = '1px solid black';
     menuDiv.style.backgroundColor = 'lightgrey';
-
     // Add About MXG button.
-    let s_About: string = 'About';
-    let ab: HTMLButtonElement = createButton(s_About, addID(s_About), boundary1);
+    let s_About = 'About';
+    let ab = (0, html_js_1.createButton)(s_About, (0, app_js_1.addID)(s_About), app_js_1.boundary1);
     menuDiv.appendChild(ab);
-    ab.addEventListener('click', async (event: MouseEvent) => {
+    ab.addEventListener('click', async (event) => {
         let aw = window.open("", "", "width=600,height=400");
         about(aw);
     });
-
     // Add Load Molecules button.
-    let s_Load_Molecules: string = 'Load Molecules';
-    let lmb: HTMLButtonElement = createButton(s_Load_Molecules, addID(s_Load_Molecules), boundary1);
+    let s_Load_Molecules = 'Load Molecules';
+    let lmb = (0, html_js_1.createButton)(s_Load_Molecules, (0, app_js_1.addID)(s_Load_Molecules), app_js_1.boundary1);
     menuDiv.appendChild(lmb);
-    let lm: LibraryMolecules = new LibraryMolecules();
-    lmb.addEventListener('click', async (event: MouseEvent) => {
-        let ms: Map<string, Molecule> = await lm.readFile();
+    let lm = new librarymols_js_1.LibraryMolecules();
+    lmb.addEventListener('click', async (event) => {
+        let ms = await lm.readFile();
         // Add the molecules to the libmols map.
         ms.forEach((v, k) => {
-            addMolecule(v, libmols);
+            (0, app_js_1.addMolecule)(v, app_js_1.libmols);
         });
     });
-
     // Add Load Defaults button.
-    let s_Load_Defaults: string = 'Load Defaults';
-    let ldb: HTMLButtonElement = createButton(s_Load_Defaults, addID(s_Load_Defaults), boundary1);
-    ldb.addEventListener('click', (event: MouseEvent) => {
-        defaults.readFile();
+    let s_Load_Defaults = 'Load Defaults';
+    let ldb = (0, html_js_1.createButton)(s_Load_Defaults, (0, app_js_1.addID)(s_Load_Defaults), app_js_1.boundary1);
+    ldb.addEventListener('click', (event) => {
+        app_js_1.defaults.readFile();
     });
     menuDiv.appendChild(ldb);
-
     // Add Load MESMER File button.
-    let s_Load: string = 'Load MESMER File';
-    let lb = createButton(s_Load, addID(s_Load), boundary1);
-    lb.addEventListener('click', (event: MouseEvent) => {
-        load();
+    let s_Load = 'Load MESMER File';
+    let lb = (0, html_js_1.createButton)(s_Load, (0, app_js_1.addID)(s_Load), app_js_1.boundary1);
+    lb.addEventListener('click', (event) => {
+        (0, app_js_1.load)();
     });
     menuDiv.appendChild(lb);
-
     /* Add style/theme option buttons.
     // Add Increase Fontsize button.
     let s_Increase_Fontsize: string = 'Increase Fontsize';
@@ -252,11 +238,12 @@ export function createMenu(): HTMLDivElement {
     });
     menuDiv.appendChild(lightDarkModeButton);
     */
-
     // Add Save To MESMER File button.
-    let s_Save_MESMER_File: string = 'Save MESMER File';
-    let saveButton = createButton(s_Save_MESMER_File, addID(s_Save_MESMER_File), boundary1);
-    saveButton.addEventListener('click', saveXML);
+    let s_Save_MESMER_File = 'Save MESMER File';
+    let saveButton = (0, html_js_1.createButton)(s_Save_MESMER_File, (0, app_js_1.addID)(s_Save_MESMER_File), app_js_1.boundary1);
+    saveButton.addEventListener('click', app_js_1.saveXML);
     menuDiv.appendChild(saveButton);
     return menuDiv;
 }
+exports.createMenu = createMenu;
+//# sourceMappingURL=gui_menu.js.map

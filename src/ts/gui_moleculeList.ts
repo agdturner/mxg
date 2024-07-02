@@ -33,7 +33,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
-        let mid: string = setMoleculeID(undefined, undefined, molecules);
+        let mid: string = setMoleculeID(true, undefined, undefined, molecules);
         console.log("mid=" + mid);
         let m: Molecule = new Molecule(new Map(), mid);
         m.setID(mid);

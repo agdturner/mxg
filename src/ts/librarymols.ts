@@ -15,9 +15,10 @@ export class LibraryMolecules {
     constructor() { }
 
     /**
-     * @returns 
+     * Read molecules from file.
+     * @returns A promise that resolves to a map of molecules.
      */
-    readFile(): Promise<Map<number, Molecule>> {
+    readFile(): Promise<Map<string, Molecule>> {
         return new Promise((resolve, reject) => {
             let input: HTMLInputElement = document.createElement('input');
             input.type = 'file';
@@ -68,7 +69,7 @@ export class LibraryMolecules {
     /**
      * Parse the XML.
      */
-    parse(xml: Document): Map<number, Molecule> {
+    parse(xml: Document): Map<string, Molecule> {
         /**
          * The molecules.
          */

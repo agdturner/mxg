@@ -11600,7 +11600,8 @@ class LibraryMolecules {
      * @param defaults The defaults.
      */ constructor(){}
     /**
-     * @returns 
+     * Read molecules from file.
+     * @returns A promise that resolves to a map of molecules.
      */ readFile() {
         return new Promise((resolve, reject)=>{
             let input = document.createElement("input");
@@ -11938,7 +11939,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     let addMoleculeButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), undefined, (0, _appJs.level1));
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener("click", ()=>{
-        let mid = setMoleculeID(undefined, undefined, molecules);
+        let mid = setMoleculeID(true, undefined, undefined, molecules);
         console.log("mid=" + mid);
         let m = new (0, _xmlMoleculeJs.Molecule)(new Map(), mid);
         m.setID(mid);
@@ -17476,7 +17477,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         let reactants = [];
         let products = new Set();
         let intProducts = new Set();
-        let transitionStates = new Set();
+        let tss = new Set();
         let orders = new Map();
         let energies = new Map();
         let i = 0;
@@ -17484,7 +17485,8 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         let energyMax;
         reactions.forEach(function(reaction, id) {
             // Get TransitionStates.
-            let reactionTransitionStates = reaction.getTransitionStates();
+            //let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
+            let tss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel = reaction.getReactantsLabel();
             if (reactantsLabel != undefined) {
@@ -17514,29 +17516,29 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                         if (value > j) orders.set(key, value - 1);
                     });
                     // Insert transition states.
-                    if (reactionTransitionStates != undefined) {
-                        reactionTransitionStates.forEach(function(ts) {
-                            let ref = ts.getMolecule().getRef();
-                            transitionStates.add(ref);
-                            orders.set(ref, i);
-                            energy = (0, _app.getMolecule)(ref, molecules).getEnergy() ?? (0, _app.big0);
+                    if (tss != undefined) {
+                        tss.forEach(function(ts, ref) {
+                            let moleculeRef = ts.getMolecule().getRef();
+                            tss.set(moleculeRef, ts);
+                            orders.set(moleculeRef, i);
+                            energy = (0, _app.getMolecule)(moleculeRef, molecules).getEnergy() ?? (0, _app.big0);
                             energyMin = (0, _util.min)(energyMin, energy);
                             energyMax = (0, _util.max)(energyMax, energy);
-                            energies.set(ref, energy);
+                            energies.set(moleculeRef, energy);
                             i++;
                         });
                         orders.set(productsLabel, i);
                         i++;
                     }
                 } else {
-                    if (reactionTransitionStates != undefined) reactionTransitionStates.forEach(function(ts) {
-                        let ref = ts.getMolecule().getRef();
-                        transitionStates.add(ref);
-                        orders.set(ref, i);
-                        energy = (0, _app.getMolecule)(ref, molecules).getEnergy() ?? (0, _app.big0);
+                    if (tss != undefined) tss.forEach(function(ts, ref) {
+                        let moleculeRef = ts.getMolecule().getRef();
+                        tss.set(moleculeRef, ts);
+                        orders.set(moleculeRef, i);
+                        energy = (0, _app.getMolecule)(moleculeRef, molecules).getEnergy() ?? (0, _app.big0);
                         energyMin = (0, _util.min)(energyMin, energy);
                         energyMax = (0, _util.max)(energyMax, energy);
-                        energies.set(ref, energy);
+                        energies.set(moleculeRef, energy);
                         i++;
                     });
                     orders.set(productsLabel, i);
@@ -17574,8 +17576,8 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         let reactantsOutXY = new Map();
         let productsInXY = new Map();
         let productsOutXY = new Map();
-        let transitionStatesInXY = new Map();
-        let transitionStatesOutXY = new Map();
+        let tssInXY = new Map();
+        let tssOutXY = new Map();
         reorders.forEach(function(value) {
             //console.log("value=" + value + ".");
             //console.log("energies=" + mapToString(energies));
@@ -17608,12 +17610,12 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                     y1
                 ]);
             }
-            if (transitionStates.has(value)) {
-                transitionStatesInXY.set(value, [
+            if (tss.has(value)) {
+                tssInXY.set(value, [
                     x0,
                     y0
                 ]);
-                transitionStatesOutXY.set(value, [
+                tssOutXY.set(value, [
                     x1,
                     y1
                 ]);
@@ -17638,18 +17640,18 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             //console.log("id=" + id);
             //console.log("reaction=" + reaction);
             // Get TransitionState if there is one.
-            let reactionTransitionStates = reaction.getTransitionStates();
+            //let tss: TransitionState[] = reaction.getTransitionStates();
+            let tss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel = reaction.getReactantsLabel();
             let productsLabel = reaction.getProductsLabel();
             let reactantOutXY = (0, _util.get)(reactantsOutXY, reactantsLabel);
             let productInXY = (0, _util.get)(productsInXY, productsLabel);
-            if (reactionTransitionStates.length > 0) reactionTransitionStates.forEach(function(ts) {
-                let transitionStateLabel = ts.getMolecule().getRef();
-                let transitionStateInXY = (0, _util.get)(transitionStatesInXY, transitionStateLabel);
-                (0, _canvas.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], transitionStateInXY[0], transitionStateInXY[1]);
-                let transitionStateOutXY = (0, _util.get)(transitionStatesOutXY, transitionStateLabel);
-                (0, _canvas.drawLine)(ctx, foreground, lwc, transitionStateOutXY[0], transitionStateOutXY[1], productInXY[0], productInXY[1]);
+            if (tss.size > 0) tss.forEach(function(ts, ref) {
+                let tsInXY = (0, _util.get)(tssInXY, ref);
+                (0, _canvas.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], tsInXY[0], tsInXY[1]);
+                let tsOutXY = (0, _util.get)(tssOutXY, ref);
+                (0, _canvas.drawLine)(ctx, foreground, lwc, tsOutXY[0], tsOutXY[1], productInXY[0], productInXY[1]);
             });
             else (0, _canvas.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
         });
@@ -17674,12 +17676,12 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             if (intProducts.has(value)) (0, _canvas.drawLevel)(ctx, orange, lw, x0, y, x1, y, font, th, value, energyString);
             else (0, _canvas.drawLevel)(ctx, green, lw, x0, y, x1, y, font, th, value, energyString);
         });
-        transitionStates.forEach(function(value) {
+        tss.forEach(function(value) {
             let energy = (0, _util.get)(energies, value);
             let energyRescaled = (0, _util.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
-            let x0 = (0, _util.get)(transitionStatesInXY, value)[0];
+            let x0 = (0, _util.get)(tssInXY, value)[0];
             let y = energyRescaled + lw;
-            let x1 = (0, _util.get)(transitionStatesOutXY, value)[0];
+            let x1 = (0, _util.get)(tssOutXY, value)[0];
             let energyString = energy.toString();
             (0, _canvas.drawLevel)(ctx, red, lw, x0, y, x1, y, font, th, value, energyString);
         });
