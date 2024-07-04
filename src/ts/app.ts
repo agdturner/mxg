@@ -981,25 +981,28 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
 
 /**
  * Process a numerical variable.
- * @param div The div.
  * @param id The id.
+ * @param iDs The set of IDs to add to.
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
  */
-function processNumberArray(id: string, name: string, pa: PropertyArray,
+export function processNumberArrayOrMatrix(id: string, iDs: Set<string>, name: string, pa: PropertyArray,
     getter: () => Big[] | undefined, setter: (values: Big[]) => void, remover: () => void,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let button = createButton(buttonTextContentDeselected, addRID(id, s_button), marginComponent);
+    let idb = addRID(id, name, s_button);
+    iDs.add(idb);
+    let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
     let inputId: string = addRID(id, name, s_input)
+    iDs.add(inputId);
     let value: Big[] | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -1233,7 +1236,8 @@ export function processPropertyScalarNumber(pl: PropertyList, p: Property, units
                 let paAttributes: Map<string, string> = getAttributes(arrayNodes[0]);
                 let pa: PropertyArray = new PropertyArray(paAttributes, values);
                 p.setProperty(pa);
-                let div: HTMLDivElement = processNumberArray(addRID(plDiv.id, p.dictRef), p.dictRef, pa, pa.getValues.bind(pa), pa.setValues,
+                let div: HTMLDivElement = processNumberArrayOrMatrix(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef,
+                    pa, pa.getValues.bind(pa), pa.setValues,
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(units, paAttributes, div, div.querySelector(s_textarea) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyArray.s_units), p.dictRef, boundary, boundary);
                 plDiv.appendChild(div);

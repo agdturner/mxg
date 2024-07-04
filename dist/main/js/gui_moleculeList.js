@@ -82,13 +82,21 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.Hf298.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
         // "me:rotConsts", array, Mesmer.frequencyUnits.
         // "me:symmetryNumber", scalar, No units.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.SymmetryNumber.dictRef, undefined);
         // "me:TSOpticalSymmetryNumber", scalar, No units.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.TSOpticalSymmetryNumber.dictRef, undefined);
         // "me:frequenciesScaleFactor", scalar, No units.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.FrequenciesScaleFactor.dictRef, undefined);
         // "me:vibFreqs", array, cm-1.
         // "me:MW", scalar, amu.
+        let units = [xml_mesmer_js_1.Mesmer.massUnits[0]];
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.MW.dictRef, xml_mesmer_js_1.Mesmer.massUnits);
         // "me:spinMultiplicity", scalar, No units.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.SpinMultiplicity.dictRef, undefined);
         // "me:epsilon", scalar, K (fixed).
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.Epsilon.dictRef, xml_mesmer_js_1.Mesmer.temperatureUnits);
         // "me:sigma", scalar, Å (fixed).
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.Sigma.dictRef, xml_mesmer_js_1.Mesmer.lengthUnits);
         // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
         // "me:EinsteinAij", array, s-1 (fixed).
         // "me:EinsteinBij", array, m3/J/s2 (fixed).
@@ -117,7 +125,9 @@ function addPropertyScalarNumber(m, pIDs, plDiv, pl, dictRef, units) {
     pAttributes = new Map();
     pAttributes.set(xml_molecule_js_1.Property.s_dictRef, dictRef);
     psAttributes = new Map();
-    psAttributes.set(xml_molecule_js_1.PropertyScalarNumber.s_units, units[0]);
+    if (units != undefined) {
+        psAttributes.set(xml_molecule_js_1.PropertyScalarNumber.s_units, units[0]);
+    }
     ps = new xml_molecule_js_1.PropertyScalarNumber(psAttributes, app_js_1.big0);
     p = new xml_molecule_js_1.Property(pAttributes, ps);
     m.getPropertyList().setProperty(p);

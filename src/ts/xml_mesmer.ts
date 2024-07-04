@@ -449,6 +449,31 @@ export class Mesmer extends NodeWithNodes {
     static readonly frequencyUnits: string[] = ["cm-1", "GHz", "amuA^2"];
 
     /**
+     * Mass units.
+     */
+    static readonly massUnits: string[] = ["amu", "g/mol", "kg/mol"];
+
+    /**
+     * Temperature units.
+     */
+    static readonly temperatureUnits: string[] = ["K"];
+
+    /**
+     * Time units.
+     */
+    static readonly timeUnits: string[] = ["fs", "ps", "ns", "s"];
+
+    /**
+     * Length units.
+     */
+    static readonly lengthUnits: string[] = ["Å", "nm", "um", "mm", "cm", "m"];
+
+    /**
+     * Hessian units.
+     */
+    static readonly hessianUnits: string[] = ["kJ/mol/Å2", "kcal/mol/Å2", "Hartree/Å2"];
+
+    /**
      * The atoms with 1 to 118 protons inclusive. (source: https://query.wikidata.org/#SELECT%20%3Felement%20%3Fsymbol%20%20%3Fprotons%0AWHERE%0A%7B%0A%20%20%3Felement%20wdt%3AP31%20wd%3AQ11344%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP1086%20%3Fprotons%20%3B%0A%20%20%20%20%20%20%20%20%20%20%20wdt%3AP246%20%3Fsymbol%20.%0A%7D%0A%0AORDER%20BY%20%3Fprotons)
      */
     static readonly elementTypes: string[] = ["H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar",
