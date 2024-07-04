@@ -124,7 +124,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         reactions.forEach(function (reaction, id) {
             // Get TransitionStates.
             //let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
-            let tss = reaction.getTransitionStates();
+            let rtss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel = reaction.getReactantsLabel();
             if (reactantsLabel != undefined) {
@@ -158,10 +158,10 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                         }
                     });
                     // Insert transition states.
-                    if (tss != undefined) {
-                        tss.forEach(function (ts, ref) {
+                    if (rtss != undefined) {
+                        rtss.forEach(function (ts, ref) {
                             let moleculeRef = ts.getMolecule().getRef();
-                            tss.set(moleculeRef, ts);
+                            tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
                             energyMin = (0, util_1.min)(energyMin, energy);
@@ -174,10 +174,10 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                     }
                 }
                 else {
-                    if (tss != undefined) {
-                        tss.forEach(function (ts, ref) {
+                    if (rtss != undefined) {
+                        rtss.forEach(function (ts, ref) {
                             let moleculeRef = ts.getMolecule().getRef();
-                            tss.set(moleculeRef, ts);
+                            tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
                             energyMin = (0, util_1.min)(energyMin, energy);
@@ -268,14 +268,15 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             //console.log("reaction=" + reaction);
             // Get TransitionState if there is one.
             //let tss: TransitionState[] = reaction.getTransitionStates();
-            let tss = reaction.getTransitionStates();
+            let rtss = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel = reaction.getReactantsLabel();
             let productsLabel = reaction.getProductsLabel();
             let reactantOutXY = (0, util_1.get)(reactantsOutXY, reactantsLabel);
             let productInXY = (0, util_1.get)(productsInXY, productsLabel);
-            if (tss.size > 0) {
-                tss.forEach(function (ts, ref) {
+            if (rtss.size > 0) {
+                //tss.forEach(function (ts, ref) {
+                rtss.forEach(function (ts, ref) {
                     let tsInXY = (0, util_1.get)(tssInXY, ref);
                     (0, canvas_1.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], tsInXY[0], tsInXY[1]);
                     let tsOutXY = (0, util_1.get)(tssOutXY, ref);

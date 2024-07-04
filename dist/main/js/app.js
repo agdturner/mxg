@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processPropertyScalarNumber = exports.addRemoveButton = exports.processNumber = exports.addOrRemoveInstructions = exports.addPropertyScalarNumber = exports.addProperty = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
-exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.setNumberNode = exports.setNumberArrayNode = exports.addAnyUnits = exports.processPropertyScalarString = void 0;
+exports.addRemoveButton = exports.processNumber = exports.addOrRemoveInstructions = exports.addPropertyScalarNumber = exports.addProperty = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
+exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.setNumberNode = exports.setNumberArrayNode = exports.addAnyUnits = exports.processPropertyScalarString = exports.processPropertyScalarNumber = void 0;
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
 const xml_molecule_js_1 = require("./xml_molecule.js");
@@ -475,6 +475,7 @@ function redrawReactionsDiagram() {
         (0, gui_reactionDiagram_js_1.drawReactionDiagram)(c, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     }
 }
+exports.redrawReactionsDiagram = redrawReactionsDiagram;
 /**
  * Redraw any scatterplots.
  */
@@ -740,7 +741,7 @@ function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, bo
     }
     let id = addRID(plDiv.id, p.dictRef);
     console.log("div ID " + id);
-    let div = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps), ps.setValue, () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
+    let div = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps), (value) => (0, gui_moleculeList_js_1.setPropertyScalarNumber)(p.dictRef, pl, ps, value), () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
     console.log("unitsID " + addRID(id, xml_molecule_js_1.PropertyScalarNumber.s_units));
     addAnyUnits(units, attributes, div, div.querySelector(exports.s_input), (0, util_js_1.getID)(id, xml_molecule_js_1.PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
     plDiv.appendChild(div);
@@ -773,12 +774,13 @@ exports.addOrRemoveInstructions = addOrRemoveInstructions;
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
+ * @returns A div element.
  */
 function processNumber(id, iDs, name, getter, setter, remover, marginComponent, margin) {
     let div = (0, html_js_1.createFlexDiv)(id, margin);
     let buttonTextContentSelected = name + exports.sy_selected;
     let buttonTextContentDeselected = name + exports.sy_deselected;
-    let idb = addRID(id, html_js_1.s_button);
+    let idb = addRID(id, name, html_js_1.s_button);
     iDs.add(idb);
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
@@ -799,14 +801,22 @@ function processNumber(id, iDs, name, getter, setter, remover, marginComponent, 
     // Add event listener for the button.
     button.addEventListener('click', (event) => {
         if (document.getElementById(inputId) == null) {
+            console.log("Adding " + inputId);
             addNumber(div, inputId, name, value, getter, setter, marginComponent);
+            // Invoke the setter function.
+            let input = div.querySelector(exports.s_input);
+            // Enact a change event on input.
+            input.value = value.toString();
+            let event = new Event('change');
+            input.dispatchEvent(event);
+            //setter;
             button.textContent = buttonTextContentSelected;
         }
         else {
-            // Remove existing.
+            // Remove existing HTMLElement.
             document.getElementById(inputId)?.remove();
-            // 
-            remover();
+            // Remove node.
+            remover;
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
         }
@@ -848,6 +858,7 @@ function addNumber(div, id, name, value, getter, setter, boundary) {
         (0, html_js_1.resizeInputElement)(target);
     });
     input.value = valueString;
+    //setter(new Big(valueString));
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
 }
@@ -1070,7 +1081,7 @@ function processPropertyScalarNumber(pl, p, units, molecule, element, plDiv, bou
                 redrawReactionsDiagram();
             }
         }.bind(ps);
-        let div = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue, () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
+        let div = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), (value) => (0, gui_moleculeList_js_1.setPropertyScalarNumber)(p.dictRef, pl, ps, value), () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
         addAnyUnits(units, psAttributes, div, div.querySelector(exports.s_input), addRID(plDiv.id, p.dictRef, xml_molecule_js_1.PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
         plDiv.appendChild(div);
     }

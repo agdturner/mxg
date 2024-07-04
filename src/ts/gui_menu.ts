@@ -198,13 +198,18 @@ export function createMenu(): HTMLDivElement {
     ldb.addEventListener('click', (event: MouseEvent) => {
         defaults.readFile();
     });
-    menuDiv.appendChild(ldb);
+    menuDiv.appendChild(ldb);    
 
     // Add Load MESMER File button.
     let s_Load: string = 'Load MESMER File';
     let lb = createButton(s_Load, addID(s_Load), boundary1);
     lb.addEventListener('click', (event: MouseEvent) => {
-        load();
+        // Alert the user that any changes will be lost unless saved, giving the option to save.
+        if (confirm('Any unsaved changes will be lost. Select OK to continue loading or Cancel to cancel.')) {
+            load();
+        } else {
+            return;
+        }
     });
     menuDiv.appendChild(lb);
 

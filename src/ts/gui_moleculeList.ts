@@ -1,22 +1,27 @@
 import Big from 'big.js';
-import { sy_add, s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addOptionByClassName, s_description, 
-    mesmer, s_save, remove, getMolecule, getMoleculeKeys, libmols, removeOptionByClassName, addOrRemoveInstructions, 
-    s_selectOption, selectAnotherOptionEventListener, sy_edit, sy_deselected, sy_selected, s_input, s_optionOff, s_optionOn, 
-    processNumber, addRemoveButton, processPropertyScalarNumber, setNumberNode, processPropertyScalarString, s_table, 
-    addSaveAsCSVButton, s_undefined, addAnyUnits, s_Add_from_library, IDManager, s_viewer } from './app.js';
+import {
+    sy_add, s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addOptionByClassName, s_description,
+    mesmer, s_save, remove, getMolecule, getMoleculeKeys, libmols, removeOptionByClassName, addOrRemoveInstructions,
+    s_selectOption, selectAnotherOptionEventListener, sy_edit, sy_deselected, sy_selected, s_input, s_optionOff, s_optionOn,
+    processNumber, addRemoveButton, processPropertyScalarNumber, setNumberNode, processPropertyScalarString, s_table,
+    addSaveAsCSVButton, s_undefined, addAnyUnits, s_Add_from_library, IDManager, s_viewer, big0, redrawReactionsDiagram
+} from './app.js';
 import { BathGas } from './xml_conditions.js';
 import {
     createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
     createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv,
     createLabelWithTextArea, resizeTextAreaElement, s_button, sy_upTriangle, sy_downTriangle, createTextArea,
-    createTable, addTableRow, s_select } from './html.js';
+    createTable, addTableRow, s_select
+} from './html.js';
 import { Description, Mesmer, MoleculeList, T } from './xml_mesmer.js';
 import { MetadataList, Metadata } from './xml_metadata.js';
-import { Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList, 
-    DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, ExtraDOSCMethod, FrequenciesScaleFactor, 
-    Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity, PotentialPoint, Property, PropertyArray, 
-    PropertyList, Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber, 
-    ThermoTable, ThermoValue, VibFreqs, ZPE } from './xml_molecule.js';
+import {
+    Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList,
+    DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, ExtraDOSCMethod, FrequenciesScaleFactor,
+    Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity, PotentialPoint, Property, PropertyArray,
+    PropertyList, PropertyScalarNumber, Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber,
+    ThermoTable, ThermoValue, VibFreqs, ZPE
+} from './xml_molecule.js';
 import { getID, isNumeric, mapToString } from './util.js';
 import { getSingularElement, getAttributes, getNodeValue, getFirstChildNode, getInputString } from './xml.js';
 import { get } from 'http';
@@ -69,14 +74,102 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         let plDivID: string = mIDM.addID(mDivID, PropertyList.tagName);
         let plDiv: HTMLDivElement = createDiv(plDivID);
         let plcDivID = mIDM.addID(plDivID, s_container);
-        let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, mDiv, null, plDiv, PropertyList.tagName, boundary1, level1);
-        // Add code to add propertyArray...
+        let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, mDiv, null, plDiv, PropertyList.tagName, boundary1, boundary1);
+        // Add properties.
+        let pl: PropertyList | undefined = m.getPropertyList();
+        if (pl == undefined) {
+            console.log("PropertyList is undefined for molecule " + m.getLabel());
+            pl = new PropertyList(new Map());
+            m.setPropertyList(pl);
+        }
+        console.log("pl.index.size" + pl.index.size);
+        // pIDs is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
+        let pIDs: Set<string> = new Set<string>();
+        // "me:ZPE", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, ZPE.dictRef, Mesmer.energyUnits);
+        console.log("pl.index.size" + pl.index.size);
+        //console.log("Property " + m.getPropertyList()!.getProperty(ZPE.dictRef)?.toString);
+        // "me:Hf0", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, Hf0.dictRef, Mesmer.energyUnits);
+        // "me:HfAT0", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, HfAT0.dictRef, Mesmer.energyUnits);
+        // "me:Hf298", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, Hf298.dictRef, Mesmer.energyUnits);
+        // "me:rotConsts", array, Mesmer.frequencyUnits.
+        // "me:symmetryNumber", scalar, No units.
+        // "me:TSOpticalSymmetryNumber", scalar, No units.
+        // "me:frequenciesScaleFactor", scalar, No units.
+        // "me:vibFreqs", array, cm-1.
+        // "me:MW", scalar, amu.
+        // "me:spinMultiplicity", scalar, No units.
+        // "me:epsilon", scalar, K (fixed).
+        // "me:sigma", scalar, Å (fixed).
+        // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
+        // "me:EinsteinAij", array, s-1 (fixed).
+        // "me:EinsteinBij", array, m3/J/s2 (fixed).
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     });
     return addMoleculeButton;
+}
+
+/**
+ * @param m The molecule.
+ * @param pIDs The property IDs.
+ * @param plDiv The PropertyList HTMLDivElement.
+ * @param pl The PropertyList.
+ * @param dictRef The dictRef.
+ * @param units The units. 
+ */
+function addPropertyScalarNumber(m: Molecule, pIDs: Set<string>, plDiv: HTMLDivElement, pl: PropertyList, dictRef: string, units: string[]): void {
+    let pAttributes: Map<string, string>;
+    let psAttributes: Map<string, string>;
+    let ps: PropertyScalarNumber;
+    let p: Property;
+    let div: HTMLDivElement;
+    pAttributes = new Map();
+    pAttributes.set(Property.s_dictRef, dictRef);
+    psAttributes = new Map();
+    psAttributes.set(PropertyScalarNumber.s_units, units[0]);
+    ps = new PropertyScalarNumber(psAttributes, big0);
+    p = new Property(pAttributes, ps);
+    m.getPropertyList()!.setProperty(p);
+    console.log("pl.index.size" + pl.index.size);
+    div = processNumber(plDiv.id, pIDs, dictRef, ps.getValue.bind(ps),
+        (value: Big) => setPropertyScalarNumber(dictRef, pl, ps, value),
+        () => pl!.removeProperty(p.dictRef), boundary1, level1);
+    addAnyUnits(units, psAttributes, div, div.querySelector(s_input) as HTMLElement,
+        addRID(plDiv.id, dictRef, PropertyScalarNumber.s_units), dictRef, boundary1, boundary1);
+    plDiv.appendChild(div);
+    // Deselect
+    let b: HTMLButtonElement | null = div.querySelector(s_button);
+    b!.click();
+}
+
+/**
+ * 
+ * @param p The property.
+ * @param ps The property scalar number.
+ */
+export function setPropertyScalarNumber(dictRef: string, pl: PropertyList, ps: PropertyScalarNumber, value: Big): void {
+    if (pl.getProperty(dictRef) == undefined) {
+        let pAttributes: Map<string, string>;
+        let p: Property;
+        pAttributes = new Map();
+        pAttributes.set(Property.s_dictRef, dictRef);
+        p = new Property(pAttributes, ps);
+        pl.setProperty(p);
+        console.log("Set property " + dictRef);
+    } else {
+        console.log("Property " + dictRef + " already exists.");
+    }
+    console.log("Value " + ps.getValue()); console.log("Value " + ps.getValue());
+    ps.setValue.bind(ps)(value); // replace 'value' with the actual value you want to set
+    console.log("Value " + ps.getValue());
+    ps.setValue.bind(ps);
+    console.log("Value " + ps.getValue());
 }
 
 /**
@@ -182,7 +275,25 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let plDiv: HTMLDivElement = createDiv(plDivID);
             let plcDivID = mIDM.addID(plDivID, s_container);
             let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, moleculeDiv, null, plDiv, PropertyList.tagName, boundary1, level1);
+
+
             // Add code to add propertyArray...
+            let pap: Set<string> = new Set(PropertyArray.propertyDictRefs);
+            let pl: PropertyList = molecule.getPropertyList()!;
+            // Add Properties not in xml_ps.
+            let pIDs: Set<string> = new Set<string>();
+            console.log("Molecule " + molecule.getDescription());
+            console.log("pap.size=" + pap.size);
+            pap.forEach(function (dictRef) {
+                console.log("dictRef=" + dictRef);
+                if (pl.getProperty(dictRef) != undefined) {
+                    if (dictRef == ZPE.dictRef || dictRef == Hf0.dictRef || dictRef == HfAT0.dictRef || dictRef == Hf298.dictRef) {
+                        addPropertyScalarNumber(molecule, pIDs, plDiv, pl, dictRef, Mesmer.energyUnits);
+                    }
+                }
+            });
+
+
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -204,7 +315,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
-export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: Molecule | undefined, 
+export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: Molecule | undefined,
     molecules: Map<string, Molecule>): string {
     while (true) {
         // Ask the user to specify the molecule ID.
@@ -462,6 +573,8 @@ function processElementType(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, aIDs
  * Process atom coordinates.
  * @param a The atom.
  * @param aDiv The atom div.
+ * @param aIDs The atom ids.
+ * @param marginComponent The margin for the components.
  * @param margin The margin.
  */
 function processCoordinates(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, aIDs: Set<string>,
@@ -705,7 +818,7 @@ function processUseSineTerms(mIDM: IDManager, hrpDiv: HTMLDivElement, hrp: Hinde
  * @param xml The XML.
  * @returns The HTMLDivElement.
  */
-export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, 
+export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
     molecules: Map<string, Molecule>): HTMLDivElement {
     // Create div to contain the molecules list.
     let mlDiv: HTMLDivElement = createDiv(undefined, boundary1);
@@ -893,54 +1006,17 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
             pl.setProperty(p);
         }
 
-        /* This code is currently commented out as it is not wanted yet. The idea is that  
-        properties would be selectable a bit like controls, and all those not loaded in a 
-        file would be deselected and selectable. As there could be additional properties 
-        in future or that are not known about, some way of adding these will likely also be 
-        wanted...
         // Add Properties not in xml_ps.
+        let pIDs: Set<string> = new Set<string>();
         console.log("Molecule " + m.getDescription());
         console.log("pap.size=" + pap.size);
         pap.forEach(function (dictRef) {
             console.log("dictRef=" + dictRef);
-            let attributes: Map<string, string> = new Map();
-            attributes.set(Property.s_dictRef, dictRef);
-            if (dictRef == "me:Hf0") {
-                let vs: string = "";
-                if (defaults != undefined) {
-                    vs = defaults.values.get(dictRef) ?? "";
-                }
-                let value: Big;
-                try {
-                    value = new Big(vs);
-                } catch (e) {
-                    value = new Big("0");
-                }
-                let s_attributes: Map<string, string> = new Map();
-                s_attributes.set("units", "kJ/mol");
-                let ps: PropertyScalarNumber = new PropertyScalarNumber(s_attributes, value);
-                let p: Property = new Hf0(attributes, ps);
-
-                let iDs: Set<string> = new Set();
-
-                //attributes.set(Hf0.s_units, "kJ/mol");
-                addPropertyScalarNumber(s_attributes, iDs, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
-                pl.setProperty(p);
-                
-                } else if (dictRef == "me:ZPE") {
-                    let value: Big = new Big("0");
-                    let ps: PropertyScalar = new PropertyScalar(new Map(), value);
-                    //let ps: PropertyScalar = new PropertyScalar(new Map(), defaults.get(dictRef));
-                    let p: Property = new ZPE(attributes, ps);
-                    //plDiv.appendChild(addProperty(dictRef, ps, addID(plDivID, dictRef), boundary1, level1));
- 
-                    addPropertyScalar(attributes, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
- 
-                    pl.setProperty(p);
-                
+            if (dictRef == ZPE.dictRef) {
+                addPropertyScalarNumber(m, pIDs, plDiv, pl, ZPE.dictRef, Mesmer.energyUnits);
             }
         });
-        */
+
         // Organise EnergyTransferModel.
         let xml_etms: HTMLCollectionOf<Element> | null = xml_ms[i].getElementsByTagName(EnergyTransferModel.tagName);
         if (xml_etms.length > 0) {
@@ -1306,7 +1382,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager,
  * @param mDivID The molecule div ID.
  * @param m The molecule.
  */
-function removeMolecule(mlDiv: HTMLDivElement, mcDiv: HTMLDivElement, mIDM: IDManager, 
+function removeMolecule(mlDiv: HTMLDivElement, mcDiv: HTMLDivElement, mIDM: IDManager,
     molecules: Map<string, Molecule>, mDivID: string, m: Molecule) {
     mlDiv.removeChild(mcDiv);
     //mlDiv.removeChild(mDiv);

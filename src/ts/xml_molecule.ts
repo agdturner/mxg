@@ -1337,7 +1337,8 @@ export class PropertyList extends NodeWithNodes {
         if (i != undefined) {
             return this.nodes.get(i) as Property;
         } else {
-            throw new Error('Property ' + dictRef + ' does not exist');
+            //throw new Error('Property ' + dictRef + ' does not exist');
+            return undefined;
         }
     }
 
@@ -1348,7 +1349,7 @@ export class PropertyList extends NodeWithNodes {
     setProperty(property: Property): void {
         let i: number | undefined = this.index.get(property.dictRef);
         if (i == undefined) {
-            //console.log('Property ' + property.dictRef + ' does not exist, adding...');
+            console.log('Property ' + property.dictRef + ' does not exist, adding...');
             this.nodes.set(this.nodes.size, property);
             this.index.set(property.dictRef, this.nodes.size - 1);
         } else {
@@ -3018,10 +3019,11 @@ export class Molecule extends NodeWithNodes {
     /**
      * Set the property.
      * @param p The property.
-     */
+     *
     setProperty(p: Property): void {
+        console.log("setProperty " + p.toString() + " in Molecule.");
         this.getPropertyList()!.setProperty(p);
-    }
+    }*/
 
     /**
      * @param atomId The id of the atom.

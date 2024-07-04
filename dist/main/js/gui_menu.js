@@ -191,7 +191,13 @@ function createMenu() {
     let s_Load = 'Load MESMER File';
     let lb = (0, html_js_1.createButton)(s_Load, (0, app_js_1.addID)(s_Load), app_js_1.boundary1);
     lb.addEventListener('click', (event) => {
-        (0, app_js_1.load)();
+        // Alert the user that any changes will be lost unless saved, giving the option to save.
+        if (confirm('Any unsaved changes will be lost. Select OK to continue loading or Cancel to cancel.')) {
+            (0, app_js_1.load)();
+        }
+        else {
+            return;
+        }
     });
     menuDiv.appendChild(lb);
     /* Add style/theme option buttons.

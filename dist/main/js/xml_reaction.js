@@ -4,6 +4,7 @@ exports.Reaction = exports.CanonicalRateList = exports.Kinf = exports.Keq = expo
 const big_js_1 = require("big.js");
 const xml_js_1 = require("./xml.js");
 const xml_mesmer_js_1 = require("./xml_mesmer.js");
+const app_js_1 = require("./app.js");
 /**
  * A reference to a molecule, not to be confused with a Molecule.
  * The attribute "ref" is the same as a Molecule ID for a molecule in the XML "moleculeList".
@@ -1206,7 +1207,12 @@ class Reaction extends xml_js_1.NodeWithNodes {
             //console.log("ref=\"" + ref + "\"");
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${ref} not found`);
+                console.log("molecule with ref " + ref + " not found");
+                // Create alert user to add the molecule to the list of molecules.
+                alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules. \
+                 In the meantime it will be treated ashaving an energy of 0.");
+                //throw new Error(`Molecule with ref ${ref} not found`);
+                return app_js_1.big0;
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new big_js_1.Big(0));
