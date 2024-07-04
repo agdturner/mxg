@@ -56,7 +56,7 @@ import Big from 'big.js';
 import { Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population, PopulationList, RateList } from './xml_analysis.js';
 import { DCCreator, MetadataList, DCSource, DCDate, DCContributor, Metadata } from './xml_metadata.js';
 import { Defaults } from './defaults.js';
-import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList } from './gui_moleculeList.js';
+import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList, setPropertyScalarNumber } from './gui_moleculeList.js';
 import { getAddReactionButton, processReactionList } from './gui_reactionList.js';
 import { createAddConditionsButton, processConditions } from './gui_ConditionsList.js';
 import { createAddModelParametersButton, processModelParameters } from './gui_ModelParametersList.js';
@@ -557,7 +557,7 @@ function createTitle(title: string, attributes: Map<string, string>) {
 /**
  * Redraw the reactions diagram.
  */
-function redrawReactionsDiagram() {
+export function redrawReactionsDiagram() {
     if (rdWindow == null) {
         let rdCanvas: HTMLCanvasElement = document.getElementById(rdcID) as HTMLCanvasElement;
         drawReactionDiagram(rdCanvas, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
@@ -853,7 +853,8 @@ export function addPropertyScalarNumber(attributes: Map<string, string>, iDs: Se
     }
     let id: string = addRID(plDiv.id, p.dictRef);
     console.log("div ID " + id);
-    let div: HTMLDivElement = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
+    let div: HTMLDivElement = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps),
+        (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
         () => pl.removeProperty(p.dictRef), boundary1, level1);
     console.log("unitsID " + addRID(id, PropertyScalarNumber.s_units));
     addAnyUnits(units, attributes, div, div.querySelector(s_input) as HTMLElement, getID(id, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
@@ -886,6 +887,7 @@ export function addOrRemoveInstructions(options: string[], add: boolean): void {
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
+ * @returns A div element.
  */
 export function processNumber(id: string, iDs: Set<string>, name: string,
     getter: () => Big | undefined, setter: (value: Big) => void, remover: () => void,
@@ -894,7 +896,7 @@ export function processNumber(id: string, iDs: Set<string>, name: string,
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let idb = addRID(id, s_button);
+    let idb = addRID(id, name, s_button);
     iDs.add(idb);
     let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
@@ -914,13 +916,21 @@ export function processNumber(id: string, iDs: Set<string>, name: string,
     // Add event listener for the button.
     button.addEventListener('click', (event: MouseEvent) => {
         if (document.getElementById(inputId) == null) {
+            console.log("Adding " + inputId);
             addNumber(div, inputId, name, value, getter, setter, marginComponent);
+            // Invoke the setter function.
+            let input: HTMLInputElement = div.querySelector(s_input) as HTMLInputElement;
+            // Enact a change event on input.
+            input.value = value!.toString();
+            let event = new Event('change');
+            input.dispatchEvent(event);
+            //setter;
             button.textContent = buttonTextContentSelected;
         } else {
-            // Remove existing.
+            // Remove existing HTMLElement.
             document.getElementById(inputId)?.remove();
-            // 
-            remover();
+            // Remove node.
+            remover;
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
         }
@@ -962,6 +972,9 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
         resizeInputElement(target);
     });
     input.value = valueString;
+
+    //setter(new Big(valueString));
+
     resizeInputElement(input);
     div.appendChild(input);
 }
@@ -1202,7 +1215,8 @@ export function processPropertyScalarNumber(pl: PropertyList, p: Property, units
                 redrawReactionsDiagram();
             }
         }.bind(ps);
-        let div: HTMLDivElement = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
+        let div: HTMLDivElement = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps),
+            (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
             () => pl.removeProperty(p.dictRef), boundary1, level1);
         addAnyUnits(units, psAttributes, div, div.querySelector(s_input) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
         plDiv.appendChild(div);

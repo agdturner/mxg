@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.create3DViewer = exports.processMoleculeList = exports.setMoleculeID = exports.getAddFromLibraryButton = exports.getAddMoleculeButton = void 0;
+exports.create3DViewer = exports.processMoleculeList = exports.setMoleculeID = exports.getAddFromLibraryButton = exports.setPropertyScalarNumber = exports.getAddMoleculeButton = void 0;
 const big_js_1 = __importDefault(require("big.js"));
 const app_js_1 = require("./app.js");
 const xml_conditions_js_1 = require("./xml_conditions.js");
@@ -59,8 +59,39 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         let plDivID = mIDM.addID(mDivID, xml_molecule_js_1.PropertyList.tagName);
         let plDiv = (0, html_js_1.createDiv)(plDivID);
         let plcDivID = mIDM.addID(plDivID, app_js_1.s_container);
-        let plcDiv = (0, html_js_1.getCollapsibleDiv)(plcDivID, mDiv, null, plDiv, xml_molecule_js_1.PropertyList.tagName, app_js_1.boundary1, app_js_1.level1);
-        // Add code to add propertyArray...
+        let plcDiv = (0, html_js_1.getCollapsibleDiv)(plcDivID, mDiv, null, plDiv, xml_molecule_js_1.PropertyList.tagName, app_js_1.boundary1, app_js_1.boundary1);
+        // Add properties.
+        let pl = m.getPropertyList();
+        if (pl == undefined) {
+            console.log("PropertyList is undefined for molecule " + m.getLabel());
+            pl = new xml_molecule_js_1.PropertyList(new Map());
+            m.setPropertyList(pl);
+        }
+        console.log("pl.index.size" + pl.index.size);
+        // pIDs is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
+        let pIDs = new Set();
+        // "me:ZPE", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.ZPE.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
+        console.log("pl.index.size" + pl.index.size);
+        //console.log("Property " + m.getPropertyList()!.getProperty(ZPE.dictRef)?.toString);
+        // "me:Hf0", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.Hf0.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
+        // "me:HfAT0", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.HfAT0.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
+        // "me:Hf298", scalar, Mesmer.energyUnits.
+        addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.Hf298.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
+        // "me:rotConsts", array, Mesmer.frequencyUnits.
+        // "me:symmetryNumber", scalar, No units.
+        // "me:TSOpticalSymmetryNumber", scalar, No units.
+        // "me:frequenciesScaleFactor", scalar, No units.
+        // "me:vibFreqs", array, cm-1.
+        // "me:MW", scalar, amu.
+        // "me:spinMultiplicity", scalar, No units.
+        // "me:epsilon", scalar, K (fixed).
+        // "me:sigma", scalar, Å (fixed).
+        // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
+        // "me:EinsteinAij", array, s-1 (fixed).
+        // "me:EinsteinBij", array, m3/J/s2 (fixed).
         // Add a remove molecule button.
         (0, app_js_1.addRemoveButton)(mDiv, app_js_1.level1, () => {
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
@@ -69,6 +100,61 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     return addMoleculeButton;
 }
 exports.getAddMoleculeButton = getAddMoleculeButton;
+/**
+ * @param m The molecule.
+ * @param pIDs The property IDs.
+ * @param plDiv The PropertyList HTMLDivElement.
+ * @param pl The PropertyList.
+ * @param dictRef The dictRef.
+ * @param units The units.
+ */
+function addPropertyScalarNumber(m, pIDs, plDiv, pl, dictRef, units) {
+    let pAttributes;
+    let psAttributes;
+    let ps;
+    let p;
+    let div;
+    pAttributes = new Map();
+    pAttributes.set(xml_molecule_js_1.Property.s_dictRef, dictRef);
+    psAttributes = new Map();
+    psAttributes.set(xml_molecule_js_1.PropertyScalarNumber.s_units, units[0]);
+    ps = new xml_molecule_js_1.PropertyScalarNumber(psAttributes, app_js_1.big0);
+    p = new xml_molecule_js_1.Property(pAttributes, ps);
+    m.getPropertyList().setProperty(p);
+    console.log("pl.index.size" + pl.index.size);
+    div = (0, app_js_1.processNumber)(plDiv.id, pIDs, dictRef, ps.getValue.bind(ps), (value) => setPropertyScalarNumber(dictRef, pl, ps, value), () => pl.removeProperty(p.dictRef), app_js_1.boundary1, app_js_1.level1);
+    (0, app_js_1.addAnyUnits)(units, psAttributes, div, div.querySelector(app_js_1.s_input), (0, app_js_1.addRID)(plDiv.id, dictRef, xml_molecule_js_1.PropertyScalarNumber.s_units), dictRef, app_js_1.boundary1, app_js_1.boundary1);
+    plDiv.appendChild(div);
+    // Deselect
+    let b = div.querySelector(html_js_1.s_button);
+    b.click();
+}
+/**
+ *
+ * @param p The property.
+ * @param ps The property scalar number.
+ */
+function setPropertyScalarNumber(dictRef, pl, ps, value) {
+    if (pl.getProperty(dictRef) == undefined) {
+        let pAttributes;
+        let p;
+        pAttributes = new Map();
+        pAttributes.set(xml_molecule_js_1.Property.s_dictRef, dictRef);
+        p = new xml_molecule_js_1.Property(pAttributes, ps);
+        pl.setProperty(p);
+        console.log("Set property " + dictRef);
+    }
+    else {
+        console.log("Property " + dictRef + " already exists.");
+    }
+    console.log("Value " + ps.getValue());
+    console.log("Value " + ps.getValue());
+    ps.setValue.bind(ps)(value); // replace 'value' with the actual value you want to set
+    console.log("Value " + ps.getValue());
+    ps.setValue.bind(ps);
+    console.log("Value " + ps.getValue());
+}
+exports.setPropertyScalarNumber = setPropertyScalarNumber;
 /**
  * Create an add from library button.
  * @param mlDiv The MoleculeList HTMLDivElement.
@@ -169,6 +255,20 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let plcDivID = mIDM.addID(plDivID, app_js_1.s_container);
             let plcDiv = (0, html_js_1.getCollapsibleDiv)(plcDivID, moleculeDiv, null, plDiv, xml_molecule_js_1.PropertyList.tagName, app_js_1.boundary1, app_js_1.level1);
             // Add code to add propertyArray...
+            let pap = new Set(xml_molecule_js_1.PropertyArray.propertyDictRefs);
+            let pl = molecule.getPropertyList();
+            // Add Properties not in xml_ps.
+            let pIDs = new Set();
+            console.log("Molecule " + molecule.getDescription());
+            console.log("pap.size=" + pap.size);
+            pap.forEach(function (dictRef) {
+                console.log("dictRef=" + dictRef);
+                if (pl.getProperty(dictRef) != undefined) {
+                    if (dictRef == xml_molecule_js_1.ZPE.dictRef || dictRef == xml_molecule_js_1.Hf0.dictRef || dictRef == xml_molecule_js_1.HfAT0.dictRef || dictRef == xml_molecule_js_1.Hf298.dictRef) {
+                        addPropertyScalarNumber(molecule, pIDs, plDiv, pl, dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
+                    }
+                }
+            });
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -433,6 +533,8 @@ function processElementType(mIDM, a, aDiv, aIDs, first, margin) {
  * Process atom coordinates.
  * @param a The atom.
  * @param aDiv The atom div.
+ * @param aIDs The atom ids.
+ * @param marginComponent The margin for the components.
  * @param margin The margin.
  */
 function processCoordinates(mIDM, a, aDiv, aIDs, marginComponent, margin) {
@@ -841,54 +943,16 @@ function processMoleculeList(xml, mIDM, molecules) {
             let p = createProperty(pap, pl, xml_ps[j], plDiv, m, app_js_1.boundary1, app_js_1.level1);
             pl.setProperty(p);
         }
-        /* This code is currently commented out as it is not wanted yet. The idea is that
-        properties would be selectable a bit like controls, and all those not loaded in a
-        file would be deselected and selectable. As there could be additional properties
-        in future or that are not known about, some way of adding these will likely also be
-        wanted...
         // Add Properties not in xml_ps.
+        let pIDs = new Set();
         console.log("Molecule " + m.getDescription());
         console.log("pap.size=" + pap.size);
         pap.forEach(function (dictRef) {
             console.log("dictRef=" + dictRef);
-            let attributes: Map<string, string> = new Map();
-            attributes.set(Property.s_dictRef, dictRef);
-            if (dictRef == "me:Hf0") {
-                let vs: string = "";
-                if (defaults != undefined) {
-                    vs = defaults.values.get(dictRef) ?? "";
-                }
-                let value: Big;
-                try {
-                    value = new Big(vs);
-                } catch (e) {
-                    value = new Big("0");
-                }
-                let s_attributes: Map<string, string> = new Map();
-                s_attributes.set("units", "kJ/mol");
-                let ps: PropertyScalarNumber = new PropertyScalarNumber(s_attributes, value);
-                let p: Property = new Hf0(attributes, ps);
-
-                let iDs: Set<string> = new Set();
-
-                //attributes.set(Hf0.s_units, "kJ/mol");
-                addPropertyScalarNumber(s_attributes, iDs, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
-                pl.setProperty(p);
-                
-                } else if (dictRef == "me:ZPE") {
-                    let value: Big = new Big("0");
-                    let ps: PropertyScalar = new PropertyScalar(new Map(), value);
-                    //let ps: PropertyScalar = new PropertyScalar(new Map(), defaults.get(dictRef));
-                    let p: Property = new ZPE(attributes, ps);
-                    //plDiv.appendChild(addProperty(dictRef, ps, addID(plDivID, dictRef), boundary1, level1));
- 
-                    addPropertyScalar(attributes, value, Mesmer.energyUnits, pl, p, plDiv, boundary1);
- 
-                    pl.setProperty(p);
-                
+            if (dictRef == xml_molecule_js_1.ZPE.dictRef) {
+                addPropertyScalarNumber(m, pIDs, plDiv, pl, xml_molecule_js_1.ZPE.dictRef, xml_mesmer_js_1.Mesmer.energyUnits);
             }
         });
-        */
         // Organise EnergyTransferModel.
         let xml_etms = xml_ms[i].getElementsByTagName(xml_molecule_js_1.EnergyTransferModel.tagName);
         if (xml_etms.length > 0) {

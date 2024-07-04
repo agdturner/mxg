@@ -1212,7 +1212,8 @@ class PropertyList extends xml_js_1.NodeWithNodes {
             return this.nodes.get(i);
         }
         else {
-            throw new Error('Property ' + dictRef + ' does not exist');
+            //throw new Error('Property ' + dictRef + ' does not exist');
+            return undefined;
         }
     }
     /**
@@ -1222,7 +1223,7 @@ class PropertyList extends xml_js_1.NodeWithNodes {
     setProperty(property) {
         let i = this.index.get(property.dictRef);
         if (i == undefined) {
-            //console.log('Property ' + property.dictRef + ' does not exist, adding...');
+            console.log('Property ' + property.dictRef + ' does not exist, adding...');
             this.nodes.set(this.nodes.size, property);
             this.index.set(property.dictRef, this.nodes.size - 1);
         }
@@ -2729,10 +2730,11 @@ class Molecule extends xml_js_1.NodeWithNodes {
     /**
      * Set the property.
      * @param p The property.
-     */
-    setProperty(p) {
-        this.getPropertyList().setProperty(p);
-    }
+     *
+    setProperty(p: Property): void {
+        console.log("setProperty " + p.toString() + " in Molecule.");
+        this.getPropertyList()!.setProperty(p);
+    }*/
     /**
      * @param atomId The id of the atom.
      * @returns The atom for the given atomId.

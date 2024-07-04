@@ -79,7 +79,8 @@ export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcH
  * @param molecules The molecules.
  * @param reactions The reactions.
  */
-export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight: number, dark: boolean, font: string, lw: number, lwc: number,
+export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight: number, dark: boolean, 
+    font: string, lw: number, lwc: number,
     molecules: Map<string, Molecule>, reactions: Map<string, Reaction>): void {
     console.log("drawReactionDiagram");
     if (canvas != null && reactions.size > 0) {
@@ -125,7 +126,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         reactions.forEach(function (reaction, id) {
             // Get TransitionStates.
             //let reactionTransitionStates: TransitionState[] = reaction.getTransitionStates();
-            let tss: Map<string, TransitionState> = reaction.getTransitionStates();
+            let rtss: Map<string, TransitionState> = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel: string | undefined = reaction.getReactantsLabel();
             if (reactantsLabel != undefined) {
@@ -159,10 +160,10 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                         }
                     });
                     // Insert transition states.
-                    if (tss != undefined) {
-                        tss.forEach(function (ts, ref) {
+                    if (rtss != undefined) {
+                        rtss.forEach(function (ts, ref) {
                             let moleculeRef: string = ts.getMolecule().getRef();
-                            tss.set(moleculeRef, ts);
+                            tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
                             energyMin = min(energyMin, energy);
@@ -174,10 +175,10 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                         i++
                     }
                 } else {
-                    if (tss != undefined) {
-                        tss.forEach(function (ts, ref) {
+                    if (rtss != undefined) {
+                        rtss.forEach(function (ts, ref) {
                             let moleculeRef: string = ts.getMolecule().getRef();
-                            tss.set(moleculeRef, ts);
+                            tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
                             energyMin = min(energyMin, energy);
@@ -268,15 +269,16 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
             //console.log("reaction=" + reaction);
             // Get TransitionState if there is one.
             //let tss: TransitionState[] = reaction.getTransitionStates();
-            let tss: Map<string, TransitionState> = reaction.getTransitionStates();
+            let rtss: Map<string, TransitionState> = reaction.getTransitionStates();
             //console.log("reactant=" + reactant);
             let reactantsLabel: string | undefined = reaction.getReactantsLabel();
             let productsLabel: string | undefined = reaction.getProductsLabel();
             let reactantOutXY: number[] = get(reactantsOutXY, reactantsLabel);
             let productInXY: number[] = get(productsInXY, productsLabel);
-            if (tss.size > 0) {
-                tss.forEach(function (ts, ref) {
-                    let tsInXY: number[] = get(tssInXY, ref);
+            if (rtss.size > 0) {
+                //tss.forEach(function (ts, ref) {
+                rtss.forEach(function (ts, ref) {
+                        let tsInXY: number[] = get(tssInXY, ref);
                     drawLine(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], tsInXY[0],
                         tsInXY[1]);
                     let tsOutXY: number[] = get(tssOutXY, ref);

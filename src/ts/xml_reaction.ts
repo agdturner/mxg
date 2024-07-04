@@ -2,6 +2,7 @@ import { Big } from 'big.js';
 import { Molecule, ZPE } from './xml_molecule.js';
 import { TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode, getAttribute } from './xml.js';
 import { Description, T } from './xml_mesmer.js';
+import { big0 } from './app.js';
 
 /**
  * A reference to a molecule, not to be confused with a Molecule.
@@ -1303,7 +1304,12 @@ export class Reaction extends NodeWithNodes {
             //console.log("ref=\"" + ref + "\"");
             let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                throw new Error(`Molecule with ref ${ref} not found`);
+                console.log("molecule with ref " + ref + " not found");
+                // Create alert user to add the molecule to the list of molecules.
+                alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules. \
+                 In the meantime it will be treated ashaving an energy of 0.");
+                //throw new Error(`Molecule with ref ${ref} not found`);
+                return big0;
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new Big(0));
