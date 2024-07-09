@@ -1,6 +1,6 @@
 import { Big } from 'big.js';
 import { RangeNode } from './xml_range.js';
-import { get } from './util.js';
+import { get, mapToString } from './util.js';
 import { TagWithAttributes, NodeWithNodes, NumberArrayNode, NumberNode, StringNode } from './xml.js';
 import { Description, T } from './xml_mesmer.js';
 import { MetadataList } from './xml_metadata.js';
@@ -620,7 +620,7 @@ export class BondArray extends NodeWithNodes {
 }
 
 /**
- * In the XML, a "scalar" node is a child of a "property" node.
+ * This is for representing an unknown type of property that might be present in some loaded XML.
  */
 export class PropertyScalarString extends StringNode {
 
@@ -654,7 +654,7 @@ export class PropertyScalarString extends StringNode {
 }
 
 /**
- * In the XML, a "scalar" node is a child of a "property" node.
+ * In the XML, a "scalar" node has a "property" node parent.
  * The attributes may contain "units".
  */
 export class PropertyScalarNumber extends NumberNode {
@@ -668,6 +668,13 @@ export class PropertyScalarNumber extends NumberNode {
      * The key for the units attribute.
      */
     static readonly s_units: string = "units";
+
+    /**
+     * The property dictionary references.
+     */
+    static readonly propertyDictRefs: Set<string> = new Set(["me:ZPE", "me:Hf0", "me:HfAT0", "me:Hf298",
+        "me:symmetryNumber", "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:MW", 
+        "me:spinMultiplicity", "me:epsilon", "me:sigma"]);
 
     /**
      * @param attributes The attributes.
@@ -713,27 +720,9 @@ export class PropertyScalarNumber extends NumberNode {
 }
 
 /**
+ * In the XML, an "array" node has a "property" node parent.
  * The attributes may contain "units".
  * In the XML, an "array" node is a child of a "property" node.
- * The "property" nodes of a PropertyArray may be a "scalar", "array", or "matrix" type.
- * The different kinds of "property" nodes are listed below from Table 1 of the Mesmer User Manual:
- * dictRef, value, units, Inserted from defaults.xml if absent
- * "me:ZPE", scalar, Mesmer.energyUnits, No
- * "me:Hf0", scalar, Mesmer.energyUnits, No
- * "me:HfAT0", scalar, Mesmer.energyUnits, No 
- * "me:Hf298", scalar, Mesmer.energyUnits, No
- * "me:rotConsts", array, Mesmer.frequencyUnits, No
- * "me:symmetryNumber", scalar, No units, Yes (1)
- * "me:TSOpticalSymmetryNumber", scalar, No units, Yes (1)
- * "me:frequenciesScaleFactor", scalar, No units, Yes (1.0)
- * "me:vibFreqs", array, cm-1, No
- * "me:MW", scalar, amu, No
- * "me:spinMultiplicity", scalar, No units, Yes (1)
- * "me:epsilon", scalar, K (fixed), Yes (50)
- * "me:sigma", scalar, Å (fixed), Yes (5)
- * "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2, No
- * "me:EinsteinAij", array, s-1 (fixed), No
- * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 export class PropertyArray extends NumberArrayNode {
 
@@ -747,9 +736,10 @@ export class PropertyArray extends NumberArrayNode {
      */
     static readonly s_units: string = "units";
 
-    static readonly propertyDictRefs: Set<string> = new Set(["me:ZPE", "me:Hf0", "me:HfAT0", "me:Hf298", "me:rotConsts", "me:symmetryNumber",
-        "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:vibFreqs", "me:MW", "me:spinMultiplicity", "me:epsilon", "me:sigma",
-        "me:hessian", "me:EinsteinAij", "me:EinsteinBij"]);
+    /**
+     * The property dictionary references.
+     */
+    static readonly propertyDictRefs: Set<string> = new Set(["me:rotConsts", "me:vibFreqs", "me:EinsteinAij", "me:EinsteinBij"]);
 
     /**
      * @param attributes The attributes.
@@ -777,9 +767,22 @@ export class PropertyArray extends NumberArrayNode {
             }
         }
     }
+
+    /**
+     * Sets the size of the array.
+     * @param size The size of the array.
+     */
+    setSize(size: number): void {
+        let values: Big[] = [];
+        for (let i = 0; i < size; i++) {
+            values.push(new Big(0));
+        }
+        this.setValues(values);
+    }
 }
 
 /**
+ * In the XML, a "matrix" node has a "property" node parent.
  * The attributes may contain:
  * "rows"
  * "matrixType" with known values [quareSymmetricLT].
@@ -809,6 +812,11 @@ export class PropertyMatrix extends NumberArrayNode {
     static readonly s_units: string = "units";
 
     /**
+     * The property dictionary references.
+     */
+    static readonly propertyDictRefs: Set<string> = new Set(["me:hessian"]);
+
+    /**
      * @param attributes The attributes.
      * @param values The values.
      * @param delimiter The delimiter of the values (Optional - default will be ",").
@@ -834,11 +842,46 @@ export class PropertyMatrix extends NumberArrayNode {
             }
         }
     }
+
+    /**
+     * Sets the size of the array.
+     * @param rows The number of rows in the matrix.
+     * @param columns The number of columns in the matrix.
+     */
+    setSize(rows: number, columns: number): void {
+        let values: Big[] = [];
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < columns; j++) {
+                values.push(new Big(0));
+            }
+        }
+        this.setValues(values);
+    }
 }
 
 /**
+ * In the XML, a "property" node has a "propertyList" parent and has either a "scalar", "array", "matrix"
+ * or other not yet implemented child node type).
+ * So, the "property" nodes of a PropertyArray may be a "scalar", "array", or "matrix" type.
  * The attributes must contain "dictRef" which is a dictionary reference for a type of property.
- * In the XML, a "property" node has a "propertyList" parent and either a "scalar", "array", "matrix" or other not yet implemented child type).
+ * The different kinds of "property" nodes are listed below from Table 1 of the Mesmer User Manual:
+ * dictRef, value, units, Inserted from defaults.xml if absent
+ * "me:ZPE", scalar, Mesmer.energyUnits, No
+ * "me:Hf0", scalar, Mesmer.energyUnits, No
+ * "me:HfAT0", scalar, Mesmer.energyUnits, No 
+ * "me:Hf298", scalar, Mesmer.energyUnits, No
+ * "me:rotConsts", array, Mesmer.frequencyUnits, No
+ * "me:symmetryNumber", scalar, No units, Yes (1)
+ * "me:TSOpticalSymmetryNumber", scalar, No units, Yes (1)
+ * "me:frequenciesScaleFactor", scalar, No units, Yes (1.0)
+ * "me:vibFreqs", array, cm-1, No
+ * "me:MW", scalar, amu, No
+ * "me:spinMultiplicity", scalar, No units, Yes (1)
+ * "me:epsilon", scalar, K (fixed), Yes (50)
+ * "me:sigma", scalar, Å (fixed), Yes (5)
+ * "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2, No
+ * "me:EinsteinAij", array, s-1 (fixed), No
+ * "me:EinsteinBij", array, m3/J/s2 (fixed), No
  */
 export class Property extends NodeWithNodes {
 
@@ -883,7 +926,7 @@ export class Property extends NodeWithNodes {
                 } else if (title == "method") { // examples/AnalyticalRepresentation/Chebyshev.xml
                     dictRef = "method";
                 } else if (title == "File Format") { // examples/AnalyticalRepresentation/Chebyshev.xml
-                    dictRef = "method";
+                    dictRef = "File Format";
                 } else {
                     throw new Error('Title ' + title + 'not recognised!');
                 }
@@ -1329,6 +1372,18 @@ export class PropertyList extends NodeWithNodes {
     }
 
     /**
+     * @returns The properties as a Map<string, Property> where each key is the dictRef of the Property value.
+     */
+    getProperties(): Map<string, Property> {
+        let properties: Map<string, Property> = new Map();
+        this.nodes.forEach(node => {
+            let p: Property = node as Property;
+            properties.set(p.dictRef, p);
+        });
+        return properties
+    }
+
+    /**
      * @param dictRef The dictRef of the property.
      * @returns The property.
      */
@@ -1350,6 +1405,9 @@ export class PropertyList extends NodeWithNodes {
         let i: number | undefined = this.index.get(property.dictRef);
         if (i == undefined) {
             console.log('Property ' + property.dictRef + ' does not exist, adding...');
+            //console.log('property.toString() ' + property.toString());
+            //console.log('property.getProperty().toString() ' + property.getProperty().toString());
+            //console.log('mapToString(property.attributes) ' + mapToString(property.attributes));
             this.nodes.set(this.nodes.size, property);
             this.index.set(property.dictRef, this.nodes.size - 1);
         } else {
@@ -3262,7 +3320,7 @@ export class Molecule extends NodeWithNodes {
         // Successively try different energy definitions.
 
         try { 
-            p = this.getProperty(ZPE.dictRef); 
+            p = this.getProperty(ZPE.dictRef);
         } catch (e) {
             try {
                 p = this.getProperty(Hf0.dictRef); 
@@ -3278,11 +3336,14 @@ export class Molecule extends NodeWithNodes {
                 }
             }
         }
-
         if (p == undefined) {
             return Big(0) ;
         } else {
-            return (p.getProperty() as PropertyScalarNumber).value;
+            if (p instanceof PropertyScalarNumber) {
+                return p.value;
+            } else {
+                return Big(0);
+            }
         }
     }
 }

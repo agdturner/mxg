@@ -1,10 +1,15 @@
-import Big from "big.js";
+import { Big } from "big.js";
 import { Description, MoleculeList, T } from "./xml_mesmer";
 import { Metadata, MetadataList } from "./xml_metadata";
-import { Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList, DistributionCalcMethod, EnergyTransferModel, Molecule, Property, PropertyList, Qtot, Sumc, Sumg } from "./xml_molecule";
-import { getAttributes, getFirstChildNode, getNodeValue, getSingularElement } from "./xml";
-import { getID } from "./util";
-import { createFlexDiv } from "./html";
+import {
+    Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList,
+    DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, FrequenciesScaleFactor,
+    Hessian, Hf0, Hf298, HfAT0, MW, Molecule, Property, PropertyArray, PropertyList, PropertyMatrix,
+    PropertyScalarNumber, PropertyScalarString, Qtot, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg,
+    SymmetryNumber, TSOpticalSymmetryNumber, VibFreqs, ZPE
+} from "./xml_molecule";
+import { getAttributes, getFirstChildNode, getInputString, getNodeValue, getSingularElement } from "./xml";
+import { toNumberArray } from "./util";
 import { setMoleculeID } from "./gui_moleculeList";
 
 export class LibraryMolecules {
@@ -233,7 +238,7 @@ export class LibraryMolecules {
                 let xml_ps: HTMLCollectionOf<Element> = xml_pls[0].getElementsByTagName(Property.tagName);
                 for (let j = 0; j < xml_ps.length; j++) {
                     // Create a new Property.
-                    pl.setProperty(new Property(getAttributes(xml_ps[j])));
+                    pl.setProperty(createProperty(xml_ps[j]));
                 }
                 moleculeTagNames.delete(PropertyList.tagName);
             } else {
@@ -247,7 +252,7 @@ export class LibraryMolecules {
                         + ". Should these be in a " + PropertyList.tagName + "?");
                 }
                 // Create a new Property.
-                pl.setProperty(new Property(getAttributes(xml_ps[0])));
+                pl.setProperty(createProperty(xml_ps[0]));
                 moleculeTagNames.delete(Property.tagName);
             }
             // Organise EnergyTransferModel.
@@ -359,5 +364,136 @@ export class LibraryMolecules {
         console.log("Number of molecules=" + molecules.size);
         console.log("Number of alias molecules=" + naliases.toString());
         return molecules;
+    }
+}
+
+/**
+ * Create a property.
+ * @param xml The XML element.
+ * @returns The property.
+ */
+function createProperty(xml: Element): Property {
+    let p: Property = new Property(getAttributes(xml));
+    //console.log("p.dictRef " + p.dictRef);
+    if (p.dictRef == ZPE.dictRef) {
+        // "me:ZPE", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    } else if (p.dictRef == Hf0.dictRef) {
+        // "me:Hf0", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    } else if (p.dictRef == HfAT0.dictRef) {
+        // "me:HfAT0", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    } else if (p.dictRef == Hf298.dictRef) {
+        // "me:Hf298", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    } else if (p.dictRef == RotConsts.dictRef) {
+        // "me:rotConsts", array, Mesmer.frequencyUnits.
+        processProperty(p, xml);
+    } else if (p.dictRef == SymmetryNumber.dictRef) {
+        // "me:symmetryNumber", scalar, No units.
+        processProperty(p, xml);
+    } else if (p.dictRef == TSOpticalSymmetryNumber.dictRef) {
+        // "me:TSOpticalSymmetryNumber", scalar, No units.
+        processProperty(p, xml);
+    } else if (p.dictRef == FrequenciesScaleFactor.dictRef) {
+        // "me:frequenciesScaleFactor", scalar, No units.
+        processProperty(p, xml);
+    } else if (p.dictRef == VibFreqs.dictRef) {
+        // "me:vibFreqs", array, cm-1.
+        processProperty(p, xml);
+    } else if (p.dictRef == MW.dictRef) {
+        // "me:MW", scalar, amu.
+        processProperty(p, xml);
+    } else if (p.dictRef == SpinMultiplicity.dictRef) {
+        // "me:spinMultiplicity", scalar, No units.
+        processProperty(p, xml);
+    } else if (p.dictRef == Epsilon.dictRef) {
+        // "me:epsilon", scalar, K (fixed).
+        processProperty(p, xml);
+    } else if (p.dictRef == Sigma.dictRef) {
+        // "me:sigma", scalar, Å (fixed).
+        processProperty(p, xml);
+    } else if (p.dictRef == Hessian.dictRef) {
+        // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
+        processProperty(p, xml);
+    } else if (p.dictRef == EinsteinAij.dictRef) {
+        // "me:EinsteinAij", array, s-1 (fixed).
+        processProperty(p, xml);
+    } else if (p.dictRef == EinsteinBij.dictRef) {
+        // "me:EinsteinBij", array, m3/J/s2 (fixed).
+        processProperty(p, xml);
+    } else {
+        processPropertyString(p, xml);
+    }
+    return p;
+}
+
+/**
+ * Process a property.
+ * @param p The property.
+ * @param element The element.
+ */
+function processProperty(p: Property, element: Element) {
+    // PropertyScalar.
+    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarNumber.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + PropertyScalarNumber.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString: string = getInputString(scalarNodes[0]);
+        let value: Big = new Big(inputString);
+        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
+        // Add PropertyScalarNumber.
+        let ps: PropertyScalarNumber = new PropertyScalarNumber(psAttributes, value);
+        p.setProperty(ps);
+    } else {
+        // PropertyArray.
+        let arrayNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyArray.tagName);
+        if (arrayNodes.length > 0) {
+            if (arrayNodes.length != 1) {
+                throw new Error("Expecting 1 " + PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
+            }
+            let inputString: string = getInputString(arrayNodes[0]);
+            if (inputString != "") {
+                let values: Big[] | undefined = toNumberArray(inputString.split(/\s+/));
+                let paAttributes: Map<string, string> = getAttributes(arrayNodes[0]);
+                let pa: PropertyArray = new PropertyArray(paAttributes, values);
+                p.setProperty(pa);
+            }
+        } else {
+            // PropertyMatrix.
+            let matrixNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyMatrix.tagName);
+            if (matrixNodes.length > 0) {
+                if (matrixNodes.length != 1) {
+                    throw new Error("Expecting 1 " + PropertyMatrix.tagName + " but finding " + matrixNodes.length + "!");
+                }
+                let inputString: string = getInputString(matrixNodes[0]);
+                let values: Big[] = toNumberArray(inputString.split(/\s+/));
+                let pmAttributes: Map<string, string> = getAttributes(matrixNodes[0]);
+                let pm: PropertyMatrix = new PropertyMatrix(pmAttributes, values);
+                p.setProperty(pm);
+            } else {
+                throw new Error("Expecting " + PropertyScalarNumber.tagName + ", " + PropertyArray.tagName + " or "
+                    + PropertyMatrix.tagName + " but finding none!");
+            }
+        }
+    }
+}
+
+export function processPropertyString(p: Property, element: Element) {
+    // PropertyScalarString.
+    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarString.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + PropertyScalarString.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString: string = getInputString(scalarNodes[0]);
+        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
+        // Add PropertyScalarNumber.
+        let ps: PropertyScalarString = new PropertyScalarString(psAttributes, inputString);
+        p.setProperty(ps);
+    } else {
+        console.log("Expecting " + PropertyScalarString.tagName + " but finding none!");
     }
 }

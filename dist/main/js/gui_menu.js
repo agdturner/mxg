@@ -86,36 +86,30 @@ function about(w) {
     p2.appendChild(uol_a);
     p2.appendChild(w.document.createTextNode(' funded by '));
     p2.appendChild(epsrc_a);
-    p2.appendChild(w.document.createTextNode('Like MESMER, MXG development aims to be driven in part by users reporting issues, \
+    p2.appendChild(w.document.createTextNode('. Like MESMER, MXG development aims to be driven in part by users reporting issues, \
         submitting feature requests, and getting involved in development.'));
     // p3.
     let p3 = w.document.createElement('p');
     wDiv.appendChild(p3);
-    p3.appendChild(w.document.createTextNode('MXG runs on the latest Firefox, Chrome, Edge or Safari Web browsers. It can \
-        be used offline if installed as a Progressive Web App (PWA). PWA installation varies by Web browser and device, it \
-        should only require user permission and is effectively a form of Web browser bookmark. For guidance please see the \
-        MXG main development repository README: '));
+    p3.appendChild(w.document.createTextNode('MXG should work with the latest Firefox, Chrome, Edge or Safari Web browsers. \
+        It can be used offline after installation as a Progressive Web App (PWA). The process of installing a PWA varies by \
+        Web browser and device. For guidance please see the MXG development repository README: '));
     p3.appendChild(mxg_a.cloneNode(true));
-    p3.appendChild(w.document.createTextNode('. MXG may work on small screen devices, but it is recommended to use a device \
-        with at least a standard laptop sized screen.'));
+    p3.appendChild(w.document.createTextNode('. MXG should work on a small screen, but it is recommended to use a larger screen.'));
     // p4.
     let p4 = document.createElement('p');
     wDiv.appendChild(p4);
-    p4.appendChild(w.document.createTextNode('The Menu contains 5 buttons. The Load MESMER File button is for loading a \
-        MESMER XML data file with a "me:mesmer" tag containing: "me:title", "moleculeList", "reactionList", \
-        "me:conditions", "me:modelParameters", and "me:control" tags containing further details. A MESMER XML output \
-        data file will also have "me:metadataList" and "me:analysis" tags as children of the "me:mesmer" tag. Additional \
-        output is located in "moleculeList" and "reactionList" tags. The Load Molecules button is for loading molecule \
-        data for selection, modification and for inclusion in saved MESMER files. The Load Defaults button is to load \
-        default values. Whilst not necessary, loading defaults is for convenience, as often similar values and the same \
-        units as defaults are wanted for specified variables. The Save MESMER File button is for saving a new MESMER XML \
-        data file. The file should be saved to the Web browser downloads location. It should contain no comments or extra \
-        white space between XML tags with the exception of new lines, tag values should be trimmed of white space, \
-        numbers should be output in a particular format (decimals - where numbers with more than 8 digits are output in \
-        scientific notation format). There should be: a single "atomArray" tag containing all "atom" tags (each atom \
-        should have a unique id attribute); a single "bondArray" tag containing any "bond" tags (each bond should have a \
-        unique id attribute); and, a single "propertyList" tag containing all "property" tags for each "molecule" tag in \
-        the "moleculeList". The saved file should reflect what is specified via the interface.'));
+    p4.appendChild(w.document.createTextNode('The Menu contains 6 buttons. The Load From File button is for loading a \
+        MESMER XML data file. A MESMER XML input data file normally has a "me:mesmer" element containing: \
+        "me:title", "moleculeList", "reactionList", "me:conditions", "me:modelParameters", and "me:control" elements. \
+        A MESMER XML output data usually also has "me:metadataList" and "me:analysis" elements in the "me:mesmer" \
+        element, and also has additional output is located in the "moleculeList" and "reactionList" elements. \
+        The Load Molecules button is for loading molecule data that can be chosen for inclusion. \
+        The Load Defaults button is for loading default values from a file. \
+        The Save To File button is for saving a new MESMER XML data file. The file should save to the Web browser \
+        downloads location from where it can be relocated. The file as written will contain no comments, element values \
+        are trimmed of white space, and numbers are output in a particular format (decimals - where numbers with more \
+        than 8 digits are output in scientific notation). The file should reflect what is specified via the interface.'));
     /* Between the Load and Save \
     buttons are buttons to increase or decrease the fontsize and to change between a light and dark theme. In \
     addition to increasing or decreasing the fontsize of text elements, the fontsize buttons can be actioned to \
@@ -123,16 +117,16 @@ function about(w) {
     // p5.
     let p5 = w.document.createElement('p');
     wDiv.appendChild(p5);
-    p5.appendChild(w.document.createTextNode('The "me:title" value is presented in an input alongside an associated label. \
-        The input can be used to change the value which is also used to compose filenames for files saved from MXG. \
-        Details are presented via buttons which contain a triangular symbol. A triangle orientated with a point down: '
-        + html_js_1.sy_downTriangle + ' can be actioned to show more details (if there are any). A triangle orientated with a point \
-        up: ' + html_js_1.sy_upTriangle + ' can be actioned to hide those details again.'));
+    p5.appendChild(w.document.createTextNode('The "me:title" value is presented in an "input" alongside an associated label. \
+        The input can be used to change the value from the default "Example_title". The title is used to compose filenames \
+        for other files saved from MXG (PNG and CSV). Details are presented via buttons which contain a triangular symbol. \
+        A triangle orientated with a point down: ' + html_js_1.sy_downTriangle + ' can be actioned to show any details. \
+        A triangle orientated with a point up: ' + html_js_1.sy_upTriangle + ' can be actioned to hide those details.'));
     // p6.
     let p6 = w.document.createElement('p');
     wDiv.appendChild(p6);
     p6.textContent = 'The Reaction Diagram button shows/hides a reaction well diagram which is redrawn if molecule "me:ZPE" \
-        property values are changed. The diagram can be opened in a new Window and saved to a PNG format file.';
+        property values are changed. The diagram can be opened in a new Window and saved as an image in PNG format file.';
     // p7.
     let p7 = w.document.createElement('p');
     wDiv.appendChild(p7);
@@ -151,6 +145,10 @@ function about(w) {
     p8.appendChild(bigjs_a);
     p8.appendChild(w.document.createTextNode('.'));
 }
+/**
+ * Create a menu.
+ * @returns HTMLDivElement
+ */
 function createMenu() {
     // Create Menu.
     let menuDiv = document.getElementById(app_js_1.menuDivID);
@@ -168,16 +166,29 @@ function createMenu() {
         let aw = window.open("", "", "width=600,height=400");
         about(aw);
     });
+    // Add Start Afresh button.
+    let s_StartAfresh = 'Start Afresh';
+    let sab = (0, html_js_1.createButton)(s_StartAfresh, (0, app_js_1.addID)(s_StartAfresh), app_js_1.boundary1);
+    menuDiv.appendChild(sab);
+    sab.addEventListener('click', (event) => {
+        // Alert the user that any changes will be lost unless saved, giving the option to save.
+        if (confirm('Any unsaved changes will be lost. Select OK to continue loading or Cancel to cancel.')) {
+            (0, app_js_1.startAfresh)();
+        }
+        else {
+            return;
+        }
+    });
     // Add Load Molecules button.
     let s_Load_Molecules = 'Load Molecules';
     let lmb = (0, html_js_1.createButton)(s_Load_Molecules, (0, app_js_1.addID)(s_Load_Molecules), app_js_1.boundary1);
     menuDiv.appendChild(lmb);
-    let lm = new librarymols_js_1.LibraryMolecules();
+    let lms = new librarymols_js_1.LibraryMolecules();
     lmb.addEventListener('click', async (event) => {
-        let ms = await lm.readFile();
+        let ms = await lms.readFile();
         // Add the molecules to the libmols map.
         ms.forEach((v, k) => {
-            (0, app_js_1.addMolecule)(v, app_js_1.libmols);
+            (0, app_js_1.addMolecule)(false, v, app_js_1.libmols);
         });
     });
     // Add Load Defaults button.
@@ -187,9 +198,9 @@ function createMenu() {
         app_js_1.defaults.readFile();
     });
     menuDiv.appendChild(ldb);
-    // Add Load MESMER File button.
-    let s_Load = 'Load MESMER File';
-    let lb = (0, html_js_1.createButton)(s_Load, (0, app_js_1.addID)(s_Load), app_js_1.boundary1);
+    // Add Load From File button.
+    let s_Load_From_File = 'Load From File';
+    let lb = (0, html_js_1.createButton)(s_Load_From_File, (0, app_js_1.addID)(s_Load_From_File), app_js_1.boundary1);
     lb.addEventListener('click', (event) => {
         // Alert the user that any changes will be lost unless saved, giving the option to save.
         if (confirm('Any unsaved changes will be lost. Select OK to continue loading or Cancel to cancel.')) {
@@ -245,8 +256,8 @@ function createMenu() {
     menuDiv.appendChild(lightDarkModeButton);
     */
     // Add Save To MESMER File button.
-    let s_Save_MESMER_File = 'Save MESMER File';
-    let saveButton = (0, html_js_1.createButton)(s_Save_MESMER_File, (0, app_js_1.addID)(s_Save_MESMER_File), app_js_1.boundary1);
+    let s_Save_To_File = 'Save To File';
+    let saveButton = (0, html_js_1.createButton)(s_Save_To_File, (0, app_js_1.addID)(s_Save_To_File), app_js_1.boundary1);
     saveButton.addEventListener('click', app_js_1.saveXML);
     menuDiv.appendChild(saveButton);
     return menuDiv;
