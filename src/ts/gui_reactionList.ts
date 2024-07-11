@@ -1,7 +1,7 @@
 import Big from "big.js";
 import {
     s_Add_sy_add, addRID, level1, s_container, boundary1, getMoleculeKeys, addAnyUnits,
-    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer, s_Reactants, s_Products, s_Transition_States, s_Tunneling
+    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer, s_Reactants, s_Products, s_Transition_States, s_Tunneling, big0, defaults
 } from "./app.js";
 import {
     createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select,
@@ -71,13 +71,193 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
         let transitionStates: Map<string, TransitionState> = new Map();
         r.setTransitionStates(transitionStates);
         addAddTransitionStateButton(rIDM, rDivID, tsDiv, molecules, transitionStates);
-
         // Create collapsible content for MCRCMethod.
-
-        // Create collapsible content for excessReactantConc.
-
-        // Create collapsible content for canonicalRateList.
-
+        let mmDivId: string = rIDM.addID(rDivID, MCRCMethod.tagName);
+        let mmDiv: HTMLDivElement = createDiv(mmDivId);
+        let mmcDivId = rIDM.addID(mmDivId, s_container);
+        let mmcDiv: HTMLDivElement = getCollapsibleDiv(mmcDivId, rDiv, null, mmDiv, MCRCMethod.tagName, boundary1, level1);
+        //rDiv.appendChild(mmcDiv);
+        let mm: MCRCMethod = new MesmerILT(new Map());
+        r.setMCRCMethod(mm);
+        let inputString: string;
+        let value: Big; 
+        // PreExponential.
+        if (true) {
+            // Get value from defaults.
+            if (defaults != undefined) {
+                inputString = defaults.values.get(PreExponential.tagName) ?? "";
+                if (inputString == "") {
+                    inputString= "6.00e-12";
+                }
+            } else {
+                inputString= "6.00e-12";
+            }
+            value = new Big(inputString);
+            let peAttributes: Map<string, string> = new Map();
+            let pe: PreExponential = new PreExponential(peAttributes, value);
+            (mm as MesmerILT).setPreExponential(pe);
+                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, PreExponential.tagName, s_input),
+                boundary1, level1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    setNumberNode(pe, target);
+                }, inputString, PreExponential.tagName);
+            mmDiv.appendChild(lwi);
+            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+            input.value = inputString;
+            resizeInputElement(input);
+            input.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                inputString = target.value;
+                pe.value = new Big(inputString);
+                console.log(PreExponential.tagName + " changed to " + inputString);
+                resizeInputElement(input);
+            });
+            addAnyUnits(undefined, peAttributes, lwi, null, addRID(mmDivId, PreExponential.tagName),
+                PreExponential.tagName, boundary1, boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // ActivationEnergy.
+        if (true) {
+            // Get value from defaults.
+            if (defaults != undefined) {
+                inputString = defaults.values.get(ActivationEnergy.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "0.0";
+                }
+            } else {
+                inputString= "0.0";
+            }
+            value = new Big(inputString);
+            let aeAttributes: Map<string, string> = new Map();
+            let ae: ActivationEnergy = new ActivationEnergy(aeAttributes, value);
+            (mm as MesmerILT).setActivationEnergy(ae);
+            // Create a new div element for the input.
+            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, ActivationEnergy.tagName, s_input), boundary1, level1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    setNumberNode(ae, target);
+                }, inputString, ActivationEnergy.tagName);
+            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+            input.value = inputString;
+            resizeInputElement(input);
+            input.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                inputString = target.value;
+                ae.value = new Big(inputString);
+                console.log(ActivationEnergy.tagName + " changed to " + inputString);
+                resizeInputElement(input);
+            });
+            addAnyUnits(undefined, aeAttributes, lwi, null, addRID(mmDivId, ActivationEnergy.tagName),
+                ActivationEnergy.tagName, boundary1, boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // TInfinity.
+        if (true) {
+            // Get value from defaults.
+            if (defaults != undefined) {
+                inputString = defaults.values.get(TInfinity.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "298";
+                }
+            } else {
+                inputString= "298";
+            }
+            value = new Big(inputString);
+            let tiAttributes: Map<string, string> = new Map();
+            let ti: TInfinity = new TInfinity(tiAttributes, value);
+            (mm as MesmerILT).setTInfinity(ti);
+            // Create a new div element for the input.
+            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, TInfinity.tagName, s_input),
+                boundary1, level1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    setNumberNode(ti, target);
+                }, inputString, TInfinity.tagName);
+            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+            input.value = inputString;
+            resizeInputElement(input);
+            input.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                inputString = target.value;
+                ti.value = new Big(inputString);
+                console.log(TInfinity.tagName + " changed to " + inputString);
+                resizeInputElement(input);
+            });
+            addAnyUnits(undefined, tiAttributes, lwi, null, addRID(mmDivId, TInfinity.tagName), TInfinity.tagName, boundary1, boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // NInfininty.
+        if (true) {
+            // Get value from defaults.
+            if (defaults != undefined) {
+                inputString = defaults.values.get(NInfinity.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "0.08";
+                }
+            } else {
+                inputString= "0.08";
+            }
+            value = new Big(inputString);
+            let niAttributes: Map<string, string> = new Map();
+            let ni: NInfinity = new NInfinity(niAttributes, value);
+            (mm as MesmerILT).setNInfinity(ni);
+            // Create a new div element for the input.
+            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, NInfinity.tagName, s_input), boundary1, level1,
+                (event: Event) => {
+                    let target = event.target as HTMLInputElement;
+                    setNumberNode(ni, target);
+                }, inputString, NInfinity.tagName);
+            mmDiv.appendChild(lwi);
+            let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+            input.value = inputString;
+            resizeInputElement(input);
+            input.addEventListener('change', (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                inputString = target.value;
+                ni.value = new Big(inputString);
+                console.log(NInfinity.tagName + " set to " + inputString);
+                resizeInputElement(input);
+            });
+            addAnyUnits(undefined, niAttributes, lwi, null, addRID(mmDivId, NInfinity.tagName), NInfinity.tagName,
+                boundary1, boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // ExcessReactantConc.
+        let ercDivId: string = rIDM.addID(rDivID, ExcessReactantConc.tagName);
+        let ercDiv: HTMLDivElement = createDiv(ercDivId);
+        // Get default value.
+        if (defaults != undefined) {
+            inputString = defaults.values.get(ExcessReactantConc.tagName) ?? "";
+            if (inputString == "") {
+                inputString = "2.25e+16";
+            }
+        } else {
+            inputString= "2.25e+16";
+        }
+        value = new Big(inputString);
+        let erc: ExcessReactantConc = new ExcessReactantConc(new Map(), value);
+        r.setExcessReactantConc(erc);
+        // Create a new div element for the input.
+        let lwi: HTMLDivElement = createLabelWithInput("number", addRID(ercDivId, ExcessReactantConc.tagName, s_input), boundary1, level1,
+            (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                setNumberNode(erc, target);
+            }, inputString, ExcessReactantConc.tagName);
+        let input: HTMLInputElement = lwi.querySelector('input') as HTMLInputElement;
+        input.value = inputString;
+        resizeInputElement(input);
+        input.addEventListener('change', (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            let inputString = target.value;
+            erc.value = new Big(inputString);
+            console.log(ExcessReactantConc.tagName + " changed to " + inputString);
+            resizeInputElement(input);
+        });
+        addAnyUnits(undefined, new Map(), lwi, null, addRID(ercDivId, ExcessReactantConc.tagName), ExcessReactantConc.tagName, boundary1, boundary1);
+        ercDiv.appendChild(lwi);
+        rDiv.appendChild(ercDiv);
+        
         // Add a remove reaction button.
         addRemoveButton(rDiv, level1, () => {
             removeReaction(rlDiv, rcDiv, rIDM, rDivID, reactions, r);
@@ -96,7 +276,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
  * @param molecules The molecules map.
  * @param reactants The reactants map.
  */
-function addAddReactantButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManager, rDivID: string, rsDiv: HTMLDivElement, 
+function addAddReactantButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManager, rDivID: string, rsDiv: HTMLDivElement,
     molecules: Map<string, Molecule>, reactants: Map<string, Reactant>): void {
     // Add an add button to add a reactant.
     let addReactantButton: HTMLButtonElement = createButton(s_Add_sy_add,
@@ -165,6 +345,7 @@ function addAddReactantButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManag
             let rrb: HTMLButtonElement = addRemoveButton(reactantDiv, boundary1, () => {
                 rsDiv.removeChild(reactantDiv);
                 reactants.delete(mid);
+                r.removeReactant(mid);
             });
         });
         if (selectReactant.options.length === 1) {
@@ -184,7 +365,7 @@ function addAddReactantButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManag
  * @param molecules The molecules map.
  * @param products The products map.
  */
-function addAddProductButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManager, rDivID: string, 
+function addAddProductButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManager, rDivID: string,
     psDiv: HTMLDivElement, molecules: Map<string, Molecule>, products: Map<string, Product>) {
     // Add an add button to add a product.
     let addProductButton: HTMLButtonElement = createButton(s_Add_sy_add,
@@ -224,6 +405,7 @@ function addAddProductButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManage
                 alert("Molecule already selected as a product. Please select a different molecule (you may want to add more molecules to the moleculeList).");
                 // Remove the select element.
                 productDiv.removeChild(selectProduct);
+                //r.removeProduct(target.value);
                 return;
             }
             productDiv.id = rIDM.addID(rDivID, Product.tagName, mid);
@@ -252,6 +434,7 @@ function addAddProductButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManage
             let prb: HTMLButtonElement = addRemoveButton(productDiv, boundary1, () => {
                 psDiv.removeChild(productDiv);
                 products.delete(mid);
+                r.removeProduct(mid);
             });
         });
         if (selectProduct.options.length === 1) {
@@ -361,8 +544,8 @@ function removeReaction(rlDiv: HTMLDivElement, rcDiv: HTMLDivElement, rIDM: IDMa
  * @param reactions The reactions map.
  * @param molecules The molecules map.
  */
-export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: string, 
-reactions: Map<string, Reaction>,
+export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: string,
+    reactions: Map<string, Reaction>,
     molecules: Map<string, Molecule>): HTMLDivElement {
     let bid: string = getID(rsDivID, s_button);
     let rcb: HTMLButtonElement = document.querySelector(bid) as HTMLButtonElement;

@@ -1,68 +1,36 @@
-
-//import { openDB } from 'idb';
-
+// Imports from MXG modules.
+import { arrayToString, getID, isNumeric, mapToString } from './util.js';
+import { getFirstChildNode, getAttributes, getSingularElement, NumberNode } from './xml.js';
 import {
-    arrayToString, bigArrayToString, get, getID, isNumeric, mapToString, max, min, rescale, toNumberArray
-} from './util.js';
-
-import {
-    getFirstElement, getFirstChildNode, getNodeValue, getInputString, getAttributes, getSingularElement,
-    NumberArrayNode, NumberNode
-} from './xml.js';
-
-import {
-    Molecule, Property, PropertyList, PropertyScalarString, PropertyScalarNumber, PropertyArray, PropertyMatrix,
-    ZPE
-} from './xml_molecule.js';
-
-import {
-    Reaction, TransitionState, ReactionMolecule, Reactant, Product, MCRCMethod, MesmerILT, PreExponential,
-    ActivationEnergy, NInfinity, Tunneling, TInfinity, ExcessReactantConc, CanonicalRateList, Kinf, Val, Rev, Keq
-} from './xml_reaction.js';
-
-import { createMenu } from './gui_menu.js';
-
-import {
-    createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
+    createLabelWithInput, getCollapsibleDiv, resizeInputElement, resizeSelectElement,
     createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv,
-    createLabelWithTextArea, resizeTextAreaElement, s_button, sy_upTriangle, sy_downTriangle, createTextArea,
-    createTable, addTableRow, s_select
+    s_button, createTable, addTableRow
 } from './html.js';
-
-import { drawLevel, drawLine, getTextHeight, getTextWidth } from './canvas.js';
-
+import { Molecule } from './xml_molecule.js';
+import { Reaction } from './xml_reaction.js';
+import { createMenu } from './gui_menu.js';
+import { Conditions } from './xml_conditions.js';
+import { ModelParameters } from './xml_modelParameters.js';
+import { Control } from './xml_control.js';
+import { Mesmer, MoleculeList, ReactionList, Title, Description } from './xml_mesmer.js';
 import {
-    BathGas, Conditions, ExperimentalRate, ExperimentalEigenvalue, PTpair, PTs, ExperimentalYield
-} from './xml_conditions.js';
-
-import { EnergyAboveTheTopHill, GrainSize, MaxTemperature, ModelParameters } from './xml_modelParameters.js';
-
-import {
-    Control, DiagramEnergyOffset, Eigenvalues, HideInactive, TestDOS, PrintSpeciesProfile, TestMicroRates, TestRateConstant,
-    PrintGrainDOS, PrintCellDOS, PrintReactionOperatorColumnSums, PrintTunnelingCoefficients, PrintGrainkfE,
-    PrintGrainBoltzmann, PrintGrainkbE, CalculateRateCoefficientsOnly, PrintCellTransitionStateFlux, PrintTSsos,
-    PrintGrainedSpeciesProfile, PrintGrainTransitionStateFlux, PrintReactionOperatorSize, PrintPhenomenologicalEvolution,
-    PrintCrossingCoefficients, UseTheSameCellNumberForAllConditions, ForceMacroDetailedBalance, CalcMethod,
-    ShortestTimeOfInterest, MaximumEvolutionTime, AutomaticallySetMaxEne, CalcMethodMarquardt, MarquardtIterations,
-    MarquardtTolerance, MarquardtDerivDelta, CalcMethodAnalyticalRepresentation, Format, Precision, ChebNumTemp, ChebNumConc,
-    ChebMaxTemp, ChebMinTemp, ChebMaxConc, ChebMinConc, ChebTExSize, ChebPExSize, CalcMethodThermodynamicTable,
-    Tmin, Tmid, Tstep, Tmax, CalcMethodSimpleCalc, CalcMethodGridSearch, CalcMethodFitting, FittingIterations,
-    CalcMethodSensitivityAnalysis, SensitivityAnalysisSamples, SensitivityAnalysisOrder, SensitivityNumVarRedIters,
-    SensitivityVarRedMethod
-} from './xml_control.js';
-
-import { Mesmer, MoleculeList, ReactionList, Title, T, Description } from './xml_mesmer.js';
-import Big from 'big.js';
-import { Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population, PopulationList, RateList } from './xml_analysis.js';
-import { DCCreator, MetadataList, DCSource, DCDate, DCContributor, Metadata } from './xml_metadata.js';
+    Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population,
+    PopulationList, RateList
+} from './xml_analysis.js';
+import { DCCreator, MetadataList, DCSource, DCDate, DCContributor } from './xml_metadata.js';
 import { Defaults } from './defaults.js';
-import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList, setPropertyScalarNumber } from './gui_moleculeList.js';
+import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList, setMoleculeID } from './gui_moleculeList.js';
 import { getAddReactionButton, processReactionList } from './gui_reactionList.js';
 import { createAddConditionsButton, processConditions } from './gui_ConditionsList.js';
 import { createAddModelParametersButton, processModelParameters } from './gui_ModelParametersList.js';
 import { createAddControlButton, processControl } from './gui_ControlList.js';
 import { createReactionDiagram, drawReactionDiagram } from './gui_reactionDiagram.js';
-//import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
+// Imports from 3rd party modules.
+//import { openDB } from 'idb';
+import { Big } from 'big.js';
+import { clear } from 'console';
+import { removeAllListeners } from 'process';
+//import * as $3Dmol from '$3Dmol';
 
 /**
  * Big.js.
@@ -130,7 +98,7 @@ export const s_selectOption: string = "Select an option (press a letter key to c
 export const s_table: string = "table";
 const s_title: string = "title";
 export const s_Transition_States: string = "Transition States";
-const s_textarea: string = "textarea";
+export const s_textarea: string = "textarea";
 export const s_Tunneling: string = "Tunneling";
 export const s_undefined: string = "undefined";
 export const s_units: string = "units";
@@ -143,12 +111,12 @@ const s_welcome: string = "welcome";
  * This is used to ensure that all IDs are unique.
  * If an ID is not unique, an error is thrown.
  */
-const allIDs: Set<string> = new Set<string>();
+let allIDs: Set<string> = new Set();
 
 /**
  * A set of all IDs to be removed when loading a MESMER file.
  */
-const rIDs: Set<string> = new Set<string>();
+let rIDs: Set<string> = new Set();
 
 /**
  * Add an ID to the set of IDs.
@@ -158,6 +126,7 @@ export function addID(...parts: (string | number)[]): string {
     let validID: string = getID(...parts);
     if (allIDs.has(validID)) {
         throw new Error(validID + " already exists!");
+        //console.warn(validID + " already exists!");
     }
     allIDs.add(validID);
     //console.log("addID: \"" + validID + "\"");
@@ -283,27 +252,27 @@ export class IDManager {
 /**
  * For moleculeList Div ID management.
  */
-let mIDM: IDManager = new IDManager();
+let mIDM: IDManager;
 
 /**
  * For reactionList Div ID management.
  */
-let rIDM: IDManager = new IDManager();
+let rIDM: IDManager;
 
 /**
  * For conditionsList Div ID management.
  */
-let conditionsIDM: IDManager = new IDManager();
+let conditionsIDM: IDManager;
 
 /**
  * For ModelParametersList Div ID management.
  */
-let mpIDM: IDManager = new IDManager();
+let mpIDM: IDManager;
 
 /**
  * For ControlList Div ID management.
  */
-let controlIDM: IDManager = new IDManager();
+let controlIDM: IDManager;
 
 /**
  * For mesmer.
@@ -313,12 +282,20 @@ export let mesmer: Mesmer;
 /**
  * For the defaults loaded from defaults.xml.
  */
-export let defaults: Defaults = new Defaults();
+export let defaults: Defaults;
 
 /**
  * For storing molecules loaded from files.
  */
-export let libmols: Map<string, Molecule> = new Map();
+export let libmols: Map<string, Molecule>;
+
+/**
+ * For initialising the libmols map.
+ * @param m The map of molecules to set.
+ */
+export function setLibmols(m: Map<string, Molecule>): void {
+    libmols = m;
+}
 
 /**
  * Adds a molecule to the map of molecules.
@@ -326,21 +303,16 @@ export let libmols: Map<string, Molecule> = new Map();
  * @param m The molecule to add
  * @param ms The map of molecules to add the molecule to.
  */
-export function addMolecule(m: Molecule, ms: Map<string, Molecule>): void {
-    let id: string = m.getID();
-    let n: number = 1;
-    while (ms.has(m.id)) {
-        m.id = m.id + n;
-        n++;
-    }
-    ms.set(m.id, m);
+export function addMolecule(ask: boolean, m: Molecule, ms: Map<string, Molecule>): void {
+    let mid = setMoleculeID(ask, m.getID(), m, ms);
+    ms.set(mid, m);
 }
 
 /**
  * A map of molecules with id as key and Molecule as value.
  * The key is a composite of the molecule ID and the index.
  */
-let molecules: Map<string, Molecule> = new Map();
+let molecules: Map<string, Molecule>;
 
 /**
  * Get the keys of the molecules. The keys are a composite of the molecule ID and the index.
@@ -377,7 +349,7 @@ export function getMolecule(label: string, ms: Map<string, Molecule>): Molecule 
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
-let reactions: Map<string, Reaction> = new Map();
+let reactions: Map<string, Reaction>;
 
 /**
  * For storing any scatter plots.
@@ -389,8 +361,8 @@ let scatterPlots: ScatterPlot[];
  */
 // IDs.
 export const s_Reactions_Diagram: string = "Reactions Diagram";
-const rdDivID: string = addRID(s_Reactions_Diagram);
-const rdcID: string = addRID(rdDivID, "Canvas");
+const rddDivID: string = addRID(s_Reactions_Diagram);
+const rddcID: string = addRID(rddDivID, "Canvas");
 //let rd_canvas_width: number = 800;
 let rdcHeight: number = 400;
 let rd_lw: number = 4; // Line width of reactants, transition states and products.
@@ -425,6 +397,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create the menu.
     createMenu();
 
+    // StartAfresh
+    startAfresh();
+});
+
+/**
+ * (Re)Initialise the main GUI and IDManagers.
+ */
+function initialise(): void {
+    // Clear content.
+    rIDs.forEach(id => {
+        remove(id);
+    });
+    // Initialise
+    rIDs = new Set();
+    mIDM = new IDManager();
+    rIDM = new IDManager();
+    conditionsIDM = new IDManager();
+    mpIDM = new IDManager();
+    controlIDM = new IDManager();
+    // libmols is not reinitialised on purpose. To completely start again, reload the app.
+    //libmols = new Map();
+    defaults = new Defaults();
+    molecules = new Map();
+    reactions = new Map();
+    scatterPlots = [];
+}
+
+/**
+ * Load interface.
+ */
+export function startAfresh() {
+
+    initialise();
+
     // Title.
     let title: string = "Example_title";
     let attributes: Map<string, string> = new Map<string, string>();
@@ -456,12 +462,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reactions Diagram.
     let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
-    let rdDiv: HTMLDivElement = createDiv(undefined, level1);
+    let rdDivID: string = addRID(s_Reactions_Diagram);
+    let rdDiv: HTMLDivElement = createDiv(rdDivID);
     rddDiv.appendChild(rdDiv);
     // Create collapsible content.
     let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
         s_Reactions_Diagram, boundary1, level0);
-    createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
+    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
 
     // Conditions.
     let conditionsDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
@@ -530,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let xcDiv: HTMLDivElement = getCollapsibleDiv(xDivID, xmlDiv, null, xDiv,
         s_xml, boundary1, level0);
     */
-});
+}
 
 /**
  * Create the title input.
@@ -559,10 +566,10 @@ function createTitle(title: string, attributes: Map<string, string>) {
  */
 export function redrawReactionsDiagram() {
     if (rdWindow == null) {
-        let rdCanvas: HTMLCanvasElement = document.getElementById(rdcID) as HTMLCanvasElement;
+        let rdCanvas: HTMLCanvasElement = document.getElementById(rddcID) as HTMLCanvasElement;
         drawReactionDiagram(rdCanvas, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     } else {
-        let c: HTMLCanvasElement = rdWindow.document.getElementById(rdcID) as HTMLCanvasElement;
+        let c: HTMLCanvasElement = rdWindow.document.getElementById(rddcID) as HTMLCanvasElement;
         drawReactionDiagram(c, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     }
 }
@@ -580,17 +587,8 @@ function redrawScatterPlots(): void {
  * Prompts the user for a MESMER XML file, and initiates the parsing of the chosen file.
  */
 export function load() {
-    // Before loading a new file, remove any existing content and initialise any data containers.
-    rIDs.forEach((id) => {
-        remove(id);
-    });
-    if (molecules != null) {
-        molecules.clear();
-    }
-    if (reactions != null) {
-        reactions.clear();
-    }
-    scatterPlots = [];
+    // Before loading a new file, remove existing content and initialise data containers.
+    initialise();
     // Create a file input element to prompt the user to select a file.
     let input: HTMLInputElement = document.createElement('input');
     input.type = 'file';
@@ -693,10 +691,10 @@ function parse(xml: XMLDocument) {
     // If rdDiv already exists, remove it.
     remove(rdDivID);
     // Create collapsible content.
-    let rdDiv: HTMLDivElement = createDiv(undefined, level1);
+    let rdDiv: HTMLDivElement = createDiv(rdDivID, level1);
     let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
         s_Reactions_Diagram, boundary1, level0);
-    createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
     // ConditionsList.
     let cdlDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
@@ -794,74 +792,6 @@ export function addOptionByClassName(className: string, optionToAdd: string): vo
 }
 
 /**
- * Add a Property.
- * @param dictRef The dictRef.
- * @param ps The PropertyScalar.
- * @param id The id.
- * @param boundary The boundary.
- * @param level The level. 
- * @returns A div element.
- */
-export function addProperty(dictRef: string, ps: PropertyScalarNumber, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let pDiv: HTMLDivElement = createFlexDiv(id, level);
-    pDiv.appendChild(createLabel(dictRef, boundary));
-    // value.
-    let value: Big = ps.getValue();
-    //let value: string = ps.value;
-    let valueInputId: string = addRID(id, s_input);
-    let valueInput: HTMLInputElement = createInput("text", valueInputId, boundary);
-    pDiv.appendChild(valueInput);
-    valueInput.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLInputElement;
-        ps.setValue(new Big(target.value));
-        //ps.value = target.value;
-        resizeInputElement(target);
-    });
-    valueInput.value = value.toString();
-    resizeInputElement(valueInput);
-    return pDiv;
-}
-
-/**
- * Add a PropertyScalarNumber.
- * @param attributes The attributes.
- * @param iDs The set of IDs to add to.
- * @param value The value.
- * @param units The units.
- * @param pl The PropertyList.
- * @param p The Property.
- * @param plDiv The PropertyList div.
- * @param boundary The boundary.
- */
-export function addPropertyScalarNumber(attributes: Map<string, string>, iDs: Set<string>, value: Big,
-    units: string[] | undefined, pl: PropertyList, p: Property, plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
-    let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
-    ps.setValue = function (value: Big) {
-        ps.value = value;
-        if (p.dictRef == ZPE.dictRef) {
-            // Update the molecule energy diagram.
-            redrawReactionsDiagram();
-        }
-    }.bind(ps);
-    ps.value = value;
-    if (p.dictRef == ZPE.dictRef) {
-        // Update the molecule energy diagram.
-        redrawReactionsDiagram();
-    }
-    let id: string = addRID(plDiv.id, p.dictRef);
-    console.log("div ID " + id);
-    let div: HTMLDivElement = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps),
-        (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
-        () => pl.removeProperty(p.dictRef), boundary1, level1);
-    console.log("unitsID " + addRID(id, PropertyScalarNumber.s_units));
-    addAnyUnits(units, attributes, div, div.querySelector(s_input) as HTMLElement, getID(id, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
-    plDiv.appendChild(div);
-}
-
-/**
  * For adding or removing s_selectOption.
  * @param options The options.
  * @param add If true then a new option is added with an instruction to select another option.
@@ -882,28 +812,26 @@ export function addOrRemoveInstructions(options: string[], add: boolean): void {
 /**
  * Process a numerical variable.
  * @param id The id.
- * @param iDs The set of IDs to add to.
+ * @param tIDM The IDManager.
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
  * @returns A div element.
  */
-export function processNumber(id: string, iDs: Set<string>, name: string,
+export function processNumber(id: string, tIDM: IDManager, name: string,
     getter: () => Big | undefined, setter: (value: Big) => void, remover: () => void,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let idb = addRID(id, name, s_button);
-    iDs.add(idb);
+    let idb: string = tIDM.addID(id, name, s_button);
     let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let inputId: string = addRID(id, name, s_input)
-    iDs.add(inputId);
+    let inputId: string = tIDM.addID(id, name, s_input)
     let value: Big | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -972,88 +900,9 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
         resizeInputElement(target);
     });
     input.value = valueString;
-
     //setter(new Big(valueString));
-
     resizeInputElement(input);
     div.appendChild(input);
-}
-
-/**
- * Process a numerical variable.
- * @param div The div.
- * @param id The id.
- * @param name The name of the variable.
- * @param getter The getter function.
- * @param setter The setter function.
- * @param margin The margin.
- */
-function processNumberArray(id: string, name: string, pa: PropertyArray,
-    getter: () => Big[] | undefined, setter: (values: Big[]) => void, remover: () => void,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let div: HTMLDivElement = createFlexDiv(undefined, margin);
-    let buttonTextContentSelected: string = name + sy_selected;
-    let buttonTextContentDeselected: string = name + sy_deselected;
-    let button = createButton(buttonTextContentDeselected, addRID(id, s_button), marginComponent);
-    div.appendChild(button);
-    button.classList.add(s_optionOn);
-    button.classList.add(s_optionOff);
-    let inputId: string = addRID(id, name, s_input)
-    let value: Big[] | undefined = getter();
-    if (value == undefined) {
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle(s_optionOn);
-    } else {
-        addNumberArray(div, inputId, name, value, pa, getter, setter, marginComponent);
-        button.textContent = buttonTextContentSelected;
-        button.classList.toggle(s_optionOff);
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event: MouseEvent) => {
-        if (document.getElementById(inputId) == null) {
-            addNumberArray(div, inputId, name, value, pa, getter, setter, marginComponent);
-            button.textContent = buttonTextContentSelected;
-        } else {
-            // Remove existing.
-            document.getElementById(inputId)?.remove();
-            remover();
-            console.log("Removed " + inputId);
-            button.textContent = buttonTextContentDeselected;
-        }
-        button.classList.toggle(s_optionOn)
-        button.classList.toggle(s_optionOff);
-    });
-    return div;
-}
-
-/**
- * @param div The div to add the input to.
- * @param id The id.
- * @param name The name of the input.
- * @param value The numerical value.
- * @param setter The setter function to call.
- * @param boundary The boundary.
- * @param level The level.
- */
-function addNumberArray(div: HTMLDivElement, id: string, name: string, values: Big[] | undefined,
-    pa: PropertyArray, getter: () => Big[] | undefined, setter: (value: Big[]) => void,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let valueString: string;
-    if (values == undefined) {
-        valueString = "";
-    } else {
-        valueString = bigArrayToString(values);
-    }
-    let ta: HTMLTextAreaElement = createTextArea(id, boundary);
-    ta.addEventListener('change', (event: Event) => {
-        let target = event.target as HTMLTextAreaElement;
-        setNumberArrayNode(pa, ta)
-        resizeTextAreaElement(target);
-    });
-    ta.value = valueString;
-    resizeTextAreaElement(ta);
-    div.appendChild(ta);
 }
 
 /**
@@ -1077,7 +926,7 @@ export function addRemoveButton(div: HTMLDivElement,
 }
 
 /**
- * Process a numerical variable.
+ * Process a string variable.
  * @param id The id.
  * @param iDs The set of IDs to add to.
  * @param name The name of the variable.
@@ -1085,7 +934,7 @@ export function addRemoveButton(div: HTMLDivElement,
  * @param setter The setter function.
  * @param margin The margin.
  */
-function processString(id: string, iDs: Set<string>, name: string,
+export function processString(id: string, iDs: Set<string>, name: string,
     getter: () => string | undefined, setter: (value: string) => void, remover: () => void,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
@@ -1178,155 +1027,6 @@ function displayXML(xmlFilename: string, xml: string) {
 }
 
 /**
- * For processing a molecule property.
- * @param p The property.
- * @param units The possible units.
- * @param molecule The molecule.
- * @param element The element.
- * @param plDiv The PropertyList div.
- * @param textArea If true, a text area is created rather than an input.
- * @param boundary The boundary to go around components.
- * @param level The level of the component.
- */
-export function processPropertyScalarNumber(pl: PropertyList, p: Property, units: string[] | undefined, molecule: Molecule, element: Element,
-    plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-
-    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
-    let pIDs: Set<string> = new Set<string>();
-
-    // PropertyScalar.
-    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarNumber.tagName);
-    if (scalarNodes.length > 0) {
-        if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + PropertyScalarNumber.tagName + " but finding " + scalarNodes.length + "!");
-        }
-        let inputString: string = getInputString(scalarNodes[0]);
-        let value: Big = new Big(inputString);
-        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
-        // Add PropertyScalarNumber.
-        let ps: PropertyScalarNumber = new PropertyScalarNumber(psAttributes, value);
-        p.setProperty(ps);
-        ps.setValue = function (value: Big) {
-            ps.value = value;
-            if (p.dictRef == ZPE.dictRef) {
-                // Update the molecule energy diagram.
-                redrawReactionsDiagram();
-            }
-        }.bind(ps);
-        let div: HTMLDivElement = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps),
-            (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
-            () => pl.removeProperty(p.dictRef), boundary1, level1);
-        addAnyUnits(units, psAttributes, div, div.querySelector(s_input) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
-        plDiv.appendChild(div);
-    } else {
-        // PropertyArray.
-        let arrayNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyArray.tagName);
-        if (arrayNodes.length > 0) {
-            if (arrayNodes.length != 1) {
-                throw new Error("Expecting 1 " + PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
-            }
-            let inputString: string = getInputString(arrayNodes[0]);
-            if (inputString != "") {
-                let values: Big[] | undefined = toNumberArray(inputString.split(/\s+/));
-                let paAttributes: Map<string, string> = getAttributes(arrayNodes[0]);
-                let pa: PropertyArray = new PropertyArray(paAttributes, values);
-                p.setProperty(pa);
-                let div: HTMLDivElement = processNumberArray(addRID(plDiv.id, p.dictRef), p.dictRef, pa, pa.getValues.bind(pa), pa.setValues,
-                    () => pl.removeProperty(p.dictRef), boundary1, level1);
-                addAnyUnits(units, paAttributes, div, div.querySelector(s_textarea) as HTMLElement, addRID(plDiv.id, p.dictRef, PropertyArray.s_units), p.dictRef, boundary, boundary);
-                plDiv.appendChild(div);
-            }
-        } else {
-            // PropertyMatrix.
-            let matrixNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyMatrix.tagName);
-            if (matrixNodes.length > 0) {
-                if (matrixNodes.length != 1) {
-                    throw new Error("Expecting 1 " + PropertyMatrix.tagName + " but finding " + matrixNodes.length + "!");
-                }
-                let inputString: string = getInputString(matrixNodes[0]);
-                let values: Big[] = toNumberArray(inputString.split(/\s+/));
-                let pmAttributes: Map<string, string> = getAttributes(matrixNodes[0]);
-                let pm: PropertyMatrix = new PropertyMatrix(pmAttributes, values);
-                p.setProperty(pm);
-                let label: string = p.dictRef;
-                // Create a new div element for the input.
-                let inputDiv: HTMLDivElement = createLabelWithTextArea(addRID(plDiv.id, p.dictRef),
-                    boundary, level, (event: Event) => {
-                        let target = event.target as HTMLTextAreaElement;
-                        setNumberArrayNode(pm, target);
-                    }, inputString, label);
-                let ta: HTMLTextAreaElement = inputDiv.querySelector('textarea') as HTMLTextAreaElement;
-                ta.value = inputString;
-                resizeTextAreaElement(ta);
-                ta.addEventListener('change', (event: Event) => {
-                    let target = event.target as HTMLTextAreaElement;
-                    inputString = target.value;
-                    pm = p.getProperty() as PropertyMatrix;
-                    values = toNumberArray(inputString.split(/\s+/));
-                    pm.values = values;
-                    console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + inputString);
-                    //resizeInputElement(inputElement);
-                    resizeTextAreaElement(ta);
-                });
-                addAnyUnits(units, pmAttributes, inputDiv, ta, addRID(plDiv.id, p.dictRef, s_select, "Units"), p.dictRef, boundary, boundary);
-                plDiv.appendChild(inputDiv);
-            } else {
-                throw new Error("Expecting " + PropertyScalarNumber.tagName + ", " + PropertyArray.tagName + " or "
-                    + PropertyMatrix.tagName + " but finding none!");
-            }
-        }
-    }
-}
-
-/**
- * For processing a molecule property.
- * @param p The property.
- * @param units The possible units.
- * @param molecule The molecule.
- * @param element The element.
- * @param plDiv The PropertyList div.
- * @param textArea If true, a text area is created rather than an input.
- * @param boundary The boundary to go around components.
- * @param level The level of the component.
- */
-export function processPropertyScalarString(pl: PropertyList, p: Property, molecule: Molecule, element: Element,
-    plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-
-    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
-    let pIDs: Set<string> = new Set<string>();
-
-    // PropertyScalarString.
-    let scalarNodes: HTMLCollectionOf<Element> = element.getElementsByTagName(PropertyScalarString.tagName);
-    if (scalarNodes.length > 0) {
-        if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + PropertyScalarString.tagName + " but finding " + scalarNodes.length + "!");
-        }
-        let inputString: string = getInputString(scalarNodes[0]);
-        let psAttributes: Map<string, string> = getAttributes(scalarNodes[0]);
-        // Add PropertyScalarNumber.
-        let ps: PropertyScalarString = new PropertyScalarString(psAttributes, inputString);
-        p.setProperty(ps);
-        ps.setValue = function (value: string) {
-            ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
-            if (p.dictRef == ZPE.dictRef) {
-                // Update the molecule energy diagram.
-                redrawReactionsDiagram();
-            }
-        }.bind(ps);
-        let div: HTMLDivElement = processString(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue,
-            () => pl.removeProperty(p.dictRef), boundary1, level1);
-        plDiv.appendChild(div);
-    } else {
-        console.log("Expecting " + PropertyScalarString.tagName + " but finding none!");
-    }
-}
-
-/**
  * If there is a choice of units, then a HTMLDivElement is appended containing an HTMLLabelElement and a HTMLSelectElement.
  * If there is no choice of units, a HTMLLabelElement is appended.
  * @param units The possible units.
@@ -1385,58 +1085,25 @@ function getUnitsLabelWithSelect(units: string[], attributes: Map<string, string
 }
 
 /**
- * Set a molecule property array when the input value is changed.
- * @param node The NumberArayNode.
- * @param ta The HTMLTextAreaElement.
+ * For getting a positive integer.
+ * @param message The message for the user prompt.
+ * @returns A positive integer.
  */
-export function setNumberArrayNode(node: NumberArrayNode, ta: HTMLTextAreaElement): void {
-    let inputString: string = ta.value.trim();
-    let originalValues = arrayToString(node.values, " ");
-    if (inputString == "") {
-        alert("Empty input resetting...");
-        ta.value = originalValues;
-        return;
-    }
-    let inputStrings: string[] = inputString.split(/\s+/);
-    let values: Big[] = [];
-    let success: boolean = true;
-    inputStrings.forEach(function (value) {
-        if (!isNumeric(value)) {
-            success = false;
-        } else {
-            values.push(new Big(value));
+export function getN(message: string): number {
+    let n: number = 0;
+    let nset = false;
+    while (!nset) {
+        let nString: string | null = prompt(message, "0");
+        if (nString != null) {
+            if (isNumeric(nString)) {
+                n = parseInt(nString);
+                if (n > 0) {
+                    nset = true;
+                }
+            }
         }
-    });
-    if (!success) {
-        alert("An input is not a number, resetting...");
-        ta.value = originalValues;
-        return;
     }
-    //console.log("propertyArray=" + propertyArray);
-    if (values.length == node.values.length) {
-        node.setValues(values);
-        console.log("Changed " + node.tagName + " from: \"" + originalValues + "\" to: \"" + arrayToString(node.values, " ") + "\"");
-        //console.log("molecule=" + molecule);
-    } else {
-        alert("Expecting " + node.values.length + " values for, but finding " + values.length + " resetting...");
-        ta.value = originalValues;
-    }
-}
-
-/**
- * Set a molecule number node when the input value is changed.
- * @param node The number node.
- * @param input The input element.
- */
-export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
-    try {
-        let value: Big = new Big(input.value);
-        //node.setValue(value);
-        node.value = value;
-    } catch (e) {
-        alert("Value invalid, resetting...");
-    }
-    input.value = node.value.toString();
+    return n;
 }
 
 /**
@@ -2053,4 +1720,20 @@ export function addSaveAsCSVButton(toCSV: Function, divToAddTo: HTMLElement, ele
         saveDataAsFile(csv, 'text/csv', fn);
         console.log("Saved " + fn);
     });
+}
+
+/**
+ * Set a number node when the input value is changed.
+ * @param node The number node.
+ * @param input The input element.
+ */
+export function setNumberNode(node: NumberNode, input: HTMLInputElement): void {
+    try {
+        let value: Big = new Big(input.value);
+        //node.setValue(value);
+        node.value = value;
+    } catch (e) {
+        alert("Value invalid, resetting...");
+    }
+    input.value = node.value.toString();
 }

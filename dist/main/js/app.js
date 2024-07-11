@@ -1,21 +1,16 @@
 "use strict";
-//import { openDB } from 'idb';
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRemoveButton = exports.processNumber = exports.addOrRemoveInstructions = exports.addPropertyScalarNumber = exports.addProperty = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
-exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.setNumberNode = exports.setNumberArrayNode = exports.addAnyUnits = exports.processPropertyScalarString = exports.processPropertyScalarNumber = void 0;
+exports.processNumber = exports.addOrRemoveInstructions = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.startAfresh = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.setLibmols = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_textarea = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
+exports.setNumberNode = exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.getN = exports.addAnyUnits = exports.processString = exports.addRemoveButton = void 0;
+// Imports from MXG modules.
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
-const xml_molecule_js_1 = require("./xml_molecule.js");
-const gui_menu_js_1 = require("./gui_menu.js");
 const html_js_1 = require("./html.js");
+const gui_menu_js_1 = require("./gui_menu.js");
 const xml_conditions_js_1 = require("./xml_conditions.js");
 const xml_modelParameters_js_1 = require("./xml_modelParameters.js");
 const xml_control_js_1 = require("./xml_control.js");
 const xml_mesmer_js_1 = require("./xml_mesmer.js");
-const big_js_1 = __importDefault(require("big.js"));
 const xml_analysis_js_1 = require("./xml_analysis.js");
 const xml_metadata_js_1 = require("./xml_metadata.js");
 const defaults_js_1 = require("./defaults.js");
@@ -25,13 +20,16 @@ const gui_ConditionsList_js_1 = require("./gui_ConditionsList.js");
 const gui_ModelParametersList_js_1 = require("./gui_ModelParametersList.js");
 const gui_ControlList_js_1 = require("./gui_ControlList.js");
 const gui_reactionDiagram_js_1 = require("./gui_reactionDiagram.js");
-//import * as $3Dmol from '$3Dmol'; // Add import statement for $3Dmol library
+// Imports from 3rd party modules.
+//import { openDB } from 'idb';
+const big_js_1 = require("big.js");
+//import * as $3Dmol from '$3Dmol';
 /**
  * Big.js.
  */
 // Set the number toString() format for Big.js. The default is Big.PE = 21, so this change means that Big numbers
 // with an order of magnitude of greater than 6 (e.g. 1000000) are presented as 1.0e+7.
-big_js_1.default.PE = 7;
+big_js_1.Big.PE = 7;
 /**
  * The filename of the MESMER XML file.
  */
@@ -87,7 +85,7 @@ exports.s_selectOption = "Select an option (press a letter key to cycle through 
 exports.s_table = "table";
 const s_title = "title";
 exports.s_Transition_States = "Transition States";
-const s_textarea = "textarea";
+exports.s_textarea = "textarea";
 exports.s_Tunneling = "Tunneling";
 exports.s_undefined = "undefined";
 exports.s_units = "units";
@@ -99,11 +97,11 @@ const s_welcome = "welcome";
  * This is used to ensure that all IDs are unique.
  * If an ID is not unique, an error is thrown.
  */
-const allIDs = new Set();
+let allIDs = new Set();
 /**
  * A set of all IDs to be removed when loading a MESMER file.
  */
-const rIDs = new Set();
+let rIDs = new Set();
 /**
  * Add an ID to the set of IDs.
  * @param parts The parts of the ID.
@@ -112,6 +110,7 @@ function addID(...parts) {
     let validID = (0, util_js_1.getID)(...parts);
     if (allIDs.has(validID)) {
         throw new Error(validID + " already exists!");
+        //console.warn(validID + " already exists!");
     }
     allIDs.add(validID);
     //console.log("addID: \"" + validID + "\"");
@@ -157,7 +156,7 @@ const xmlDivID = addID(s_xml);
 // For dark/light mode.
 let dark;
 // Numbers
-exports.big0 = new big_js_1.default(0);
+exports.big0 = new big_js_1.Big(0);
 /*
 const db = await openDB('my-db', 1, {
     upgrade(db) {
@@ -228,52 +227,47 @@ exports.IDManager = IDManager;
 /**
  * For moleculeList Div ID management.
  */
-let mIDM = new IDManager();
+let mIDM;
 /**
  * For reactionList Div ID management.
  */
-let rIDM = new IDManager();
+let rIDM;
 /**
  * For conditionsList Div ID management.
  */
-let conditionsIDM = new IDManager();
+let conditionsIDM;
 /**
  * For ModelParametersList Div ID management.
  */
-let mpIDM = new IDManager();
+let mpIDM;
 /**
  * For ControlList Div ID management.
  */
-let controlIDM = new IDManager();
+let controlIDM;
 /**
- * For the defaults loaded from defaults.xml.
+ * For initialising the libmols map.
+ * @param m The map of molecules to set.
  */
-exports.defaults = new defaults_js_1.Defaults();
-/**
- * For storing molecules loaded from files.
- */
-exports.libmols = new Map();
+function setLibmols(m) {
+    exports.libmols = m;
+}
+exports.setLibmols = setLibmols;
 /**
  * Adds a molecule to the map of molecules.
  * The molecule label is updated if the molecule attribute id is not unique.
  * @param m The molecule to add
  * @param ms The map of molecules to add the molecule to.
  */
-function addMolecule(m, ms) {
-    let id = m.getID();
-    let n = 1;
-    while (ms.has(m.id)) {
-        m.id = m.id + n;
-        n++;
-    }
-    ms.set(m.id, m);
+function addMolecule(ask, m, ms) {
+    let mid = (0, gui_moleculeList_js_1.setMoleculeID)(ask, m.getID(), m, ms);
+    ms.set(mid, m);
 }
 exports.addMolecule = addMolecule;
 /**
  * A map of molecules with id as key and Molecule as value.
  * The key is a composite of the molecule ID and the index.
  */
-let molecules = new Map();
+let molecules;
 /**
  * Get the keys of the molecules. The keys are a composite of the molecule ID and the index.
  * @returns The keys of the molecules.
@@ -310,7 +304,7 @@ exports.getMolecule = getMolecule;
 /**
  * A map of reactions with Reaction.id as keys and Reactions as values.
  */
-let reactions = new Map();
+let reactions;
 /**
  * For storing any scatter plots.
  */
@@ -320,8 +314,8 @@ let scatterPlots;
  */
 // IDs.
 exports.s_Reactions_Diagram = "Reactions Diagram";
-const rdDivID = addRID(exports.s_Reactions_Diagram);
-const rdcID = addRID(rdDivID, "Canvas");
+const rddDivID = addRID(exports.s_Reactions_Diagram);
+const rddcID = addRID(rddDivID, "Canvas");
 //let rd_canvas_width: number = 800;
 let rdcHeight = 400;
 let rd_lw = 4; // Line width of reactants, transition states and products.
@@ -349,6 +343,36 @@ document.addEventListener('DOMContentLoaded', () => {
     exports.mesmer = new xml_mesmer_js_1.Mesmer(mesmerAttributes);
     // Create the menu.
     (0, gui_menu_js_1.createMenu)();
+    // StartAfresh
+    startAfresh();
+});
+/**
+ * (Re)Initialise the main GUI and IDManagers.
+ */
+function initialise() {
+    // Clear content.
+    rIDs.forEach(id => {
+        remove(id);
+    });
+    // Initialise
+    rIDs = new Set();
+    mIDM = new IDManager();
+    rIDM = new IDManager();
+    conditionsIDM = new IDManager();
+    mpIDM = new IDManager();
+    controlIDM = new IDManager();
+    // libmols is not reinitialised on purpose. To completely start again, reload the app.
+    //libmols = new Map();
+    exports.defaults = new defaults_js_1.Defaults();
+    molecules = new Map();
+    reactions = new Map();
+    scatterPlots = [];
+}
+/**
+ * Load interface.
+ */
+function startAfresh() {
+    initialise();
     // Title.
     let title = "Example_title";
     let attributes = new Map();
@@ -375,11 +399,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let rb = (0, gui_reactionList_js_1.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
     // Reactions Diagram.
     let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDiv = (0, html_js_1.createDiv)(undefined, exports.level1);
+    let rdDivID = addRID(exports.s_Reactions_Diagram);
+    let rdDiv = (0, html_js_1.createDiv)(rdDivID);
     rddDiv.appendChild(rdDiv);
     // Create collapsible content.
     let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level0);
-    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
+    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
     // Conditions.
     let conditionsDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID(xml_conditions_js_1.Conditions.tagName);
@@ -441,7 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let xcDiv: HTMLDivElement = getCollapsibleDiv(xDivID, xmlDiv, null, xDiv,
         s_xml, boundary1, level0);
     */
-});
+}
+exports.startAfresh = startAfresh;
 /**
  * Create the title input.
  */
@@ -467,11 +493,11 @@ function createTitle(title, attributes) {
  */
 function redrawReactionsDiagram() {
     if (rdWindow == null) {
-        let rdCanvas = document.getElementById(rdcID);
+        let rdCanvas = document.getElementById(rddcID);
         (0, gui_reactionDiagram_js_1.drawReactionDiagram)(rdCanvas, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     }
     else {
-        let c = rdWindow.document.getElementById(rdcID);
+        let c = rdWindow.document.getElementById(rddcID);
         (0, gui_reactionDiagram_js_1.drawReactionDiagram)(c, rdcHeight, dark, rd_font, rd_lw, rd_lwc, molecules, reactions);
     }
 }
@@ -488,17 +514,8 @@ function redrawScatterPlots() {
  * Prompts the user for a MESMER XML file, and initiates the parsing of the chosen file.
  */
 function load() {
-    // Before loading a new file, remove any existing content and initialise any data containers.
-    rIDs.forEach((id) => {
-        remove(id);
-    });
-    if (molecules != null) {
-        molecules.clear();
-    }
-    if (reactions != null) {
-        reactions.clear();
-    }
-    scatterPlots = [];
+    // Before loading a new file, remove existing content and initialise data containers.
+    initialise();
     // Create a file input element to prompt the user to select a file.
     let input = document.createElement('input');
     input.type = 'file';
@@ -597,9 +614,9 @@ function parse(xml) {
     // If rdDiv already exists, remove it.
     remove(rdDivID);
     // Create collapsible content.
-    let rdDiv = (0, html_js_1.createDiv)(undefined, exports.level1);
+    let rdDiv = (0, html_js_1.createDiv)(rdDivID, exports.level1);
     let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level0);
-    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // ConditionsList.
     let cdlDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID(xml_conditions_js_1.Conditions.tagName);
@@ -686,68 +703,6 @@ function addOptionByClassName(className, optionToAdd) {
 }
 exports.addOptionByClassName = addOptionByClassName;
 /**
- * Add a Property.
- * @param dictRef The dictRef.
- * @param ps The PropertyScalar.
- * @param id The id.
- * @param boundary The boundary.
- * @param level The level.
- * @returns A div element.
- */
-function addProperty(dictRef, ps, id, boundary, level) {
-    let pDiv = (0, html_js_1.createFlexDiv)(id, level);
-    pDiv.appendChild((0, html_js_1.createLabel)(dictRef, boundary));
-    // value.
-    let value = ps.getValue();
-    //let value: string = ps.value;
-    let valueInputId = addRID(id, exports.s_input);
-    let valueInput = (0, html_js_1.createInput)("text", valueInputId, boundary);
-    pDiv.appendChild(valueInput);
-    valueInput.addEventListener('change', (event) => {
-        let target = event.target;
-        ps.setValue(new big_js_1.default(target.value));
-        //ps.value = target.value;
-        (0, html_js_1.resizeInputElement)(target);
-    });
-    valueInput.value = value.toString();
-    (0, html_js_1.resizeInputElement)(valueInput);
-    return pDiv;
-}
-exports.addProperty = addProperty;
-/**
- * Add a PropertyScalarNumber.
- * @param attributes The attributes.
- * @param iDs The set of IDs to add to.
- * @param value The value.
- * @param units The units.
- * @param pl The PropertyList.
- * @param p The Property.
- * @param plDiv The PropertyList div.
- * @param boundary The boundary.
- */
-function addPropertyScalarNumber(attributes, iDs, value, units, pl, p, plDiv, boundary) {
-    let ps = p.getProperty();
-    ps.setValue = function (value) {
-        ps.value = value;
-        if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
-            // Update the molecule energy diagram.
-            redrawReactionsDiagram();
-        }
-    }.bind(ps);
-    ps.value = value;
-    if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
-        // Update the molecule energy diagram.
-        redrawReactionsDiagram();
-    }
-    let id = addRID(plDiv.id, p.dictRef);
-    console.log("div ID " + id);
-    let div = processNumber(id, iDs, p.dictRef, ps.getValue.bind(ps), (value) => (0, gui_moleculeList_js_1.setPropertyScalarNumber)(p.dictRef, pl, ps, value), () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
-    console.log("unitsID " + addRID(id, xml_molecule_js_1.PropertyScalarNumber.s_units));
-    addAnyUnits(units, attributes, div, div.querySelector(exports.s_input), (0, util_js_1.getID)(id, xml_molecule_js_1.PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
-    plDiv.appendChild(div);
-}
-exports.addPropertyScalarNumber = addPropertyScalarNumber;
-/**
  * For adding or removing s_selectOption.
  * @param options The options.
  * @param add If true then a new option is added with an instruction to select another option.
@@ -769,25 +724,23 @@ exports.addOrRemoveInstructions = addOrRemoveInstructions;
 /**
  * Process a numerical variable.
  * @param id The id.
- * @param iDs The set of IDs to add to.
+ * @param tIDM The IDManager.
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
  * @param margin The margin.
  * @returns A div element.
  */
-function processNumber(id, iDs, name, getter, setter, remover, marginComponent, margin) {
+function processNumber(id, tIDM, name, getter, setter, remover, marginComponent, margin) {
     let div = (0, html_js_1.createFlexDiv)(id, margin);
     let buttonTextContentSelected = name + exports.sy_selected;
     let buttonTextContentDeselected = name + exports.sy_deselected;
-    let idb = addRID(id, name, html_js_1.s_button);
-    iDs.add(idb);
+    let idb = tIDM.addID(id, name, html_js_1.s_button);
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(exports.s_optionOn);
     button.classList.add(exports.s_optionOff);
-    let inputId = addRID(id, name, exports.s_input);
-    iDs.add(inputId);
+    let inputId = tIDM.addID(id, name, exports.s_input);
     let value = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -848,7 +801,7 @@ function addNumber(div, id, name, value, getter, setter, boundary) {
     input.addEventListener('change', (event) => {
         let target = event.target;
         try {
-            setter(new big_js_1.default(target.value));
+            setter(new big_js_1.Big(target.value));
             console.log(name + " changed from " + value + " to " + target.value);
         }
         catch (e) {
@@ -861,79 +814,6 @@ function addNumber(div, id, name, value, getter, setter, boundary) {
     //setter(new Big(valueString));
     (0, html_js_1.resizeInputElement)(input);
     div.appendChild(input);
-}
-/**
- * Process a numerical variable.
- * @param div The div.
- * @param id The id.
- * @param name The name of the variable.
- * @param getter The getter function.
- * @param setter The setter function.
- * @param margin The margin.
- */
-function processNumberArray(id, name, pa, getter, setter, remover, marginComponent, margin) {
-    let div = (0, html_js_1.createFlexDiv)(undefined, margin);
-    let buttonTextContentSelected = name + exports.sy_selected;
-    let buttonTextContentDeselected = name + exports.sy_deselected;
-    let button = (0, html_js_1.createButton)(buttonTextContentDeselected, addRID(id, html_js_1.s_button), marginComponent);
-    div.appendChild(button);
-    button.classList.add(exports.s_optionOn);
-    button.classList.add(exports.s_optionOff);
-    let inputId = addRID(id, name, exports.s_input);
-    let value = getter();
-    if (value == undefined) {
-        button.textContent = buttonTextContentDeselected;
-        button.classList.toggle(exports.s_optionOn);
-    }
-    else {
-        addNumberArray(div, inputId, name, value, pa, getter, setter, marginComponent);
-        button.textContent = buttonTextContentSelected;
-        button.classList.toggle(exports.s_optionOff);
-    }
-    // Add event listener for the button.
-    button.addEventListener('click', (event) => {
-        if (document.getElementById(inputId) == null) {
-            addNumberArray(div, inputId, name, value, pa, getter, setter, marginComponent);
-            button.textContent = buttonTextContentSelected;
-        }
-        else {
-            // Remove existing.
-            document.getElementById(inputId)?.remove();
-            remover();
-            console.log("Removed " + inputId);
-            button.textContent = buttonTextContentDeselected;
-        }
-        button.classList.toggle(exports.s_optionOn);
-        button.classList.toggle(exports.s_optionOff);
-    });
-    return div;
-}
-/**
- * @param div The div to add the input to.
- * @param id The id.
- * @param name The name of the input.
- * @param value The numerical value.
- * @param setter The setter function to call.
- * @param boundary The boundary.
- * @param level The level.
- */
-function addNumberArray(div, id, name, values, pa, getter, setter, boundary) {
-    let valueString;
-    if (values == undefined) {
-        valueString = "";
-    }
-    else {
-        valueString = (0, util_js_1.bigArrayToString)(values);
-    }
-    let ta = (0, html_js_1.createTextArea)(id, boundary);
-    ta.addEventListener('change', (event) => {
-        let target = event.target;
-        setNumberArrayNode(pa, ta);
-        (0, html_js_1.resizeTextAreaElement)(target);
-    });
-    ta.value = valueString;
-    (0, html_js_1.resizeTextAreaElement)(ta);
-    div.appendChild(ta);
 }
 /**
  * @param div The div to append the button to.
@@ -954,7 +834,7 @@ function addRemoveButton(div, margin, removeFunction, ...args) {
 }
 exports.addRemoveButton = addRemoveButton;
 /**
- * Process a numerical variable.
+ * Process a string variable.
  * @param id The id.
  * @param iDs The set of IDs to add to.
  * @param name The name of the variable.
@@ -1003,6 +883,7 @@ function processString(id, iDs, name, getter, setter, remover, marginComponent, 
     });
     return div;
 }
+exports.processString = processString;
 /**
  * @param div The div to add the input to.
  * @param id The id.
@@ -1048,144 +929,6 @@ function displayXML(xmlFilename, xml) {
     xmlPre.textContent = xml;
     xml2Div.appendChild(xmlPre);
 }
-/**
- * For processing a molecule property.
- * @param p The property.
- * @param units The possible units.
- * @param molecule The molecule.
- * @param element The element.
- * @param plDiv The PropertyList div.
- * @param textArea If true, a text area is created rather than an input.
- * @param boundary The boundary to go around components.
- * @param level The level of the component.
- */
-function processPropertyScalarNumber(pl, p, units, molecule, element, plDiv, boundary, level) {
-    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
-    let pIDs = new Set();
-    // PropertyScalar.
-    let scalarNodes = element.getElementsByTagName(xml_molecule_js_1.PropertyScalarNumber.tagName);
-    if (scalarNodes.length > 0) {
-        if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + xml_molecule_js_1.PropertyScalarNumber.tagName + " but finding " + scalarNodes.length + "!");
-        }
-        let inputString = (0, xml_js_1.getInputString)(scalarNodes[0]);
-        let value = new big_js_1.default(inputString);
-        let psAttributes = (0, xml_js_1.getAttributes)(scalarNodes[0]);
-        // Add PropertyScalarNumber.
-        let ps = new xml_molecule_js_1.PropertyScalarNumber(psAttributes, value);
-        p.setProperty(ps);
-        ps.setValue = function (value) {
-            ps.value = value;
-            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
-                // Update the molecule energy diagram.
-                redrawReactionsDiagram();
-            }
-        }.bind(ps);
-        let div = processNumber(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), (value) => (0, gui_moleculeList_js_1.setPropertyScalarNumber)(p.dictRef, pl, ps, value), () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
-        addAnyUnits(units, psAttributes, div, div.querySelector(exports.s_input), addRID(plDiv.id, p.dictRef, xml_molecule_js_1.PropertyScalarNumber.s_units), p.dictRef, boundary, boundary);
-        plDiv.appendChild(div);
-    }
-    else {
-        // PropertyArray.
-        let arrayNodes = element.getElementsByTagName(xml_molecule_js_1.PropertyArray.tagName);
-        if (arrayNodes.length > 0) {
-            if (arrayNodes.length != 1) {
-                throw new Error("Expecting 1 " + xml_molecule_js_1.PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
-            }
-            let inputString = (0, xml_js_1.getInputString)(arrayNodes[0]);
-            if (inputString != "") {
-                let values = (0, util_js_1.toNumberArray)(inputString.split(/\s+/));
-                let paAttributes = (0, xml_js_1.getAttributes)(arrayNodes[0]);
-                let pa = new xml_molecule_js_1.PropertyArray(paAttributes, values);
-                p.setProperty(pa);
-                let div = processNumberArray(addRID(plDiv.id, p.dictRef), p.dictRef, pa, pa.getValues.bind(pa), pa.setValues, () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
-                addAnyUnits(units, paAttributes, div, div.querySelector(s_textarea), addRID(plDiv.id, p.dictRef, xml_molecule_js_1.PropertyArray.s_units), p.dictRef, boundary, boundary);
-                plDiv.appendChild(div);
-            }
-        }
-        else {
-            // PropertyMatrix.
-            let matrixNodes = element.getElementsByTagName(xml_molecule_js_1.PropertyMatrix.tagName);
-            if (matrixNodes.length > 0) {
-                if (matrixNodes.length != 1) {
-                    throw new Error("Expecting 1 " + xml_molecule_js_1.PropertyMatrix.tagName + " but finding " + matrixNodes.length + "!");
-                }
-                let inputString = (0, xml_js_1.getInputString)(matrixNodes[0]);
-                let values = (0, util_js_1.toNumberArray)(inputString.split(/\s+/));
-                let pmAttributes = (0, xml_js_1.getAttributes)(matrixNodes[0]);
-                let pm = new xml_molecule_js_1.PropertyMatrix(pmAttributes, values);
-                p.setProperty(pm);
-                let label = p.dictRef;
-                // Create a new div element for the input.
-                let inputDiv = (0, html_js_1.createLabelWithTextArea)(addRID(plDiv.id, p.dictRef), boundary, level, (event) => {
-                    let target = event.target;
-                    setNumberArrayNode(pm, target);
-                }, inputString, label);
-                let ta = inputDiv.querySelector('textarea');
-                ta.value = inputString;
-                (0, html_js_1.resizeTextAreaElement)(ta);
-                ta.addEventListener('change', (event) => {
-                    let target = event.target;
-                    inputString = target.value;
-                    pm = p.getProperty();
-                    values = (0, util_js_1.toNumberArray)(inputString.split(/\s+/));
-                    pm.values = values;
-                    console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + inputString);
-                    //resizeInputElement(inputElement);
-                    (0, html_js_1.resizeTextAreaElement)(ta);
-                });
-                addAnyUnits(units, pmAttributes, inputDiv, ta, addRID(plDiv.id, p.dictRef, html_js_1.s_select, "Units"), p.dictRef, boundary, boundary);
-                plDiv.appendChild(inputDiv);
-            }
-            else {
-                throw new Error("Expecting " + xml_molecule_js_1.PropertyScalarNumber.tagName + ", " + xml_molecule_js_1.PropertyArray.tagName + " or "
-                    + xml_molecule_js_1.PropertyMatrix.tagName + " but finding none!");
-            }
-        }
-    }
-}
-exports.processPropertyScalarNumber = processPropertyScalarNumber;
-/**
- * For processing a molecule property.
- * @param p The property.
- * @param units The possible units.
- * @param molecule The molecule.
- * @param element The element.
- * @param plDiv The PropertyList div.
- * @param textArea If true, a text area is created rather than an input.
- * @param boundary The boundary to go around components.
- * @param level The level of the component.
- */
-function processPropertyScalarString(pl, p, molecule, element, plDiv, boundary, level) {
-    // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
-    let pIDs = new Set();
-    // PropertyScalarString.
-    let scalarNodes = element.getElementsByTagName(xml_molecule_js_1.PropertyScalarString.tagName);
-    if (scalarNodes.length > 0) {
-        if (scalarNodes.length != 1) {
-            throw new Error("Expecting 1 " + xml_molecule_js_1.PropertyScalarString.tagName + " but finding " + scalarNodes.length + "!");
-        }
-        let inputString = (0, xml_js_1.getInputString)(scalarNodes[0]);
-        let psAttributes = (0, xml_js_1.getAttributes)(scalarNodes[0]);
-        // Add PropertyScalarNumber.
-        let ps = new xml_molecule_js_1.PropertyScalarString(psAttributes, inputString);
-        p.setProperty(ps);
-        ps.setValue = function (value) {
-            ps.value = value;
-            //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
-            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
-                // Update the molecule energy diagram.
-                redrawReactionsDiagram();
-            }
-        }.bind(ps);
-        let div = processString(addRID(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue, () => pl.removeProperty(p.dictRef), exports.boundary1, exports.level1);
-        plDiv.appendChild(div);
-    }
-    else {
-        console.log("Expecting " + xml_molecule_js_1.PropertyScalarString.tagName + " but finding none!");
-    }
-}
-exports.processPropertyScalarString = processPropertyScalarString;
 /**
  * If there is a choice of units, then a HTMLDivElement is appended containing an HTMLLabelElement and a HTMLSelectElement.
  * If there is no choice of units, a HTMLLabelElement is appended.
@@ -1240,63 +983,27 @@ function getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, boundary, 
     return undefined;
 }
 /**
- * Set a molecule property array when the input value is changed.
- * @param node The NumberArayNode.
- * @param ta The HTMLTextAreaElement.
+ * For getting a positive integer.
+ * @param message The message for the user prompt.
+ * @returns A positive integer.
  */
-function setNumberArrayNode(node, ta) {
-    let inputString = ta.value.trim();
-    let originalValues = (0, util_js_1.arrayToString)(node.values, " ");
-    if (inputString == "") {
-        alert("Empty input resetting...");
-        ta.value = originalValues;
-        return;
-    }
-    let inputStrings = inputString.split(/\s+/);
-    let values = [];
-    let success = true;
-    inputStrings.forEach(function (value) {
-        if (!(0, util_js_1.isNumeric)(value)) {
-            success = false;
+function getN(message) {
+    let n = 0;
+    let nset = false;
+    while (!nset) {
+        let nString = prompt(message, "0");
+        if (nString != null) {
+            if ((0, util_js_1.isNumeric)(nString)) {
+                n = parseInt(nString);
+                if (n > 0) {
+                    nset = true;
+                }
+            }
         }
-        else {
-            values.push(new big_js_1.default(value));
-        }
-    });
-    if (!success) {
-        alert("An input is not a number, resetting...");
-        ta.value = originalValues;
-        return;
     }
-    //console.log("propertyArray=" + propertyArray);
-    if (values.length == node.values.length) {
-        node.setValues(values);
-        console.log("Changed " + node.tagName + " from: \"" + originalValues + "\" to: \"" + (0, util_js_1.arrayToString)(node.values, " ") + "\"");
-        //console.log("molecule=" + molecule);
-    }
-    else {
-        alert("Expecting " + node.values.length + " values for, but finding " + values.length + " resetting...");
-        ta.value = originalValues;
-    }
+    return n;
 }
-exports.setNumberArrayNode = setNumberArrayNode;
-/**
- * Set a molecule number node when the input value is changed.
- * @param node The number node.
- * @param input The input element.
- */
-function setNumberNode(node, input) {
-    try {
-        let value = new big_js_1.default(input.value);
-        //node.setValue(value);
-        node.value = value;
-    }
-    catch (e) {
-        alert("Value invalid, resetting...");
-    }
-    input.value = node.value.toString();
-}
-exports.setNumberNode = setNumberNode;
+exports.getN = getN;
 /**
  * @param options The options.
  * @param select The select element.
@@ -1403,7 +1110,7 @@ function processAnalysis(xml) {
                 let xml_ei = xml_el[i].getElementsByTagName(xml_analysis_js_1.Eigenvalue.tagName);
                 if (xml_ei.length > 0) {
                     for (let j = 0; j < xml_ei.length; j++) {
-                        let ev = new big_js_1.default((0, xml_js_1.getFirstChildNode)(xml_ei[j])?.nodeValue);
+                        let ev = new big_js_1.Big((0, xml_js_1.getFirstChildNode)(xml_ei[j])?.nodeValue);
                         evs.push(ev);
                         el.addEigenvalue(new xml_analysis_js_1.Eigenvalue((0, xml_js_1.getAttributes)(xml_ei[j]), ev));
                     }
@@ -1421,8 +1128,8 @@ function processAnalysis(xml) {
             // Create a new collapsible div for the PopulationList.
             for (let i = 0; i < xml_pl.length; i++) {
                 let pl_attributes = (0, xml_js_1.getAttributes)(xml_pl[i]);
-                let T = pl_attributes.get("T") != undefined ? new big_js_1.default(pl_attributes.get("T")) : exports.big0;
-                let conc = pl_attributes.get("conc") != undefined ? new big_js_1.default(pl_attributes.get("conc")) : exports.big0;
+                let T = pl_attributes.get("T") != undefined ? new big_js_1.Big(pl_attributes.get("T")) : exports.big0;
+                let conc = pl_attributes.get("conc") != undefined ? new big_js_1.Big(pl_attributes.get("conc")) : exports.big0;
                 let pl = new xml_analysis_js_1.PopulationList(pl_attributes);
                 let labelText = pl.tagName + " " + i.toString() + " " + (0, util_js_1.mapToString)(pl_attributes);
                 let plDivID = addRID(aDiv.id, xml_analysis_js_1.PopulationList.tagName, i.toString());
@@ -1442,7 +1149,7 @@ function processAnalysis(xml) {
                         let pn_attributes = (0, xml_js_1.getAttributes)(xml_pn[j]);
                         let population = new xml_analysis_js_1.Population(pn_attributes, []);
                         pl.addPopulation(population);
-                        let t = pn_attributes.get("time") != undefined ? new big_js_1.default(pn_attributes.get("time")) : exports.big0;
+                        let t = pn_attributes.get("time") != undefined ? new big_js_1.Big(pn_attributes.get("time")) : exports.big0;
                         //let lt: Big = pn_attributes.get("logTime") != undefined ? new Big(pn_attributes.get("logTime") as string) : big0; 
                         let ref_pop = new Map();
                         //lt_ref_pop.set(lt, ref_pop);
@@ -1455,7 +1162,7 @@ function processAnalysis(xml) {
                                 if (j == 0) {
                                     refs.push(ref);
                                 }
-                                let p = new big_js_1.default((0, xml_js_1.getFirstChildNode)(xml_pop[k])?.nodeValue);
+                                let p = new big_js_1.Big((0, xml_js_1.getFirstChildNode)(xml_pop[k])?.nodeValue);
                                 let pop = new xml_analysis_js_1.Pop(pop_attributes, p);
                                 population.addPop(pop);
                                 ref_pop.set(ref, p);
@@ -1540,7 +1247,7 @@ function processAnalysis(xml) {
                         }
                         let s = ((0, xml_js_1.getFirstChildNode)(xml_for[j])?.nodeValue ?? "").trim();
                         values.push(s);
-                        let forate = new xml_analysis_js_1.FirstOrderRate(forate_attributes, new big_js_1.default(s));
+                        let forate = new xml_analysis_js_1.FirstOrderRate(forate_attributes, new big_js_1.Big(s));
                         rl.addFirstOrderRate(forate);
                     }
                 }
@@ -1557,7 +1264,7 @@ function processAnalysis(xml) {
                         }
                         let s = ((0, xml_js_1.getFirstChildNode)(xml_fol[j])?.nodeValue ?? "").trim();
                         values.push(s);
-                        let fol = new xml_analysis_js_1.FirstOrderLoss(fol_attributes, new big_js_1.default(s));
+                        let fol = new xml_analysis_js_1.FirstOrderLoss(fol_attributes, new big_js_1.Big(s));
                         rl.addFirstOrderLoss(fol);
                     }
                 }
@@ -1885,4 +1592,21 @@ function addSaveAsCSVButton(toCSV, divToAddTo, elementToInsertBefore, name, marg
     });
 }
 exports.addSaveAsCSVButton = addSaveAsCSVButton;
+/**
+ * Set a number node when the input value is changed.
+ * @param node The number node.
+ * @param input The input element.
+ */
+function setNumberNode(node, input) {
+    try {
+        let value = new big_js_1.Big(input.value);
+        //node.setValue(value);
+        node.value = value;
+    }
+    catch (e) {
+        alert("Value invalid, resetting...");
+    }
+    input.value = node.value.toString();
+}
+exports.setNumberNode = setNumberNode;
 //# sourceMappingURL=app.js.map

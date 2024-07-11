@@ -1,14 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LibraryMolecules = void 0;
-const big_js_1 = __importDefault(require("big.js"));
+exports.processPropertyString = exports.LibraryMolecules = void 0;
+const big_js_1 = require("big.js");
 const xml_mesmer_1 = require("./xml_mesmer");
 const xml_metadata_1 = require("./xml_metadata");
 const xml_molecule_1 = require("./xml_molecule");
 const xml_1 = require("./xml");
+const util_1 = require("./util");
 const gui_moleculeList_1 = require("./gui_moleculeList");
 class LibraryMolecules {
     /**
@@ -232,7 +230,7 @@ class LibraryMolecules {
                 let xml_ps = xml_pls[0].getElementsByTagName(xml_molecule_1.Property.tagName);
                 for (let j = 0; j < xml_ps.length; j++) {
                     // Create a new Property.
-                    pl.setProperty(new xml_molecule_1.Property((0, xml_1.getAttributes)(xml_ps[j])));
+                    pl.setProperty(createProperty(xml_ps[j]));
                 }
                 moleculeTagNames.delete(xml_molecule_1.PropertyList.tagName);
             }
@@ -247,7 +245,7 @@ class LibraryMolecules {
                         + ". Should these be in a " + xml_molecule_1.PropertyList.tagName + "?");
                 }
                 // Create a new Property.
-                pl.setProperty(new xml_molecule_1.Property((0, xml_1.getAttributes)(xml_ps[0])));
+                pl.setProperty(createProperty(xml_ps[0]));
                 moleculeTagNames.delete(xml_molecule_1.Property.tagName);
             }
             // Organise EnergyTransferModel.
@@ -315,7 +313,7 @@ class LibraryMolecules {
                             throw new Error("Expecting 1 " + xml_mesmer_1.T.tagName + " but finding " + xml_t.length + "!");
                         }
                         else {
-                            let t = new xml_mesmer_1.T((0, xml_1.getAttributes)(xml_t[0]), new big_js_1.default((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_t[0]))));
+                            let t = new xml_mesmer_1.T((0, xml_1.getAttributes)(xml_t[0]), new big_js_1.Big((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_t[0]))));
                             dos.setT(t);
                             //dosDiv.appendChild(createLabel(t.value.toString(), boundary1));
                         }
@@ -325,7 +323,7 @@ class LibraryMolecules {
                             throw new Error("Expecting 1 " + xml_molecule_1.Qtot.tagName + " but finding " + xml_qtot.length + "!");
                         }
                         else {
-                            let qtot = new xml_molecule_1.Qtot((0, xml_1.getAttributes)(xml_qtot[0]), new big_js_1.default((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_qtot[0]))));
+                            let qtot = new xml_molecule_1.Qtot((0, xml_1.getAttributes)(xml_qtot[0]), new big_js_1.Big((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_qtot[0]))));
                             dos.setQtot(qtot);
                             //dosDiv.appendChild(createLabel(Qtot.tagName + " " + qtot.value.toString(), boundary1));
                         }
@@ -335,7 +333,7 @@ class LibraryMolecules {
                             throw new Error("Expecting 1 " + xml_molecule_1.Sumc.tagName + " but finding " + xml_sumc.length + "!");
                         }
                         else {
-                            let sumc = new xml_molecule_1.Sumc((0, xml_1.getAttributes)(xml_sumc[0]), new big_js_1.default((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_sumc[0]))));
+                            let sumc = new xml_molecule_1.Sumc((0, xml_1.getAttributes)(xml_sumc[0]), new big_js_1.Big((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_sumc[0]))));
                             dos.setSumc(sumc);
                             //dosDiv.appendChild(createLabel(sumc.value.toString(), boundary1));
                         }
@@ -345,7 +343,7 @@ class LibraryMolecules {
                             throw new Error("Expecting 1 " + xml_molecule_1.Sumg.tagName + " but finding " + xml_sumg.length + "!");
                         }
                         else {
-                            let sumg = new xml_molecule_1.Sumg((0, xml_1.getAttributes)(xml_sumg[0]), new big_js_1.default((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_sumg[0]))));
+                            let sumg = new xml_molecule_1.Sumg((0, xml_1.getAttributes)(xml_sumg[0]), new big_js_1.Big((0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml_sumg[0]))));
                             dos.setSumg(sumg);
                             //dosDiv.appendChild(createLabel(sumg.value.toString(), boundary1));
                         }
@@ -367,4 +365,153 @@ class LibraryMolecules {
     }
 }
 exports.LibraryMolecules = LibraryMolecules;
+/**
+ * Create a property.
+ * @param xml The XML element.
+ * @returns The property.
+ */
+function createProperty(xml) {
+    let p = new xml_molecule_1.Property((0, xml_1.getAttributes)(xml));
+    //console.log("p.dictRef " + p.dictRef);
+    if (p.dictRef == xml_molecule_1.ZPE.dictRef) {
+        // "me:ZPE", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.Hf0.dictRef) {
+        // "me:Hf0", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.HfAT0.dictRef) {
+        // "me:HfAT0", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.Hf298.dictRef) {
+        // "me:Hf298", scalar, Mesmer.energyUnits.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.RotConsts.dictRef) {
+        // "me:rotConsts", array, Mesmer.frequencyUnits.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.SymmetryNumber.dictRef) {
+        // "me:symmetryNumber", scalar, No units.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.TSOpticalSymmetryNumber.dictRef) {
+        // "me:TSOpticalSymmetryNumber", scalar, No units.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.FrequenciesScaleFactor.dictRef) {
+        // "me:frequenciesScaleFactor", scalar, No units.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.VibFreqs.dictRef) {
+        // "me:vibFreqs", array, cm-1.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.MW.dictRef) {
+        // "me:MW", scalar, amu.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.SpinMultiplicity.dictRef) {
+        // "me:spinMultiplicity", scalar, No units.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.Epsilon.dictRef) {
+        // "me:epsilon", scalar, K (fixed).
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.Sigma.dictRef) {
+        // "me:sigma", scalar, Å (fixed).
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.Hessian.dictRef) {
+        // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.EinsteinAij.dictRef) {
+        // "me:EinsteinAij", array, s-1 (fixed).
+        processProperty(p, xml);
+    }
+    else if (p.dictRef == xml_molecule_1.EinsteinBij.dictRef) {
+        // "me:EinsteinBij", array, m3/J/s2 (fixed).
+        processProperty(p, xml);
+    }
+    else {
+        processPropertyString(p, xml);
+    }
+    return p;
+}
+/**
+ * Process a property.
+ * @param p The property.
+ * @param element The element.
+ */
+function processProperty(p, element) {
+    // PropertyScalar.
+    let scalarNodes = element.getElementsByTagName(xml_molecule_1.PropertyScalarNumber.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + xml_molecule_1.PropertyScalarNumber.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString = (0, xml_1.getInputString)(scalarNodes[0]);
+        let value = new big_js_1.Big(inputString);
+        let psAttributes = (0, xml_1.getAttributes)(scalarNodes[0]);
+        // Add PropertyScalarNumber.
+        let ps = new xml_molecule_1.PropertyScalarNumber(psAttributes, value);
+        p.setProperty(ps);
+    }
+    else {
+        // PropertyArray.
+        let arrayNodes = element.getElementsByTagName(xml_molecule_1.PropertyArray.tagName);
+        if (arrayNodes.length > 0) {
+            if (arrayNodes.length != 1) {
+                throw new Error("Expecting 1 " + xml_molecule_1.PropertyArray.tagName + " but finding " + arrayNodes.length + "!");
+            }
+            let inputString = (0, xml_1.getInputString)(arrayNodes[0]);
+            if (inputString != "") {
+                let values = (0, util_1.toNumberArray)(inputString.split(/\s+/));
+                let paAttributes = (0, xml_1.getAttributes)(arrayNodes[0]);
+                let pa = new xml_molecule_1.PropertyArray(paAttributes, values);
+                p.setProperty(pa);
+            }
+        }
+        else {
+            // PropertyMatrix.
+            let matrixNodes = element.getElementsByTagName(xml_molecule_1.PropertyMatrix.tagName);
+            if (matrixNodes.length > 0) {
+                if (matrixNodes.length != 1) {
+                    throw new Error("Expecting 1 " + xml_molecule_1.PropertyMatrix.tagName + " but finding " + matrixNodes.length + "!");
+                }
+                let inputString = (0, xml_1.getInputString)(matrixNodes[0]);
+                let values = (0, util_1.toNumberArray)(inputString.split(/\s+/));
+                let pmAttributes = (0, xml_1.getAttributes)(matrixNodes[0]);
+                let pm = new xml_molecule_1.PropertyMatrix(pmAttributes, values);
+                p.setProperty(pm);
+            }
+            else {
+                throw new Error("Expecting " + xml_molecule_1.PropertyScalarNumber.tagName + ", " + xml_molecule_1.PropertyArray.tagName + " or "
+                    + xml_molecule_1.PropertyMatrix.tagName + " but finding none!");
+            }
+        }
+    }
+}
+function processPropertyString(p, element) {
+    // PropertyScalarString.
+    let scalarNodes = element.getElementsByTagName(xml_molecule_1.PropertyScalarString.tagName);
+    if (scalarNodes.length > 0) {
+        if (scalarNodes.length != 1) {
+            throw new Error("Expecting 1 " + xml_molecule_1.PropertyScalarString.tagName + " but finding " + scalarNodes.length + "!");
+        }
+        let inputString = (0, xml_1.getInputString)(scalarNodes[0]);
+        let psAttributes = (0, xml_1.getAttributes)(scalarNodes[0]);
+        // Add PropertyScalarNumber.
+        let ps = new xml_molecule_1.PropertyScalarString(psAttributes, inputString);
+        p.setProperty(ps);
+    }
+    else {
+        console.log("Expecting " + xml_molecule_1.PropertyScalarString.tagName + " but finding none!");
+    }
+}
+exports.processPropertyString = processPropertyString;
 //# sourceMappingURL=librarymols.js.map
