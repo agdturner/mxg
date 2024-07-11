@@ -133,6 +133,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                     intProducts.add(reactantsLabel);
                 }
                 let energy = reaction.getReactantsEnergy(app_1.getMolecule, molecules);
+                console.log("energy=" + energy.toString());
                 energyMin = (0, util_1.min)(energyMin, energy);
                 energyMax = (0, util_1.max)(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -145,6 +146,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             if (productsLabel != undefined) {
                 products.add(productsLabel);
                 let energy = reaction.getProductsEnergy(app_1.getMolecule, molecules);
+                console.log("energy=" + energy.toString());
                 energyMin = (0, util_1.min)(energyMin, energy);
                 energyMax = (0, util_1.max)(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -164,6 +166,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                             tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
+                            console.log("energy=" + energy.toString());
                             energyMin = (0, util_1.min)(energyMin, energy);
                             energyMax = (0, util_1.max)(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -180,6 +183,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                             tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (0, app_1.getMolecule)(moleculeRef, molecules).getEnergy() ?? app_1.big0;
+                            console.log("energy=" + energy.toString());
                             energyMin = (0, util_1.min)(energyMin, energy);
                             energyMax = (0, util_1.max)(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -227,6 +231,7 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             //console.log("value=" + value + ".");
             //console.log("energies=" + mapToString(energies));
             let energy = (0, util_1.get)(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, rdcHeight, energy);
             // Get text width.
             tw = Math.max((0, canvas_1.getTextWidth)(ctx, energy.toString(), font), (0, canvas_1.getTextWidth)(ctx, value, font));
@@ -291,7 +296,9 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         // (This is done last so that the labels are on top of the vertical lines.)
         reactants.forEach(function (value) {
             let energy = (0, util_1.get)(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0 = (0, util_1.get)(reactantsInXY, value)[0];
             let y = energyRescaled + lw;
             let x1 = (0, util_1.get)(reactantsOutXY, value)[0];
@@ -300,7 +307,9 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         });
         products.forEach(function (value) {
             let energy = (0, util_1.get)(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0 = (0, util_1.get)(productsInXY, value)[0];
             let y = energyRescaled + lw;
             let x1 = (0, util_1.get)(productsOutXY, value)[0];
@@ -314,7 +323,9 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
         });
         tss.forEach(function (value) {
             let energy = (0, util_1.get)(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled = (0, util_1.rescale)(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0 = (0, util_1.get)(tssInXY, value)[0];
             let y = energyRescaled + lw;
             let x1 = (0, util_1.get)(tssOutXY, value)[0];

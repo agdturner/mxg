@@ -3040,8 +3040,9 @@ class Molecule extends xml_js_1.NodeWithNodes {
             return (0, big_js_1.Big)(0);
         }
         else {
-            if (p instanceof PropertyScalarNumber) {
-                return p.value;
+            let pp = p.getProperty();
+            if (pp instanceof PropertyScalarNumber) {
+                return pp.value;
             }
             else {
                 return (0, big_js_1.Big)(0);

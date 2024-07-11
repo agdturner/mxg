@@ -62,8 +62,186 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         r.setTransitionStates(transitionStates);
         addAddTransitionStateButton(rIDM, rDivID, tsDiv, molecules, transitionStates);
         // Create collapsible content for MCRCMethod.
-        // Create collapsible content for excessReactantConc.
-        // Create collapsible content for canonicalRateList.
+        let mmDivId = rIDM.addID(rDivID, xml_reaction_js_1.MCRCMethod.tagName);
+        let mmDiv = (0, html_js_1.createDiv)(mmDivId);
+        let mmcDivId = rIDM.addID(mmDivId, app_js_1.s_container);
+        let mmcDiv = (0, html_js_1.getCollapsibleDiv)(mmcDivId, rDiv, null, mmDiv, xml_reaction_js_1.MCRCMethod.tagName, app_js_1.boundary1, app_js_1.level1);
+        //rDiv.appendChild(mmcDiv);
+        let mm = new xml_reaction_js_1.MesmerILT(new Map());
+        r.setMCRCMethod(mm);
+        let inputString;
+        let value;
+        // PreExponential.
+        if (true) {
+            // Get value from defaults.
+            if (app_js_1.defaults != undefined) {
+                inputString = app_js_1.defaults.values.get(xml_reaction_js_1.PreExponential.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "6.00e-12";
+                }
+            }
+            else {
+                inputString = "6.00e-12";
+            }
+            value = new big_js_1.default(inputString);
+            let peAttributes = new Map();
+            let pe = new xml_reaction_js_1.PreExponential(peAttributes, value);
+            mm.setPreExponential(pe);
+            let lwi = (0, html_js_1.createLabelWithInput)("number", (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.PreExponential.tagName, app_js_1.s_input), app_js_1.boundary1, app_js_1.level1, (event) => {
+                let target = event.target;
+                (0, app_js_1.setNumberNode)(pe, target);
+            }, inputString, xml_reaction_js_1.PreExponential.tagName);
+            mmDiv.appendChild(lwi);
+            let input = lwi.querySelector('input');
+            input.value = inputString;
+            (0, html_js_1.resizeInputElement)(input);
+            input.addEventListener('change', (event) => {
+                let target = event.target;
+                inputString = target.value;
+                pe.value = new big_js_1.default(inputString);
+                console.log(xml_reaction_js_1.PreExponential.tagName + " changed to " + inputString);
+                (0, html_js_1.resizeInputElement)(input);
+            });
+            (0, app_js_1.addAnyUnits)(undefined, peAttributes, lwi, null, (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.PreExponential.tagName), xml_reaction_js_1.PreExponential.tagName, app_js_1.boundary1, app_js_1.boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // ActivationEnergy.
+        if (true) {
+            // Get value from defaults.
+            if (app_js_1.defaults != undefined) {
+                inputString = app_js_1.defaults.values.get(xml_reaction_js_1.ActivationEnergy.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "0.0";
+                }
+            }
+            else {
+                inputString = "0.0";
+            }
+            value = new big_js_1.default(inputString);
+            let aeAttributes = new Map();
+            let ae = new xml_reaction_js_1.ActivationEnergy(aeAttributes, value);
+            mm.setActivationEnergy(ae);
+            // Create a new div element for the input.
+            let lwi = (0, html_js_1.createLabelWithInput)("number", (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.ActivationEnergy.tagName, app_js_1.s_input), app_js_1.boundary1, app_js_1.level1, (event) => {
+                let target = event.target;
+                (0, app_js_1.setNumberNode)(ae, target);
+            }, inputString, xml_reaction_js_1.ActivationEnergy.tagName);
+            let input = lwi.querySelector('input');
+            input.value = inputString;
+            (0, html_js_1.resizeInputElement)(input);
+            input.addEventListener('change', (event) => {
+                let target = event.target;
+                inputString = target.value;
+                ae.value = new big_js_1.default(inputString);
+                console.log(xml_reaction_js_1.ActivationEnergy.tagName + " changed to " + inputString);
+                (0, html_js_1.resizeInputElement)(input);
+            });
+            (0, app_js_1.addAnyUnits)(undefined, aeAttributes, lwi, null, (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.ActivationEnergy.tagName), xml_reaction_js_1.ActivationEnergy.tagName, app_js_1.boundary1, app_js_1.boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // TInfinity.
+        if (true) {
+            // Get value from defaults.
+            if (app_js_1.defaults != undefined) {
+                inputString = app_js_1.defaults.values.get(xml_reaction_js_1.TInfinity.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "298";
+                }
+            }
+            else {
+                inputString = "298";
+            }
+            value = new big_js_1.default(inputString);
+            let tiAttributes = new Map();
+            let ti = new xml_reaction_js_1.TInfinity(tiAttributes, value);
+            mm.setTInfinity(ti);
+            // Create a new div element for the input.
+            let lwi = (0, html_js_1.createLabelWithInput)("number", (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.TInfinity.tagName, app_js_1.s_input), app_js_1.boundary1, app_js_1.level1, (event) => {
+                let target = event.target;
+                (0, app_js_1.setNumberNode)(ti, target);
+            }, inputString, xml_reaction_js_1.TInfinity.tagName);
+            let input = lwi.querySelector('input');
+            input.value = inputString;
+            (0, html_js_1.resizeInputElement)(input);
+            input.addEventListener('change', (event) => {
+                let target = event.target;
+                inputString = target.value;
+                ti.value = new big_js_1.default(inputString);
+                console.log(xml_reaction_js_1.TInfinity.tagName + " changed to " + inputString);
+                (0, html_js_1.resizeInputElement)(input);
+            });
+            (0, app_js_1.addAnyUnits)(undefined, tiAttributes, lwi, null, (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.TInfinity.tagName), xml_reaction_js_1.TInfinity.tagName, app_js_1.boundary1, app_js_1.boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // NInfininty.
+        if (true) {
+            // Get value from defaults.
+            if (app_js_1.defaults != undefined) {
+                inputString = app_js_1.defaults.values.get(xml_reaction_js_1.NInfinity.tagName) ?? "";
+                if (inputString == "") {
+                    inputString = "0.08";
+                }
+            }
+            else {
+                inputString = "0.08";
+            }
+            value = new big_js_1.default(inputString);
+            let niAttributes = new Map();
+            let ni = new xml_reaction_js_1.NInfinity(niAttributes, value);
+            mm.setNInfinity(ni);
+            // Create a new div element for the input.
+            let lwi = (0, html_js_1.createLabelWithInput)("number", (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.NInfinity.tagName, app_js_1.s_input), app_js_1.boundary1, app_js_1.level1, (event) => {
+                let target = event.target;
+                (0, app_js_1.setNumberNode)(ni, target);
+            }, inputString, xml_reaction_js_1.NInfinity.tagName);
+            mmDiv.appendChild(lwi);
+            let input = lwi.querySelector('input');
+            input.value = inputString;
+            (0, html_js_1.resizeInputElement)(input);
+            input.addEventListener('change', (event) => {
+                let target = event.target;
+                inputString = target.value;
+                ni.value = new big_js_1.default(inputString);
+                console.log(xml_reaction_js_1.NInfinity.tagName + " set to " + inputString);
+                (0, html_js_1.resizeInputElement)(input);
+            });
+            (0, app_js_1.addAnyUnits)(undefined, niAttributes, lwi, null, (0, app_js_1.addRID)(mmDivId, xml_reaction_js_1.NInfinity.tagName), xml_reaction_js_1.NInfinity.tagName, app_js_1.boundary1, app_js_1.boundary1);
+            mmDiv.appendChild(lwi);
+        }
+        // ExcessReactantConc.
+        let ercDivId = rIDM.addID(rDivID, xml_reaction_js_1.ExcessReactantConc.tagName);
+        let ercDiv = (0, html_js_1.createDiv)(ercDivId);
+        // Get default value.
+        if (app_js_1.defaults != undefined) {
+            inputString = app_js_1.defaults.values.get(xml_reaction_js_1.ExcessReactantConc.tagName) ?? "";
+            if (inputString == "") {
+                inputString = "2.25e+16";
+            }
+        }
+        else {
+            inputString = "2.25e+16";
+        }
+        value = new big_js_1.default(inputString);
+        let erc = new xml_reaction_js_1.ExcessReactantConc(new Map(), value);
+        r.setExcessReactantConc(erc);
+        // Create a new div element for the input.
+        let lwi = (0, html_js_1.createLabelWithInput)("number", (0, app_js_1.addRID)(ercDivId, xml_reaction_js_1.ExcessReactantConc.tagName, app_js_1.s_input), app_js_1.boundary1, app_js_1.level1, (event) => {
+            let target = event.target;
+            (0, app_js_1.setNumberNode)(erc, target);
+        }, inputString, xml_reaction_js_1.ExcessReactantConc.tagName);
+        let input = lwi.querySelector('input');
+        input.value = inputString;
+        (0, html_js_1.resizeInputElement)(input);
+        input.addEventListener('change', (event) => {
+            let target = event.target;
+            let inputString = target.value;
+            erc.value = new big_js_1.default(inputString);
+            console.log(xml_reaction_js_1.ExcessReactantConc.tagName + " changed to " + inputString);
+            (0, html_js_1.resizeInputElement)(input);
+        });
+        (0, app_js_1.addAnyUnits)(undefined, new Map(), lwi, null, (0, app_js_1.addRID)(ercDivId, xml_reaction_js_1.ExcessReactantConc.tagName), xml_reaction_js_1.ExcessReactantConc.tagName, app_js_1.boundary1, app_js_1.boundary1);
+        ercDiv.appendChild(lwi);
+        rDiv.appendChild(ercDiv);
         // Add a remove reaction button.
         (0, app_js_1.addRemoveButton)(rDiv, app_js_1.level1, () => {
             removeReaction(rlDiv, rcDiv, rIDM, rDivID, reactions, r);
@@ -146,6 +324,7 @@ function addAddReactantButton(r, rcb, rIDM, rDivID, rsDiv, molecules, reactants)
             let rrb = (0, app_js_1.addRemoveButton)(reactantDiv, app_js_1.boundary1, () => {
                 rsDiv.removeChild(reactantDiv);
                 reactants.delete(mid);
+                r.removeReactant(mid);
             });
         });
         if (selectReactant.options.length === 1) {
@@ -201,6 +380,7 @@ function addAddProductButton(r, rcb, rIDM, rDivID, psDiv, molecules, products) {
                 alert("Molecule already selected as a product. Please select a different molecule (you may want to add more molecules to the moleculeList).");
                 // Remove the select element.
                 productDiv.removeChild(selectProduct);
+                //r.removeProduct(target.value);
                 return;
             }
             productDiv.id = rIDM.addID(rDivID, xml_reaction_js_1.Product.tagName, mid);
@@ -228,6 +408,7 @@ function addAddProductButton(r, rcb, rIDM, rDivID, psDiv, molecules, products) {
             let prb = (0, app_js_1.addRemoveButton)(productDiv, app_js_1.boundary1, () => {
                 psDiv.removeChild(productDiv);
                 products.delete(mid);
+                r.removeProduct(mid);
             });
         });
         if (selectProduct.options.length === 1) {

@@ -1210,7 +1210,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
                 console.log("molecule with ref " + ref + " not found");
                 // Create alert user to add the molecule to the list of molecules.
                 alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules. \
-                 In the meantime it will be treated ashaving an energy of 0.");
+                 In the meantime it will be treated as having an energy of 0.");
                 //throw new Error(`Molecule with ref ${ref} not found`);
                 return app_js_1.big0;
             }

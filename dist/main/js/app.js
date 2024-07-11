@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRemoveButton = exports.processNumber = exports.addOrRemoveInstructions = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.startAfresh = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_textarea = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
-exports.setNumberNode = exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.getN = exports.addAnyUnits = exports.processString = void 0;
+exports.processNumber = exports.addOrRemoveInstructions = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.startAfresh = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.setLibmols = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_textarea = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
+exports.setNumberNode = exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.getN = exports.addAnyUnits = exports.processString = exports.addRemoveButton = void 0;
 // Imports from MXG modules.
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
@@ -109,8 +109,8 @@ let rIDs = new Set();
 function addID(...parts) {
     let validID = (0, util_js_1.getID)(...parts);
     if (allIDs.has(validID)) {
-        //throw new Error(validID + " already exists!");
-        console.warn(validID + " already exists!");
+        throw new Error(validID + " already exists!");
+        //console.warn(validID + " already exists!");
     }
     allIDs.add(validID);
     //console.log("addID: \"" + validID + "\"");
@@ -245,6 +245,14 @@ let mpIDM;
  */
 let controlIDM;
 /**
+ * For initialising the libmols map.
+ * @param m The map of molecules to set.
+ */
+function setLibmols(m) {
+    exports.libmols = m;
+}
+exports.setLibmols = setLibmols;
+/**
  * Adds a molecule to the map of molecules.
  * The molecule label is updated if the molecule attribute id is not unique.
  * @param m The molecule to add
@@ -353,8 +361,9 @@ function initialise() {
     conditionsIDM = new IDManager();
     mpIDM = new IDManager();
     controlIDM = new IDManager();
+    // libmols is not reinitialised on purpose. To completely start again, reload the app.
+    //libmols = new Map();
     exports.defaults = new defaults_js_1.Defaults();
-    exports.libmols = new Map();
     molecules = new Map();
     reactions = new Map();
     scatterPlots = [];
@@ -505,7 +514,7 @@ function redrawScatterPlots() {
  * Prompts the user for a MESMER XML file, and initiates the parsing of the chosen file.
  */
 function load() {
-    // Before loading a new file, remove any existing content and initialise any data containers.
+    // Before loading a new file, remove existing content and initialise data containers.
     initialise();
     // Create a file input element to prompt the user to select a file.
     let input = document.createElement('input');
@@ -726,12 +735,12 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     let div = (0, html_js_1.createFlexDiv)(id, margin);
     let buttonTextContentSelected = name + exports.sy_selected;
     let buttonTextContentDeselected = name + exports.sy_deselected;
-    let idb = tIDM.addID(id, html_js_1.s_button);
+    let idb = tIDM.addID(id, name, html_js_1.s_button);
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(exports.s_optionOn);
     button.classList.add(exports.s_optionOff);
-    let inputId = tIDM.addID(id, exports.s_input);
+    let inputId = tIDM.addID(id, name, exports.s_input);
     let value = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;

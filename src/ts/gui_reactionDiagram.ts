@@ -135,6 +135,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                     intProducts.add(reactantsLabel);
                 }
                 let energy: Big = reaction.getReactantsEnergy(getMolecule, molecules);
+                console.log("energy=" + energy.toString());
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -147,6 +148,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
             if (productsLabel != undefined) {
                 products.add(productsLabel);
                 let energy = reaction.getProductsEnergy(getMolecule, molecules);
+                console.log("energy=" + energy.toString());
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -166,6 +168,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                             tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
+                            console.log("energy=" + energy.toString());
                             energyMin = min(energyMin, energy);
                             energyMax = max(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -181,6 +184,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                             tss.add(moleculeRef);
                             orders.set(moleculeRef, i);
                             energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
+                            console.log("energy=" + energy.toString());
                             energyMin = min(energyMin, energy);
                             energyMax = max(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -228,6 +232,7 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
             //console.log("value=" + value + ".");
             //console.log("energies=" + mapToString(energies));
             let energy: number = get(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, rdcHeight, energy);
             // Get text width.
             tw = Math.max(getTextWidth(ctx, energy.toString(), font), getTextWidth(ctx, value, font));
@@ -294,7 +299,9 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         // (This is done last so that the labels are on top of the vertical lines.)
         reactants.forEach(function (value) {
             let energy: number = get(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0: number = get(reactantsInXY, value)[0];
             let y: number = energyRescaled + lw;
             let x1: number = get(reactantsOutXY, value)[0];
@@ -303,7 +310,9 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         });
         products.forEach(function (value) {
             let energy: number = get(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0: number = get(productsInXY, value)[0];
             let y: number = energyRescaled + lw;
             let x1: number = get(productsOutXY, value)[0];
@@ -316,7 +325,9 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
         });
         tss.forEach(function (value) {
             let energy: number = get(energies, value);
+            console.log("energy=" + energy.toString());
             let energyRescaled: number = rescale(energyMin.toNumber(), energyRange, 0, originalCanvasHeight, energy);
+            console.log("energyRescaled=" + energyRescaled.toString());
             let x0: number = get(tssInXY, value)[0];
             let y: number = energyRescaled + lw;
             let x1: number = get(tssOutXY, value)[0];

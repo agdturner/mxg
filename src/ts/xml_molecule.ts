@@ -3339,8 +3339,9 @@ export class Molecule extends NodeWithNodes {
         if (p == undefined) {
             return Big(0) ;
         } else {
-            if (p instanceof PropertyScalarNumber) {
-                return p.value;
+            let pp: PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix = p.getProperty();
+            if (pp instanceof PropertyScalarNumber) {
+                return pp.value;
             } else {
                 return Big(0);
             }

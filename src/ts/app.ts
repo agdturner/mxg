@@ -125,8 +125,8 @@ let rIDs: Set<string> = new Set();
 export function addID(...parts: (string | number)[]): string {
     let validID: string = getID(...parts);
     if (allIDs.has(validID)) {
-        //throw new Error(validID + " already exists!");
-        console.warn(validID + " already exists!");
+        throw new Error(validID + " already exists!");
+        //console.warn(validID + " already exists!");
     }
     allIDs.add(validID);
     //console.log("addID: \"" + validID + "\"");
@@ -290,6 +290,14 @@ export let defaults: Defaults;
 export let libmols: Map<string, Molecule>;
 
 /**
+ * For initialising the libmols map.
+ * @param m The map of molecules to set.
+ */
+export function setLibmols(m: Map<string, Molecule>): void {
+    libmols = m;
+}
+
+/**
  * Adds a molecule to the map of molecules.
  * The molecule label is updated if the molecule attribute id is not unique. 
  * @param m The molecule to add
@@ -408,8 +416,9 @@ function initialise(): void {
     conditionsIDM = new IDManager();
     mpIDM = new IDManager();
     controlIDM = new IDManager();
+    // libmols is not reinitialised on purpose. To completely start again, reload the app.
+    //libmols = new Map();
     defaults = new Defaults();
-    libmols = new Map();
     molecules = new Map();
     reactions = new Map();
     scatterPlots = [];
@@ -578,7 +587,7 @@ function redrawScatterPlots(): void {
  * Prompts the user for a MESMER XML file, and initiates the parsing of the chosen file.
  */
 export function load() {
-    // Before loading a new file, remove any existing content and initialise any data containers.
+    // Before loading a new file, remove existing content and initialise data containers.
     initialise();
     // Create a file input element to prompt the user to select a file.
     let input: HTMLInputElement = document.createElement('input');
@@ -817,12 +826,12 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let idb: string = tIDM.addID(id, s_button);
+    let idb: string = tIDM.addID(id, name, s_button);
     let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let inputId: string = tIDM.addID(id, s_input)
+    let inputId: string = tIDM.addID(id, name, s_input)
     let value: Big | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
