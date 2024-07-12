@@ -521,12 +521,17 @@ export class CalcMethodMarquardt extends CalcMethod {
     /**
      * The tag name.
      */
-    static readonly xsi_type: string = "me:marquardt";
+    public static readonly xsi_type: string = "me:marquardt";
 
     /**
      * The tag name.
      */
-    static readonly xsi_type2: string = "marquardt";
+    public static readonly xsi_type2: string = "marquardt";
+
+    public static readonly MarquardtDerivDeltaDefault: string = "1.e-03";
+    public static readonly MarquardtTolerance: string = "1.e-03";
+    public static readonly MarquardtLambda: string = "1.0";
+    public static readonly MarquardtLambdaScale: string = "10.0";
 
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
@@ -1424,7 +1429,7 @@ export class Tstep extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: Big) {
-        super(attributes, Tmin.tagName, value);
+        super(attributes, Tstep.tagName, value);
     }
 }
 
@@ -1999,14 +2004,18 @@ export class TestMicroRates extends TagWithAttributes {
      */
     tStep: Big;
 
+    public static readonly s_Tmin: string = "Tmin";
+    public static readonly s_Tmax: string = "Tmax";
+    public static readonly s_Tstep: string = "Tstep";
+
     /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>) {
         super(attributes, TestMicroRates.tagName);
-        this.tMin = new Big(attributes.get("Tmin") as string);
-        this.tMax = new Big(attributes.get("Tmax") as string);
-        this.tStep = new Big(attributes.get("Tstep") as string);
+        this.tMin = new Big(attributes.get(TestMicroRates.s_Tmin) as string);
+        this.tMax = new Big(attributes.get(TestMicroRates.s_Tmax) as string);
+        this.tStep = new Big(attributes.get(TestMicroRates.s_Tstep) as string);
     }
 
     /**
