@@ -820,7 +820,7 @@ export function addOrRemoveInstructions(options: string[], add: boolean): void {
  * @returns A div element.
  */
 export function processNumber(id: string, tIDM: IDManager, name: string,
-    getter: () => Big | undefined, setter: (value: Big) => void, remover: () => void,
+    getter: () => Big | undefined, setter: (value: Big) => void, remover: (name: string) => void,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, margin);
@@ -836,6 +836,7 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
     let inputId: string = getID(id, name, s_input)
     let value: Big | undefined = getter();
     if (value == undefined) {
+        //remover(name);
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle(s_optionOn);
     } else {
@@ -860,7 +861,8 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
             // Remove existing HTMLElement.
             document.getElementById(inputId)?.remove();
             // Remove node.
-            remover;
+            //remover();
+            remover(name);
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
         }

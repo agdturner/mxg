@@ -735,12 +735,14 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     let div = (0, html_js_1.createFlexDiv)(id, margin);
     let buttonTextContentSelected = name + exports.sy_selected;
     let buttonTextContentDeselected = name + exports.sy_deselected;
-    let idb = tIDM.addID(id, name, html_js_1.s_button);
+    //let idb: string = tIDM.addID(id, name, s_button);
+    let idb = (0, util_js_1.getID)(id, name, html_js_1.s_button);
     let button = (0, html_js_1.createButton)(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(exports.s_optionOn);
     button.classList.add(exports.s_optionOff);
-    let inputId = tIDM.addID(id, name, exports.s_input);
+    //let inputId: string = tIDM.addID(id, name, s_input)
+    let inputId = (0, util_js_1.getID)(id, name, exports.s_input);
     let value = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -1030,12 +1032,12 @@ function processMetadataList(xml) {
     let xml_mls = xml.getElementsByTagName(xml_metadata_js_1.MetadataList.tagName);
     if (xml_mls.length > 0) {
         if (xml_mls.length > 1) {
-            throw new Error("More than one MetadataList element.");
+            console.warn("More than one MetadataList element - showing the last.");
         }
-        let ml = new xml_metadata_js_1.MetadataList((0, xml_js_1.getAttributes)(xml_mls[0]));
+        let ml = new xml_metadata_js_1.MetadataList((0, xml_js_1.getAttributes)(xml_mls[xml_mls.length - 1]));
         exports.mesmer.setMetadataList(ml);
         function handleElement(tagName, constructor, setter) {
-            let xml_elements = xml_mls[0].getElementsByTagName(tagName);
+            let xml_elements = xml_mls[xml_mls.length - 1].getElementsByTagName(tagName);
             if (xml_elements.length > 0) {
                 if (xml_elements.length == 1) {
                     let s = (0, xml_js_1.getFirstChildNode)(xml_elements[0])?.nodeValue ?? "";

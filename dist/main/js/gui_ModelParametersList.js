@@ -77,7 +77,7 @@ function processGrainSize(mps, xml_mps, mpsDiv, modelParametersIDs) {
         let xml = xml_mps.getElementsByTagName(tagName);
         if (xml.length == 1) {
             valueString = (0, xml_1.getNodeValue)((0, xml_1.getFirstChildNode)(xml[0]));
-            let value = new big_js_1.default(valueString);
+            let value = new big_js_1.default(Number(valueString));
             gs = new xml_modelParameters_1.GrainSize((0, xml_1.getAttributes)(xml[0]), value);
             button.textContent = buttonTextContentSelected;
             createInputModelParameters(mps, div, gs, idi, valueString, mps.setGrainSize, xml_mesmer_1.Mesmer.energyUnits);

@@ -465,6 +465,10 @@ class CalcMethodMarquardt extends CalcMethod {
      * The tag name.
      */
     static xsi_type2 = "marquardt";
+    static MarquardtDerivDeltaDefault = "1.e-03";
+    static MarquardtTolerance = "1.e-03";
+    static MarquardtLambda = "1.0";
+    static MarquardtLambdaScale = "10.0";
     /**
      * The index. A map from the tag name to the index of the node in the nodes array.
      */
@@ -1288,7 +1292,7 @@ class Tstep extends xml_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, Tmin.tagName, value);
+        super(attributes, Tstep.tagName, value);
     }
 }
 exports.Tstep = Tstep;
@@ -1811,14 +1815,17 @@ class TestMicroRates extends xml_1.TagWithAttributes {
      * The temperature step.
      */
     tStep;
+    static s_Tmin = "Tmin";
+    static s_Tmax = "Tmax";
+    static s_Tstep = "Tstep";
     /**
      * @param attributes The attributes.
      */
     constructor(attributes) {
         super(attributes, TestMicroRates.tagName);
-        this.tMin = new big_js_1.default(attributes.get("Tmin"));
-        this.tMax = new big_js_1.default(attributes.get("Tmax"));
-        this.tStep = new big_js_1.default(attributes.get("Tstep"));
+        this.tMin = new big_js_1.default(attributes.get(TestMicroRates.s_Tmin));
+        this.tMax = new big_js_1.default(attributes.get(TestMicroRates.s_Tmax));
+        this.tStep = new big_js_1.default(attributes.get(TestMicroRates.s_Tstep));
     }
     /**
      * @returns The maximum temperature.
