@@ -864,7 +864,8 @@ function addAtom(mIDM: IDManager, molecule: Molecule, aaDivID: string, aa: AtomA
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
     let aID: string = aa.addAtom(a, a.getID());
-    let aDivID: string = mIDM.addID(aaDivID, aID);
+    //let aDivID: string = mIDM.addID(aaDivID, aID);
+    let aDivID: string = getID(aaDivID, aID);
     let aDiv: HTMLDivElement = createFlexDiv(aDivID, level);
     aDiv.appendChild(createLabel(aID, boundary));
     // elementType.
@@ -928,7 +929,8 @@ function processElementType(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, firs
         addOrRemoveInstructions(selectTypes, first);
         //console.log("Atom.s_elementTypes " + arrayToString(Atom.elementTypes));
     }
-    let id = mIDM.addID(aDiv.id, Atom.s_elementType);
+    //let id = mIDM.addID(aDiv.id, Atom.s_elementType);
+    let id = getID(aDiv.id, Atom.s_elementType);
     let lws: HTMLDivElement = createLabelWithSelect(Atom.s_elementType, selectTypes, Atom.s_elementType,
         elementType!, id, margin, margin);
     let select: HTMLSelectElement = lws.querySelector('select') as HTMLSelectElement;
@@ -956,11 +958,14 @@ function processCoordinates(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement,
     marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
     let id: string;
-    id = mIDM.addID(aDiv.id, Atom.s_x3);
+    //id = mIDM.addID(aDiv.id, Atom.s_x3);
+    id = getID(aDiv.id, Atom.s_x3);
     aDiv.appendChild(processNumber(id, mIDM, Atom.s_x3, a.getX3.bind(a), a.setX3.bind(a), a.removeX3, marginComponent, margin));
-    id = mIDM.addID(aDiv.id, Atom.s_y3);
+    //id = mIDM.addID(aDiv.id, Atom.s_y3);
+    id = getID(aDiv.id, Atom.s_y3);
     aDiv.appendChild(processNumber(id, mIDM, Atom.s_y3, a.getY3.bind(a), a.setY3.bind(a), a.removeY3, marginComponent, margin));
-    id = mIDM.addID(aDiv.id, Atom.s_z3);
+    //id = mIDM.addID(aDiv.id, Atom.s_z3);
+    id = getID(aDiv.id, Atom.s_z3);
     aDiv.appendChild(processNumber(id, mIDM, Atom.s_z3, a.getZ3.bind(a), a.setZ3.bind(a), a.removeZ3, marginComponent, margin));
 }
 
@@ -1041,13 +1046,15 @@ function addBond(mIDM: IDManager, molecule: Molecule, baDivID: string, atoms: Ma
  */
 function processAtomRefs2(mIDM: IDManager, molecule: Molecule, bDiv: HTMLDivElement, bond: Bond,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
-    let id = mIDM.addID(bDiv.id, Bond.s_atomRefs2);
+    //let id = mIDM.addID(bDiv.id, Bond.s_atomRefs2);
+    let id = getID(bDiv.id, Bond.s_atomRefs2);
     //bIDs.add(id);
     let atomRefs2: string | undefined = bond.getAtomRefs2();
     let atomRefs: string[] = atomRefs2.split(" ");
     let atomRefOptions: string[] = Array.from((molecule.getAtoms() as AtomArray).atoms.keys());
     // alws.
-    let alwsID: string = mIDM.addID(id, 0);
+    //let alwsID: string = mIDM.addID(id, 0);
+    let alwsID: string = getID(id, 0);
     //bIDs.add(alwsID);
     let alws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[0]", atomRefOptions, Atom.tagName, atomRefs[0],
         alwsID, margin, margin);
@@ -1064,7 +1071,8 @@ function processAtomRefs2(mIDM: IDManager, molecule: Molecule, bDiv: HTMLDivElem
     resizeSelectElement(aselect);
     bDiv.appendChild(alws);
     // blws.
-    let blwsID: string = mIDM.addID(id, 1);
+    //let blwsID: string = mIDM.addID(id, 1);
+    let blwsID: string = getID(id, 1);
     //bIDs.add(blwsID);
     let blws: HTMLDivElement = createLabelWithSelect(Bond.s_atomRefs2 + "[1]", atomRefOptions, Atom.tagName, atomRefs[1],
         blwsID, margin, margin);
@@ -1090,7 +1098,8 @@ function processAtomRefs2(mIDM: IDManager, molecule: Molecule, bDiv: HTMLDivElem
  */
 function processOrder(mIDM: IDManager, bondDiv: HTMLDivElement, bond: Bond,
     margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
-    let id = mIDM.addID(bondDiv.id, Bond.s_order);
+    //let id = mIDM.addID(bondDiv.id, Bond.s_order);
+    let id = getID(bondDiv.id, Bond.s_order);
     let div: HTMLDivElement = createFlexDiv(undefined, margin);
     bondDiv.appendChild(div);
     let buttonTextContentSelected: string = Bond.s_order + sy_selected;

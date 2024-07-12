@@ -1346,12 +1346,14 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     let div = (0, _htmlJs.createFlexDiv)(id, margin);
     let buttonTextContentSelected = name + sy_selected;
     let buttonTextContentDeselected = name + sy_deselected;
-    let idb = tIDM.addID(id, name, (0, _htmlJs.s_button));
+    //let idb: string = tIDM.addID(id, name, s_button);
+    let idb = (0, _utilJs.getID)(id, name, (0, _htmlJs.s_button));
     let button = (0, _htmlJs.createButton)(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let inputId = tIDM.addID(id, name, s_input);
+    //let inputId: string = tIDM.addID(id, name, s_input)
+    let inputId = (0, _utilJs.getID)(id, name, s_input);
     let value = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -1571,11 +1573,11 @@ function selectAnotherOptionEventListener(options, select) {
     let mlDiv = (0, _htmlJs.createDiv)(addRID((0, _xmlMetadataJs.MetadataList).tagName, 0), boundary1);
     let xml_mls = xml.getElementsByTagName((0, _xmlMetadataJs.MetadataList).tagName);
     if (xml_mls.length > 0) {
-        if (xml_mls.length > 1) throw new Error("More than one MetadataList element.");
-        let ml = new (0, _xmlMetadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_mls[0]));
+        if (xml_mls.length > 1) console.warn("More than one MetadataList element - showing the last.");
+        let ml = new (0, _xmlMetadataJs.MetadataList)((0, _xmlJs.getAttributes)(xml_mls[xml_mls.length - 1]));
         mesmer.setMetadataList(ml);
         function handleElement(tagName, constructor, setter) {
-            let xml_elements = xml_mls[0].getElementsByTagName(tagName);
+            let xml_elements = xml_mls[xml_mls.length - 1].getElementsByTagName(tagName);
             if (xml_elements.length > 0) {
                 if (xml_elements.length == 1) {
                     let s = (0, _xmlJs.getFirstChildNode)(xml_elements[0])?.nodeValue ?? "";
@@ -6829,6 +6831,18 @@ class CalcMethodMarquardt extends CalcMethod {
      * The tag name.
      */ this.xsi_type2 = "marquardt";
     }
+    static{
+        this.MarquardtDerivDeltaDefault = "1.e-03";
+    }
+    static{
+        this.MarquardtTolerance = "1.e-03";
+    }
+    static{
+        this.MarquardtLambda = "1.0";
+    }
+    static{
+        this.MarquardtLambdaScale = "10.0";
+    }
     /**
      * @param attributes The attributes.
      */ constructor(attributes, marquardtIterations, marquardtTolerance, marquardtDerivDelta){
@@ -7466,7 +7480,7 @@ class Tstep extends (0, _xml.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, Tmin.tagName, value);
+        super(attributes, Tstep.tagName, value);
     }
 }
 class CalcMethodThermodynamicTable extends CalcMethod {
@@ -7865,13 +7879,22 @@ class TestMicroRates extends (0, _xml.TagWithAttributes) {
      * The tag name.
      */ this.tagName = "me:testMicroRates";
     }
+    static{
+        this.s_Tmin = "Tmin";
+    }
+    static{
+        this.s_Tmax = "Tmax";
+    }
+    static{
+        this.s_Tstep = "Tstep";
+    }
     /**
      * @param attributes The attributes.
      */ constructor(attributes){
         super(attributes, TestMicroRates.tagName);
-        this.tMin = new (0, _bigJsDefault.default)(attributes.get("Tmin"));
-        this.tMax = new (0, _bigJsDefault.default)(attributes.get("Tmax"));
-        this.tStep = new (0, _bigJsDefault.default)(attributes.get("Tstep"));
+        this.tMin = new (0, _bigJsDefault.default)(attributes.get(TestMicroRates.s_Tmin));
+        this.tMax = new (0, _bigJsDefault.default)(attributes.get(TestMicroRates.s_Tmax));
+        this.tStep = new (0, _bigJsDefault.default)(attributes.get(TestMicroRates.s_Tstep));
     }
     /**
      * @returns The maximum temperature.
@@ -12689,7 +12712,8 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @returns A new div for the atom.
  */ function addAtom(mIDM, molecule, aaDivID, aa, a, boundary, level) {
     let aID = aa.addAtom(a, a.getID());
-    let aDivID = mIDM.addID(aaDivID, aID);
+    //let aDivID: string = mIDM.addID(aaDivID, aID);
+    let aDivID = (0, _utilJs.getID)(aaDivID, aID);
     let aDiv = (0, _htmlJs.createFlexDiv)(aDivID, level);
     aDiv.appendChild((0, _htmlJs.createLabel)(aID, boundary));
     // elementType.
@@ -12745,7 +12769,8 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
         (0, _appJs.addOrRemoveInstructions)(selectTypes, first);
     //console.log("Atom.s_elementTypes " + arrayToString(Atom.elementTypes));
     }
-    let id = mIDM.addID(aDiv.id, (0, _xmlMoleculeJs.Atom).s_elementType);
+    //let id = mIDM.addID(aDiv.id, Atom.s_elementType);
+    let id = (0, _utilJs.getID)(aDiv.id, (0, _xmlMoleculeJs.Atom).s_elementType);
     let lws = (0, _htmlJs.createLabelWithSelect)((0, _xmlMoleculeJs.Atom).s_elementType, selectTypes, (0, _xmlMoleculeJs.Atom).s_elementType, elementType, id, margin, margin);
     let select = lws.querySelector("select");
     select.addEventListener("change", (event)=>{
@@ -12768,11 +12793,14 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param margin The margin.
  */ function processCoordinates(mIDM, a, aDiv, marginComponent, margin) {
     let id;
-    id = mIDM.addID(aDiv.id, (0, _xmlMoleculeJs.Atom).s_x3);
+    //id = mIDM.addID(aDiv.id, Atom.s_x3);
+    id = (0, _utilJs.getID)(aDiv.id, (0, _xmlMoleculeJs.Atom).s_x3);
     aDiv.appendChild((0, _appJs.processNumber)(id, mIDM, (0, _xmlMoleculeJs.Atom).s_x3, a.getX3.bind(a), a.setX3.bind(a), a.removeX3, marginComponent, margin));
-    id = mIDM.addID(aDiv.id, (0, _xmlMoleculeJs.Atom).s_y3);
+    //id = mIDM.addID(aDiv.id, Atom.s_y3);
+    id = (0, _utilJs.getID)(aDiv.id, (0, _xmlMoleculeJs.Atom).s_y3);
     aDiv.appendChild((0, _appJs.processNumber)(id, mIDM, (0, _xmlMoleculeJs.Atom).s_y3, a.getY3.bind(a), a.setY3.bind(a), a.removeY3, marginComponent, margin));
-    id = mIDM.addID(aDiv.id, (0, _xmlMoleculeJs.Atom).s_z3);
+    //id = mIDM.addID(aDiv.id, Atom.s_z3);
+    id = (0, _utilJs.getID)(aDiv.id, (0, _xmlMoleculeJs.Atom).s_z3);
     aDiv.appendChild((0, _appJs.processNumber)(id, mIDM, (0, _xmlMoleculeJs.Atom).s_z3, a.getZ3.bind(a), a.setZ3.bind(a), a.removeZ3, marginComponent, margin));
 }
 /**
@@ -12842,13 +12870,15 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param inputId The input id.
  * @param margin The margin for the components.
  */ function processAtomRefs2(mIDM, molecule, bDiv, bond, margin) {
-    let id = mIDM.addID(bDiv.id, (0, _xmlMoleculeJs.Bond).s_atomRefs2);
+    //let id = mIDM.addID(bDiv.id, Bond.s_atomRefs2);
+    let id = (0, _utilJs.getID)(bDiv.id, (0, _xmlMoleculeJs.Bond).s_atomRefs2);
     //bIDs.add(id);
     let atomRefs2 = bond.getAtomRefs2();
     let atomRefs = atomRefs2.split(" ");
     let atomRefOptions = Array.from(molecule.getAtoms().atoms.keys());
     // alws.
-    let alwsID = mIDM.addID(id, 0);
+    //let alwsID: string = mIDM.addID(id, 0);
+    let alwsID = (0, _utilJs.getID)(id, 0);
     //bIDs.add(alwsID);
     let alws = (0, _htmlJs.createLabelWithSelect)((0, _xmlMoleculeJs.Bond).s_atomRefs2 + "[0]", atomRefOptions, (0, _xmlMoleculeJs.Atom).tagName, atomRefs[0], alwsID, margin, margin);
     let aselect = alws.querySelector("select");
@@ -12864,7 +12894,8 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
     (0, _htmlJs.resizeSelectElement)(aselect);
     bDiv.appendChild(alws);
     // blws.
-    let blwsID = mIDM.addID(id, 1);
+    //let blwsID: string = mIDM.addID(id, 1);
+    let blwsID = (0, _utilJs.getID)(id, 1);
     //bIDs.add(blwsID);
     let blws = (0, _htmlJs.createLabelWithSelect)((0, _xmlMoleculeJs.Bond).s_atomRefs2 + "[1]", atomRefOptions, (0, _xmlMoleculeJs.Atom).tagName, atomRefs[1], blwsID, margin, margin);
     let bselect = blws.querySelector("select");
@@ -12886,7 +12917,8 @@ function addMetadata(m, md, ml, mdDivID, boundary, level) {
  * @param bond The bond.
  * @param margin The margin for components.
  */ function processOrder(mIDM, bondDiv, bond, margin) {
-    let id = mIDM.addID(bondDiv.id, (0, _xmlMoleculeJs.Bond).s_order);
+    //let id = mIDM.addID(bondDiv.id, Bond.s_order);
+    let id = (0, _utilJs.getID)(bondDiv.id, (0, _xmlMoleculeJs.Bond).s_order);
     let div = (0, _htmlJs.createFlexDiv)(undefined, margin);
     bondDiv.appendChild(div);
     let buttonTextContentSelected = (0, _xmlMoleculeJs.Bond).s_order + (0, _appJs.sy_selected);
@@ -18036,60 +18068,61 @@ function createAddControlButton(controlsDiv, controlIDM) {
         tmr = new (0, _xmlControl.TestMicroRates)(attributes);
     } else {
         attributes = new Map();
-        attributes.set("Tmax", "0"); // These should load from some kind of default...
-        attributes.set("Tmin", "0");
-        attributes.set("Tstep", "0");
+        // Set some default values.
+        attributes.set((0, _xmlControl.TestMicroRates).s_Tmax, "2000"); // These should load from some kind of default...
+        attributes.set((0, _xmlControl.TestMicroRates).s_Tmin, "100");
+        attributes.set((0, _xmlControl.TestMicroRates).s_Tstep, "100");
         tmr = new (0, _xmlControl.TestMicroRates)(attributes);
     }
     control.setTestMicroRates(tmr);
     // Tmax.
     let tMax = tmr.getTmax();
-    let tMaxlwi = (0, _html.createLabelWithInput)("text", idTmax + "_input", (0, _app.boundary1), (0, _app.level0), (event)=>{
+    let tMaxlwi = (0, _html.createLabelWithInput)("text", (0, _util.getID)(idTmax, "input"), (0, _app.boundary1), (0, _app.level0), (event)=>{
         let target = event.target;
         // Check the value is a number.
         try {
             tmr.setTmax(new (0, _bigJsDefault.default)(target.value));
-            console.log("Set Tmax to " + target.value);
+            console.log("Set " + (0, _xmlControl.TestMicroRates).s_Tmax + " to " + target.value);
         } catch (e) {
             alert("Invalid input, resetting...");
             target.value = tMax.toString();
         }
         (0, _html.resizeInputElement)(target);
-    }, tMax.toString(), "Tmax");
+    }, tMax.toString(), (0, _xmlControl.TestMicroRates).s_Tmax);
     tMaxlwi.id = idTmax;
     (0, _html.resizeInputElement)(tMaxlwi.querySelector("input"));
     div.appendChild(tMaxlwi);
     // Tmin.
     let tMin = tmr.getTmin();
-    let tMinlwi = (0, _html.createLabelWithInput)("number", idTmin + "_input", (0, _app.boundary1), (0, _app.level0), (event)=>{
+    let tMinlwi = (0, _html.createLabelWithInput)("number", (0, _util.getID)(idTmin + "input"), (0, _app.boundary1), (0, _app.level0), (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _util.isNumeric)(target.value)) {
             tmr.setTmin(new (0, _bigJsDefault.default)(target.value));
-            console.log("Set Tmin to " + target.value);
+            console.log("Set " + (0, _xmlControl.TestMicroRates).s_Tmin + " to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = tMin.toString();
         }
         (0, _html.resizeInputElement)(target);
-    }, tMin.toString(), "Tmin");
+    }, tMin.toString(), (0, _xmlControl.TestMicroRates).s_Tmin);
     tMinlwi.id = idTmin;
     (0, _html.resizeInputElement)(tMinlwi.querySelector("input"));
     div.appendChild(tMinlwi);
     // Tstep.
     let tStep = tmr.getTstep();
-    let tSteplwi = (0, _html.createLabelWithInput)("text", idTstep + "_input", (0, _app.boundary1), (0, _app.level0), (event)=>{
+    let tSteplwi = (0, _html.createLabelWithInput)("text", (0, _util.getID)(idTstep + "input"), (0, _app.boundary1), (0, _app.level0), (event)=>{
         let target = event.target;
         // Check the value is a number.
         if ((0, _util.isNumeric)(target.value)) {
             tmr.setTstep(new (0, _bigJsDefault.default)(target.value));
-            console.log("Set Tstep to " + target.value);
+            console.log("Set " + (0, _xmlControl.TestMicroRates).s_Tstep + " to " + target.value);
         } else {
             alert("Value is not numeric, resetting...");
             target.value = tStep.toString();
         }
         (0, _html.resizeInputElement)(target);
-    }, tStep.toString(), "Tstep");
+    }, tStep.toString(), (0, _xmlControl.TestMicroRates).s_Tstep);
     tSteplwi.id = idTstep;
     (0, _html.resizeInputElement)(tSteplwi.querySelector("input"));
     div.appendChild(tSteplwi);

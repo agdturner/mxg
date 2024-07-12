@@ -826,12 +826,14 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
-    let idb: string = tIDM.addID(id, name, s_button);
+    //let idb: string = tIDM.addID(id, name, s_button);
+    let idb: string = getID(id, name, s_button);
     let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let inputId: string = tIDM.addID(id, name, s_input)
+    //let inputId: string = tIDM.addID(id, name, s_input)
+    let inputId: string = getID(id, name, s_input)
     let value: Big | undefined = getter();
     if (value == undefined) {
         button.textContent = buttonTextContentDeselected;
@@ -1132,12 +1134,12 @@ function processMetadataList(xml: XMLDocument): HTMLDivElement {
     let xml_mls: HTMLCollectionOf<Element> = xml.getElementsByTagName(MetadataList.tagName);
     if (xml_mls.length > 0) {
         if (xml_mls.length > 1) {
-            throw new Error("More than one MetadataList element.");
+            console.warn("More than one MetadataList element - showing the last.");
         }
-        let ml: MetadataList = new MetadataList(getAttributes(xml_mls[0]));
+        let ml: MetadataList = new MetadataList(getAttributes(xml_mls[xml_mls.length - 1]));
         mesmer.setMetadataList(ml);
         function handleElement(tagName: string, constructor: any, setter: any) {
-            let xml_elements: HTMLCollectionOf<Element> = xml_mls[0].getElementsByTagName(tagName);
+            let xml_elements: HTMLCollectionOf<Element> = xml_mls[xml_mls.length - 1].getElementsByTagName(tagName);
             if (xml_elements.length > 0) {
                 if (xml_elements.length == 1) {
                     let s: string = getFirstChildNode(xml_elements[0])?.nodeValue ?? "";
