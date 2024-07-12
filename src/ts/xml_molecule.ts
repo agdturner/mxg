@@ -1424,7 +1424,7 @@ export class PropertyList extends NodeWithNodes {
         if (i != undefined) {
             this.nodes.delete(i);
             this.index.delete(dictRef);
-            let newIndex = new Map<string, number>();
+            let newIndex: Map<string, number> = new Map();
             this.index.forEach((value, key) => {
                 if (value > i!) {
                     newIndex.set(key, value - 1);

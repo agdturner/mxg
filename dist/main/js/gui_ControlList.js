@@ -503,63 +503,64 @@ function createTestMicroRates(control, div, xml_tmr, idTmax, idTmin, idTstep) {
     }
     else {
         attributes = new Map();
-        attributes.set("Tmax", "0"); // These should load from some kind of default...
-        attributes.set("Tmin", "0");
-        attributes.set("Tstep", "0");
+        // Set some default values.
+        attributes.set(xml_control_1.TestMicroRates.s_Tmax, "2000"); // These should load from some kind of default...
+        attributes.set(xml_control_1.TestMicroRates.s_Tmin, "100");
+        attributes.set(xml_control_1.TestMicroRates.s_Tstep, "100");
         tmr = new xml_control_1.TestMicroRates(attributes);
     }
     control.setTestMicroRates(tmr);
     // Tmax.
     let tMax = tmr.getTmax();
-    let tMaxlwi = (0, html_1.createLabelWithInput)("text", idTmax + "_input", app_1.boundary1, app_1.level0, (event) => {
+    let tMaxlwi = (0, html_1.createLabelWithInput)("text", (0, util_1.getID)(idTmax, "input"), app_1.boundary1, app_1.level0, (event) => {
         let target = event.target;
         // Check the value is a number.
         try {
             tmr.setTmax(new big_js_1.default(target.value));
-            console.log("Set Tmax to " + target.value);
+            console.log("Set " + xml_control_1.TestMicroRates.s_Tmax + " to " + target.value);
         }
         catch (e) {
             alert("Invalid input, resetting...");
             target.value = tMax.toString();
         }
         (0, html_1.resizeInputElement)(target);
-    }, tMax.toString(), "Tmax");
+    }, tMax.toString(), xml_control_1.TestMicroRates.s_Tmax);
     tMaxlwi.id = idTmax;
     (0, html_1.resizeInputElement)(tMaxlwi.querySelector('input'));
     div.appendChild(tMaxlwi);
     // Tmin.
     let tMin = tmr.getTmin();
-    let tMinlwi = (0, html_1.createLabelWithInput)("number", idTmin + "_input", app_1.boundary1, app_1.level0, (event) => {
+    let tMinlwi = (0, html_1.createLabelWithInput)("number", (0, util_1.getID)(idTmin + "input"), app_1.boundary1, app_1.level0, (event) => {
         let target = event.target;
         // Check the value is a number.
         if ((0, util_1.isNumeric)(target.value)) {
             tmr.setTmin(new big_js_1.default(target.value));
-            console.log("Set Tmin to " + target.value);
+            console.log("Set " + xml_control_1.TestMicroRates.s_Tmin + " to " + target.value);
         }
         else {
             alert("Value is not numeric, resetting...");
             target.value = tMin.toString();
         }
         (0, html_1.resizeInputElement)(target);
-    }, tMin.toString(), "Tmin");
+    }, tMin.toString(), xml_control_1.TestMicroRates.s_Tmin);
     tMinlwi.id = idTmin;
     (0, html_1.resizeInputElement)(tMinlwi.querySelector('input'));
     div.appendChild(tMinlwi);
     // Tstep.
     let tStep = tmr.getTstep();
-    let tSteplwi = (0, html_1.createLabelWithInput)("text", idTstep + "_input", app_1.boundary1, app_1.level0, (event) => {
+    let tSteplwi = (0, html_1.createLabelWithInput)("text", (0, util_1.getID)(idTstep + "input"), app_1.boundary1, app_1.level0, (event) => {
         let target = event.target;
         // Check the value is a number.
         if ((0, util_1.isNumeric)(target.value)) {
             tmr.setTstep(new big_js_1.default(target.value));
-            console.log("Set Tstep to " + target.value);
+            console.log("Set " + xml_control_1.TestMicroRates.s_Tstep + " to " + target.value);
         }
         else {
             alert("Value is not numeric, resetting...");
             target.value = tStep.toString();
         }
         (0, html_1.resizeInputElement)(target);
-    }, tStep.toString(), "Tstep");
+    }, tStep.toString(), xml_control_1.TestMicroRates.s_Tstep);
     tSteplwi.id = idTstep;
     (0, html_1.resizeInputElement)(tSteplwi.querySelector('input'));
     div.appendChild(tSteplwi);

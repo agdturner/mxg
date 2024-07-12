@@ -1356,6 +1356,7 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     let inputId = (0, _utilJs.getID)(id, name, s_input);
     let value = getter();
     if (value == undefined) {
+        //remover(name);
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle(s_optionOn);
     } else {
@@ -1380,7 +1381,8 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
             // Remove existing HTMLElement.
             document.getElementById(inputId)?.remove();
             // Remove node.
-            remover;
+            //remover();
+            remover(name);
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
         }
@@ -11939,6 +11941,7 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "getAddMoleculeButton", ()=>getAddMoleculeButton);
 /**
  * Initialises the properties for a molecule.
+ * @param deslect If true the button is clicked and the property removed.
  * @param m The molecule.
  * @param plDiv The PropertyList HTMLDivElement.
  * @param pl The PropertyList.
@@ -12114,7 +12117,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         }
         console.log("pl.index.size" + pl.index.size);
         // Initialise properties.
-        initialiseProperties(m, mIDM, plDiv, pl);
+        initialiseProperties(true, m, mIDM, plDiv, pl);
         /*
         // Add me:DOSCMethod
         addDOSCMethod(m, mIDM, plDiv, pl);
@@ -12139,50 +12142,51 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     });
     return addMoleculeButton;
 }
-function initialiseProperties(m, mIDM, plDiv, pl) {
+function initialiseProperties(deselect, m, mIDM, plDiv, pl) {
     // "me:ZPE", scalar, Mesmer.energyUnits.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
     //console.log("pl.index.size" + pl.index.size);
     //console.log("Property " + m.getPropertyList()!.getProperty(ZPE.dictRef)?.toString);
     // "me:Hf0", scalar, Mesmer.energyUnits.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
     // "me:HfAT0", scalar, Mesmer.energyUnits.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.HfAT0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.HfAT0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
     // "me:Hf298", scalar, Mesmer.energyUnits.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
     // "me:rotConsts", array, Mesmer.frequencyUnits.
-    addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+    addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
     // "me:symmetryNumber", scalar, No units.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
     // "me:TSOpticalSymmetryNumber", scalar, No units.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
     // "me:frequenciesScaleFactor", scalar, No units.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
     // "me:vibFreqs", array, cm-1.
-    addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+    addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
     // "me:MW", scalar, amu.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
     // "me:spinMultiplicity", scalar, No units.
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
     // "me:epsilon", scalar, K (fixed).
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
     // "me:sigma", scalar, Å (fixed).
-    addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
     // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
-    addPropertyMatrix(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
+    addPropertyMatrix(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
     // "me:EinsteinAij", array, s-1 (fixed).
-    addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
+    addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
     // "me:EinsteinBij", array, m3/J/s2 (fixed).
-    addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
+    addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
 }
 /**
+ * @param deselect If true the button is clicked and the propert removed.
  * @param m The molecule.
  * @param mIDM The molecule IDManager.
  * @param plDiv The PropertyList HTMLDivElement.
  * @param pl The PropertyList.
  * @param dictRef The dictRef.
  * @param units The units. 
- */ function addPropertyScalar(m, mIDM, plDiv, pl, dictRef, units) {
+ */ function addPropertyScalar(deselect, m, mIDM, plDiv, pl, dictRef, units) {
     let pAttributes;
     let psAttributes;
     let ps;
@@ -12200,9 +12204,12 @@ function initialiseProperties(m, mIDM, plDiv, pl) {
     (0, _appJs.addAnyUnits)(units, psAttributes, div, div.querySelector((0, _appJs.s_input)), (0, _appJs.addRID)(plDiv.id, dictRef, (0, _xmlMoleculeJs.PropertyScalarNumber).s_units), dictRef, (0, _appJs.boundary1), (0, _appJs.boundary1));
     plDiv.appendChild(div);
     // Deselect
-    let b = div.querySelector((0, _htmlJs.s_button));
-    b.click();
-    pl.removeProperty(dictRef);
+    if (deselect) {
+        let b = div.querySelector((0, _htmlJs.s_button));
+        b.click();
+        pl.removeProperty(dictRef);
+    }
+    return div;
 }
 function setPropertyScalarNumber(dictRef, pl, ps, value) {
     if (pl.getProperty(dictRef) == undefined) {
@@ -12219,13 +12226,14 @@ function setPropertyScalarNumber(dictRef, pl, ps, value) {
 //console.log("Value " + ps.getValue());
 }
 /**
+ * @param deselect If true the button is clicked and the propert removed.
  * @param m The molecule.
  * @param mIDM The molecule IDManager.
  * @param plDiv The PropertyList HTMLDivElement.
  * @param pl The PropertyList.
  * @param dictRef The dictRef.
  * @param units The units. 
- */ function addPropertyArray(setSize, m, mIDM, plDiv, pl, dictRef, units) {
+ */ function addPropertyArray(deselect, setSize, m, mIDM, plDiv, pl, dictRef, units) {
     let pAttributes;
     let paAttributes;
     let pa;
@@ -12246,9 +12254,11 @@ function setPropertyScalarNumber(dictRef, pl, ps, value) {
     (0, _appJs.addAnyUnits)(units, paAttributes, div, div.querySelector((0, _appJs.s_input)), (0, _appJs.addRID)(plDiv.id, dictRef, (0, _xmlMoleculeJs.PropertyScalarNumber).s_units), dictRef, (0, _appJs.boundary1), (0, _appJs.boundary1));
     plDiv.appendChild(div);
     // Deselect
-    let b = div.querySelector((0, _htmlJs.s_button));
-    b.click();
-    pl.removeProperty(dictRef);
+    if (deselect) {
+        let b = div.querySelector((0, _htmlJs.s_button));
+        b.click();
+        pl.removeProperty(dictRef);
+    }
 }
 function setValues(dictRef, values) {
     let n = (0, _appJs.getN)("Please enter the number of elements in the " + dictRef + " array");
@@ -12270,13 +12280,14 @@ function setPropertyArrayOrMatrix(dictRef, pl, paom, values) {
     console.log("Value " + paom.getValues());
 }
 /**
+ * @param deselect If true the button is clicked and the propert removed.
  * @param m The molecule.
  * @param mIDM The molecule IDManager.
  * @param plDiv The PropertyList HTMLDivElement.
  * @param pl The PropertyList.
  * @param dictRef The dictRef.
  * @param units The units. 
- */ function addPropertyMatrix(setSize, m, mIDM, plDiv, pl, dictRef, units) {
+ */ function addPropertyMatrix(deselect, setSize, m, mIDM, plDiv, pl, dictRef, units) {
     let pAttributes;
     let pmAttributes;
     let pm;
@@ -12297,9 +12308,11 @@ function setPropertyArrayOrMatrix(dictRef, pl, paom, values) {
     (0, _appJs.addAnyUnits)(units, pmAttributes, div, div.querySelector((0, _appJs.s_input)), (0, _appJs.addRID)(plDiv.id, dictRef, (0, _xmlMoleculeJs.PropertyScalarNumber).s_units), dictRef, (0, _appJs.boundary1), (0, _appJs.boundary1));
     plDiv.appendChild(div);
     // Deselect
-    let b = div.querySelector((0, _htmlJs.s_button));
-    b.click();
-    pl.removeProperty(dictRef);
+    if (deselect) {
+        let b = div.querySelector((0, _htmlJs.s_button));
+        b.click();
+        pl.removeProperty(dictRef);
+    }
 }
 function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
     let addFromLibraryButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_from_library), undefined, (0, _appJs.boundary1));
@@ -12395,8 +12408,9 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let dictRefs = new Set(properties.keys());
             //console.log("Molecule " + molecule.getDescription());
             let pID;
+            let deselect = false;
             // "me:ZPE", scalar, Mesmer.energyUnits.
-            if (!dictRefs.has((0, _xmlMoleculeJs.ZPE).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.ZPE).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.ZPE).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.ZPE).dictRef);
@@ -12406,7 +12420,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:Hf0", scalar, Mesmer.energyUnits.
-            if (!dictRefs.has((0, _xmlMoleculeJs.Hf0).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.Hf0).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hf0).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.Hf0).dictRef);
@@ -12416,7 +12430,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:HfAT0", scalar, Mesmer.energyUnits.
-            if (!dictRefs.has((0, _xmlMoleculeJs.HfAT0).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.HfAT0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.HfAT0).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.HfAT0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.HfAT0).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.HfAT0).dictRef);
@@ -12426,7 +12440,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:Hf298", scalar, Mesmer.energyUnits.
-            if (!dictRefs.has((0, _xmlMoleculeJs.Hf298).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.Hf298).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hf298).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.Hf298).dictRef);
@@ -12436,7 +12450,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:rotConsts", array, Mesmer.frequencyUnits.
-            if (!dictRefs.has((0, _xmlMoleculeJs.RotConsts).dictRef)) addPropertyArray(false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.RotConsts).dictRef)) addPropertyArray(deselect, false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.RotConsts).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.RotConsts).dictRef);
@@ -12446,7 +12460,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:symmetryNumber", scalar, No units.
-            if (!dictRefs.has((0, _xmlMoleculeJs.SymmetryNumber).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
+            if (!dictRefs.has((0, _xmlMoleculeJs.SymmetryNumber).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.SymmetryNumber).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.SymmetryNumber).dictRef);
@@ -12455,7 +12469,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:TSOpticalSymmetryNumber", scalar, No units.
-            if (!dictRefs.has((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
+            if (!dictRefs.has((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef);
@@ -12464,7 +12478,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:frequenciesScaleFactor", scalar, No units.
-            if (!dictRefs.has((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
+            if (!dictRefs.has((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef);
@@ -12473,7 +12487,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:vibFreqs", array, cm-1.
-            if (!dictRefs.has((0, _xmlMoleculeJs.VibFreqs).dictRef)) addPropertyArray(false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.VibFreqs).dictRef)) addPropertyArray(deselect, false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.VibFreqs).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.VibFreqs).dictRef);
@@ -12483,7 +12497,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:MW", scalar, amu.
-            if (!dictRefs.has((0, _xmlMoleculeJs.MW).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.MW).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.MW).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.MW).dictRef);
@@ -12493,7 +12507,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:spinMultiplicity", scalar, No units.
-            if (!dictRefs.has((0, _xmlMoleculeJs.SpinMultiplicity).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
+            if (!dictRefs.has((0, _xmlMoleculeJs.SpinMultiplicity).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.SpinMultiplicity).dictRef);
@@ -12502,7 +12516,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:epsilon", scalar, K (fixed).
-            if (!dictRefs.has((0, _xmlMoleculeJs.Epsilon).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.Epsilon).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Epsilon).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.Epsilon).dictRef);
@@ -12511,7 +12525,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:sigma", scalar, Å (fixed).
-            if (!dictRefs.has((0, _xmlMoleculeJs.Sigma).dictRef)) addPropertyScalar(molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.Sigma).dictRef)) addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Sigma).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.Sigma).dictRef);
@@ -12520,7 +12534,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
-            if (!dictRefs.has((0, _xmlMoleculeJs.Hessian).dictRef)) addPropertyMatrix(false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.Hessian).dictRef)) addPropertyMatrix(deselect, false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hessian).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.Hessian).dictRef);
@@ -12530,7 +12544,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:EinsteinAij", array, s-1 (fixed).
-            if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinAij).dictRef)) addPropertyArray(false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinAij).dictRef)) addPropertyArray(deselect, false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.EinsteinAij).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.EinsteinAij).dictRef);
@@ -12540,7 +12554,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 plDiv.appendChild(div);
             }
             // "me:EinsteinBij", array, m3/J/s2 (fixed).
-            if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinBij).dictRef)) addPropertyArray(false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
+            if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinBij).dictRef)) addPropertyArray(deselect, false, molecule, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
             else {
                 pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.EinsteinBij).dictRef);
                 let p = pl.getProperty((0, _xmlMoleculeJs.EinsteinBij).dictRef);
@@ -13165,15 +13179,16 @@ function processMoleculeList(xml, mIDM, molecules) {
         m.setPropertyList(pl);
         moleculeTagNames.delete((0, _xmlMoleculeJs.PropertyList).tagName);
         let pID;
+        let deselect = false;
         // "me:ZPE", scalar, Mesmer.energyUnits.
-        if (!dictRefs.has((0, _xmlMoleculeJs.ZPE).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.ZPE).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.ZPE).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.ZPE).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.ZPE).dictRef);
             let p = createPropertyAndDiv(pl, xml_ps[j], plDiv, m, mIDM, (0, _appJs.boundary1), (0, _appJs.level1));
-            // Get button from div and click
-            let button = plDiv.querySelector((0, _htmlJs.s_button));
-            button.click();
+        // Get button from div and click
+        //let button: HTMLButtonElement = plDiv.querySelector(s_button) as HTMLButtonElement;
+        //button.click();
         /*
             let p: Property = pl.getProperty(ZPE.dictRef) as Property;
             let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
@@ -13183,15 +13198,19 @@ function processMoleculeList(xml, mIDM, molecules) {
             addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
                 getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
             plDiv.appendChild(div);
-            /
-        }
+            */ }
         // "me:Hf0", scalar, Mesmer.energyUnits.
-        if (!dictRefs.has(Hf0.dictRef)) {
-            addPropertyScalar(m, mIDM, plDiv, pl, Hf0.dictRef, Mesmer.energyUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.Hf0).dictRef)) {
+            let div = addPropertyScalar(true, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+        // Click the button.
+        //let b: HTMLButtonElement = div.querySelector(s_button)!;
+        //b!.click();
+        //pl.removeProperty(SpinMultiplicity.dictRef);
         } else {
-            pID = getID(plDiv.id, Hf0.dictRef);
-            let j: number = dictRefMap.get(Hf0.dictRef)!;
-            //let p: Property = createPropertyAndDiv(pl, xml_ps![j], plDiv, m, mIDM, boundary1, level1);
+            pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hf0).dictRef);
+            let j = dictRefMap.get((0, _xmlMoleculeJs.Hf0).dictRef);
+            let p = createPropertyAndDiv(pl, xml_ps[j], plDiv, m, mIDM, (0, _appJs.boundary1), (0, _appJs.level1));
+        /*
             let p: Property = pl.getProperty(Hf0.dictRef) as Property;
             let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
             let div: HTMLDivElement = processNumber(pID, mIDM, p.dictRef, ps.getValue.bind(ps),
@@ -13200,15 +13219,14 @@ function processMoleculeList(xml, mIDM, molecules) {
             addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
                 getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
             plDiv.appendChild(div);
-        }
+            */ }
         // "me:HfAT0", scalar, Mesmer.energyUnits.
-        if (!dictRefs.has(HfAT0.dictRef)) {
-            addPropertyScalar(m, mIDM, plDiv, pl, HfAT0.dictRef, Mesmer.energyUnits);
-        } else {
-            pID = getID(plDiv.id, HfAT0.dictRef);
-            let j: number = dictRefMap.get(HfAT0.dictRef)!;
-            let p: Property = createPropertyAndDiv(pl, xml_ps![j], plDiv, m, mIDM, boundary1, level1);
-            /*
+        if (!dictRefs.has((0, _xmlMoleculeJs.HfAT0).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.HfAT0).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+        else {
+            pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.HfAT0).dictRef);
+            let j = dictRefMap.get((0, _xmlMoleculeJs.HfAT0).dictRef);
+            let p = createPropertyAndDiv(pl, xml_ps[j], plDiv, m, mIDM, (0, _appJs.boundary1), (0, _appJs.level1));
+        /*
             let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
             let div: HTMLDivElement = processNumber(pID, mIDM, p.dictRef, ps.getValue.bind(ps),
                 (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
@@ -13218,7 +13236,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:Hf298", scalar, Mesmer.energyUnits.
-        if (!dictRefs.has((0, _xmlMoleculeJs.Hf298).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.Hf298).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hf298).dictRef, (0, _xmlMesmerJs.Mesmer).energyUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hf298).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.Hf298).dictRef);
@@ -13233,7 +13251,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:rotConsts", array, Mesmer.frequencyUnits.
-        if (!dictRefs.has((0, _xmlMoleculeJs.RotConsts).dictRef)) addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.RotConsts).dictRef)) addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.RotConsts).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.RotConsts).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.RotConsts).dictRef);
@@ -13248,7 +13266,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:symmetryNumber", scalar, No units.
-        if (!dictRefs.has((0, _xmlMoleculeJs.SymmetryNumber).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
+        if (!dictRefs.has((0, _xmlMoleculeJs.SymmetryNumber).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SymmetryNumber).dictRef, undefined);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.SymmetryNumber).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.SymmetryNumber).dictRef);
@@ -13261,7 +13279,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:TSOpticalSymmetryNumber", scalar, No units.
-        if (!dictRefs.has((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
+        if (!dictRefs.has((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef, undefined);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.TSOpticalSymmetryNumber).dictRef);
@@ -13274,7 +13292,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:frequenciesScaleFactor", scalar, No units.
-        if (!dictRefs.has((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
+        if (!dictRefs.has((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef, undefined);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.FrequenciesScaleFactor).dictRef);
@@ -13287,7 +13305,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:vibFreqs", array, cm-1.
-        if (!dictRefs.has((0, _xmlMoleculeJs.VibFreqs).dictRef)) addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.VibFreqs).dictRef)) addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.VibFreqs).dictRef, (0, _xmlMesmerJs.Mesmer).frequencyUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.VibFreqs).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.VibFreqs).dictRef);
@@ -13302,7 +13320,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:MW", scalar, amu.
-        if (!dictRefs.has((0, _xmlMoleculeJs.MW).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.MW).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.MW).dictRef, (0, _xmlMesmerJs.Mesmer).massUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.MW).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.MW).dictRef);
@@ -13317,8 +13335,13 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:spinMultiplicity", scalar, No units.
-        if (!dictRefs.has((0, _xmlMoleculeJs.SpinMultiplicity).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
-        else {
+        if (!dictRefs.has((0, _xmlMoleculeJs.SpinMultiplicity).dictRef)) {
+            let div = addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef, undefined);
+            // Click the button.
+            let b = div.querySelector((0, _htmlJs.s_button));
+            b.click();
+            pl.removeProperty((0, _xmlMoleculeJs.SpinMultiplicity).dictRef);
+        } else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.SpinMultiplicity).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.SpinMultiplicity).dictRef);
             let p = createPropertyAndDiv(pl, xml_ps[j], plDiv, m, mIDM, (0, _appJs.boundary1), (0, _appJs.level1));
@@ -13330,7 +13353,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:epsilon", scalar, K (fixed).
-        if (!dictRefs.has((0, _xmlMoleculeJs.Epsilon).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.Epsilon).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Epsilon).dictRef, (0, _xmlMesmerJs.Mesmer).temperatureUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Epsilon).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.Epsilon).dictRef);
@@ -13343,7 +13366,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:sigma", scalar, Å (fixed).
-        if (!dictRefs.has((0, _xmlMoleculeJs.Sigma).dictRef)) addPropertyScalar(m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.Sigma).dictRef)) addPropertyScalar(deselect, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Sigma).dictRef, (0, _xmlMesmerJs.Mesmer).lengthUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Sigma).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.Sigma).dictRef);
@@ -13356,7 +13379,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:hessian", matrix, kJ/mol/Å2 or kcal/mol/Å2 or Hartree/Å2.
-        if (!dictRefs.has((0, _xmlMoleculeJs.Hessian).dictRef)) addPropertyMatrix(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.Hessian).dictRef)) addPropertyMatrix(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.Hessian).dictRef, (0, _xmlMesmerJs.Mesmer).hessianUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.Hessian).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.Hessian).dictRef);
@@ -13371,7 +13394,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:EinsteinAij", array, s-1 (fixed).
-        if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinAij).dictRef)) addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinAij).dictRef)) addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinAij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinAUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.EinsteinAij).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.EinsteinAij).dictRef);
@@ -13386,7 +13409,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             plDiv.appendChild(div);
             */ }
         // "me:EinsteinBij", array, m3/J/s2 (fixed).
-        if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinBij).dictRef)) addPropertyArray(false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
+        if (!dictRefs.has((0, _xmlMoleculeJs.EinsteinBij).dictRef)) addPropertyArray(deselect, false, m, mIDM, plDiv, pl, (0, _xmlMoleculeJs.EinsteinBij).dictRef, (0, _xmlMesmerJs.Mesmer).EinsteinBUnits);
         else {
             pID = (0, _utilJs.getID)(plDiv.id, (0, _xmlMoleculeJs.EinsteinBij).dictRef);
             let j = dictRefMap.get((0, _xmlMoleculeJs.EinsteinBij).dictRef);
@@ -17276,7 +17299,7 @@ function processModelParameters(xml, mpIDM) {
         let xml = xml_mps.getElementsByTagName(tagName);
         if (xml.length == 1) {
             valueString = (0, _xml.getNodeValue)((0, _xml.getFirstChildNode)(xml[0]));
-            let value = new (0, _bigJsDefault.default)(valueString);
+            let value = new (0, _bigJsDefault.default)(Number(valueString));
             gs = new (0, _xmlModelParameters.GrainSize)((0, _xml.getAttributes)(xml[0]), value);
             button.textContent = buttonTextContentSelected;
             createInputModelParameters(mps, div, gs, idi, valueString, mps.setGrainSize, (0, _xmlMesmer.Mesmer).energyUnits);
