@@ -17,7 +17,7 @@ import { Description, Mesmer, MoleculeList, T } from './xml_mesmer.js';
 import { MetadataList, Metadata } from './xml_metadata.js';
 import {
     Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList,
-    DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, ExtraDOSCMethod,
+    DistributionCalcMethod, EinsteinAij, EinsteinBij, ElectronicExcitation, EnergyTransferModel, Epsilon, ExtraDOSCMethod,
     FrequenciesScaleFactor, Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity,
     PotentialPoint, Property, PropertyArray, PropertyList, PropertyMatrix, PropertyScalarNumber, PropertyScalarString,
     Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber,
@@ -53,30 +53,29 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, addMoleculeButton, mDiv, mid, boundary1, level1);
         // Add the molecule to the BathGas select elements.
         addOptionByClassName(BathGas.tagName, mid);
-        // Add edit Name button.
+        // Add Edit ID button.
         addEditIDButton(m, molecules, mcDiv.querySelector(s_button) as HTMLButtonElement, mIDM, mDiv, level1);
-        // Description
+        // Add description.
         mDiv.appendChild(processDescription(mIDM.addID(mDivID, s_description), mIDM, m.getDescription.bind(m),
             m.setDescription.bind(m), boundary1, level1));
-        // Create collapsible AtomArray HTMLDivElement.
+        // Add atomArray.
         let aaDivID: string = mIDM.addID(mDivID, AtomArray.tagName);
         let aaDiv: HTMLDivElement = createDiv(aaDivID);
         let aacDivID = mIDM.addID(aaDivID, s_container);
         let aacDiv: HTMLDivElement = getCollapsibleDiv(aacDivID, mDiv, null, aaDiv, AtomArray.tagName, boundary1, level1);
         aaDiv.appendChild(getAddAtomButton(mIDM, m, aaDiv, Atom.tagName, boundary1, level1));
-        // Create collapsible BondArray HTMLDivElement.
+        // Add bondArray.
         let baDivID: string = mIDM.addID(mDivID, BondArray.tagName);
         let baDiv: HTMLDivElement = createDiv(baDivID);
         let bacDivID = mIDM.addID(baDivID, s_container);
         let bacDiv: HTMLDivElement = getCollapsibleDiv(bacDivID, mDiv, null, baDiv, BondArray.tagName, boundary1, level1);
         baDiv.appendChild(getAddBondButton(mIDM, m, baDiv, Bond.tagName, boundary1, level1));
         create3DViewer(mIDM, m, mDiv, boundary1, level1);
-        // Create collapsible Properties HTMLDivElement.
+        // Add properties.
         let plDivID: string = mIDM.addID(mDivID, PropertyList.tagName);
         let plDiv: HTMLDivElement = createDiv(plDivID);
         let plcDivID = mIDM.addID(plDivID, s_container);
         let plcDiv: HTMLDivElement = getCollapsibleDiv(plcDivID, mDiv, null, plDiv, PropertyList.tagName, boundary1, level1);
-        // Add properties.
         let pl: PropertyList | undefined = m.getPropertyList();
         if (pl == undefined) {
             console.log("PropertyList is undefined for molecule " + m.getLabel());
@@ -84,25 +83,70 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
             m.setPropertyList(pl);
         }
         console.log("pl.index.size" + pl.index.size);
-        // Initialise properties.
         initialiseProperties(true, m, mIDM, plDiv, pl);
+
+        // Add me:EnergyTransferModel.
+        let etmDivID: string = mIDM.addID(mDivID, EnergyTransferModel.tagName);
+        let etmDiv: HTMLDivElement = createDiv(etmDivID);
+        let etmcDivID = mIDM.addID(etmDivID, s_container);
+        let etmcDiv: HTMLDivElement = getCollapsibleDiv(etmcDivID, mDiv, null, etmDiv, EnergyTransferModel.tagName, boundary1, level1);
+        let etm: EnergyTransferModel | undefined = m.getEnergyTransferModel();
+        if (etm == undefined) {
+            etm = new EnergyTransferModel(new Map());
+            m.setEnergyTransferModel(etm);
+        }
+        console.log("etm.index.size" + etm.nodes.size);
+        // Add an add me.deltaEDown button.
+        let addDeltaEDownButton: HTMLButtonElement = createButton(s_Add_sy_add, getID(etmDivID, DeltaEDown.tagName, s_Add_sy_add, s_button), level1);
+        etmDiv.appendChild(addDeltaEDownButton);
+        addDeltaEDownButton.addEventListener('click', () => {
+            let value: Big = big0;
+            let ded: DeltaEDown = new DeltaEDown(new Map(), value);
+            let index = etm!.addDeltaEDown(ded);
+            let dedDivID: string = mIDM.addID(etmDivID, DeltaEDown.tagName, etm!.nodes.size);
+            let dedDiv: HTMLDivElement = createFlexDiv(dedDivID);
+            etmDiv.insertBefore(dedDiv, addDeltaEDownButton);
+            let lwi: HTMLDivElement = createLabelWithInput(DeltaEDown.tagName, dedDivID, boundary1, level1, (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the input is a number.
+                if (isNumeric(target.value)) {
+                    value = new Big(target.value);
+                    ded.setValue(value);
+                } else {
+                    // Reset.
+                    alert("Input is not a number, resetting...");
+                    target.value = ded.value.toString() ?? s_undefined;
+                }
+                resizeInputElement(target);
+            }, ded.value.toString(), DeltaEDown.tagName);
+            dedDiv.appendChild(lwi);
+            // Add a remove me.deltaEDown button.
+            addRemoveButton(dedDiv, boundary1, () => {
+                etm!.removeDeltaEDown(index);
+                etmDiv.removeChild(dedDiv);
+            });
+        });
+
+        // Add me:DOSCMethod.
+        let doscm: DOSCMethod | undefined = m.getDOSCMethod();
+        if (doscm == undefined) {
+            doscm = new DOSCMethod(new Map());
+            m.setDOSCMethod(doscm);
+        }
+        mDiv.appendChild(
+            createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
+                doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+
         /*
-        // Add me:DOSCMethod
         addDOSCMethod(m, mIDM, plDiv, pl);
         // Add me:ExtraDOSCMethod
         addExtraDOSCMethod(m, mIDM, plDiv, pl);
-        // Add me:EnergyTransferModel
-        addEnergyTransferModel(m, mIDM, plDiv, pl);
         // Add me:Periodicity
         addPeriodicity(m, mIDM, plDiv, pl);
         // Add me:PotentialPoint
         addPotentialPoint(m, mIDM, plDiv, pl);
         // Add me:ReservoirSize
         addReservoirSize(m, mIDM, plDiv, pl);
-        // Add me:Sumc
-        addSumc(m, mIDM, plDiv, pl);
-        // Add me:Sumg
-        addSumg(m, mIDM, plDiv, pl);
         */
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
@@ -154,6 +198,8 @@ export function initialiseProperties(deselect: boolean, m: Molecule, mIDM: IDMan
     addPropertyArray(deselect, false, m, mIDM, plDiv, pl, EinsteinAij.dictRef, Mesmer.EinsteinAUnits);
     // "me:EinsteinBij", array, m3/J/s2 (fixed).
     addPropertyArray(deselect, false, m, mIDM, plDiv, pl, EinsteinBij.dictRef, Mesmer.EinsteinBUnits);
+    // "me:electronicExcitation">, scalar, cm-1.
+    addPropertyScalar(deselect, m, mIDM, plDiv, pl, ElectronicExcitation.dictRef, Mesmer.frequencyUnits);
 }
 
 /**
@@ -405,7 +451,8 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             // Create collapsible MetadataList HTMLDivElement.
             let mlistDivID: string = mIDM.addID(mDivID, MetadataList.tagName);
             let mlistDiv: HTMLDivElement = createDiv(mlistDivID, level1);
-            let mlistcDivID = mIDM.addID(mlistDivID, s_container);
+            //let mlistcDivID = mIDM.addID(mlistDivID, s_container);
+            let mlistcDivID = getID(mlistDivID, s_container);
             let mlistcDiv: HTMLDivElement = getCollapsibleDiv(mlistcDivID, moleculeDiv, null, mlistDiv, MetadataList.tagName, boundary1, level1);
             // Add metadata.
             let metadataList: MetadataList | undefined = molecule.getMetadataList();
@@ -422,10 +469,10 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let aacDivID = mIDM.addID(aaDivID, s_container);
             let aacDiv: HTMLDivElement = getCollapsibleDiv(aacDivID, moleculeDiv, null, aaDiv, AtomArray.tagName, boundary1, level1);
             // Add atoms.
-            let aa = molecule.getAtoms();
+            let aa: AtomArray = molecule.getAtoms();
             if (aa != undefined) {
                 aa.atoms.forEach((a) => {
-                    aaDiv.appendChild(addAtom(mIDM, molecule, aaDivID, molecule.getAtoms(), a, boundary1, level1));
+                    aaDiv.appendChild(addAtom(false, mIDM, molecule, aaDivID, aa, a, boundary1, level1));
                 });
             }
             aaDiv.appendChild(getAddAtomButton(mIDM, molecule, aaDiv, Atom.tagName, boundary1, level1));
@@ -437,11 +484,11 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             // Add bonds.
             let ba: BondArray = molecule.getBonds();
             if (ba != undefined) {
-                molecule.getBonds().bonds.forEach((b: Bond) => {
+                ba.bonds.forEach((b: Bond) => {
                     if (aa == undefined) {
                         throw new Error("Atoms are not defined for molecule " + molecule.getLabel());
                     }
-                    baDiv.appendChild(addBond(mIDM, molecule, baDivID, aa.atoms, molecule.getBonds(), b, boundary1, level1));
+                    baDiv.appendChild(addBond(false, mIDM, molecule, baDivID, aa.atoms, ba, b, boundary1, level1));
                 });
             }
             baDiv.appendChild(getAddBondButton(mIDM, molecule, baDiv, Bond.tagName, boundary1, level1));
@@ -457,7 +504,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let dictRefs: Set<string> = new Set(properties.keys());
             //console.log("Molecule " + molecule.getDescription());
             let pID: string;
-            let deselect: boolean = false;
+            let deselect: boolean = true;
             // "me:ZPE", scalar, Mesmer.energyUnits.
             if (!dictRefs.has(ZPE.dictRef)) {
                 addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, ZPE.dictRef, Mesmer.energyUnits);
@@ -469,7 +516,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:Hf0", scalar, Mesmer.energyUnits.
@@ -483,7 +530,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:HfAT0", scalar, Mesmer.energyUnits.
@@ -497,7 +544,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:Hf298", scalar, Mesmer.energyUnits.
@@ -511,7 +558,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.energyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:rotConsts", array, Mesmer.frequencyUnits.
@@ -525,7 +572,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pa, values),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.frequencyUnits, pa.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:symmetryNumber", scalar, No units.
@@ -575,7 +622,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pa, values),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.frequencyUnits, pa.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:MW", scalar, amu.
@@ -589,7 +636,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.massUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:spinMultiplicity", scalar, No units.
@@ -639,7 +686,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pm, values),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.hessianUnits, pm.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:EinsteinAij", array, s-1 (fixed).
@@ -653,7 +700,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pa, values),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.EinsteinAUnits, pa.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
             // "me:EinsteinBij", array, m3/J/s2 (fixed).
@@ -667,9 +714,32 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pa, values),
                     () => pl.removeProperty(p.dictRef), boundary1, level1);
                 addAnyUnits(Mesmer.EinsteinBUnits, pa.attributes, div, div.querySelector(s_input) as HTMLElement,
-                    mIDM.addID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
+            // "me:ElectronicExcitation", scalar, cm-1.
+            if (!dictRefs.has(ElectronicExcitation.dictRef)) {
+                addPropertyScalar(deselect, molecule, mIDM, plDiv, pl, ElectronicExcitation.dictRef, Mesmer.frequencyUnits);
+            } else {
+                pID = getID(plDiv.id, ElectronicExcitation.dictRef);
+                let p: Property = pl.getProperty(ElectronicExcitation.dictRef) as Property;
+                let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
+                let div: HTMLDivElement = processNumber(pID, mIDM, p.dictRef, ps.getValue.bind(ps),
+                    (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
+                    () => pl.removeProperty(p.dictRef), boundary1, level1);
+                addAnyUnits(Mesmer.frequencyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
+                    getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+                plDiv.appendChild(div);
+            }
+            // Add me:DOSCMethod.
+            let doscm: DOSCMethod | undefined = molecule.getDOSCMethod();
+            if (doscm == undefined) {
+                doscm = new DOSCMethod(new Map());
+                molecule.setDOSCMethod(doscm);
+            }
+            moleculeDiv.appendChild(
+                createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
+                doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -849,7 +919,7 @@ function getAddAtomButton(mIDM: IDManager, molecule: Molecule, aaDiv: HTMLDivEle
         let attributes: Map<string, string> = new Map();
         let a: Atom = new Atom(attributes, molecule);
         //let aID: string = molecule.getAtoms().addAtom(a);
-        aaDiv.insertBefore(addAtom(mIDM, molecule, aaDiv.id, molecule.getAtoms(), a, boundary, level), button);
+        aaDiv.insertBefore(addAtom(true, mIDM, molecule, aaDiv.id, molecule.getAtoms(), a, boundary, level), button);
     });
     return button;
 }
@@ -872,10 +942,15 @@ function addMetadata(m: Molecule, md: Metadata, ml: MetadataList, mdDivID: strin
  * @param level The margin for the div.
  * @returns A new div for the atom.
  */
-function addAtom(mIDM: IDManager, molecule: Molecule, aaDivID: string, aa: AtomArray, a: Atom,
+function addAtom(addToArray: boolean, mIDM: IDManager, molecule: Molecule, aaDivID: string, aa: AtomArray, a: Atom,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let aID: string = aa.addAtom(a, a.getID());
+    let aID: string;
+    if (addToArray) {
+        aID = aa.addAtom(a, a.getID());
+    } else {
+        aID = a.getID()!;
+    }
     //let aDivID: string = mIDM.addID(aaDivID, aID);
     let aDivID: string = getID(aaDivID, aID);
     let aDiv: HTMLDivElement = createFlexDiv(aDivID, level);
@@ -1009,7 +1084,7 @@ function getAddBondButton(mIDM: IDManager, molecule: Molecule, baDiv: HTMLDivEle
         let atomRefs2: string = Array.from(atoms.keys()).slice(0, 2).join(" ");
         attributes.set(Bond.s_atomRefs2, atomRefs2);
         let b: Bond = new Bond(attributes, molecule);
-        baDiv.insertBefore(addBond(mIDM, molecule, baDiv.id, atoms, molecule.getBonds(), b, boundary, level), button);
+        baDiv.insertBefore(addBond(true, mIDM, molecule, baDiv.id, atoms, molecule.getBonds(), b, boundary, level), button);
     });
     baDiv.appendChild(button);
     return button;
@@ -1024,10 +1099,15 @@ function getAddBondButton(mIDM: IDManager, molecule: Molecule, baDiv: HTMLDivEle
  * @param level The margin for the div.
  * @returns The a new div for the bond.
  */
-function addBond(mIDM: IDManager, molecule: Molecule, baDivID: string, atoms: Map<string, Atom>, ba: BondArray, b: Bond,
+function addBond(addToArray: boolean, mIDM: IDManager, molecule: Molecule, baDivID: string, atoms: Map<string, Atom>, ba: BondArray, b: Bond,
     boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
     level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
-    let bID = ba.addBond(b, b.getID());
+    let bID: string;
+    if (addToArray) {
+        bID = ba.addBond(b, b.getID());
+    } else {
+        bID = b.getID()!;
+    }
     let bDivID: string = getID(baDivID, bID);
     let bDiv: HTMLDivElement = createFlexDiv(bDivID, level);
     bDiv.appendChild(createLabel(bID, boundary));
@@ -1321,7 +1401,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
         }
         let xml_as: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(Atom.tagName);
         for (let j = 0; j < xml_as.length; j++) {
-            aaDiv.appendChild(addAtom(mIDM, m, aaDivID, aa, new Atom(getAttributes(xml_as[j]), m), boundary1, level1));
+            aaDiv.appendChild(addAtom(true, mIDM, m, aaDivID, aa, new Atom(getAttributes(xml_as[j]), m), boundary1, level1));
         }
         aaDiv.appendChild(getAddAtomButton(mIDM, m, aaDiv, Atom.tagName, boundary1, level1));
         moleculeTagNames.delete(Atom.tagName);
@@ -1349,14 +1429,14 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
             // Load those bonds that have an id attribute first.
             let b_attributes: Map<string, string> = getAttributes(xml_bs[j]);
             if (b_attributes.has(Bond.s_id)) {
-                baDiv.appendChild(addBond(mIDM, m, baDivID, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
+                baDiv.appendChild(addBond(true, mIDM, m, baDivID, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
             }
         }
         // Load those bonds that do not have an id attribute.
         for (let j = 0; j < xml_bs.length; j++) {
             let b_attributes: Map<string, string> = getAttributes(xml_bs[j]);
             if (!b_attributes.has(Bond.s_id)) {
-                baDiv.appendChild(addBond(mIDM, m, baDivID, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
+                baDiv.appendChild(addBond(true, mIDM, m, baDivID, m.getAtoms().atoms, ba, new Bond(getAttributes(xml_bs[j]), m), boundary1, level1));
             }
         }
         baDiv.appendChild(getAddBondButton(mIDM, m, baDiv, Bond.tagName, boundary1, level1));
@@ -1662,7 +1742,6 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
         // "me:EinsteinBij", array, m3/J/s2 (fixed).
         if (!dictRefs.has(EinsteinBij.dictRef)) {
             addPropertyArray(deselect, false, m, mIDM, plDiv, pl, EinsteinBij.dictRef, Mesmer.EinsteinBUnits);
-
         } else {
             pID = getID(plDiv.id, EinsteinBij.dictRef);
             let j: number = dictRefMap.get(EinsteinBij.dictRef)!;
@@ -1673,6 +1752,23 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
                 (values: Big[]) => setPropertyArrayOrMatrix(p.dictRef, pl, pa, values),
                 () => pl.removeProperty(p.dictRef), boundary1, level1);
             addAnyUnits(Mesmer.EinsteinBUnits, pa.attributes, div, div.querySelector(s_input) as HTMLElement,
+                getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
+            plDiv.appendChild(div);
+            */
+        }
+        // "me:electronicExcitation", scalar, cm-1.
+        if (!dictRefs.has(ElectronicExcitation.dictRef)) {
+            addPropertyScalar(deselect, m, mIDM, plDiv, pl, ElectronicExcitation.dictRef, Mesmer.frequencyUnits);
+        } else {
+            pID = getID(plDiv.id, ElectronicExcitation.dictRef);
+            let j: number = dictRefMap.get(ElectronicExcitation.dictRef)!;
+            let p: Property = createPropertyAndDiv(pl, xml_ps![j], plDiv, m, mIDM, boundary1, level1);
+            /*
+            let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
+            let div: HTMLDivElement = processNumber(pID, mIDM, p.dictRef, ps.getValue.bind(ps),
+                (value: Big) => setPropertyScalarNumber(p.dictRef, pl, ps, value),
+                () => pl.removeProperty(p.dictRef), boundary1, level1);
+            addAnyUnits(Mesmer.frequencyUnits, ps.attributes, div, div.querySelector(s_input) as HTMLElement,
                 getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
             plDiv.appendChild(div);
             */
@@ -2573,12 +2669,14 @@ export function processNumberArrayOrMatrix(plDiv: HTMLDivElement, mIDM: IDManage
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
     //let id: string = mIDM.addID(plDiv.id, name);
-    let idb = mIDM.addID(divID, s_button);
+    //let idb = mIDM.addID(divID, s_button);
+    let idb = getID(divID, s_button);
     let button = createButton(buttonTextContentDeselected, idb, marginComponent);
     div.appendChild(button);
     button.classList.add(s_optionOn);
     button.classList.add(s_optionOff);
-    let inputId: string = mIDM.addID(divID, s_input)
+    //let inputId: string = mIDM.addID(divID, s_input)
+    let inputId: string = getID(divID, s_input)
     let values: Big[] | undefined = getter();
     if (values == undefined) {
         button.textContent = buttonTextContentDeselected;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.EinsteinBij = exports.EinsteinAij = exports.Hessian = exports.Sigma = exports.Epsilon = exports.SpinMultiplicity = exports.MW = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.TSOpticalSymmetryNumber = exports.SymmetryNumber = exports.RotConsts = exports.Hf298 = exports.HfAT0 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalarNumber = exports.PropertyScalarString = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.Molecule = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.ElectronicExcitation = exports.EinsteinBij = exports.EinsteinAij = exports.Hessian = exports.Sigma = exports.Epsilon = exports.SpinMultiplicity = exports.MW = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.TSOpticalSymmetryNumber = exports.SymmetryNumber = exports.RotConsts = exports.Hf298 = exports.HfAT0 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalarNumber = exports.PropertyScalarString = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
 const big_js_1 = require("big.js");
 const xml_range_js_1 = require("./xml_range.js");
 const util_js_1 = require("./util.js");
@@ -233,6 +233,16 @@ class AtomArray extends xml_js_1.NodeWithNodes {
                 }
             }
             aID = id;
+        }
+        else {
+            if (this.atoms.has(aID)) {
+                //let newID: string = this.getNextAtomID();
+                console.warn('Atom with id ' + aID + ' will be replaced');
+                let i = this.index.get(aID);
+                this.nodes.set(i, atom);
+                this.atoms.set(aID, atom);
+                return aID;
+            }
         }
         //console.log('Atom id: ' + id);
         this.index.set(aID, this.nodes.size);
@@ -482,6 +492,16 @@ class BondArray extends xml_js_1.NodeWithNodes {
                 }
             }
             bID = id;
+        }
+        else {
+            if (this.bonds.has(bID)) {
+                //let newID: string = this.getNextBondID();
+                console.log('Bond with id ' + bID + ' will be replaced');
+                let i = this.index.get(bID);
+                this.nodes.set(i, bond);
+                this.bonds.set(bID, bond);
+                return bID;
+            }
         }
         //console.log('Bond id: ' + id);
         this.index.set(bID, this.nodes.size);
@@ -1198,6 +1218,24 @@ class EinsteinBij extends Property {
 }
 exports.EinsteinBij = EinsteinBij;
 /**
+ * The electronic excitation.
+ * The child "scalar" node should have a "units" attribute (Mesmer.frequencyUnits?).
+ */
+class ElectronicExcitation extends Property {
+    /**
+     * The dictionary reference.
+     */
+    static dictRef = "me:electronicExcitation";
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes, property) {
+        super(attributes, property);
+    }
+}
+exports.ElectronicExcitation = ElectronicExcitation;
+/**
  * "me:imFreqs"
  */
 class ImFreqs extends Property {
@@ -1513,13 +1551,20 @@ class EnergyTransferModel extends xml_js_1.NodeWithNodes {
         this.nodes.set(index, deltaEDown);
     }
     /**
-     * Add the DeltaEDowns.
+     * Add a DeltaEDown.
      * @param deltaEDown The DeltaEDown.
      * @returns The index of the DeltaEDown added.
      */
     addDeltaEDown(deltaEDown) {
         this.nodes.set(this.nodes.size, deltaEDown);
         return this.nodes.size - 1;
+    }
+    /**
+     * Remove a DeltaEDown.
+     * @param index The index of the DeltaEDown to remove.
+     */
+    removeDeltaEDown(index) {
+        this.nodes.delete(index);
     }
 }
 exports.EnergyTransferModel = EnergyTransferModel;
@@ -1536,7 +1581,8 @@ class DOSCMethod extends xml_js_1.TagWithAttributes {
     /**
      * The options for the "xsi:type" or "name" attribute value.
      */
-    static xsi_typeOptions = ["ClassicalRotors", "QMRotors", "me:ClassicalRotors", "me:QMRotors"];
+    static xsi_typeOptions = ["ClassicalRotors", "QMRotors", "DefinedStatesRotors",
+        "me:ClassicalRotors", "me:QMRotors", "me:DefinedStatesRotors"];
     /**
      * The key for the "xsi:type" attribute value.
      */

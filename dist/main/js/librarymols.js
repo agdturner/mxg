@@ -437,6 +437,10 @@ function createProperty(xml) {
         // "me:EinsteinBij", array, m3/J/s2 (fixed).
         processProperty(p, xml);
     }
+    else if (p.dictRef == xml_molecule_1.ElectronicExcitation.dictRef) {
+        // "me:electronicExcitation", scalar, cm-1.
+        processProperty(p, xml);
+    }
     else {
         processPropertyString(p, xml);
     }

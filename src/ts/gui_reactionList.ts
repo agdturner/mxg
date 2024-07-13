@@ -77,7 +77,9 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
         let mmcDivId = rIDM.addID(mmDivId, s_container);
         let mmcDiv: HTMLDivElement = getCollapsibleDiv(mmcDivId, rDiv, null, mmDiv, MCRCMethod.tagName, boundary1, level1);
         //rDiv.appendChild(mmcDiv);
-        let mm: MCRCMethod = new MesmerILT(new Map());
+        let mmAttributes: Map<string, string> = new Map();
+        mmAttributes.set("xsi:type", MesmerILT.xsiType);
+        let mm: MCRCMethod = new MesmerILT(mmAttributes);
         r.setMCRCMethod(mm);
         let inputString: string;
         let value: Big; 

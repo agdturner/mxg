@@ -745,6 +745,7 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     let inputId = (0, util_js_1.getID)(id, name, exports.s_input);
     let value = getter();
     if (value == undefined) {
+        //remover(name);
         button.textContent = buttonTextContentDeselected;
         button.classList.toggle(exports.s_optionOn);
     }
@@ -771,7 +772,8 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
             // Remove existing HTMLElement.
             document.getElementById(inputId)?.remove();
             // Remove node.
-            remover;
+            //remover();
+            remover(name);
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
         }
