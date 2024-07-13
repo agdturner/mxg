@@ -67,7 +67,9 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
         let mmcDivId = rIDM.addID(mmDivId, app_js_1.s_container);
         let mmcDiv = (0, html_js_1.getCollapsibleDiv)(mmcDivId, rDiv, null, mmDiv, xml_reaction_js_1.MCRCMethod.tagName, app_js_1.boundary1, app_js_1.level1);
         //rDiv.appendChild(mmcDiv);
-        let mm = new xml_reaction_js_1.MesmerILT(new Map());
+        let mmAttributes = new Map();
+        mmAttributes.set("xsi:type", xml_reaction_js_1.MesmerILT.xsiType);
+        let mm = new xml_reaction_js_1.MesmerILT(mmAttributes);
         r.setMCRCMethod(mm);
         let inputString;
         let value;

@@ -3,7 +3,7 @@ import { Description, MoleculeList, T } from "./xml_mesmer";
 import { Metadata, MetadataList } from "./xml_metadata";
 import {
     Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList,
-    DistributionCalcMethod, EinsteinAij, EinsteinBij, EnergyTransferModel, Epsilon, FrequenciesScaleFactor,
+    DistributionCalcMethod, EinsteinAij, EinsteinBij, ElectronicExcitation, EnergyTransferModel, Epsilon, FrequenciesScaleFactor,
     Hessian, Hf0, Hf298, HfAT0, MW, Molecule, Property, PropertyArray, PropertyList, PropertyMatrix,
     PropertyScalarNumber, PropertyScalarString, Qtot, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg,
     SymmetryNumber, TSOpticalSymmetryNumber, VibFreqs, ZPE
@@ -422,6 +422,9 @@ function createProperty(xml: Element): Property {
         processProperty(p, xml);
     } else if (p.dictRef == EinsteinBij.dictRef) {
         // "me:EinsteinBij", array, m3/J/s2 (fixed).
+        processProperty(p, xml);
+    } else if (p.dictRef == ElectronicExcitation.dictRef) {
+        // "me:electronicExcitation", scalar, cm-1.
         processProperty(p, xml);
     } else {
         processPropertyString(p, xml);

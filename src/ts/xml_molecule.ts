@@ -261,6 +261,15 @@ export class AtomArray extends NodeWithNodes {
                 }
             }
             aID = id;
+        } else {
+            if (this.atoms.has(aID)) {
+                //let newID: string = this.getNextAtomID();
+                console.warn('Atom with id ' + aID + ' will be replaced');
+                let i: number = this.index.get(aID)!;
+                this.nodes.set(i, atom);
+                this.atoms.set(aID, atom);
+                return aID;
+            }
         }
         //console.log('Atom id: ' + id);
         this.index.set(aID, this.nodes.size);
@@ -533,6 +542,15 @@ export class BondArray extends NodeWithNodes {
                 }
             }
             bID = id;
+        } else {
+            if (this.bonds.has(bID)) {
+                //let newID: string = this.getNextBondID();
+                console.log('Bond with id ' + bID + ' will be replaced');
+                let i: number = this.index.get(bID)!;
+                this.nodes.set(i, bond);
+                this.bonds.set(bID, bond);
+                return bID;
+            }
         }
         //console.log('Bond id: ' + id);
         this.index.set(bID, this.nodes.size);
@@ -673,7 +691,7 @@ export class PropertyScalarNumber extends NumberNode {
      * The property dictionary references.
      */
     static readonly propertyDictRefs: Set<string> = new Set(["me:ZPE", "me:Hf0", "me:HfAT0", "me:Hf298",
-        "me:symmetryNumber", "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:MW", 
+        "me:symmetryNumber", "me:TSOpticalSymmetryNumber", "me:frequenciesScaleFactor", "me:MW",
         "me:spinMultiplicity", "me:epsilon", "me:sigma"]);
 
     /**
@@ -1322,6 +1340,26 @@ export class EinsteinBij extends Property {
 }
 
 /**
+ * The electronic excitation.
+ * The child "scalar" node should have a "units" attribute (Mesmer.frequencyUnits?).
+ */
+export class ElectronicExcitation extends Property {
+
+    /**
+     * The dictionary reference.
+     */
+    static readonly dictRef: string = "me:electronicExcitation";
+
+    /**
+     * @param attributes The attributes.
+     * @param property The property.
+     */
+    constructor(attributes: Map<string, string>, property: PropertyScalarNumber) {
+        super(attributes, property);
+    }
+}
+
+/**
  * "me:imFreqs"
  */
 export class ImFreqs extends Property {
@@ -1664,13 +1702,21 @@ export class EnergyTransferModel extends NodeWithNodes {
     }
 
     /**
-     * Add the DeltaEDowns.
+     * Add a DeltaEDown.
      * @param deltaEDown The DeltaEDown.
      * @returns The index of the DeltaEDown added.
      */
     addDeltaEDown(deltaEDown: DeltaEDown): number {
         this.nodes.set(this.nodes.size, deltaEDown);
         return this.nodes.size - 1;
+    }
+
+    /**
+     * Remove a DeltaEDown.
+     * @param index The index of the DeltaEDown to remove.
+     */
+    removeDeltaEDown(index: number): void {
+        this.nodes.delete(index);
     }
 }
 
@@ -1689,7 +1735,8 @@ export class DOSCMethod extends TagWithAttributes {
     /**
      * The options for the "xsi:type" or "name" attribute value.
      */
-    static readonly xsi_typeOptions: string[] = ["ClassicalRotors", "QMRotors", "me:ClassicalRotors", "me:QMRotors"];
+    static readonly xsi_typeOptions: string[] = ["ClassicalRotors", "QMRotors", "DefinedStatesRotors",
+        "me:ClassicalRotors", "me:QMRotors", "me:DefinedStatesRotors"];
 
     /**
      * The key for the "xsi:type" attribute value.
@@ -2879,7 +2926,7 @@ export class Molecule extends NodeWithNodes {
      */
     constructor(attributes: Map<string, string>, id: string, metadataList?: MetadataList, atoms?: AtomArray,
         bonds?: BondArray, properties?: PropertyList, energyTransferModel?: EnergyTransferModel,
-        dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[], 
+        dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[],
         reservoirSize?: ReservoirSize, tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
         this.label = this.getID();
@@ -2957,7 +3004,7 @@ export class Molecule extends NodeWithNodes {
         return this.getID();
     }
 
-    
+
     /**
      * @returns The id of the molecule.
      */
@@ -3315,29 +3362,29 @@ export class Molecule extends NodeWithNodes {
      * Get the ZPE value of the molecule.
      */
     getEnergy(): Big {
-        let p: Property | undefined ;
+        let p: Property | undefined;
 
         // Successively try different energy definitions.
 
-        try { 
+        try {
             p = this.getProperty(ZPE.dictRef);
         } catch (e) {
             try {
-                p = this.getProperty(Hf0.dictRef); 
+                p = this.getProperty(Hf0.dictRef);
             } catch (e) {
                 try {
-                    p = this.getProperty(Hf298.dictRef); 
+                    p = this.getProperty(Hf298.dictRef);
                 } catch (e) {
                     try {
-                        p = this.getProperty(HfAT0.dictRef); 
-                    } catch (e) {    
-                        p = undefined ; 
+                        p = this.getProperty(HfAT0.dictRef);
+                    } catch (e) {
+                        p = undefined;
                     }
                 }
             }
         }
         if (p == undefined) {
-            return Big(0) ;
+            return Big(0);
         } else {
             let pp: PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix = p.getProperty();
             if (pp instanceof PropertyScalarNumber) {
