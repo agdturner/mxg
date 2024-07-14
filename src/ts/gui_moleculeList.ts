@@ -404,9 +404,9 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
     // Add event listener for the button.
     addFromLibraryButton.addEventListener('click', () => {
         // Create a select element to select a libraryMolecule.
-        let selectDivID: string = getID(Molecule.tagName, "div");
+        let selectDivID: string = mIDM.addID(Molecule.tagName, "div");
         remove(selectDivID);
-        let selectDiv: HTMLDivElement = createDiv(mIDM.addID(selectDivID), level1);
+        let selectDiv: HTMLDivElement = createDiv(selectDivID, level1);
         if (libmols == undefined) {
             alert("There are no additional molecules to add, please load data...");
             return;
@@ -418,10 +418,10 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
         }
         console.log("options.length=" + options.length);
         addOrRemoveInstructions(options, true);
-        let selectID: string = getID(selectDivID, s_select);
+        let selectID: string = mIDM.addID(selectDivID, s_select);
         remove(selectID);
         let select: HTMLSelectElement = createSelectElement(options, "Select molecule", s_selectOption,
-            mIDM.addID(selectID), boundary1);
+            selectID, boundary1);
         select.classList.add(Molecule.tagName);
         selectDiv.appendChild(select);
         mlDiv.insertBefore(selectDiv, amb);
@@ -731,6 +731,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     getID(pID, PropertyScalarNumber.s_units), p.dictRef, boundary1, boundary1);
                 plDiv.appendChild(div);
             }
+            /*
             // Add me:DOSCMethod.
             let doscm: DOSCMethod | undefined = molecule.getDOSCMethod();
             if (doscm == undefined) {
@@ -740,6 +741,7 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             moleculeDiv.appendChild(
                 createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
                 doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+            */
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
