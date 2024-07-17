@@ -2907,7 +2907,7 @@ export class Molecule extends NodeWithNodes {
     /**
      * This is either just the attribute id, or a composite of the attribute id and the molecule id.
      */
-    label: string;
+    //label: string;
 
     /**
      * Create a molecule.
@@ -2929,7 +2929,7 @@ export class Molecule extends NodeWithNodes {
         dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[],
         reservoirSize?: ReservoirSize, tt?: ThermoTable) {
         super(attributes, Molecule.tagName);
-        this.label = this.getID();
+        //this.label = this.getID();
         this.index = new Map();
         this.edmindex = new Map();
         this.id = id;
@@ -3363,35 +3363,19 @@ export class Molecule extends NodeWithNodes {
      */
     getEnergy(): Big {
         let p: Property | undefined;
-
-        // Successively try different energy definitions.
-
-        try {
-            p = this.getProperty(ZPE.dictRef);
-        } catch (e) {
-            try {
-                p = this.getProperty(Hf0.dictRef);
-            } catch (e) {
-                try {
+        p = this.getProperty(ZPE.dictRef);
+        if (p == undefined) {
+            p = this.getProperty(Hf0.dictRef);
+            if (p == undefined) {
+                p = this.getProperty(HfAT0.dictRef);
+                if (p == undefined) {
                     p = this.getProperty(Hf298.dictRef);
-                } catch (e) {
-                    try {
-                        p = this.getProperty(HfAT0.dictRef);
-                    } catch (e) {
-                        p = undefined;
+                    if (p == undefined) {
+                        return Big(0);
                     }
                 }
             }
         }
-        if (p == undefined) {
-            return Big(0);
-        } else {
-            let pp: PropertyScalarString | PropertyScalarNumber | PropertyArray | PropertyMatrix = p.getProperty();
-            if (pp instanceof PropertyScalarNumber) {
-                return pp.value;
-            } else {
-                return Big(0);
-            }
-        }
+        return (p.getProperty() as PropertyScalarNumber).value;
     }
 }

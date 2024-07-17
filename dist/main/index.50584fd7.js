@@ -657,7 +657,7 @@ parcelHelpers.export(exports, "libmols", ()=>libmols);
  */ parcelHelpers.export(exports, "getMoleculeKeys", ()=>getMoleculeKeys);
 /**
  * This returns the molecule found with the given label from ms.
- * @param label The label of the molecule to find.
+ * @param id The id of the molecule to find.
  * @param ms The map of molecules to search.
  * @returns The molecule with the lable in ms.
  */ parcelHelpers.export(exports, "getMolecule", ()=>getMolecule);
@@ -973,9 +973,10 @@ function getMoleculeKeys(molecules) {
     });
     return keys;
 }
-function getMolecule(label, ms) {
+function getMolecule(id, ms) {
     for (let [key, value] of ms){
-        if (value.label == label) return value;
+        //if (value.label == label) {
+        if (value.id == id) return value;
     }
     return null;
 }
@@ -1070,7 +1071,7 @@ function startAfresh() {
     rddDiv.appendChild(rdDiv);
     // Create collapsible content.
     let rdcDiv = (0, _htmlJs.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, s_Reactions_Diagram, boundary1, level0);
-    (0, _guiReactionDiagramJs.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
+    (0, _guiReactionDiagramJs.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // Conditions.
     let conditionsDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID((0, _xmlConditionsJs.Conditions).tagName);
@@ -11503,6 +11504,9 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      */ this.s_active = "active";
     }
     /**
+     * This is either just the attribute id, or a composite of the attribute id and the molecule id.
+     */ //label: string;
+    /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
      * Additional attributes may include: "description" and "active" (and possibly others), but these do not exist for all molecules.
@@ -11518,7 +11522,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param tt The thermo table.
      */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt){
         super(attributes, Molecule.tagName);
-        this.label = this.getID();
+        //this.label = this.getID();
         this.index = new Map();
         this.edmindex = new Map();
         this.id = id;
@@ -11832,30 +11836,18 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * Get the ZPE value of the molecule.
      */ getEnergy() {
         let p;
-        // Successively try different energy definitions.
-        try {
-            p = this.getProperty(ZPE.dictRef);
-        } catch (e) {
-            try {
-                p = this.getProperty(Hf0.dictRef);
-            } catch (e) {
-                try {
+        p = this.getProperty(ZPE.dictRef);
+        if (p == undefined) {
+            p = this.getProperty(Hf0.dictRef);
+            if (p == undefined) {
+                p = this.getProperty(HfAT0.dictRef);
+                if (p == undefined) {
                     p = this.getProperty(Hf298.dictRef);
-                } catch (e) {
-                    try {
-                        p = this.getProperty(HfAT0.dictRef);
-                    } catch (e) {
-                        p = undefined;
-                    }
+                    if (p == undefined) return (0, _bigJs.Big)(0);
                 }
             }
         }
-        if (p == undefined) return (0, _bigJs.Big)(0);
-        else {
-            let pp = p.getProperty();
-            if (pp instanceof PropertyScalarNumber) return pp.value;
-            else return (0, _bigJs.Big)(0);
-        }
+        return p.getProperty().value;
     }
 }
 
@@ -12117,6 +12109,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         let m = new (0, _xmlMoleculeJs.Molecule)(new Map(), mid);
         m.setID(mid);
         molecules.set(mid, m);
+        //m.label = mid;
         //addMolecule(m, molecules);
         m.setAtoms(new (0, _xmlMoleculeJs.AtomArray)(new Map()));
         m.setBonds(new (0, _xmlMoleculeJs.BondArray)(new Map()));
@@ -12308,6 +12301,7 @@ function setPropertyScalarNumber(dictRef, pl, ps, value) {
     } else console.log("Property " + dictRef + " already exists.");
     //console.log("Value " + ps.getValue());
     ps.setValue.bind(ps)(value);
+    if (dictRef == (0, _xmlMoleculeJs.ZPE).dictRef || dictRef == (0, _xmlMoleculeJs.Hf0).dictRef || dictRef == (0, _xmlMoleculeJs.HfAT0).dictRef || dictRef == (0, _xmlMoleculeJs.Hf298).dictRef) (0, _appJs.redrawReactionsDiagram)();
 //console.log("Value " + ps.getValue());
 }
 /**
@@ -12430,7 +12424,8 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let target = event.target;
             let selectedOption = target.options[target.selectedIndex];
             let label = selectedOption.value;
-            let molecule = (0, _appJs.getMolecule)(label, (0, _appJs.libmols));
+            let molecule = (0, _appJs.libmols).get(label);
+            //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid = molecule.getID();
             mid = setMoleculeID(true, mid, molecule, molecules);
             molecules.set(mid, molecule);
@@ -13167,7 +13162,7 @@ function processMoleculeList(xml, mIDM, molecules) {
         (0, _appJs.addMolecule)(false, m, molecules);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = mIDM.addID(mDivID, (0, _appJs.s_container));
-        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.label, (0, _appJs.boundary1), (0, _appJs.level1));
+        let mcDiv = (0, _htmlJs.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.getLabel(), (0, _appJs.boundary1), (0, _appJs.level1));
         // Create a set of molecule tag names.
         let moleculeTagNames = new Set();
         let cns = xml_ms[i].childNodes;
@@ -13933,7 +13928,7 @@ function processProperty(pl, p, units, molecule, mIDM, element, plDiv, boundary,
         p.setProperty(ps);
         ps.setValue = (function(value) {
             ps.value = value;
-            if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
+            if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf0).dictRef || p.dictRef == (0, _xmlMoleculeJs.HfAT0).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf298).dictRef) // Update the molecule energy diagram.
             (0, _appJs.redrawReactionsDiagram)();
         }).bind(ps);
         div = (0, _appJs.processNumber)(pID, mIDM, p.dictRef, ps.getValue.bind(ps), (value)=>setPropertyScalarNumber(p.dictRef, pl, ps, value), ()=>pl.removeProperty(p.dictRef), (0, _appJs.boundary1), (0, _appJs.level1));
@@ -14010,7 +14005,7 @@ function processPropertyString(pl, p, molecule, element, plDiv, boundary, level)
         ps.setValue = (function(value) {
             ps.value = value;
             //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
-            if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
+            if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf0).dictRef || p.dictRef == (0, _xmlMoleculeJs.HfAT0).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf298).dictRef) // Update the molecule energy diagram.
             (0, _appJs.redrawReactionsDiagram)();
         }).bind(ps);
         let div = (0, _appJs.processString)((0, _appJs.addRID)(plDiv.id, p.dictRef), pIDs, p.dictRef, ps.getValue.bind(ps), ps.setValue, ()=>pl.removeProperty(p.dictRef), (0, _appJs.boundary1), (0, _appJs.level1));
@@ -14248,11 +14243,11 @@ function addPropertyScalarNumber1(attributes, mIDM, value, units, pl, p, plDiv, 
     let ps = p.getProperty();
     ps.setValue = (function(value) {
         ps.value = value;
-        if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
+        if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf0).dictRef || p.dictRef == (0, _xmlMoleculeJs.HfAT0).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf298).dictRef) // Update the molecule energy diagram.
         (0, _appJs.redrawReactionsDiagram)();
     }).bind(ps);
     ps.value = value;
-    if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef) // Update the molecule energy diagram.
+    if (p.dictRef == (0, _xmlMoleculeJs.ZPE).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf0).dictRef || p.dictRef == (0, _xmlMoleculeJs.HfAT0).dictRef || p.dictRef == (0, _xmlMoleculeJs.Hf298).dictRef) // Update the molecule energy diagram.
     (0, _appJs.redrawReactionsDiagram)();
     let id = (0, _appJs.addRID)(plDiv.id, p.dictRef);
     console.log("div ID " + id);
@@ -14873,7 +14868,11 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
                 rsDiv.removeChild(reactantDiv);
                 reactants.delete(mid);
                 r.removeReactant(mid);
+                // Redraw the reaction diagram.
+                (0, _appJs.redrawReactionsDiagram)();
             });
+            // Redraw the reaction diagram.
+            (0, _appJs.redrawReactionsDiagram)();
         });
         if (selectReactant.options.length === 1) {
             // If there is only one option then select it.
@@ -14956,7 +14955,11 @@ function getAddReactionButton(rIDM, rlDiv, reactions, molecules) {
                 psDiv.removeChild(productDiv);
                 products.delete(mid);
                 r.removeProduct(mid);
+                // Redraw the reaction diagram.
+                (0, _appJs.redrawReactionsDiagram)();
             });
+            // Redraw the reaction diagram.
+            (0, _appJs.redrawReactionsDiagram)();
         });
         if (selectProduct.options.length === 1) {
             // If there is only one option then select it.
@@ -16459,7 +16462,8 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     /**
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
-     */ getReactantsEnergy(retrieveMolecule, molecules) {
+     */ //getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
+    getReactantsEnergy(retrieveMolecule, molecules) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map((reactant)=>{
             let ref = reactant.getMolecule().getRef();
@@ -16485,7 +16489,12 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
             let ref = product.getMolecule().getRef();
             //console.log("ref=\"" + ref + "\"");
             let molecule = retrieveMolecule(ref, molecules);
-            if (molecule == undefined) throw new Error(`Molecule with ref ${ref} not found`);
+            if (molecule == undefined) {
+                console.log("molecule with ref " + ref + " not found");
+                // Print the keys in the molecules map
+                console.log(molecules.keys());
+                throw new Error(`Molecule with ref ${ref} not found`);
+            }
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJs.Big)(0));
     }

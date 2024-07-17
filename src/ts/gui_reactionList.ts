@@ -1,7 +1,7 @@
 import Big from "big.js";
 import {
     s_Add_sy_add, addRID, level1, s_container, boundary1, getMoleculeKeys, addAnyUnits,
-    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer, s_Reactants, s_Products, s_Transition_States, s_Tunneling, big0, defaults
+    addSaveAsCSVButton, s_input, s_table, setNumberNode, addRemoveButton, IDManager, mesmer, s_Reactants, s_Products, s_Transition_States, s_Tunneling, big0, defaults, redrawReactionsDiagram
 } from "./app.js";
 import {
     createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select,
@@ -348,7 +348,11 @@ function addAddReactantButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManag
                 rsDiv.removeChild(reactantDiv);
                 reactants.delete(mid);
                 r.removeReactant(mid);
+                // Redraw the reaction diagram.
+                redrawReactionsDiagram();
             });
+            // Redraw the reaction diagram.
+            redrawReactionsDiagram();
         });
         if (selectReactant.options.length === 1) {
             // If there is only one option then select it.
@@ -437,7 +441,11 @@ function addAddProductButton(r: Reaction, rcb: HTMLButtonElement, rIDM: IDManage
                 psDiv.removeChild(productDiv);
                 products.delete(mid);
                 r.removeProduct(mid);
+                // Redraw the reaction diagram.
+                redrawReactionsDiagram();
             });
+            // Redraw the reaction diagram.
+            redrawReactionsDiagram();
         });
         if (selectProduct.options.length === 1) {
             // If there is only one option then select it.

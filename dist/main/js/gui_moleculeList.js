@@ -29,6 +29,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         let m = new xml_molecule_js_1.Molecule(new Map(), mid);
         m.setID(mid);
         molecules.set(mid, m);
+        //m.label = mid;
         //addMolecule(m, molecules);
         m.setAtoms(new xml_molecule_js_1.AtomArray(new Map()));
         m.setBonds(new xml_molecule_js_1.BondArray(new Map()));
@@ -111,13 +112,17 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
                 etmDiv.removeChild(dedDiv);
             });
         });
+        /*
         // Add me:DOSCMethod.
-        let doscm = m.getDOSCMethod();
+        let doscm: DOSCMethod | undefined = m.getDOSCMethod();
         if (doscm == undefined) {
-            doscm = new xml_molecule_js_1.DOSCMethod(new Map());
+            doscm = new DOSCMethod(new Map());
             m.setDOSCMethod(doscm);
         }
-        mDiv.appendChild((0, html_js_1.createLabelWithSelect)(xml_molecule_js_1.DOSCMethod.tagName, xml_molecule_js_1.DOSCMethod.xsi_typeOptions, xml_molecule_js_1.DOSCMethod.tagName, doscm.getXsiType(), mIDM.addID(mDivID, xml_molecule_js_1.DOSCMethod.tagName), app_js_1.boundary1, app_js_1.level1));
+        mDiv.appendChild(
+            createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
+                doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+        */
         /*
         addDOSCMethod(m, mIDM, plDiv, pl);
         // Add me:ExtraDOSCMethod
@@ -239,6 +244,9 @@ function setPropertyScalarNumber(dictRef, pl, ps, value) {
     }
     //console.log("Value " + ps.getValue());
     ps.setValue.bind(ps)(value);
+    if (dictRef == xml_molecule_js_1.ZPE.dictRef || dictRef == xml_molecule_js_1.Hf0.dictRef || dictRef == xml_molecule_js_1.HfAT0.dictRef || dictRef == xml_molecule_js_1.Hf298.dictRef) {
+        (0, app_js_1.redrawReactionsDiagram)();
+    }
     //console.log("Value " + ps.getValue());
 }
 exports.setPropertyScalarNumber = setPropertyScalarNumber;
@@ -396,7 +404,8 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let target = event.target;
             let selectedOption = target.options[target.selectedIndex];
             let label = selectedOption.value;
-            let molecule = (0, app_js_1.getMolecule)(label, app_js_1.libmols);
+            let molecule = app_js_1.libmols.get(label);
+            //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid = molecule.getID();
             mid = setMoleculeID(true, mid, molecule, molecules);
             molecules.set(mid, molecule);
@@ -1240,7 +1249,7 @@ function processMoleculeList(xml, mIDM, molecules) {
         (0, app_js_1.addMolecule)(false, m, molecules);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = mIDM.addID(mDivID, app_js_1.s_container);
-        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.label, app_js_1.boundary1, app_js_1.level1);
+        let mcDiv = (0, html_js_1.getCollapsibleDiv)(mcDivID, mlDiv, null, mDiv, m.getLabel(), app_js_1.boundary1, app_js_1.level1);
         // Create a set of molecule tag names.
         let moleculeTagNames = new Set();
         let cns = xml_ms[i].childNodes;
@@ -2175,7 +2184,7 @@ function processProperty(pl, p, units, molecule, mIDM, element, plDiv, boundary,
         p.setProperty(ps);
         ps.setValue = function (value) {
             ps.value = value;
-            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
+            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef || p.dictRef == xml_molecule_js_1.Hf0.dictRef || p.dictRef == xml_molecule_js_1.HfAT0.dictRef || p.dictRef == xml_molecule_js_1.Hf298.dictRef) {
                 // Update the molecule energy diagram.
                 (0, app_js_1.redrawReactionsDiagram)();
             }
@@ -2278,7 +2287,7 @@ function processPropertyString(pl, p, molecule, element, plDiv, boundary, level)
         ps.setValue = function (value) {
             ps.value = value;
             //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
-            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
+            if (p.dictRef == xml_molecule_js_1.ZPE.dictRef || p.dictRef == xml_molecule_js_1.Hf0.dictRef || p.dictRef == xml_molecule_js_1.HfAT0.dictRef || p.dictRef == xml_molecule_js_1.Hf298.dictRef) {
                 // Update the molecule energy diagram.
                 (0, app_js_1.redrawReactionsDiagram)();
             }
@@ -2534,13 +2543,13 @@ function addPropertyScalarNumber1(attributes, mIDM, value, units, pl, p, plDiv, 
     let ps = p.getProperty();
     ps.setValue = function (value) {
         ps.value = value;
-        if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
+        if (p.dictRef == xml_molecule_js_1.ZPE.dictRef || p.dictRef == xml_molecule_js_1.Hf0.dictRef || p.dictRef == xml_molecule_js_1.HfAT0.dictRef || p.dictRef == xml_molecule_js_1.Hf298.dictRef) {
             // Update the molecule energy diagram.
             (0, app_js_1.redrawReactionsDiagram)();
         }
     }.bind(ps);
     ps.value = value;
-    if (p.dictRef == xml_molecule_js_1.ZPE.dictRef) {
+    if (p.dictRef == xml_molecule_js_1.ZPE.dictRef || p.dictRef == xml_molecule_js_1.Hf0.dictRef || p.dictRef == xml_molecule_js_1.HfAT0.dictRef || p.dictRef == xml_molecule_js_1.Hf298.dictRef) {
         // Update the molecule energy diagram.
         (0, app_js_1.redrawReactionsDiagram)();
     }

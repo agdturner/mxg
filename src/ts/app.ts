@@ -333,13 +333,14 @@ export function getMoleculeKeys(molecules: Map<string, Molecule>): Set<string> {
 
 /**
  * This returns the molecule found with the given label from ms.
- * @param label The label of the molecule to find.
+ * @param id The id of the molecule to find.
  * @param ms The map of molecules to search.
  * @returns The molecule with the lable in ms.
  */
-export function getMolecule(label: string, ms: Map<string, Molecule>): Molecule | null {
+export function getMolecule(id: string, ms: Map<string, Molecule>): Molecule | null {
     for (let [key, value] of ms) {
-        if (value.label == label) {
+        //if (value.label == label) {
+        if (value.id == id) {
             return value;
         }
     }
@@ -468,7 +469,7 @@ export function startAfresh() {
     // Create collapsible content.
     let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
         s_Reactions_Diagram, boundary1, level0);
-    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
+    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
     // Conditions.
     let conditionsDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;

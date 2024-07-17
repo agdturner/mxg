@@ -1,6 +1,6 @@
 import { Big } from 'big.js';
-import { Molecule, ZPE } from './xml_molecule.js';
-import { TagWithAttributes, NodeWithNodes, NumberNode, Tag, NumberArrayNode, StringNode, getAttribute } from './xml.js';
+import { Molecule } from './xml_molecule.js';
+import { TagWithAttributes, NodeWithNodes, NumberNode, Tag } from './xml.js';
 import { Description, T } from './xml_mesmer.js';
 import { big0 } from './app.js';
 
@@ -1297,8 +1297,9 @@ export class Reaction extends NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
+    //getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
     getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
-        // Sum up the energy values of all the reactants in the reaction
+            // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map(reactant => {
             let ref: string = reactant.getMolecule().getRef();
             //console.log("ref=\"" + ref + "\"");
@@ -1327,6 +1328,9 @@ export class Reaction extends NodeWithNodes {
             //console.log("ref=\"" + ref + "\"");
             let molecule: Molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
+                console.log("molecule with ref " + ref + " not found");
+                // Print the keys in the molecules map
+                console.log(molecules.keys());
                 throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();
