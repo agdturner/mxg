@@ -2859,9 +2859,133 @@ export class DensityOfStatesList extends NodeWithNodes {
         });
         return csv;
     }
-
 }
 
+/**
+ * The attributes may include "units".
+ * In the XML, a "me:States" node is a child node of a "molecule" node
+ */
+export class States extends NodeWithNodes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:States";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>, states?: State[]) {
+        super(attributes, States.tagName);
+        if (states) {
+            states.forEach((state) => {
+                this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
+            });
+        }
+    }
+
+    /**
+     * @returns The states.
+     */
+    getStates(): State[] {
+        let states: State[] = [];
+        this.nodes.forEach((node) => {
+            states.push(node as State);
+        });
+        return states;
+    }
+
+    /**
+     * @returns The state at the given index.
+     */
+    getState(i: number): State {
+        return this.nodes.get(i) as State;
+    }
+
+    /**
+     * Set the state at the given index.
+     * @param i The index.
+     * @param state The state.
+     */
+    setState(i: number, state: State): void {
+        this.nodes.set(i, state);
+    }
+
+    /**
+     * Add the state.
+     * @param state The state.
+     * @returns The index of the state added.
+     */
+    addState(state: State): number {
+        this.nodes.set(this.nodes.size, state);
+        return this.nodes.size - 1;
+    }
+
+    /**
+     * Remove the state at the given index.
+     * @param i The index.
+     */
+    removeState(i: number): void {
+        this.nodes.delete(i);
+    }
+}
+
+/**
+ * <me:State energy="0.0" degeneracy="4"/>
+ * In the XML, a "me:State" node is a child node of a "me:States" node.
+ */
+export class State extends TagWithAttributes {
+
+    /**
+     * The tag name.
+     */
+    static readonly tagName: string = "me:State";
+
+    /**
+     * The key for the energy attribute value.
+     */
+    static readonly s_energy: string = "energy";
+
+    /**
+     * The key for the degeneracy attribute value.
+     */
+    static readonly s_degeneracy: string = "degeneracy";
+
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes: Map<string, string>) {
+        super(attributes, State.tagName);
+    }
+
+    /**
+     * @returns The energy of the state.
+     */
+    getEnergy(): Big {
+        return new Big(this.attributes.get(State.s_energy)!);
+    }
+
+    /**
+     * @param energy The energy of the state.
+     */
+    setEnergy(energy: Big): void {
+        this.attributes.set(State.s_energy, energy.toString());
+    }
+
+    /**
+     * @returns The degeneracy of the state.
+     */
+    getDegeneracy(): number {
+        return parseInt(this.attributes.get(State.s_degeneracy)!);
+    }
+
+    /**
+     * @param degeneracy The degeneracy of the state.
+     */
+    setDegeneracy(degeneracy: number): void {
+        this.attributes.set(State.s_degeneracy, degeneracy.toString());
+    }
+}
 
 /**
  * The attributes may include "description" and "active" (and possibly others).
@@ -2927,7 +3051,7 @@ export class Molecule extends NodeWithNodes {
     constructor(attributes: Map<string, string>, id: string, metadataList?: MetadataList, atoms?: AtomArray,
         bonds?: BondArray, properties?: PropertyList, energyTransferModel?: EnergyTransferModel,
         dOSCMethod?: DOSCMethod, distributionCalcMethod?: DistributionCalcMethod, extraDOSCMethods?: ExtraDOSCMethod[],
-        reservoirSize?: ReservoirSize, tt?: ThermoTable) {
+        reservoirSize?: ReservoirSize, tt?: ThermoTable, states?: States) {
         super(attributes, Molecule.tagName);
         //this.label = this.getID();
         this.index = new Map();
@@ -2990,9 +3114,15 @@ export class Molecule extends NodeWithNodes {
             this.index.set(ReservoirSize.tagName, i);
             i++;
         }
+        // ThermoTable
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
+        }
+        // States
+        if (states) {
+            this.nodes.set(i, states);
+            this.index.set(States.tagName, i);
         }
     }
 
@@ -3355,6 +3485,32 @@ export class Molecule extends NodeWithNodes {
             this.addNode(tt);
         } else {
             this.nodes.set(i, tt);
+        }
+    }
+
+    /**
+     * @returns The states of the molecule.
+     */
+    getStates(): States | undefined {
+        let i: number | undefined = this.index.get(States.tagName);
+        if (i == undefined) {
+            return undefined;
+        } else {
+            return this.nodes.get(i) as States;
+        }
+    }
+
+    /**
+     * Set the states.
+     * @param states The states.
+     */
+    setStates(states: States) {
+        let i: number | undefined = this.index.get(States.tagName);
+        if (i == undefined) {
+            this.index.set(States.tagName, this.nodes.size);
+            this.addNode(states);
+        } else {
+            this.nodes.set(i, states);
         }
     }
 
