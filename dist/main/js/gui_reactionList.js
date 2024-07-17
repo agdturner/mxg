@@ -327,7 +327,11 @@ function addAddReactantButton(r, rcb, rIDM, rDivID, rsDiv, molecules, reactants)
                 rsDiv.removeChild(reactantDiv);
                 reactants.delete(mid);
                 r.removeReactant(mid);
+                // Redraw the reaction diagram.
+                (0, app_js_1.redrawReactionsDiagram)();
             });
+            // Redraw the reaction diagram.
+            (0, app_js_1.redrawReactionsDiagram)();
         });
         if (selectReactant.options.length === 1) {
             // If there is only one option then select it.
@@ -411,7 +415,11 @@ function addAddProductButton(r, rcb, rIDM, rDivID, psDiv, molecules, products) {
                 psDiv.removeChild(productDiv);
                 products.delete(mid);
                 r.removeProduct(mid);
+                // Redraw the reaction diagram.
+                (0, app_js_1.redrawReactionsDiagram)();
             });
+            // Redraw the reaction diagram.
+            (0, app_js_1.redrawReactionsDiagram)();
         });
         if (selectProduct.options.length === 1) {
             // If there is only one option then select it.

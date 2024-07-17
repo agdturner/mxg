@@ -244,6 +244,9 @@ function setPropertyScalarNumber(dictRef, pl, ps, value) {
     }
     //console.log("Value " + ps.getValue());
     ps.setValue.bind(ps)(value);
+    if (dictRef == xml_molecule_js_1.ZPE.dictRef || dictRef == xml_molecule_js_1.Hf0.dictRef || dictRef == xml_molecule_js_1.HfAT0.dictRef || dictRef == xml_molecule_js_1.Hf298.dictRef) {
+        (0, app_js_1.redrawReactionsDiagram)();
+    }
     //console.log("Value " + ps.getValue());
 }
 exports.setPropertyScalarNumber = setPropertyScalarNumber;
