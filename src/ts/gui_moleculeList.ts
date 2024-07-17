@@ -127,6 +127,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
             });
         });
 
+        /*
         // Add me:DOSCMethod.
         let doscm: DOSCMethod | undefined = m.getDOSCMethod();
         if (doscm == undefined) {
@@ -136,6 +137,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         mDiv.appendChild(
             createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
                 doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+        */
 
         /*
         addDOSCMethod(m, mIDM, plDiv, pl);
