@@ -20,7 +20,7 @@ import {
     DistributionCalcMethod, EinsteinAij, EinsteinBij, ElectronicExcitation, EnergyTransferModel, Epsilon, ExtraDOSCMethod,
     FrequenciesScaleFactor, Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity,
     PotentialPoint, Property, PropertyArray, PropertyList, PropertyMatrix, PropertyScalarNumber, PropertyScalarString,
-    Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber,
+    Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, State, States, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber,
     ThermoTable, ThermoValue, VibFreqs, ZPE
 } from './xml_molecule.js';
 import { arrayToString, bigArrayToString, getID, isNumeric, mapToString, toNumberArray } from './util.js';
@@ -749,6 +749,21 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                 createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
                 doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
             */
+
+            // Organise States.
+            let ssDivID: string = mIDM.addID(mDivID, State.tagName);
+            let ssDiv: HTMLDivElement = createDiv(ssDivID);
+            let sscDivID = mIDM.addID(ssDivID, s_container);
+            let sscDiv: HTMLDivElement = getCollapsibleDiv(sscDivID, moleculeDiv, null, ssDiv, States.tagName, boundary1, level1);
+            // Add states.
+            let states: States | undefined = molecule.getStates();
+            if (states != undefined) {
+                states.getStates().forEach((s) => {
+                    console.log(s.toString());
+                });
+            }
+            
+
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -2122,6 +2137,32 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
                 }, valueString, ReservoirSize.tagName);
             mDiv.appendChild(inputDiv);
         }
+
+        // Organise States.
+        let xml_states: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(States.tagName);
+        let ssDivID: string = mIDM.addID(mDivID, State.tagName);
+        let ssDiv: HTMLDivElement = createDiv(ssDivID);
+        let sscDivID = mIDM.addID(ssDivID, s_container);
+        let sscDiv: HTMLDivElement = getCollapsibleDiv(sscDivID, mDiv, null, ssDiv, States.tagName, boundary1, level1);
+        if (xml_states.length > 0) {
+            if (xml_states.length > 1) {
+                throw new Error("Expecting 1 or 0 " + States.tagName + " but finding " + xml_states.length + "!");
+            }
+            let ss: States = new States(getAttributes(xml_states[0]));
+            //let state: State[] = [];
+            let xml_ss: HTMLCollectionOf<Element> = xml_states[0].getElementsByTagName(State.tagName);
+            for (let j = 0; j < xml_ss.length; j++) {
+                let s: State = new State(getAttributes(xml_ss[j]));
+                //state.push(s);
+                ss.addState(s);
+                //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+                //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+                //ssDiv.appendChild(sDiv);
+            }
+            m.setStates(ss);
+            moleculeTagNames.delete(State.tagName);
+        }
+
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");
         if (moleculeTagNames.size > 0) {

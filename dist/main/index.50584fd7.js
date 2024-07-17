@@ -4098,6 +4098,24 @@ class LibraryMolecules {
                 }
                 moleculeTagNames.delete((0, _xmlMolecule.DensityOfStatesList).tagName);
             }
+            // Organise States.
+            let xml_states = xml_ms[i].getElementsByTagName((0, _xmlMolecule.States).tagName);
+            if (xml_states.length > 0) {
+                if (xml_states.length > 1) throw new Error("Expecting 1 or 0 " + (0, _xmlMolecule.States).tagName + " but finding " + xml_states.length + "!");
+                let ss = new (0, _xmlMolecule.States)((0, _xml.getAttributes)(xml_states[0]));
+                //let state: State[] = [];
+                let xml_ss = xml_states[0].getElementsByTagName((0, _xmlMolecule.State).tagName);
+                for(let j = 0; j < xml_ss.length; j++){
+                    let s = new (0, _xmlMolecule.State)((0, _xml.getAttributes)(xml_ss[j]));
+                    //state.push(s);
+                    ss.addState(s);
+                //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+                //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+                //ssDiv.appendChild(sDiv);
+                }
+                m.setStates(ss);
+                moleculeTagNames.delete((0, _xmlMolecule.State).tagName);
+            }
             // Check for unexpected tags.
             moleculeTagNames.delete("#text");
             if (moleculeTagNames.size > 0) {
@@ -9447,6 +9465,14 @@ parcelHelpers.defineInteropFlag(exports);
  * "calculated" which appears to be a date and time of calculation e.g. 20240311_090547.
  */ parcelHelpers.export(exports, "DensityOfStatesList", ()=>DensityOfStatesList);
 /**
+ * The attributes may include "units".
+ * In the XML, a "me:States" node is a child node of a "molecule" node
+ */ parcelHelpers.export(exports, "States", ()=>States);
+/**
+ * <me:State energy="0.0" degeneracy="4"/>
+ * In the XML, a "me:State" node is a child node of a "me:States" node.
+ */ parcelHelpers.export(exports, "State", ()=>State);
+/**
  * The attributes may include "description" and "active" (and possibly others).
  * In the XML, a "molecule" node is a child node of a "moleculeList" node.
  */ parcelHelpers.export(exports, "Molecule", ()=>Molecule);
@@ -11482,6 +11508,98 @@ class DensityOfStatesList extends (0, _xmlJs.NodeWithNodes) {
         return csv;
     }
 }
+class States extends (0, _xmlJs.NodeWithNodes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:States";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes, states){
+        super(attributes, States.tagName);
+        if (states) states.forEach((state)=>{
+            this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
+        });
+    }
+    /**
+     * @returns The states.
+     */ getStates() {
+        let states = [];
+        this.nodes.forEach((node)=>{
+            states.push(node);
+        });
+        return states;
+    }
+    /**
+     * @returns The state at the given index.
+     */ getState(i) {
+        return this.nodes.get(i);
+    }
+    /**
+     * Set the state at the given index.
+     * @param i The index.
+     * @param state The state.
+     */ setState(i, state) {
+        this.nodes.set(i, state);
+    }
+    /**
+     * Add the state.
+     * @param state The state.
+     * @returns The index of the state added.
+     */ addState(state) {
+        this.nodes.set(this.nodes.size, state);
+        return this.nodes.size - 1;
+    }
+    /**
+     * Remove the state at the given index.
+     * @param i The index.
+     */ removeState(i) {
+        this.nodes.delete(i);
+    }
+}
+class State extends (0, _xmlJs.TagWithAttributes) {
+    static{
+        /**
+     * The tag name.
+     */ this.tagName = "me:State";
+    }
+    static{
+        /**
+     * The key for the energy attribute value.
+     */ this.s_energy = "energy";
+    }
+    static{
+        /**
+     * The key for the degeneracy attribute value.
+     */ this.s_degeneracy = "degeneracy";
+    }
+    /**
+     * @param attributes The attributes.
+     */ constructor(attributes){
+        super(attributes, State.tagName);
+    }
+    /**
+     * @returns The energy of the state.
+     */ getEnergy() {
+        return new (0, _bigJs.Big)(this.attributes.get(State.s_energy));
+    }
+    /**
+     * @param energy The energy of the state.
+     */ setEnergy(energy) {
+        this.attributes.set(State.s_energy, energy.toString());
+    }
+    /**
+     * @returns The degeneracy of the state.
+     */ getDegeneracy() {
+        return parseInt(this.attributes.get(State.s_degeneracy));
+    }
+    /**
+     * @param degeneracy The degeneracy of the state.
+     */ setDegeneracy(degeneracy) {
+        this.attributes.set(State.s_degeneracy, degeneracy.toString());
+    }
+}
 class Molecule extends (0, _xmlJs.NodeWithNodes) {
     static{
         /**
@@ -11520,7 +11638,7 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
      * @param extraDOSCMethods The extra DOSC methods for calculating density of states.
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
-     */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt){
+     */ constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt, states){
         super(attributes, Molecule.tagName);
         //this.label = this.getID();
         this.index = new Map();
@@ -11581,9 +11699,15 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
             this.index.set(ReservoirSize.tagName, i);
             i++;
         }
+        // ThermoTable
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
+        }
+        // States
+        if (states) {
+            this.nodes.set(i, states);
+            this.index.set(States.tagName, i);
         }
     }
     /**
@@ -11831,6 +11955,23 @@ class Molecule extends (0, _xmlJs.NodeWithNodes) {
             this.index.set(ThermoTable.tagName, this.nodes.size);
             this.addNode(tt);
         } else this.nodes.set(i, tt);
+    }
+    /**
+     * @returns The states of the molecule.
+     */ getStates() {
+        let i = this.index.get(States.tagName);
+        if (i == undefined) return undefined;
+        else return this.nodes.get(i);
+    }
+    /**
+     * Set the states.
+     * @param states The states.
+     */ setStates(states) {
+        let i = this.index.get(States.tagName);
+        if (i == undefined) {
+            this.index.set(States.tagName, this.nodes.size);
+            this.addNode(states);
+        } else this.nodes.set(i, states);
     }
     /**
      * Get the ZPE value of the molecule.
@@ -12664,7 +12805,17 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             moleculeDiv.appendChild(
                 createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
                 doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
-            */ // Remove the select element.
+            */ // Organise States.
+            let ssDivID = mIDM.addID(mDivID, (0, _xmlMoleculeJs.State).tagName);
+            let ssDiv = (0, _htmlJs.createDiv)(ssDivID);
+            let sscDivID = mIDM.addID(ssDivID, (0, _appJs.s_container));
+            let sscDiv = (0, _htmlJs.getCollapsibleDiv)(sscDivID, moleculeDiv, null, ssDiv, (0, _xmlMoleculeJs.States).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
+            // Add states.
+            let states = molecule.getStates();
+            if (states != undefined) states.getStates().forEach((s)=>{
+                console.log(s.toString());
+            });
+            // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
             (0, _appJs.addRemoveButton)(moleculeDiv, (0, _appJs.level1), ()=>{
@@ -13836,6 +13987,28 @@ function processMoleculeList(xml, mIDM, molecules) {
                 (0, _htmlJs.resizeInputElement)(target);
             }, valueString, (0, _xmlMoleculeJs.ReservoirSize).tagName);
             mDiv.appendChild(inputDiv);
+        }
+        // Organise States.
+        let xml_states = xml_ms[i].getElementsByTagName((0, _xmlMoleculeJs.States).tagName);
+        let ssDivID = mIDM.addID(mDivID, (0, _xmlMoleculeJs.State).tagName);
+        let ssDiv = (0, _htmlJs.createDiv)(ssDivID);
+        let sscDivID = mIDM.addID(ssDivID, (0, _appJs.s_container));
+        let sscDiv = (0, _htmlJs.getCollapsibleDiv)(sscDivID, mDiv, null, ssDiv, (0, _xmlMoleculeJs.States).tagName, (0, _appJs.boundary1), (0, _appJs.level1));
+        if (xml_states.length > 0) {
+            if (xml_states.length > 1) throw new Error("Expecting 1 or 0 " + (0, _xmlMoleculeJs.States).tagName + " but finding " + xml_states.length + "!");
+            let ss = new (0, _xmlMoleculeJs.States)((0, _xmlJs.getAttributes)(xml_states[0]));
+            //let state: State[] = [];
+            let xml_ss = xml_states[0].getElementsByTagName((0, _xmlMoleculeJs.State).tagName);
+            for(let j = 0; j < xml_ss.length; j++){
+                let s = new (0, _xmlMoleculeJs.State)((0, _xmlJs.getAttributes)(xml_ss[j]));
+                //state.push(s);
+                ss.addState(s);
+            //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+            //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+            //ssDiv.appendChild(sDiv);
+            }
+            m.setStates(ss);
+            moleculeTagNames.delete((0, _xmlMoleculeJs.State).tagName);
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");

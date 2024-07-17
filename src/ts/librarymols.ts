@@ -5,7 +5,7 @@ import {
     Atom, AtomArray, Bond, BondArray, DOSCMethod, DensityOfStates, DensityOfStatesList,
     DistributionCalcMethod, EinsteinAij, EinsteinBij, ElectronicExcitation, EnergyTransferModel, Epsilon, FrequenciesScaleFactor,
     Hessian, Hf0, Hf298, HfAT0, MW, Molecule, Property, PropertyArray, PropertyList, PropertyMatrix,
-    PropertyScalarNumber, PropertyScalarString, Qtot, RotConsts, Sigma, SpinMultiplicity, Sumc, Sumg,
+    PropertyScalarNumber, PropertyScalarString, Qtot, RotConsts, Sigma, SpinMultiplicity, State, States, Sumc, Sumg,
     SymmetryNumber, TSOpticalSymmetryNumber, VibFreqs, ZPE
 } from "./xml_molecule";
 import { getAttributes, getFirstChildNode, getInputString, getNodeValue, getSingularElement } from "./xml";
@@ -353,6 +353,28 @@ export class LibraryMolecules {
                 }
                 moleculeTagNames.delete(DensityOfStatesList.tagName);
             }
+
+            // Organise States.
+            let xml_states: HTMLCollectionOf<Element> = xml_ms[i].getElementsByTagName(States.tagName);
+            if (xml_states.length > 0) {
+                if (xml_states.length > 1) {
+                    throw new Error("Expecting 1 or 0 " + States.tagName + " but finding " + xml_states.length + "!");
+                }
+                let ss: States = new States(getAttributes(xml_states[0]));
+                //let state: State[] = [];
+                let xml_ss: HTMLCollectionOf<Element> = xml_states[0].getElementsByTagName(State.tagName);
+                for (let j = 0; j < xml_ss.length; j++) {
+                    let s: State = new State(getAttributes(xml_ss[j]));
+                    //state.push(s);
+                    ss.addState(s);
+                    //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+                    //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+                    //ssDiv.appendChild(sDiv);
+                }
+                m.setStates(ss);
+                moleculeTagNames.delete(States.tagName);
+            }
+
             // Check for unexpected tags.
             moleculeTagNames.delete("#text");
             if (moleculeTagNames.size > 0) {
