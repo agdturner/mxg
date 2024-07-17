@@ -2627,7 +2627,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
     /**
      * This is either just the attribute id, or a composite of the attribute id and the molecule id.
      */
-    label;
+    //label: string;
     /**
      * Create a molecule.
      * @param attributes The attributes. This will also include an "id".
@@ -2645,7 +2645,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt) {
         super(attributes, Molecule.tagName);
-        this.label = this.getID();
+        //this.label = this.getID();
         this.index = new Map();
         this.edmindex = new Map();
         this.id = id;
@@ -3060,40 +3060,20 @@ class Molecule extends xml_js_1.NodeWithNodes {
      */
     getEnergy() {
         let p;
-        // Successively try different energy definitions.
-        try {
-            p = this.getProperty(ZPE.dictRef);
-        }
-        catch (e) {
-            try {
-                p = this.getProperty(Hf0.dictRef);
-            }
-            catch (e) {
-                try {
-                    p = this.getProperty(Hf298.dictRef);
-                }
-                catch (e) {
-                    try {
-                        p = this.getProperty(HfAT0.dictRef);
-                    }
-                    catch (e) {
-                        p = undefined;
-                    }
-                }
-            }
-        }
+        p = this.getProperty(ZPE.dictRef);
         if (p == undefined) {
-            return (0, big_js_1.Big)(0);
-        }
-        else {
-            let pp = p.getProperty();
-            if (pp instanceof PropertyScalarNumber) {
-                return pp.value;
+            p = this.getProperty(Hf0.dictRef);
+            if (p == undefined) {
+                p = this.getProperty(HfAT0.dictRef);
+                if (p == undefined) {
+                    p = this.getProperty(Hf298.dictRef);
+                    if (p == undefined) {
+                        return (0, big_js_1.Big)(0);
+                    }
+                }
             }
-            else {
-                return (0, big_js_1.Big)(0);
-            }
         }
+        return p.getProperty().value;
     }
 }
 exports.Molecule = Molecule;

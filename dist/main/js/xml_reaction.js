@@ -1200,6 +1200,7 @@ class Reaction extends xml_js_1.NodeWithNodes {
      * Returns the total energy of all reactants.
      * @returns The total energy of all reactants.
      */
+    //getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
     getReactantsEnergy(retrieveMolecule, molecules) {
         // Sum up the energy values of all the reactants in the reaction
         return Array.from(this.getReactants().values()).map(reactant => {
@@ -1229,6 +1230,9 @@ class Reaction extends xml_js_1.NodeWithNodes {
             //console.log("ref=\"" + ref + "\"");
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
+                console.log("molecule with ref " + ref + " not found");
+                // Print the keys in the molecules map
+                console.log(molecules.keys());
                 throw new Error(`Molecule with ref ${ref} not found`);
             }
             return molecule.getEnergy();

@@ -288,13 +288,14 @@ function getMoleculeKeys(molecules) {
 exports.getMoleculeKeys = getMoleculeKeys;
 /**
  * This returns the molecule found with the given label from ms.
- * @param label The label of the molecule to find.
+ * @param id The id of the molecule to find.
  * @param ms The map of molecules to search.
  * @returns The molecule with the lable in ms.
  */
-function getMolecule(label, ms) {
+function getMolecule(id, ms) {
     for (let [key, value] of ms) {
-        if (value.label == label) {
+        //if (value.label == label) {
+        if (value.id == id) {
             return value;
         }
     }
@@ -404,7 +405,7 @@ function startAfresh() {
     rddDiv.appendChild(rdDiv);
     // Create collapsible content.
     let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level0);
-    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, false);
+    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // Conditions.
     let conditionsDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID(xml_conditions_js_1.Conditions.tagName);

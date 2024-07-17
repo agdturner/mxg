@@ -43,6 +43,7 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         let m: Molecule = new Molecule(new Map(), mid);
         m.setID(mid);
         molecules.set(mid, m);
+        //m.label = mid;
         //addMolecule(m, molecules);
         m.setAtoms(new AtomArray(new Map()));
         m.setBonds(new BondArray(new Map()));
@@ -264,6 +265,9 @@ export function setPropertyScalarNumber(dictRef: string, pl: PropertyList, ps: P
     }
     //console.log("Value " + ps.getValue());
     ps.setValue.bind(ps)(value);
+    if (dictRef == ZPE.dictRef || dictRef == Hf0.dictRef || dictRef == HfAT0.dictRef || dictRef == Hf298.dictRef) {
+        redrawReactionsDiagram();
+    }
     //console.log("Value " + ps.getValue());
 }
 
@@ -432,7 +436,8 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let target = event.target as HTMLSelectElement;
             let selectedOption: HTMLOptionElement = target.options[target.selectedIndex];
             let label: string = selectedOption.value;
-            let molecule: Molecule = getMolecule(label, libmols)!;
+            let molecule: Molecule = libmols.get(label)!;
+            //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid: string = molecule.getID();
             mid = setMoleculeID(true, mid, molecule, molecules);
             molecules.set(mid, molecule);
@@ -1334,7 +1339,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
         addMolecule(false, m, molecules);
         // Create collapsible Molecule HTMLDivElement.
         let mcDivID = mIDM.addID(mDivID, s_container);
-        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, null, mDiv, m.label, boundary1, level1);
+        let mcDiv: HTMLDivElement = getCollapsibleDiv(mcDivID, mlDiv, null, mDiv, m.getLabel(), boundary1, level1);
         // Create a set of molecule tag names.
         let moleculeTagNames: Set<string> = new Set();
         let cns: NodeListOf<ChildNode> = xml_ms[i].childNodes;
@@ -2257,7 +2262,7 @@ export function processProperty(pl: PropertyList, p: Property, units: string[] |
         p.setProperty(ps);
         ps.setValue = function (value: Big) {
             ps.value = value;
-            if (p.dictRef == ZPE.dictRef) {
+            if (p.dictRef == ZPE.dictRef || p.dictRef == Hf0.dictRef || p.dictRef == HfAT0.dictRef || p.dictRef == Hf298.dictRef) {
                 // Update the molecule energy diagram.
                 redrawReactionsDiagram();
             }
@@ -2370,7 +2375,7 @@ export function processPropertyString(pl: PropertyList, p: Property, molecule: M
         ps.setValue = function (value: string) {
             ps.value = value;
             //console.log("Set " + p.dictRef + " of " + molecule.getLabel() + " to " + value);
-            if (p.dictRef == ZPE.dictRef) {
+            if (p.dictRef == ZPE.dictRef || p.dictRef == Hf0.dictRef || p.dictRef == HfAT0.dictRef || p.dictRef == Hf298.dictRef) {
                 // Update the molecule energy diagram.
                 redrawReactionsDiagram();
             }
@@ -2635,13 +2640,13 @@ export function addPropertyScalarNumber1(attributes: Map<string, string>, mIDM: 
     let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
     ps.setValue = function (value: Big) {
         ps.value = value;
-        if (p.dictRef == ZPE.dictRef) {
+        if (p.dictRef == ZPE.dictRef || p.dictRef == Hf0.dictRef || p.dictRef == HfAT0.dictRef || p.dictRef == Hf298.dictRef) {
             // Update the molecule energy diagram.
             redrawReactionsDiagram();
         }
     }.bind(ps);
     ps.value = value;
-    if (p.dictRef == ZPE.dictRef) {
+    if (p.dictRef == ZPE.dictRef || p.dictRef == Hf0.dictRef || p.dictRef == HfAT0.dictRef || p.dictRef == Hf298.dictRef) {
         // Update the molecule energy diagram.
         redrawReactionsDiagram();
     }
