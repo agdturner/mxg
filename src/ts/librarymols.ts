@@ -372,7 +372,7 @@ export class LibraryMolecules {
                     //ssDiv.appendChild(sDiv);
                 }
                 m.setStates(ss);
-                moleculeTagNames.delete(State.tagName);
+                moleculeTagNames.delete(States.tagName);
             }
 
             // Check for unexpected tags.
