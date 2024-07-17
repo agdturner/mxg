@@ -12198,14 +12198,17 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
                 etmDiv.removeChild(dedDiv);
             });
         });
+        /*
         // Add me:DOSCMethod.
-        let doscm = m.getDOSCMethod();
+        let doscm: DOSCMethod | undefined = m.getDOSCMethod();
         if (doscm == undefined) {
-            doscm = new (0, _xmlMoleculeJs.DOSCMethod)(new Map());
+            doscm = new DOSCMethod(new Map());
             m.setDOSCMethod(doscm);
         }
-        mDiv.appendChild((0, _htmlJs.createLabelWithSelect)((0, _xmlMoleculeJs.DOSCMethod).tagName, (0, _xmlMoleculeJs.DOSCMethod).xsi_typeOptions, (0, _xmlMoleculeJs.DOSCMethod).tagName, doscm.getXsiType(), mIDM.addID(mDivID, (0, _xmlMoleculeJs.DOSCMethod).tagName), (0, _appJs.boundary1), (0, _appJs.level1)));
-        /*
+        mDiv.appendChild(
+            createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
+                doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+        */ /*
         addDOSCMethod(m, mIDM, plDiv, pl);
         // Add me:ExtraDOSCMethod
         addExtraDOSCMethod(m, mIDM, plDiv, pl);
@@ -12402,9 +12405,9 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
     // Add event listener for the button.
     addFromLibraryButton.addEventListener("click", ()=>{
         // Create a select element to select a libraryMolecule.
-        let selectDivID = (0, _utilJs.getID)((0, _xmlMoleculeJs.Molecule).tagName, "div");
+        let selectDivID = mIDM.addID((0, _xmlMoleculeJs.Molecule).tagName, "div");
         (0, _appJs.remove)(selectDivID);
-        let selectDiv = (0, _htmlJs.createDiv)(mIDM.addID(selectDivID), (0, _appJs.level1));
+        let selectDiv = (0, _htmlJs.createDiv)(selectDivID, (0, _appJs.level1));
         if ((0, _appJs.libmols) == undefined) {
             alert("There are no additional molecules to add, please load data...");
             return;
@@ -12416,9 +12419,9 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
         }
         console.log("options.length=" + options.length);
         (0, _appJs.addOrRemoveInstructions)(options, true);
-        let selectID = (0, _utilJs.getID)(selectDivID, (0, _htmlJs.s_select));
+        let selectID = mIDM.addID(selectDivID, (0, _htmlJs.s_select));
         (0, _appJs.remove)(selectID);
-        let select = (0, _htmlJs.createSelectElement)(options, "Select molecule", (0, _appJs.s_selectOption), mIDM.addID(selectID), (0, _appJs.boundary1));
+        let select = (0, _htmlJs.createSelectElement)(options, "Select molecule", (0, _appJs.s_selectOption), selectID, (0, _appJs.boundary1));
         select.classList.add((0, _xmlMoleculeJs.Molecule).tagName);
         selectDiv.appendChild(select);
         mlDiv.insertBefore(selectDiv, amb);
@@ -12656,14 +12659,17 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 (0, _appJs.addAnyUnits)((0, _xmlMesmerJs.Mesmer).frequencyUnits, ps.attributes, div, div.querySelector((0, _appJs.s_input)), (0, _utilJs.getID)(pID, (0, _xmlMoleculeJs.PropertyScalarNumber).s_units), p.dictRef, (0, _appJs.boundary1), (0, _appJs.boundary1));
                 plDiv.appendChild(div);
             }
+            /*
             // Add me:DOSCMethod.
-            let doscm = molecule.getDOSCMethod();
+            let doscm: DOSCMethod | undefined = molecule.getDOSCMethod();
             if (doscm == undefined) {
-                doscm = new (0, _xmlMoleculeJs.DOSCMethod)(new Map());
+                doscm = new DOSCMethod(new Map());
                 molecule.setDOSCMethod(doscm);
             }
-            moleculeDiv.appendChild((0, _htmlJs.createLabelWithSelect)((0, _xmlMoleculeJs.DOSCMethod).tagName, (0, _xmlMoleculeJs.DOSCMethod).xsi_typeOptions, (0, _xmlMoleculeJs.DOSCMethod).tagName, doscm.getXsiType(), mIDM.addID(mDivID, (0, _xmlMoleculeJs.DOSCMethod).tagName), (0, _appJs.boundary1), (0, _appJs.level1)));
-            // Remove the select element.
+            moleculeDiv.appendChild(
+                createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
+                doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
+            */ // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
             (0, _appJs.addRemoveButton)(moleculeDiv, (0, _appJs.level1), ()=>{
