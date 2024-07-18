@@ -1373,7 +1373,7 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
             // Invoke the setter function.
             let input = div.querySelector(s_input);
             // Enact a change event on input.
-            input.value = value.toString();
+            if (value != undefined) input.value = value.toString();
             let event = new Event("change");
             input.dispatchEvent(event);
             //setter;
@@ -1406,14 +1406,20 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
     else valueString = value.toString();
     //let input: HTMLInputElement = createInput("number", id, boundary);
     let input = (0, _htmlJs.createInput)("text", id, boundary);
+    input.addEventListener("click", (event)=>{
+        valueString = input.value;
+    });
     input.addEventListener("change", (event)=>{
         let target = event.target;
         try {
-            setter(new (0, _bigJs.Big)(target.value));
-            console.log(name + " changed from " + value + " to " + target.value);
+            let value2 = target.value;
+            if (value2 == "") value2 = "0";
+            setter(new (0, _bigJs.Big)(value2));
+            console.log(name + " changed from " + valueString + " to " + target.value);
         } catch (e) {
             alert("Input invalid, resetting...");
-            target.value = getter().toString();
+            let value2 = getter();
+            if (value2 != undefined) target.value = value2.toString();
         }
         (0, _htmlJs.resizeInputElement)(target);
     });
@@ -1461,7 +1467,7 @@ function processString(id, iDs, name, getter, setter, remover, marginComponent, 
         } else {
             // Remove existing.
             document.getElementById(inputId)?.remove();
-            // 
+            // Remove node.
             remover();
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
@@ -4114,7 +4120,7 @@ class LibraryMolecules {
                 //ssDiv.appendChild(sDiv);
                 }
                 m.setStates(ss);
-                moleculeTagNames.delete((0, _xmlMolecule.State).tagName);
+                moleculeTagNames.delete((0, _xmlMolecule.States).tagName);
             }
             // Check for unexpected tags.
             moleculeTagNames.delete("#text");

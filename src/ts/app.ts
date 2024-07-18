@@ -853,7 +853,9 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
             // Invoke the setter function.
             let input: HTMLInputElement = div.querySelector(s_input) as HTMLInputElement;
             // Enact a change event on input.
-            input.value = value!.toString();
+            if (value != undefined) {
+                input.value = value!.toString();
+            }
             let event = new Event('change');
             input.dispatchEvent(event);
             //setter;
@@ -893,14 +895,24 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
     }
     //let input: HTMLInputElement = createInput("number", id, boundary);
     let input: HTMLInputElement = createInput("text", id, boundary);
+    input.addEventListener('click', (event: Event) => {
+        valueString = input.value;
+    });
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
         try {
-            setter(new Big(target.value));
-            console.log(name + " changed from " + value + " to " + target.value);
+            let value2: string = target.value;
+            if (value2 == "") {
+                value2 = "0";
+            }
+            setter(new Big(value2));
+            console.log(name + " changed from " + valueString + " to " + target.value);
         } catch (e) {
             alert("Input invalid, resetting...");
-            target.value = getter()!.toString();
+            let value2: Big | undefined = getter();
+            if (value2 != undefined) {
+                target.value = value2.toString();
+            }
         }
         resizeInputElement(target);
     });
@@ -971,7 +983,7 @@ export function processString(id: string, iDs: Set<string>, name: string,
         } else {
             // Remove existing.
             document.getElementById(inputId)?.remove();
-            // 
+            // Remove node.
             remover();
             console.log("Removed " + inputId);
             button.textContent = buttonTextContentDeselected;
