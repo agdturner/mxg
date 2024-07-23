@@ -126,7 +126,13 @@ export class LibraryMolecules {
                 }
                 continue;
             }
-            let id: string = setMoleculeID(false, mid, undefined, molecules);
+            let id: string | undefined;
+            while (true) {
+                id = setMoleculeID(false, mid, undefined, molecules);
+                if (id != undefined) {
+                    break;
+                }
+            }
             let m = new Molecule(attributes, id);
             molecules.set(id, m);
             // Create a set of molecule tag names.
@@ -364,7 +370,7 @@ export class LibraryMolecules {
                 //let state: State[] = [];
                 let xml_ss: HTMLCollectionOf<Element> = xml_states[0].getElementsByTagName(State.tagName);
                 for (let j = 0; j < xml_ss.length; j++) {
-                    let s: State = new State(getAttributes(xml_ss[j]));
+                    let s: State = new State(getAttributes(xml_ss[j]), j);
                     //state.push(s);
                     ss.addState(s);
                     //let sDivID = mIDM.addID(ssDivID, State.tagName, j);

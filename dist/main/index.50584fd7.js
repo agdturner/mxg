@@ -957,7 +957,11 @@ function setLibmols(m) {
     libmols = m;
 }
 function addMolecule(ask, m, ms) {
-    let mid = (0, _guiMoleculeListJs.setMoleculeID)(ask, m.getID(), m, ms);
+    let mid;
+    while(true){
+        mid = (0, _guiMoleculeListJs.setMoleculeID)(ask, m.getID(), m, ms);
+        if (mid != undefined) break;
+    }
     ms.set(mid, m);
 }
 /**
@@ -3192,6 +3196,7 @@ class NodeWithNodes extends TagWithAttributes {
                     else if (v instanceof TagWithAttributes) s += v.toXML(padding1);
                     else s += v.toXML(padding1);
                 }
+                i++;
             });
             return getTag(s, this.tagName, this.attributes, padding, true);
         } else {
@@ -3926,7 +3931,11 @@ class LibraryMolecules {
                 if (ref == undefined) throw new Error("ref is undefined");
                 continue;
             }
-            let id = (0, _guiMoleculeList.setMoleculeID)(false, mid, undefined, molecules);
+            let id;
+            while(true){
+                id = (0, _guiMoleculeList.setMoleculeID)(false, mid, undefined, molecules);
+                if (id != undefined) break;
+            }
             let m = new (0, _xmlMolecule.Molecule)(attributes, id);
             molecules.set(id, m);
             // Create a set of molecule tag names.
@@ -4112,7 +4121,7 @@ class LibraryMolecules {
                 //let state: State[] = [];
                 let xml_ss = xml_states[0].getElementsByTagName((0, _xmlMolecule.State).tagName);
                 for(let j = 0; j < xml_ss.length; j++){
-                    let s = new (0, _xmlMolecule.State)((0, _xml.getAttributes)(xml_ss[j]));
+                    let s = new (0, _xmlMolecule.State)((0, _xml.getAttributes)(xml_ss[j]), j);
                     //state.push(s);
                     ss.addState(s);
                 //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
@@ -11524,9 +11533,15 @@ class States extends (0, _xmlJs.NodeWithNodes) {
      * @param attributes The attributes.
      */ constructor(attributes, states){
         super(attributes, States.tagName);
-        if (states) states.forEach((state)=>{
-            this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
-        });
+        this.index = new Map();
+        if (states) {
+            let i = 0;
+            states.forEach((state)=>{
+                this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
+                this.index.set(state.id, i); // Add the index of the state to the index.
+                i++;
+            });
+        }
     }
     /**
      * @returns The states.
@@ -11538,29 +11553,43 @@ class States extends (0, _xmlJs.NodeWithNodes) {
         return states;
     }
     /**
+     * @param id The id of the state.
      * @returns The state at the given index.
-     */ getState(i) {
-        return this.nodes.get(i);
+     */ getState(id) {
+        return this.nodes.get(this.index.get(id));
     }
     /**
      * Set the state at the given index.
      * @param i The index.
      * @param state The state.
      */ setState(i, state) {
-        this.nodes.set(i, state);
+        this.nodes.set(this.index.get(state.id), state);
     }
     /**
      * Add the state.
      * @param state The state.
      * @returns The index of the state added.
      */ addState(state) {
-        this.nodes.set(this.nodes.size, state);
+        let i;
+        if (this.index.has(state.id)) {
+            // A state with this id already exists, replace it.
+            i = this.index.get(state.id);
+            this.nodes.set(i, state);
+        } else {
+            // Add the state to the nodes.
+            i = this.nodes.size;
+            this.index.set(state.id, i);
+            this.nodes.set(i, state);
+        }
         return this.nodes.size - 1;
     }
     /**
      * Remove the state at the given index.
-     * @param i The index.
-     */ removeState(i) {
+     * @param id The id of the state to remove.
+     */ removeState(id) {
+        console.log("Removing state with id " + id);
+        let i = this.index.get(id);
+        console.log("Removing state at index " + i);
         this.nodes.delete(i);
     }
 }
@@ -11582,8 +11611,10 @@ class State extends (0, _xmlJs.TagWithAttributes) {
     }
     /**
      * @param attributes The attributes.
-     */ constructor(attributes){
+     * @param id The index.
+     */ constructor(attributes, id){
         super(attributes, State.tagName);
+        this.id = id;
     }
     /**
      * @returns The energy of the state.
@@ -11596,14 +11627,24 @@ class State extends (0, _xmlJs.TagWithAttributes) {
         this.attributes.set(State.s_energy, energy.toString());
     }
     /**
+     * Remove the energy attribute. 
+     */ removeEnergy() {
+        this.attributes.delete(State.s_energy);
+    }
+    /**
      * @returns The degeneracy of the state.
      */ getDegeneracy() {
-        return parseInt(this.attributes.get(State.s_degeneracy));
+        return new (0, _bigJs.Big)(this.attributes.get(State.s_degeneracy));
     }
     /**
      * @param degeneracy The degeneracy of the state.
      */ setDegeneracy(degeneracy) {
         this.attributes.set(State.s_degeneracy, degeneracy.toString());
+    }
+    /**
+     * Remove the degeneracy attribute. 
+     */ removeDegeneracy() {
+        this.attributes.delete(State.s_degeneracy);
     }
 }
 class Molecule extends (0, _xmlJs.NodeWithNodes) {
@@ -12154,7 +12195,7 @@ parcelHelpers.defineInteropFlag(exports);
  * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter 
  * which must not be undefined.
  * @param mid The initial molecule ID before checks.
- * @param molecule The molecule to set the ID foradd.
+ * @param molecule The molecule to set the ID for.
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */ parcelHelpers.export(exports, "setMoleculeID", ()=>setMoleculeID);
@@ -12252,6 +12293,7 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener("click", ()=>{
         let mid = setMoleculeID(true, undefined, undefined, molecules);
+        if (mid == undefined) return;
         console.log("mid=" + mid);
         let m = new (0, _xmlMoleculeJs.Molecule)(new Map(), mid);
         m.setID(mid);
@@ -12574,7 +12616,10 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let molecule = (0, _appJs.libmols).get(label);
             //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid = molecule.getID();
-            mid = setMoleculeID(true, mid, molecule, molecules);
+            while(true){
+                mid = setMoleculeID(true, mid, molecule, molecules);
+                if (mid != undefined) break;
+            }
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID = mIDM.addID((0, _xmlMoleculeJs.Molecule).tagName, molecules.size);
@@ -12820,7 +12865,26 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let states = molecule.getStates();
             if (states != undefined) states.getStates().forEach((s)=>{
                 console.log(s.toString());
+                // Add state.
+                let sDivID = (0, _utilJs.getID)(ssDivID, (0, _xmlMoleculeJs.State).tagName, s.id);
+                let sDiv = (0, _htmlJs.createFlexDiv)(sDivID);
+                ssDiv.appendChild(sDiv);
+                // Add energy.
+                let energy = s.getEnergy();
+                if (energy == undefined) throw new Error("Energy is undefined for state " + s.toString());
+                else sDiv.appendChild((0, _appJs.processNumber)((0, _utilJs.getID)(sDivID, (0, _xmlMoleculeJs.State).s_energy), mIDM, (0, _xmlMoleculeJs.State).s_energy, ()=>energy, (value)=>s.setEnergy(value), ()=>s.removeEnergy(), (0, _appJs.boundary1), (0, _appJs.level1)));
+                // Add degeneracy.
+                let degeneracy = s.getDegeneracy();
+                if (degeneracy == undefined) throw new Error("Degeneracy is undefined for state " + s.toString());
+                else sDiv.appendChild((0, _appJs.processNumber)((0, _utilJs.getID)(sDivID, (0, _xmlMoleculeJs.State).s_degeneracy), mIDM, (0, _xmlMoleculeJs.State).s_degeneracy, ()=>degeneracy, (value)=>s.setDegeneracy(value), ()=>s.removeDegeneracy(), (0, _appJs.boundary1), (0, _appJs.boundary1)));
+                // Add a remove state button.
+                (0, _appJs.addRemoveButton)(sDiv, (0, _appJs.boundary1), ()=>{
+                    states.removeState(s.id);
+                    sDiv.remove();
+                });
             });
+            // Add an add state button.
+            //ssDiv.appendChild(getAddStateButton(mIDM, molecule, ssDiv, State.tagName, boundary1, level1));
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -12837,7 +12901,8 @@ function setMoleculeID(ask, mid, molecule, molecules) {
         // Ask the user to specify the molecule ID.
         if (ask) mid2 = prompt("Please enter a name for the molecule", mid);
         else mid2 = mid;
-        if (mid2 == null) alert("The molecule ID cannot be null.");
+        if (mid2 == null) //alert("The molecule ID cannot be null.");
+        return undefined;
         else if (mid2 == "") alert("The molecule ID cannot be empty.");
         else if (molecules.has(mid2)) {
             //if (mid == mid2) {
@@ -12877,7 +12942,10 @@ function setMoleculeID(ask, mid, molecule, molecules) {
         // Update the BathGas select elements.
         (0, _appJs.removeOptionByClassName)((0, _xmlConditionsJs.BathGas).tagName, molecule.getID());
         molecules.delete(mid);
-        mid = setMoleculeID(true, mid, molecule, molecules);
+        while(true){
+            mid = setMoleculeID(true, mid, molecule, molecules);
+            if (mid != undefined) break;
+        }
         // Update the BathGas select elements.
         (0, _appJs.addOptionByClassName)((0, _xmlConditionsJs.BathGas).tagName, mid);
         button.textContent = molecule.getLabel() + " " + (0, _htmlJs.sy_upTriangle);
@@ -14006,7 +14074,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             //let state: State[] = [];
             let xml_ss = xml_states[0].getElementsByTagName((0, _xmlMoleculeJs.State).tagName);
             for(let j = 0; j < xml_ss.length; j++){
-                let s = new (0, _xmlMoleculeJs.State)((0, _xmlJs.getAttributes)(xml_ss[j]));
+                let s = new (0, _xmlMoleculeJs.State)((0, _xmlJs.getAttributes)(xml_ss[j]), j);
                 //state.push(s);
                 ss.addState(s);
             //let sDivID = mIDM.addID(ssDivID, State.tagName, j);

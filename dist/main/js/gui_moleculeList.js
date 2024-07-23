@@ -25,6 +25,9 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
         let mid = setMoleculeID(true, undefined, undefined, molecules);
+        if (mid == undefined) {
+            return;
+        }
         console.log("mid=" + mid);
         let m = new xml_molecule_js_1.Molecule(new Map(), mid);
         m.setID(mid);
@@ -407,7 +410,12 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             let molecule = app_js_1.libmols.get(label);
             //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid = molecule.getID();
-            mid = setMoleculeID(true, mid, molecule, molecules);
+            while (true) {
+                mid = setMoleculeID(false, mid, molecule, molecules);
+                if (mid != undefined) {
+                    break;
+                }
+            }
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID = mIDM.addID(xml_molecule_js_1.Molecule.tagName, molecules.size);
@@ -687,6 +695,18 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
                 createLabelWithSelect(DOSCMethod.tagName, DOSCMethod.xsi_typeOptions, DOSCMethod.tagName,
                 doscm.getXsiType(), mIDM.addID(mDivID, DOSCMethod.tagName), boundary1, level1));
             */
+            // Organise States.
+            let ssDivID = mIDM.addID(mDivID, xml_molecule_js_1.State.tagName);
+            let ssDiv = (0, html_js_1.createDiv)(ssDivID);
+            let sscDivID = mIDM.addID(ssDivID, app_js_1.s_container);
+            let sscDiv = (0, html_js_1.getCollapsibleDiv)(sscDivID, moleculeDiv, null, ssDiv, xml_molecule_js_1.States.tagName, app_js_1.boundary1, app_js_1.level1);
+            // Add states.
+            let states = molecule.getStates();
+            if (states != undefined) {
+                states.getStates().forEach((s) => {
+                    console.log(s.toString());
+                });
+            }
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -704,7 +724,7 @@ exports.getAddFromLibraryButton = getAddFromLibraryButton;
  * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter
  * which must not be undefined.
  * @param mid The initial molecule ID before checks.
- * @param molecule The molecule to set the ID foradd.
+ * @param molecule The molecule to set the ID for.
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
@@ -719,7 +739,8 @@ function setMoleculeID(ask, mid, molecule, molecules) {
             mid2 = mid;
         }
         if (mid2 == null) {
-            alert("The molecule ID cannot be null.");
+            //alert("The molecule ID cannot be null.");
+            return undefined;
         }
         else if (mid2 == "") {
             alert("The molecule ID cannot be empty.");
@@ -765,7 +786,12 @@ function addEditIDButton(molecule, molecules, button, mIDM, mDiv, level) {
         // Update the BathGas select elements.
         (0, app_js_1.removeOptionByClassName)(xml_conditions_js_1.BathGas.tagName, molecule.getID());
         molecules.delete(mid);
-        mid = setMoleculeID(true, mid, molecule, molecules);
+        while (true) {
+            mid = setMoleculeID(true, mid, molecule, molecules);
+            if (mid != undefined) {
+                break;
+            }
+        }
         // Update the BathGas select elements.
         (0, app_js_1.addOptionByClassName)(xml_conditions_js_1.BathGas.tagName, mid);
         button.textContent = molecule.getLabel() + " " + html_js_1.sy_upTriangle;
@@ -2034,6 +2060,30 @@ function processMoleculeList(xml, mIDM, molecules) {
                 (0, html_js_1.resizeInputElement)(target);
             }, valueString, xml_molecule_js_1.ReservoirSize.tagName);
             mDiv.appendChild(inputDiv);
+        }
+        // Organise States.
+        let xml_states = xml_ms[i].getElementsByTagName(xml_molecule_js_1.States.tagName);
+        let ssDivID = mIDM.addID(mDivID, xml_molecule_js_1.State.tagName);
+        let ssDiv = (0, html_js_1.createDiv)(ssDivID);
+        let sscDivID = mIDM.addID(ssDivID, app_js_1.s_container);
+        let sscDiv = (0, html_js_1.getCollapsibleDiv)(sscDivID, mDiv, null, ssDiv, xml_molecule_js_1.States.tagName, app_js_1.boundary1, app_js_1.level1);
+        if (xml_states.length > 0) {
+            if (xml_states.length > 1) {
+                throw new Error("Expecting 1 or 0 " + xml_molecule_js_1.States.tagName + " but finding " + xml_states.length + "!");
+            }
+            let ss = new xml_molecule_js_1.States((0, xml_js_1.getAttributes)(xml_states[0]));
+            //let state: State[] = [];
+            let xml_ss = xml_states[0].getElementsByTagName(xml_molecule_js_1.State.tagName);
+            for (let j = 0; j < xml_ss.length; j++) {
+                let s = new xml_molecule_js_1.State((0, xml_js_1.getAttributes)(xml_ss[j]));
+                //state.push(s);
+                ss.addState(s);
+                //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+                //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+                //ssDiv.appendChild(sDiv);
+            }
+            m.setStates(ss);
+            moleculeTagNames.delete(xml_molecule_js_1.State.tagName);
         }
         // Check for unexpected tags.
         moleculeTagNames.delete("#text");

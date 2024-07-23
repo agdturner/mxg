@@ -304,7 +304,13 @@ export function setLibmols(m: Map<string, Molecule>): void {
  * @param ms The map of molecules to add the molecule to.
  */
 export function addMolecule(ask: boolean, m: Molecule, ms: Map<string, Molecule>): void {
-    let mid = setMoleculeID(ask, m.getID(), m, ms);
+    let mid: string | undefined;
+    while (true) {
+        mid = setMoleculeID(ask, m.getID(), m, ms);
+        if (mid != undefined) {
+            break;
+        }
+    }
     ms.set(mid, m);
 }
 

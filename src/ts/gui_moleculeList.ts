@@ -38,7 +38,10 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
-        let mid: string = setMoleculeID(true, undefined, undefined, molecules);
+        let mid: string | undefined = setMoleculeID(true, undefined, undefined, molecules);
+        if (mid == undefined) {
+            return;
+        }
         console.log("mid=" + mid);
         let m: Molecule = new Molecule(new Map(), mid);
         m.setID(mid);
@@ -438,8 +441,13 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let label: string = selectedOption.value;
             let molecule: Molecule = libmols.get(label)!;
             //let molecule: Molecule = getMolecule(label, libmols)!;
-            let mid: string = molecule.getID();
-            mid = setMoleculeID(true, mid, molecule, molecules);
+            let mid: string | undefined = molecule.getID();
+            while (true) {
+                mid = setMoleculeID(true, mid, molecule, molecules);
+                if (mid != undefined) {
+                    break;
+                }
+            }
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID: string = mIDM.addID(Molecule.tagName, molecules.size);
@@ -760,9 +768,35 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             if (states != undefined) {
                 states.getStates().forEach((s) => {
                     console.log(s.toString());
+                    // Add state.
+                    let sDivID: string = getID(ssDivID, State.tagName, s.id);
+                    let sDiv: HTMLDivElement = createFlexDiv(sDivID);
+                    ssDiv.appendChild(sDiv);
+                    // Add energy.
+                    let energy: Big | undefined = s.getEnergy();
+                    if (energy == undefined) {
+                        throw new Error("Energy is undefined for state " + s.toString());
+                    } else {
+                        sDiv.appendChild(processNumber(getID(sDivID, State.s_energy), mIDM, State.s_energy, () => energy!,
+                            (value: Big) => s.setEnergy(value), () => s.removeEnergy(), boundary1, level1));
+                    }
+                    // Add degeneracy.
+                    let degeneracy: Big | undefined = s.getDegeneracy();
+                    if (degeneracy == undefined) {
+                        throw new Error("Degeneracy is undefined for state " + s.toString());
+                    } else {
+                        sDiv.appendChild(processNumber(getID(sDivID, State.s_degeneracy), mIDM, State.s_degeneracy, () => degeneracy!,
+                            (value: Big) => s.setDegeneracy(value), () => s.removeDegeneracy(), boundary1, boundary1));
+                    }
+                    // Add a remove state button.
+                    addRemoveButton(sDiv, boundary1, () => {
+                        states!.removeState(s.id);
+                        sDiv.remove();
+                    });
                 });
             }
-            
+            // Add an add state button.
+            //ssDiv.appendChild(getAddStateButton(mIDM, molecule, ssDiv, State.tagName, boundary1, level1));
 
             // Remove the select element.
             selectDiv.remove();
@@ -781,12 +815,12 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
  * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter 
  * which must not be undefined.
  * @param mid The initial molecule ID before checks.
- * @param molecule The molecule to set the ID foradd.
+ * @param molecule The molecule to set the ID for.
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
 export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: Molecule | undefined,
-    molecules: Map<string, Molecule>): string {
+    molecules: Map<string, Molecule>): string | undefined {
     let mid2: string | null;
     while (true) {
         // Ask the user to specify the molecule ID.
@@ -796,7 +830,8 @@ export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: M
             mid2 = mid!;
         }
         if (mid2 == null) {
-            alert("The molecule ID cannot be null.");
+            //alert("The molecule ID cannot be null.");
+            return undefined;
         } else if (mid2 == "") {
             alert("The molecule ID cannot be empty.");
         } else if (molecules.has(mid2)) {
@@ -837,11 +872,16 @@ function addEditIDButton(molecule: Molecule, molecules: Map<string, Molecule>, b
     let editNameButton: HTMLButtonElement = createButton(s_editName, editNameButtonID, level);
     mDiv.appendChild(editNameButton);
     editNameButton.addEventListener('click', () => {
-        let mid: string = molecule.getID();
+        let mid: string | undefined = molecule.getID();
         // Update the BathGas select elements.
         removeOptionByClassName(BathGas.tagName, molecule.getID());
         molecules.delete(mid);
-        mid = setMoleculeID(true, mid, molecule, molecules);
+        while (true) {
+            mid = setMoleculeID(true, mid, molecule, molecules);
+            if (mid != undefined) {
+                break;
+            }
+        }
         // Update the BathGas select elements.
         addOptionByClassName(BathGas.tagName, mid);
         button.textContent = molecule.getLabel() + " " + sy_upTriangle;
@@ -2152,7 +2192,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
             //let state: State[] = [];
             let xml_ss: HTMLCollectionOf<Element> = xml_states[0].getElementsByTagName(State.tagName);
             for (let j = 0; j < xml_ss.length; j++) {
-                let s: State = new State(getAttributes(xml_ss[j]));
+                let s: State = new State(getAttributes(xml_ss[j]), j);
                 //state.push(s);
                 ss.addState(s);
                 //let sDivID = mIDM.addID(ssDivID, State.tagName, j);

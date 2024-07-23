@@ -2873,13 +2873,23 @@ export class States extends NodeWithNodes {
     static readonly tagName: string = "me:States";
 
     /**
+     * The index.
+     * The keys are the id of the states and the values are the node indexes.
+     */
+    index: Map<number, number>;
+
+    /**
      * @param attributes The attributes.
      */
     constructor(attributes: Map<string, string>, states?: State[]) {
         super(attributes, States.tagName);
+        this.index = new Map();
         if (states) {
+            let i: number = 0;
             states.forEach((state) => {
                 this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
+                this.index.set(state.id, i); // Add the index of the state to the index.
+                i++;
             });
         }
     }
@@ -2896,10 +2906,11 @@ export class States extends NodeWithNodes {
     }
 
     /**
+     * @param id The id of the state.
      * @returns The state at the given index.
      */
-    getState(i: number): State {
-        return this.nodes.get(i) as State;
+    getState(id: number): State {
+        return this.nodes.get(this.index.get(id)!) as State;
     }
 
     /**
@@ -2908,7 +2919,7 @@ export class States extends NodeWithNodes {
      * @param state The state.
      */
     setState(i: number, state: State): void {
-        this.nodes.set(i, state);
+        this.nodes.set(this.index.get(state.id)!, state);
     }
 
     /**
@@ -2917,15 +2928,28 @@ export class States extends NodeWithNodes {
      * @returns The index of the state added.
      */
     addState(state: State): number {
-        this.nodes.set(this.nodes.size, state);
+        let i: number;
+        if (this.index.has(state.id)) {
+            // A state with this id already exists, replace it.
+            i = this.index.get(state.id)!;
+            this.nodes.set(i, state);
+        } else {
+            // Add the state to the nodes.
+            i = this.nodes.size;
+            this.index.set(state.id, i);
+            this.nodes.set(i, state);
+        }
         return this.nodes.size - 1;
     }
 
     /**
      * Remove the state at the given index.
-     * @param i The index.
+     * @param id The id of the state to remove.
      */
-    removeState(i: number): void {
+    removeState(id: number): void {
+        console.log("Removing state with id " + id);
+        let i: number = this.index.get(id)!;
+        console.log("Removing state at index " + i);
         this.nodes.delete(i);
     }
 }
@@ -2952,10 +2976,17 @@ export class State extends TagWithAttributes {
     static readonly s_degeneracy: string = "degeneracy";
 
     /**
-     * @param attributes The attributes.
+     * The id of the state.
      */
-    constructor(attributes: Map<string, string>) {
+    id: number;
+
+    /**
+     * @param attributes The attributes.
+     * @param id The index.
+     */
+    constructor(attributes: Map<string, string>, id: number) {
         super(attributes, State.tagName);
+        this.id = id;
     }
 
     /**
@@ -2973,17 +3004,31 @@ export class State extends TagWithAttributes {
     }
 
     /**
+     * Remove the energy attribute. 
+     */
+    removeEnergy(): void {
+        this.attributes.delete(State.s_energy);
+    }
+
+    /**
      * @returns The degeneracy of the state.
      */
-    getDegeneracy(): number {
-        return parseInt(this.attributes.get(State.s_degeneracy)!);
+    getDegeneracy(): Big {
+        return new Big(this.attributes.get(State.s_degeneracy)!);
     }
 
     /**
      * @param degeneracy The degeneracy of the state.
      */
-    setDegeneracy(degeneracy: number): void {
+    setDegeneracy(degeneracy: Big): void {
         this.attributes.set(State.s_degeneracy, degeneracy.toString());
+    }
+
+    /**
+     * Remove the degeneracy attribute. 
+     */
+    removeDegeneracy(): void {
+        this.attributes.delete(State.s_degeneracy);
     }
 }
 
