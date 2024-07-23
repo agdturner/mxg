@@ -154,6 +154,75 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         // Add me:ReservoirSize
         addReservoirSize(m, mIDM, plDiv, pl);
         */
+
+        // Add me:States
+        let statesDivID: string = mIDM.addID(mDivID, States.tagName);
+        let statesDiv: HTMLDivElement = createDiv(statesDivID);
+        let statescDivID = mIDM.addID(statesDivID, s_container);
+        let statescDiv: HTMLDivElement = getCollapsibleDiv(statescDivID, mDiv, null, statesDiv, States.tagName, boundary1, level1);
+        let states: States | undefined = m.getStates();
+        if (states == undefined) {
+            states = new States(new Map());
+            m.setStates(states);
+        }
+        console.log("states.index.size" + states.nodes.size);
+        // Add an add me:State button.
+        let addStateButton: HTMLButtonElement = createButton(s_Add_sy_add, getID(statesDivID, State.tagName, s_Add_sy_add, s_button), level1);
+        statesDiv.appendChild(addStateButton);
+        addStateButton.addEventListener('click', () => {
+            let stateAttributes: Map<string, string> = new Map();
+            stateAttributes.set(State.s_energy, "0");
+            stateAttributes.set(State.s_degeneracy, "0");
+            let state: State = new State(stateAttributes, states!.getNextId());
+            let index = states!.addState(state);
+            let stateDivID: string = mIDM.addID(statesDivID, State.tagName, state.id);
+            let stateDiv: HTMLDivElement = createFlexDiv(stateDivID);
+            statesDiv.insertBefore(stateDiv, addStateButton);
+            // Add energy.
+            let energyDivID: string = mIDM.addID(stateDivID, State.s_energy);
+            let energyDiv: HTMLDivElement = createFlexDiv(energyDivID);
+            stateDiv.appendChild(energyDiv);
+            let energyValue: Big = state.getEnergy();
+            let elwi: HTMLDivElement = createLabelWithInput(State.s_energy, energyDivID, boundary1, level1, (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the input is a number.
+                if (isNumeric(target.value)) {
+                    energyValue = new Big(target.value);
+                    state.setEnergy(energyValue);
+                } else {
+                    // Reset.
+                    alert("Input is not a number, resetting...");
+                    target.value = energyValue.toString() ?? s_undefined;
+                }
+                resizeInputElement(target);
+            }, energyValue.toString(), State.s_energy);
+            energyDiv.appendChild(elwi);
+            // Add degeneracy.
+            let degeneracyDivID: string = mIDM.addID(stateDivID, State.s_degeneracy);
+            let degeneracyDiv: HTMLDivElement = createFlexDiv(degeneracyDivID);
+            stateDiv.appendChild(degeneracyDiv);
+            let degeneracyValue: Big = state.getDegeneracy();
+            let dlwi = createLabelWithInput(State.s_degeneracy, degeneracyDivID, boundary1, boundary1, (event: Event) => {
+                let target = event.target as HTMLInputElement;
+                // Check the input is a number.
+                if (isNumeric(target.value)) {
+                    degeneracyValue = new Big(target.value);
+                    state.setDegeneracy(degeneracyValue);
+                } else {
+                    // Reset.
+                    alert("Input is not a number, resetting...");
+                    target.value = degeneracyValue.toString() ?? s_undefined;
+                }
+                resizeInputElement(target);
+            }, degeneracyValue.toString(), State.s_degeneracy);
+            degeneracyDiv.appendChild(dlwi);
+            // Add a remove me:State button.
+            addRemoveButton(stateDiv, boundary1, () => {
+                states!.removeState(index);
+                statesDiv.removeChild(stateDiv);
+            });
+        });
+
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
@@ -773,26 +842,50 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
                     let sDiv: HTMLDivElement = createFlexDiv(sDivID);
                     ssDiv.appendChild(sDiv);
                     // Add energy.
-                    let energy: Big | undefined = s.getEnergy();
-                    if (energy == undefined) {
-                        throw new Error("Energy is undefined for state " + s.toString());
-                    } else {
-                        sDiv.appendChild(processNumber(getID(sDivID, State.s_energy), mIDM, State.s_energy, () => energy!,
-                            (value: Big) => s.setEnergy(value), () => s.removeEnergy(), boundary1, level1));
-                    }
+                    let energyDivID: string = mIDM.addID(sDivID, State.s_energy);
+                    let energy: Big = s.getEnergy();
+                    let elwi: HTMLDivElement = createLabelWithInput(State.s_energy, energyDivID, boundary1, level1, (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        // Check the input is a number.
+                        if (isNumeric(target.value)) {
+                            energy = new Big(target.value);
+                            s.setEnergy(energy);
+                        } else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = energy.toString() ?? s_undefined;
+                        }
+                        resizeInputElement(target);
+                    }, energy.toString(), State.s_energy);
+                    sDiv.appendChild(elwi);
                     // Add degeneracy.
-                    let degeneracy: Big | undefined = s.getDegeneracy();
-                    if (degeneracy == undefined) {
-                        throw new Error("Degeneracy is undefined for state " + s.toString());
-                    } else {
-                        sDiv.appendChild(processNumber(getID(sDivID, State.s_degeneracy), mIDM, State.s_degeneracy, () => degeneracy!,
-                            (value: Big) => s.setDegeneracy(value), () => s.removeDegeneracy(), boundary1, boundary1));
-                    }
+                    let degeneracyDivID: string = mIDM.addID(sDivID, State.s_degeneracy);
+                    let degeneracy: Big = s.getDegeneracy();
+                    let dlwi: HTMLDivElement = createLabelWithInput(State.s_degeneracy, degeneracyDivID, boundary1, boundary1, (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        // Check the input is a number.
+                        if (isNumeric(target.value)) {
+                            degeneracy = new Big(target.value);
+                            s.setDegeneracy(degeneracy);
+                        } else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = degeneracy.toString() ?? s_undefined;
+                        }
+                        resizeInputElement(target);
+                    }, degeneracy.toString(), State.s_degeneracy);
+                    sDiv.appendChild(dlwi);
                     // Add a remove state button.
                     addRemoveButton(sDiv, boundary1, () => {
                         states!.removeState(s.id);
                         sDiv.remove();
                     });
+                    /*
+                    // Add a move up button.
+                    sDiv.appendChild(getMoveUpButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    // Add a move down button.
+                    sDiv.appendChild(getMoveDownButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    */
                 });
             }
             // Add an add state button.

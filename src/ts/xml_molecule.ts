@@ -2895,6 +2895,17 @@ export class States extends NodeWithNodes {
     }
 
     /**
+     * @returns The next id.
+     */
+    getNextId(): number {
+        let i: number = 0;
+        while (this.index.has(i)) {
+            i++;
+        }
+        return i;
+    }
+
+    /**
      * @returns The states.
      */
     getStates(): State[] {
