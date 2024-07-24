@@ -1,10 +1,13 @@
 import { getID } from "./util";
 
+
 export const s_button: string = "button";
 export const s_collapsible: string = "collapsible";
 export const sy_downTriangle: string = "\u25BC"; // ▼
 export const sy_upTriangle: string = "\u25B2"; // ▲
 export const s_select: string = "select";
+
+export type margin = {marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string; };
 
 /**
  * Create a HTMLDivElement containing a HTMLButtonElement and a HTMLDivElement which display is toggled as the button is actioned. 
@@ -16,14 +19,12 @@ export const s_select: string = "select";
  * @param elementToInsertBefore The element to insert before. (If null then the content will be appended to the div.)
  * @param content The content to expand/collapse.
  * @param buttonLabel The label for the button.
- * @param buttonMargin The margin for the button.
+ * @param componentMargin The margin for the button.
  * @param margin The margin for HTMLDivElement created. 
  * @returns A HTMLDivElement containing a HTMLButtonElement and the content.
  */
 export function getCollapsibleDiv(id: string, divToAddTo: HTMLDivElement, elementToInsertBefore: Element | null,
-            content: HTMLElement, buttonLabel: string, 
-            componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-            margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+            content: HTMLElement, buttonLabel: string, componentMargin: margin, margin: margin): HTMLDivElement {
     let div: HTMLDivElement = createDiv(id, margin);
     let bid: string = getID(id, s_button);
     let b: HTMLButtonElement = createButton(buttonLabel + " " + sy_downTriangle, bid, componentMargin);
@@ -88,9 +89,7 @@ function toggleCollapsible(this: HTMLElement): void {
  * @param labelTextContent The label text.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLInputElement.
  */
-export function createLabelWithInput(type: string, id: string,
-    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+export function createLabelWithInput(type: string, id: string,  componentMargin: margin, divMargin: margin,
     func: (event: Event) => any, value: string, labelTextContent: string): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
     let input: HTMLInputElement = createInputWithFunction(type, id, componentMargin, func, value);
@@ -109,8 +108,7 @@ export function createLabelWithInput(type: string, id: string,
  * @param func The function called on a change to the input.
  * @returns A HTMLInputElement.
  */
-export function createInputWithFunction(type: string, id: string, 
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+export function createInputWithFunction(type: string, id: string, margin: margin,
     func: (event: Event) => any, value: string): HTMLInputElement {
     let input: HTMLInputElement = createInput(type, id, margin);
     input.onchange = func;
@@ -126,9 +124,7 @@ export function createInputWithFunction(type: string, id: string,
  * @param margin The margin for the HTMLInputElement.
  * @returns A HTMLInputElement.
  */
-export function createInput(type: string, id: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
-    : HTMLInputElement {
+export function createInput(type: string, id: string, margin: margin): HTMLInputElement {
     let input: HTMLInputElement = document.createElement('input');
     input.type = type;
     input.id = id;
@@ -148,9 +144,7 @@ export function createInput(type: string, id: string,
  * @param labelTextContent The label text.
  * @returns A HTMLDivElement that contains a HTMLLabelElement and a HTMLTextAreaElement.
  */
-export function createLabelWithTextArea(id: string,
-    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+export function createLabelWithTextArea(id: string, componentMargin: margin, divMargin: margin,
     func: (event: Event) => any, value: string, labelTextContent: string): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
     let ta: HTMLTextAreaElement = createTextAreaWithFunction(id, componentMargin, func, value);
@@ -168,8 +162,7 @@ export function createLabelWithTextArea(id: string,
  * @param func The function called on a change to the HTMLTextAreaElement.
  * @returns A HTMLInputElement.
  */
-export function createTextAreaWithFunction(id: string, 
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+export function createTextAreaWithFunction(id: string, margin: margin,
     func: (event: Event) => any, value: string): HTMLTextAreaElement {
     let ta: HTMLTextAreaElement = createTextArea(id, margin);
     ta.onchange = func;
@@ -184,9 +177,7 @@ export function createTextAreaWithFunction(id: string,
  * @param margin The margin for the HTMLTextAreaElement.
  * @returns A HTMLTextAreaElement.
  */
-export function createTextArea(id: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string })
-    : HTMLTextAreaElement {
+export function createTextArea(id: string, margin: margin) : HTMLTextAreaElement {
     let ta: HTMLTextAreaElement = document.createElement('textarea');
     ta.id = id;
     Object.assign(ta.style, margin);
@@ -261,7 +252,7 @@ export function resizeTextAreaElement(ta: HTMLTextAreaElement, minSize?: number)
  * @returns An HTMLSelectElement.
  */
 export function createSelectElement(options: string[] | Set<string>, name: string, value: string, id: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLSelectElement {
+    margin: margin): HTMLSelectElement {
     let select: HTMLSelectElement = document.createElement('select');
     options.forEach(option => {
         select.name = name;
@@ -292,9 +283,7 @@ export function createSelectElement(options: string[] | Set<string>, name: strin
  * @returns A HTMLDivElement containing a HTMLLabelElement and HTMLSelectElement.
  */
 export function createLabelWithSelect(textContent: string, options: string[] | Set<string>,
-    name: string, value: string, id: string,
-    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    name: string, value: string, id: string, componentMargin: margin, divMargin: margin): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, divMargin);
     let label: HTMLLabelElement = createLabel(textContent, componentMargin);
     div.appendChild(label);
@@ -310,15 +299,14 @@ export function createLabelWithSelect(textContent: string, options: string[] | S
  * @param margin The margin to go around the HTMLButtonElement.
  * @returns An HTMLButtonElement with the textContent and specified margin.
  */
-export function createButton(textContent: string, id?: string,
-    boundary?: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
+export function createButton(textContent: string, id?: string, margin?: margin): HTMLButtonElement {
     let button: HTMLButtonElement = document.createElement('button');
     button.textContent = textContent;
     if (id != undefined) {
         button.id = id;
     }
-    if (boundary != undefined) {
-        Object.assign(button.style, boundary);
+    if (margin != undefined) {
+        Object.assign(button.style, margin);
     }
     button.style.fontSize = '1em'; // Set the font size with a relative unit.
     return button;
@@ -334,9 +322,7 @@ export function createButton(textContent: string, id?: string,
  * @returns An HTMLDivElement with the level margin containing an HTMLLabelElement and a HTMLButtonElement.
  */
 export function createLabelWithButton(labeltext: string, textContent: string, id: string,
-    componentMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    divMargin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-): HTMLDivElement {
+    componentMargin: margin, divMargin: margin): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, divMargin);
     let label: HTMLLabelElement = createLabel(labeltext, componentMargin);
     label.htmlFor = id;
@@ -352,8 +338,7 @@ export function createLabelWithButton(labeltext: string, textContent: string, id
  * @param margin The margin for the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-export function createDiv(id?: string,
-    margin?: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+export function createDiv(id?: string, margin?: margin): HTMLDivElement {
     let div: HTMLDivElement = document.createElement("div");
     if (id != undefined) {
         div.id = id;
@@ -371,8 +356,7 @@ export function createDiv(id?: string,
  * @param margin The margin for the HTMLDivElement.
  * @returns An HTMLDivElement with a 'flex' display style and specified boundary.
  */
-export function createFlexDiv(id?: string,
-    margin?: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+export function createFlexDiv(id?: string, margin?: margin): HTMLDivElement {
     let div: HTMLDivElement = createDiv(id, margin);
     div.style.display = 'flex';
     div.style.flexWrap = 'wrap';
@@ -384,12 +368,11 @@ export function createFlexDiv(id?: string,
  * Create and return HTMLLabelElement.
  *
  * @param textContent The text content of the HTMLLabelElement.
- * @param margin The margin to go around the HTMLLabelElement.
+ * @param margin The margin for the HTMLLabelElement.
  * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */
-export function createLabel(textContent: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLLabelElement {
+export function createLabel(textContent: string, margin: margin): HTMLLabelElement {
     let label: HTMLLabelElement = document.createElement("label");
     Object.assign(label.style, margin);
     label.textContent = textContent;
@@ -403,8 +386,7 @@ export function createLabel(textContent: string,
  * @param margin The margin for the HTMLTableElement.
  * @returns A HTMLTableElement.
  */
-export function createTable(id: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLTableElement {
+export function createTable(id: string, margin: margin): HTMLTableElement {
     let table: HTMLTableElement = document.createElement('table');
     table.id = id;
     Object.assign(table.style, margin);

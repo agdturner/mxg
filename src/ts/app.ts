@@ -1,11 +1,8 @@
 // Imports from MXG modules.
 import { arrayToString, getID, isNumeric, mapToString } from './util.js';
 import { getFirstChildNode, getAttributes, getSingularElement, NumberNode } from './xml.js';
-import {
-    createLabelWithInput, getCollapsibleDiv, resizeInputElement, resizeSelectElement,
-    createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv,
-    s_button, createTable, addTableRow
-} from './html.js';
+import { addTableRow, createButton, createDiv, createFlexDiv, createLabel, createLabelWithInput, createLabelWithSelect,
+    createInput, createTable, getCollapsibleDiv, margin, resizeInputElement, resizeSelectElement, s_button} from './html.js';
 import { Molecule } from './xml_molecule.js';
 import { Reaction } from './xml_reaction.js';
 import { createMenu } from './gui_menu.js';
@@ -13,10 +10,8 @@ import { Conditions } from './xml_conditions.js';
 import { ModelParameters } from './xml_modelParameters.js';
 import { Control } from './xml_control.js';
 import { Mesmer, MoleculeList, ReactionList, Title, Description } from './xml_mesmer.js';
-import {
-    Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population,
-    PopulationList, RateList
-} from './xml_analysis.js';
+import { Analysis, Eigenvalue, EigenvalueList, FirstOrderLoss, FirstOrderRate, Pop, Population, PopulationList, 
+    RateList } from './xml_analysis.js';
 import { DCCreator, MetadataList, DCSource, DCDate, DCContributor } from './xml_metadata.js';
 import { Defaults } from './defaults.js';
 import { getAddFromLibraryButton, getAddMoleculeButton, processMoleculeList, setMoleculeID } from './gui_moleculeList.js';
@@ -55,9 +50,9 @@ let fontSize: string = "1.0em";
 let s_0px: string = "0px";
 let s_1px: string = "1px";
 let s_25px: string = "25px";
-export let level0 = { marginLeft: s_0px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_0px };
-export let level1 = { marginLeft: s_25px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_0px };
-export let boundary1 = { marginLeft: s_1px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_1px };
+export let level0: margin = { marginLeft: s_0px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_0px };
+export let level1: margin = { marginLeft: s_25px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_0px };
+export let boundary1: margin = { marginLeft: s_1px, marginTop: s_1px, marginBottom: s_1px, marginRight: s_1px };
 
 /**
  * Symbology for the GUI.
@@ -828,8 +823,7 @@ export function addOrRemoveInstructions(options: string[], add: boolean): void {
  */
 export function processNumber(id: string, tIDM: IDManager, name: string,
     getter: () => Big | undefined, setter: (value: Big) => void, remover: (name: string) => void,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    marginComponent: margin, margin: margin): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
@@ -887,12 +881,11 @@ export function processNumber(id: string, tIDM: IDManager, name: string,
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
 function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | undefined,
-    getter: () => Big | undefined, setter: (value: Big) => void,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    getter: () => Big | undefined, setter: (value: Big) => void, margin: margin) {
     let valueString: string;
     if (value == undefined) {
         valueString = "";
@@ -900,7 +893,7 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
         valueString = value.toString();
     }
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input: HTMLInputElement = createInput("text", id, boundary);
+    let input: HTMLInputElement = createInput("text", id, margin);
     input.addEventListener('click', (event: Event) => {
         valueString = input.value;
     });
@@ -935,8 +928,7 @@ function addNumber(div: HTMLDivElement, id: string, name: string, value: Big | u
  * @param margin The margin to go around the button.
  * @returns The button.
  */
-export function addRemoveButton(div: HTMLDivElement,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
+export function addRemoveButton(div: HTMLDivElement, margin: margin,
     removeFunction: (...args: any[]) => void, ...args: any[]): HTMLButtonElement {
     let button: HTMLButtonElement = createButton(s_Remove_sy_remove, undefined, margin);
     div.appendChild(button);
@@ -955,12 +947,13 @@ export function addRemoveButton(div: HTMLDivElement,
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
+ * @param remover The remover function.
+ * @param marginComponent The margin component.
  * @param margin The margin.
  */
 export function processString(id: string, iDs: Set<string>, name: string,
     getter: () => string | undefined, setter: (value: string) => void, remover: () => void,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    marginComponent: margin, margin: margin): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(id, margin);
     let buttonTextContentSelected: string = name + sy_selected;
     let buttonTextContentDeselected: string = name + sy_deselected;
@@ -1006,12 +999,11 @@ export function processString(id: string, iDs: Set<string>, name: string,
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
 function addString(div: HTMLDivElement, id: string, name: string, value: string | undefined,
-    setter: (value: string) => void,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    setter: (value: string) => void, margin: margin): void {
     let valueString: string;
     if (value == undefined) {
         valueString = "";
@@ -1019,7 +1011,7 @@ function addString(div: HTMLDivElement, id: string, name: string, value: string 
         valueString = value.toString();
     }
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input: HTMLInputElement = createInput("text", id, boundary);
+    let input: HTMLInputElement = createInput("text", id, margin);
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
         setter(target.value);
@@ -1057,15 +1049,13 @@ function displayXML(xmlFilename: string, xml: string) {
  * @param divToAddTo The input div.
  * @param id The id.
  * @param tagOrDictRef The tag or dictionary reference.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
 export function addAnyUnits(units: string[] | undefined, attributes: Map<string, string>, divToAddTo: HTMLDivElement,
-    elementToInsertBefore: HTMLElement | null, id: string, tagOrDictRef: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+    elementToInsertBefore: HTMLElement | null, id: string, tagOrDictRef: string, margin: margin, level: margin): void {
     if (units != undefined) {
-        let lws: HTMLDivElement | undefined = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, boundary, level);
+        let lws: HTMLDivElement | undefined = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, margin, level);
         if (lws != undefined) {
             divToAddTo.insertBefore(lws, elementToInsertBefore);
         }
@@ -1085,8 +1075,7 @@ export function addAnyUnits(units: string[] | undefined, attributes: Map<string,
  * @returns A select element for setting the units or undefined if there is not attribute for units.
  */
 function getUnitsLabelWithSelect(units: string[], attributes: Map<string, string>, id: string, tagOrDictRef: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement | undefined {
+    boundary: margin, level: margin): HTMLDivElement | undefined {
     let psUnits: string | undefined = attributes.get("units");
     if (psUnits != undefined) {
         // Get a select element for setting the units.
@@ -1732,7 +1721,7 @@ export function addSaveAsPNGButton(canvas: HTMLCanvasElement, divToAddTo: HTMLEl
  * @param name The name to be appended to the file.
  */
 export function addSaveAsCSVButton(toCSV: Function, divToAddTo: HTMLElement, elementToInsertBefore: HTMLElement, name: string,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    margin: margin): void {
     let bID = addRID(divToAddTo.id, s_button, s_save);
     let b: HTMLButtonElement = createButton("Save as CSV", bID, margin);
     divToAddTo.insertBefore(b, elementToInsertBefore);
