@@ -17,7 +17,8 @@ import { Control, ForceMacroDetailedBalance, CalculateRateCoefficientsOnly, Prin
     SensitivityVarRedMethod } from "./xml_control";
 import { createDiv, getCollapsibleDiv, createFlexDiv, createLabel, createButton, createInput, 
     resizeInputElement, s_button, createLabelWithInput, createLabelWithSelect, resizeSelectElement, 
-    createSelectElement } from "./html";
+    createSelectElement, 
+    margin} from "./html";
 import { Mesmer } from "./xml_mesmer";
 import { mapToString, getID, isNumeric } from "./util";
 import { getAttributes, getNodeValue, getFirstChildNode } from "./xml";
@@ -287,8 +288,8 @@ function createInputControlItem(control: Control, div: HTMLDivElement, obj: any,
  * @param removeControlMethod The remove control method.
  */
 function handleControl(control: Control, cDiv: HTMLDivElement, controlIDs: IDManager, onOffControls: Map<string, HTMLButtonElement> | null,
-    xml_control: Element | null, level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string } | null,
-    ControlClass: any, setControlMethod: (value: any) => void, removeControlMethod: () => void, handleInput: boolean = false): void {
+    xml_control: Element | null, level: margin | null, ControlClass: any, setControlMethod: (value: any) => void, 
+    removeControlMethod: () => void, handleInput: boolean = false): void {
     let tagName: string = ControlClass.tagName;
     let buttonTextContentSelected: string = tagName + sy_selected;
     let buttonTextContentDeselected: string = tagName + sy_deselected;
@@ -363,7 +364,7 @@ function handleControl(control: Control, cDiv: HTMLDivElement, controlIDs: IDMan
  * @param level The level.
  */
 function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDM: IDManager, xml_control: Element | null,
-    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+    level: margin): void {
     //console.log("handleCalcMethod " + (xml_control == null));
     let div: HTMLDivElement = createFlexDiv(undefined, level);
     cDiv.appendChild(div);
@@ -450,7 +451,7 @@ function handleCalcMethod(control: Control, cDiv: HTMLDivElement, controlIDM: ID
  * @param level The level.
  */
 function handleTestMicroRates(control: Control, cDiv: HTMLDivElement, controlIDM: IDManager, xml_control: Element | null,
-    level: { marginLeft?: string; marginTop?: string; marginBottom?: string; marginRight?: string }): void {
+    level: margin): void {
     let tagName: string = TestMicroRates.tagName;
     let divID = controlIDM.addID(cDiv.id, tagName);
     let div: HTMLDivElement = createFlexDiv(divID, level);
@@ -772,8 +773,7 @@ function processCalcMethodFitting(divCmDetails: HTMLDivElement, cm: CalcMethodFi
  */
 function processCalcMethodMarquardt(divCmDetails: HTMLDivElement, cm: CalcMethodMarquardt) {
     function createLabelWithInputForObject(obj: { value: Big, tagName: string }, divCmDetails: HTMLElement,
-        boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-        level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+        boundary: margin, level: margin): void {
         let id = getID(divCmDetails.id, obj.tagName, s_input);
         let value = obj.value.toString();
         let labelTextContent = obj.tagName;

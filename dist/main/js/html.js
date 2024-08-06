@@ -17,7 +17,7 @@ exports.s_select = "select";
  * @param elementToInsertBefore The element to insert before. (If null then the content will be appended to the div.)
  * @param content The content to expand/collapse.
  * @param buttonLabel The label for the button.
- * @param buttonMargin The margin for the button.
+ * @param componentMargin The margin for the button.
  * @param margin The margin for HTMLDivElement created.
  * @returns A HTMLDivElement containing a HTMLButtonElement and the content.
  */
@@ -290,14 +290,14 @@ exports.createLabelWithSelect = createLabelWithSelect;
  * @param margin The margin to go around the HTMLButtonElement.
  * @returns An HTMLButtonElement with the textContent and specified margin.
  */
-function createButton(textContent, id, boundary) {
+function createButton(textContent, id, margin) {
     let button = document.createElement('button');
     button.textContent = textContent;
     if (id != undefined) {
         button.id = id;
     }
-    if (boundary != undefined) {
-        Object.assign(button.style, boundary);
+    if (margin != undefined) {
+        Object.assign(button.style, margin);
     }
     button.style.fontSize = '1em'; // Set the font size with a relative unit.
     return button;
@@ -358,7 +358,7 @@ exports.createFlexDiv = createFlexDiv;
  * Create and return HTMLLabelElement.
  *
  * @param textContent The text content of the HTMLLabelElement.
- * @param margin The margin to go around the HTMLLabelElement.
+ * @param margin The margin for the HTMLLabelElement.
  * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */

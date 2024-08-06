@@ -555,8 +555,7 @@ function removeReaction(rlDiv: HTMLDivElement, rcDiv: HTMLDivElement, rIDM: IDMa
  * @param molecules The molecules map.
  */
 export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: string,
-    reactions: Map<string, Reaction>,
-    molecules: Map<string, Molecule>): HTMLDivElement {
+    reactions: Map<string, Reaction>, molecules: Map<string, Molecule>): HTMLDivElement {
     let bid: string = getID(rsDivID, s_button);
     let rcb: HTMLButtonElement = document.querySelector(bid) as HTMLButtonElement;
     // Create div to contain the reaction list.
@@ -1017,6 +1016,6 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: 
         console.warn("No reaction elements found! Please add a reaction in reactionList.");
     }
     // Add a button to add a reaction.
-    getAddReactionButton(rIDM, rlDiv, reactions, molecules);
+    //getAddReactionButton(rIDM, rlDiv, reactions, molecules);
     return rlDiv;
 }

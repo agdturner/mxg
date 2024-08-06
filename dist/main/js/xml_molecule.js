@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Molecule = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.ElectronicExcitation = exports.EinsteinBij = exports.EinsteinAij = exports.Hessian = exports.Sigma = exports.Epsilon = exports.SpinMultiplicity = exports.MW = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.TSOpticalSymmetryNumber = exports.SymmetryNumber = exports.RotConsts = exports.Hf298 = exports.HfAT0 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalarNumber = exports.PropertyScalarString = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.State = exports.States = exports.DensityOfStatesList = exports.DensityOfStates = exports.Sumg = exports.Sumc = exports.Qtot = exports.ReservoirSize = exports.ExtraDOSCMethod = exports.Periodicity = exports.HinderedRotorPotential = exports.ThermoTable = exports.ThermoValue = exports.DistributionCalcMethod = exports.PotentialPoint = exports.BondRef = exports.DOSCMethod = exports.EnergyTransferModel = exports.DeltaEDownLinEne = exports.DeltaEDownTExponent = exports.DeltaEDown2 = exports.DeltaEDown = exports.PropertyList = exports.ImFreqs = exports.ElectronicExcitation = exports.EinsteinBij = exports.EinsteinAij = exports.Hessian = exports.Sigma = exports.Epsilon = exports.SpinMultiplicity = exports.MW = exports.VibFreqs = exports.FrequenciesScaleFactor = exports.TSOpticalSymmetryNumber = exports.SymmetryNumber = exports.RotConsts = exports.Hf298 = exports.HfAT0 = exports.Hf0 = exports.ZPE = exports.Property = exports.PropertyMatrix = exports.PropertyArray = exports.PropertyScalarNumber = exports.PropertyScalarString = exports.BondArray = exports.Bond = exports.AtomArray = exports.Atom = void 0;
+exports.Molecule = void 0;
 const big_js_1 = require("big.js");
 const xml_range_js_1 = require("./xml_range.js");
 const util_js_1 = require("./util.js");
@@ -2592,6 +2593,169 @@ class DensityOfStatesList extends xml_js_1.NodeWithNodes {
 }
 exports.DensityOfStatesList = DensityOfStatesList;
 /**
+ * The attributes may include "units".
+ * In the XML, a "me:States" node is a child node of a "molecule" node
+ */
+class States extends xml_js_1.NodeWithNodes {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:States";
+    /**
+     * The index.
+     * The keys are the id of the states and the values are the node indexes.
+     */
+    index;
+    /**
+     * @param attributes The attributes.
+     */
+    constructor(attributes, states) {
+        super(attributes, States.tagName);
+        this.index = new Map();
+        if (states) {
+            let i = 0;
+            states.forEach((state) => {
+                this.nodes.set(this.nodes.size, state); // Add the state to the nodes.
+                this.index.set(state.id, i); // Add the index of the state to the index.
+                i++;
+            });
+        }
+    }
+    /**
+     * @returns The next id.
+     */
+    getNextId() {
+        let i = 0;
+        while (this.index.has(i)) {
+            i++;
+        }
+        return i;
+    }
+    /**
+     * @returns The states.
+     */
+    getStates() {
+        let states = [];
+        this.nodes.forEach((node) => {
+            states.push(node);
+        });
+        return states;
+    }
+    /**
+     * @param id The id of the state.
+     * @returns The state at the given index.
+     */
+    getState(id) {
+        return this.nodes.get(this.index.get(id));
+    }
+    /**
+     * Set the state at the given index.
+     * @param i The index.
+     * @param state The state.
+     */
+    setState(i, state) {
+        this.nodes.set(this.index.get(state.id), state);
+    }
+    /**
+     * Add the state.
+     * @param state The state.
+     * @returns The index of the state added.
+     */
+    addState(state) {
+        let i;
+        if (this.index.has(state.id)) {
+            // A state with this id already exists, replace it.
+            i = this.index.get(state.id);
+            this.nodes.set(i, state);
+        }
+        else {
+            // Add the state to the nodes.
+            i = this.nodes.size;
+            this.index.set(state.id, i);
+            this.nodes.set(i, state);
+        }
+        return this.nodes.size - 1;
+    }
+    /**
+     * Remove the state at the given index.
+     * @param id The id of the state to remove.
+     */
+    removeState(id) {
+        console.log("Removing state with id " + id);
+        let i = this.index.get(id);
+        console.log("Removing state at index " + i);
+        this.nodes.delete(i);
+    }
+}
+exports.States = States;
+/**
+ * <me:State energy="0.0" degeneracy="4"/>
+ * In the XML, a "me:State" node is a child node of a "me:States" node.
+ */
+class State extends xml_js_1.TagWithAttributes {
+    /**
+     * The tag name.
+     */
+    static tagName = "me:State";
+    /**
+     * The key for the energy attribute value.
+     */
+    static s_energy = "energy";
+    /**
+     * The key for the degeneracy attribute value.
+     */
+    static s_degeneracy = "degeneracy";
+    /**
+     * The id of the state.
+     */
+    id;
+    /**
+     * @param attributes The attributes.
+     * @param id The index.
+     */
+    constructor(attributes, id) {
+        super(attributes, State.tagName);
+        this.id = id;
+    }
+    /**
+     * @returns The energy of the state.
+     */
+    getEnergy() {
+        return new big_js_1.Big(this.attributes.get(State.s_energy));
+    }
+    /**
+     * @param energy The energy of the state.
+     */
+    setEnergy(energy) {
+        this.attributes.set(State.s_energy, energy.toString());
+    }
+    /**
+     * Remove the energy attribute.
+     */
+    removeEnergy() {
+        this.attributes.delete(State.s_energy);
+    }
+    /**
+     * @returns The degeneracy of the state.
+     */
+    getDegeneracy() {
+        return new big_js_1.Big(this.attributes.get(State.s_degeneracy));
+    }
+    /**
+     * @param degeneracy The degeneracy of the state.
+     */
+    setDegeneracy(degeneracy) {
+        this.attributes.set(State.s_degeneracy, degeneracy.toString());
+    }
+    /**
+     * Remove the degeneracy attribute.
+     */
+    removeDegeneracy() {
+        this.attributes.delete(State.s_degeneracy);
+    }
+}
+exports.State = State;
+/**
  * The attributes may include "description" and "active" (and possibly others).
  * In the XML, a "molecule" node is a child node of a "moleculeList" node.
  */
@@ -2643,7 +2807,7 @@ class Molecule extends xml_js_1.NodeWithNodes {
      * @param reservoirSize The reservoir size.
      * @param tt The thermo table.
      */
-    constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt) {
+    constructor(attributes, id, metadataList, atoms, bonds, properties, energyTransferModel, dOSCMethod, distributionCalcMethod, extraDOSCMethods, reservoirSize, tt, states) {
         super(attributes, Molecule.tagName);
         //this.label = this.getID();
         this.index = new Map();
@@ -2706,9 +2870,15 @@ class Molecule extends xml_js_1.NodeWithNodes {
             this.index.set(ReservoirSize.tagName, i);
             i++;
         }
+        // ThermoTable
         if (tt) {
             this.nodes.set(i, tt);
             this.index.set(ThermoTable.tagName, i);
+        }
+        // States
+        if (states) {
+            this.nodes.set(i, states);
+            this.index.set(States.tagName, i);
         }
     }
     /**
@@ -3053,6 +3223,32 @@ class Molecule extends xml_js_1.NodeWithNodes {
         }
         else {
             this.nodes.set(i, tt);
+        }
+    }
+    /**
+     * @returns The states of the molecule.
+     */
+    getStates() {
+        let i = this.index.get(States.tagName);
+        if (i == undefined) {
+            return undefined;
+        }
+        else {
+            return this.nodes.get(i);
+        }
+    }
+    /**
+     * Set the states.
+     * @param states The states.
+     */
+    setStates(states) {
+        let i = this.index.get(States.tagName);
+        if (i == undefined) {
+            this.index.set(States.tagName, this.nodes.size);
+            this.addNode(states);
+        }
+        else {
+            this.nodes.set(i, states);
         }
     }
     /**

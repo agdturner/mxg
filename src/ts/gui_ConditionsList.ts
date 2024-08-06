@@ -4,7 +4,7 @@ import { boundary1, addRID, s_container, level1, addRemoveButton, mesmer, remove
     selectAnotherOptionEventListener, setNumberNode, IDManager, s_Add_from_spreadsheet, big0 } from "./app";
 import { Conditions, BathGas, PTs, PTpair, ExperimentalRate, ExperimentalYield, ExperimentalEigenvalue } from "./xml_conditions";
 import { createDiv, getCollapsibleDiv, createButton, s_button, createFlexDiv, createInput, createLabelWithInput, 
-    resizeInputElement, createSelectElement, resizeSelectElement, s_select } from "./html";
+    resizeInputElement, createSelectElement, resizeSelectElement, s_select, margin } from "./html";
 import { Mesmer } from "./xml_mesmer";
 import { Molecule } from "./xml_molecule";
 import { getID } from "./util";
@@ -425,8 +425,7 @@ function addConditions(attributes: Map<string, string>, i: number): Conditions {
  * @param level The level.
  */
 function createPTpairDiv(pTs: PTs, pTsDiv: HTMLDivElement, pTpair: PTpair, cDivID: string, pTIndex: number,
-    moleculeKeys: Set<string>,
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    moleculeKeys: Set<string>, level: margin): HTMLDivElement {
     let pTpairDiv: HTMLDivElement = createFlexDiv(addRID(pTsDiv.id, pTIndex), level);
     addPorT(pTpairDiv, PTpair.s_P, pTpair.getP.bind(pTpair), pTpair.setP.bind(pTpair)); // The binding is necessary to maintain the correct "this".
     addAnyUnits(Mesmer.pressureUnits, pTpair.attributes, pTpairDiv, null, PTpair.tagName, PTpair.tagName, boundary1, level1);

@@ -1,30 +1,23 @@
 import Big from 'big.js';
-import {
-    s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addOptionByClassName, s_description, mesmer,
+import { s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addOptionByClassName, s_description, mesmer,
     s_save, remove, getMolecule, getMoleculeKeys, libmols, removeOptionByClassName, addOrRemoveInstructions,
     s_selectOption, selectAnotherOptionEventListener, sy_edit, sy_deselected, sy_selected, s_input, s_optionOff,
-    s_optionOn, processNumber, addRemoveButton, s_table, addSaveAsCSVButton, s_undefined, addAnyUnits,
-    s_Add_from_library, IDManager, s_viewer, big0, redrawReactionsDiagram, getN, processString, s_textarea, setNumberNode
-} from './app.js';
+    s_optionOn, processNumber, addRemoveButton, s_table, addSaveAsCSVButton, s_undefined, addAnyUnits, s_Add_from_library,
+    IDManager, s_viewer, big0, redrawReactionsDiagram, getN, processString, s_textarea, setNumberNode } from './app.js';
 import { BathGas } from './xml_conditions.js';
-import {
-    createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
-    createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv,
-    createLabelWithTextArea, resizeTextAreaElement, s_button, sy_upTriangle, sy_downTriangle, createTextArea,
-    createTable, addTableRow, s_select
-} from './html.js';
+import { createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
+    createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv, createLabelWithTextArea, 
+    margin, resizeTextAreaElement, s_button, sy_upTriangle, createTextArea, createTable, addTableRow, s_select } from './html.js';
 import { Description, Mesmer, MoleculeList, T } from './xml_mesmer.js';
 import { MetadataList, Metadata } from './xml_metadata.js';
-import {
-    Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList,
+import { Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList,
     DistributionCalcMethod, EinsteinAij, EinsteinBij, ElectronicExcitation, EnergyTransferModel, Epsilon, ExtraDOSCMethod,
     FrequenciesScaleFactor, Hessian, Hf0, Hf298, HfAT0, HinderedRotorPotential, MW, Molecule, Periodicity,
     PotentialPoint, Property, PropertyArray, PropertyList, PropertyMatrix, PropertyScalarNumber, PropertyScalarString,
     Qtot, ReservoirSize, RotConsts, Sigma, SpinMultiplicity, State, States, Sumc, Sumg, SymmetryNumber, TSOpticalSymmetryNumber,
-    ThermoTable, ThermoValue, VibFreqs, ZPE
-} from './xml_molecule.js';
+    ThermoTable, ThermoValue, VibFreqs, ZPE } from './xml_molecule.js';
 import { arrayToString, bigArrayToString, getID, isNumeric, mapToString, toNumberArray } from './util.js';
-import { getSingularElement, getAttributes, getNodeValue, getFirstChildNode, getInputString, NumberArrayNode, NumberNode } from './xml.js';
+import { getSingularElement, getAttributes, getNodeValue, getFirstChildNode, getInputString, NumberArrayNode } from './xml.js';
 
 /**
  * Create an add molecule button.
@@ -38,7 +31,10 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
     let addMoleculeButton: HTMLButtonElement = createButton(s_Add_sy_add, undefined, level1);
     mlDiv.appendChild(addMoleculeButton);
     addMoleculeButton.addEventListener('click', () => {
-        let mid: string = setMoleculeID(true, undefined, undefined, molecules);
+        let mid: string | undefined = setMoleculeID(true, undefined, undefined, molecules);
+        if (mid == undefined) {
+            return;
+        }
         console.log("mid=" + mid);
         let m: Molecule = new Molecule(new Map(), mid);
         m.setID(mid);
@@ -151,12 +147,95 @@ export function getAddMoleculeButton(mlDiv: HTMLDivElement, mIDM: IDManager,
         // Add me:ReservoirSize
         addReservoirSize(m, mIDM, plDiv, pl);
         */
+
+        // Add me:States
+        let statesDivID: string = mIDM.addID(mDivID, States.tagName);
+        let statesDiv: HTMLDivElement = createDiv(statesDivID);
+        let statescDivID = mIDM.addID(statesDivID, s_container);
+        let statescDiv: HTMLDivElement = getCollapsibleDiv(statescDivID, mDiv, null, statesDiv, States.tagName, boundary1, level1);
+        let states: States | undefined = m.getStates();
+        if (states == undefined) {
+            states = new States(new Map());
+            m.setStates(states);
+        }
+        console.log("states.index.size" + states.nodes.size);
+        // Add an add me:State button.
+        addAddStateButton(mIDM, statesDiv, states, statesDivID, level1);
+
         // Add a remove molecule button.
         addRemoveButton(mDiv, level1, () => {
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     });
     return addMoleculeButton;
+}
+
+/**
+ * Adds an add state button.
+ * @param mIDM The IDManager for molecule divs.
+ * @param statesDiv The States HTMLDivElement.
+ * @param states The States.
+ * @param statesDivID The States div ID.
+ * @param margin The margin.
+ */
+function addAddStateButton(mIDM: IDManager, statesDiv: HTMLDivElement, states: States, statesDivID: string, margin: margin): void {
+    let addStateButton: HTMLButtonElement = createButton(s_Add_sy_add, getID(statesDivID, State.tagName, s_Add_sy_add, s_button), margin);
+    statesDiv.appendChild(addStateButton);
+    addStateButton.addEventListener('click', () => {
+        let stateAttributes: Map<string, string> = new Map();
+        stateAttributes.set(State.s_energy, "0");
+        stateAttributes.set(State.s_degeneracy, "0");
+        let stateId: number = states!.getNextId();
+        let state: State = new State(stateAttributes, stateId);
+        console.log("stateId=" + stateId);
+        let index = states!.addState(state);
+        let stateDivID: string = mIDM.addID(statesDivID, State.tagName, state.id);
+        let stateDiv: HTMLDivElement = createFlexDiv(stateDivID);
+        statesDiv.insertBefore(stateDiv, addStateButton);
+        // Add energy.
+        let energyDivID: string = mIDM.addID(stateDivID, State.s_energy);
+        let energyDiv: HTMLDivElement = createFlexDiv(energyDivID);
+        stateDiv.appendChild(energyDiv);
+        let energyValue: Big = state.getEnergy();
+        let elwi: HTMLDivElement = createLabelWithInput(State.s_energy, energyDivID, boundary1, level1, (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the input is a number.
+            if (isNumeric(target.value)) {
+                energyValue = new Big(target.value);
+                state.setEnergy(energyValue);
+            } else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = energyValue.toString() ?? s_undefined;
+            }
+            resizeInputElement(target);
+        }, energyValue.toString(), State.s_energy);
+        energyDiv.appendChild(elwi);
+        // Add degeneracy.
+        let degeneracyDivID: string = mIDM.addID(stateDivID, State.s_degeneracy);
+        let degeneracyDiv: HTMLDivElement = createFlexDiv(degeneracyDivID);
+        stateDiv.appendChild(degeneracyDiv);
+        let degeneracyValue: Big = state.getDegeneracy();
+        let dlwi = createLabelWithInput(State.s_degeneracy, degeneracyDivID, boundary1, boundary1, (event: Event) => {
+            let target = event.target as HTMLInputElement;
+            // Check the input is a number.
+            if (isNumeric(target.value)) {
+                degeneracyValue = new Big(target.value);
+                state.setDegeneracy(degeneracyValue);
+            } else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = degeneracyValue.toString() ?? s_undefined;
+            }
+            resizeInputElement(target);
+        }, degeneracyValue.toString(), State.s_degeneracy);
+        degeneracyDiv.appendChild(dlwi);
+        // Add a remove me:State button.
+        addRemoveButton(stateDiv, boundary1, () => {
+            states!.removeState(index);
+            statesDiv.removeChild(stateDiv);
+        });
+    });
 }
 
 /**
@@ -438,8 +517,13 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             let label: string = selectedOption.value;
             let molecule: Molecule = libmols.get(label)!;
             //let molecule: Molecule = getMolecule(label, libmols)!;
-            let mid: string = molecule.getID();
-            mid = setMoleculeID(true, mid, molecule, molecules);
+            let mid: string | undefined = molecule.getID();
+            while (true) {
+                mid = setMoleculeID(true, mid, molecule, molecules);
+                if (mid != undefined) {
+                    break;
+                }
+            }
             molecules.set(mid, molecule);
             // Add molecule to the MoleculeList.
             let mDivID: string = mIDM.addID(Molecule.tagName, molecules.size);
@@ -760,9 +844,59 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
             if (states != undefined) {
                 states.getStates().forEach((s) => {
                     console.log(s.toString());
+                    // Add state.
+                    let sDivID: string = getID(ssDivID, State.tagName, s.id);
+                    let sDiv: HTMLDivElement = createFlexDiv(sDivID);
+                    ssDiv.appendChild(sDiv);
+                    // Add energy.
+                    let energyDivID: string = mIDM.addID(sDivID, State.s_energy);
+                    let energy: Big = s.getEnergy();
+                    let elwi: HTMLDivElement = createLabelWithInput(State.s_energy, energyDivID, boundary1, level1, (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        // Check the input is a number.
+                        if (isNumeric(target.value)) {
+                            energy = new Big(target.value);
+                            s.setEnergy(energy);
+                        } else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = energy.toString() ?? s_undefined;
+                        }
+                        resizeInputElement(target);
+                    }, energy.toString(), State.s_energy);
+                    sDiv.appendChild(elwi);
+                    // Add degeneracy.
+                    let degeneracyDivID: string = mIDM.addID(sDivID, State.s_degeneracy);
+                    let degeneracy: Big = s.getDegeneracy();
+                    let dlwi: HTMLDivElement = createLabelWithInput(State.s_degeneracy, degeneracyDivID, boundary1, boundary1, (event: Event) => {
+                        let target = event.target as HTMLInputElement;
+                        // Check the input is a number.
+                        if (isNumeric(target.value)) {
+                            degeneracy = new Big(target.value);
+                            s.setDegeneracy(degeneracy);
+                        } else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = degeneracy.toString() ?? s_undefined;
+                        }
+                        resizeInputElement(target);
+                    }, degeneracy.toString(), State.s_degeneracy);
+                    sDiv.appendChild(dlwi);
+                    // Add a remove state button.
+                    addRemoveButton(sDiv, boundary1, () => {
+                        states!.removeState(s.id);
+                        sDiv.remove();
+                    });
+                    /*
+                    // Add a move up button.
+                    sDiv.appendChild(getMoveUpButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    // Add a move down button.
+                    sDiv.appendChild(getMoveDownButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    */
                 });
             }
-            
+            // Add an add state button.
+            //ssDiv.appendChild(getAddStateButton(mIDM, molecule, ssDiv, State.tagName, boundary1, level1));
 
             // Remove the select element.
             selectDiv.remove();
@@ -781,12 +915,12 @@ export function getAddFromLibraryButton(mlDiv: HTMLDivElement, amb: HTMLButtonEl
  * @param ask If true, the user is prompted to enter the molecule ID. If false, the molecule ID is set to the mid parameter 
  * which must not be undefined.
  * @param mid The initial molecule ID before checks.
- * @param molecule The molecule to set the ID foradd.
+ * @param molecule The molecule to set the ID for.
  * @param molecules The molecules map.
  * @returns The molecule ID set.
  */
 export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: Molecule | undefined,
-    molecules: Map<string, Molecule>): string {
+    molecules: Map<string, Molecule>): string | undefined {
     let mid2: string | null;
     while (true) {
         // Ask the user to specify the molecule ID.
@@ -796,7 +930,8 @@ export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: M
             mid2 = mid!;
         }
         if (mid2 == null) {
-            alert("The molecule ID cannot be null.");
+            //alert("The molecule ID cannot be null.");
+            return undefined;
         } else if (mid2 == "") {
             alert("The molecule ID cannot be empty.");
         } else if (molecules.has(mid2)) {
@@ -830,18 +965,22 @@ export function setMoleculeID(ask: boolean, mid: string | undefined, molecule: M
  * @param level 
  */
 function addEditIDButton(molecule: Molecule, molecules: Map<string, Molecule>, button: HTMLButtonElement,
-    mIDM: IDManager, mDiv: HTMLDivElement,
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    mIDM: IDManager, mDiv: HTMLDivElement, level: margin) {
     let s_editName: string = sy_edit + " Edit id";
     let editNameButtonID: string = mIDM.addID(mDiv.id, s_editName, s_button);
     let editNameButton: HTMLButtonElement = createButton(s_editName, editNameButtonID, level);
     mDiv.appendChild(editNameButton);
     editNameButton.addEventListener('click', () => {
-        let mid: string = molecule.getID();
+        let mid: string | undefined = molecule.getID();
         // Update the BathGas select elements.
         removeOptionByClassName(BathGas.tagName, molecule.getID());
         molecules.delete(mid);
-        mid = setMoleculeID(true, mid, molecule, molecules);
+        while (true) {
+            mid = setMoleculeID(true, mid, molecule, molecules);
+            if (mid != undefined) {
+                break;
+            }
+        }
         // Update the BathGas select elements.
         addOptionByClassName(BathGas.tagName, mid);
         button.textContent = molecule.getLabel() + " " + sy_upTriangle;
@@ -857,8 +996,7 @@ function addEditIDButton(molecule: Molecule, molecules: Map<string, Molecule>, b
  * @param margin The boundary.
  */
 function processDescription(id: string, mIDM: IDManager, getter: () => string | undefined, setter: (value: string) => void,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    marginDiv: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    marginComponent: margin, marginDiv: margin): HTMLDivElement {
     let div: HTMLDivElement = createFlexDiv(undefined, marginDiv);
     let buttonTextContentSelected: string = s_description + sy_selected;
     let buttonTextContentDeselected: string = s_description + sy_deselected;
@@ -898,18 +1036,17 @@ function processDescription(id: string, mIDM: IDManager, getter: () => string | 
  * @param id The id.
  * @param value The description value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The margin.
  */
 function addDescription(div: HTMLDivElement, id: string, value: string | undefined,
-    setter: (value: string) => void,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    setter: (value: string) => void, margin: margin): void {
     let valueString: string;
     if (value == undefined) {
         valueString = "";
     } else {
         valueString = value;
     }
-    let input: HTMLInputElement = createInput("text", id, boundary);
+    let input: HTMLInputElement = createInput("text", id, margin);
     input.addEventListener('change', (event: Event) => {
         let target = event.target as HTMLInputElement;
         setter(target.value);
@@ -935,8 +1072,7 @@ function addDescription(div: HTMLDivElement, id: string, value: string | undefin
  * @returns The add bond button.
  */
 function getAddAtomButton(mIDM: IDManager, molecule: Molecule, aaDiv: HTMLDivElement, typeID: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
+    boundary: margin, level: margin): HTMLButtonElement {
     // Create an add atom button.
     let button: HTMLButtonElement = createButton(s_Add_sy_add, mIDM.addID(aaDiv.id, "Add" + typeID + "Button"), level);
     button.addEventListener('click', () => {
@@ -948,12 +1084,21 @@ function getAddAtomButton(mIDM: IDManager, molecule: Molecule, aaDiv: HTMLDivEle
     return button;
 }
 
-function addMetadata(m: Molecule, md: Metadata, ml: MetadataList, mdDivID: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+/**
+ * Adds metadata.
+ * @param m The molecule.
+ * @param md The metadata.
+ * @param ml The metadata list.
+ * @param mdDivID The metadata div id.
+ * @param boundary The margin for components.
+ * @param level The margin for the div.
+ * @returns The metadata div.
+ */
+function addMetadata(m: Molecule, md: Metadata, ml: MetadataList, mdDivID: string, boundary: margin,
+    level: margin): HTMLDivElement {
     ml.addMetadata(md);
-    let mdDiv = createFlexDiv(mdDivID, level1);
-    mdDiv.appendChild(createLabel(m.getLabel(), boundary1));
+    let mdDiv = createFlexDiv(mdDivID, level);
+    mdDiv.appendChild(createLabel(m.getLabel(), boundary));
     return mdDiv;
 }
 
@@ -967,8 +1112,7 @@ function addMetadata(m: Molecule, md: Metadata, ml: MetadataList, mdDivID: strin
  * @returns A new div for the atom.
  */
 function addAtom(addToArray: boolean, mIDM: IDManager, molecule: Molecule, aaDivID: string, aa: AtomArray, a: Atom,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    boundary: margin, level: margin): HTMLDivElement {
     let aID: string;
     if (addToArray) {
         aID = aa.addAtom(a, a.getID());
@@ -1029,8 +1173,7 @@ function removeAtom(molecule: Molecule, aID: string, aIDs: Set<string>) {
  * @param margin The margin for the components.
  * @returns A HTMLDivElement containing the HTMLLabelElement and HTMLSelectElement elements.
  */
-function processElementType(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, first: boolean,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+function processElementType(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, first: boolean, margin: margin): HTMLDivElement {
     let elementType: string | undefined = a.getElementType();
     //console.log("Atom.s_elementType " + elementType);
     let selectTypes: string[] = Mesmer.elementTypes;
@@ -1065,9 +1208,8 @@ function processElementType(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, firs
  * @param marginComponent The margin for the components.
  * @param margin The margin.
  */
-function processCoordinates(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+function processCoordinates(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement, marginComponent: margin,
+    margin: margin): void {
     let id: string;
     //id = mIDM.addID(aDiv.id, Atom.s_x3);
     id = getID(aDiv.id, Atom.s_x3);
@@ -1093,8 +1235,7 @@ function processCoordinates(mIDM: IDManager, a: Atom, aDiv: HTMLDivElement,
  * @returns The add bond button.
  */
 function getAddBondButton(mIDM: IDManager, molecule: Molecule, baDiv: HTMLDivElement, typeID: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLButtonElement {
+    boundary:margin, level: margin): HTMLButtonElement {
     // Create an add button.
     let id = mIDM.addID(baDiv.id, typeID, s_button);
     let button: HTMLButtonElement = createButton(s_Add_sy_add, id, level);
@@ -1124,8 +1265,7 @@ function getAddBondButton(mIDM: IDManager, molecule: Molecule, baDiv: HTMLDivEle
  * @returns The a new div for the bond.
  */
 function addBond(addToArray: boolean, mIDM: IDManager, molecule: Molecule, baDivID: string, atoms: Map<string, Atom>, ba: BondArray, b: Bond,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    boundary: margin, level: margin): HTMLDivElement {
     let bID: string;
     if (addToArray) {
         bID = ba.addBond(b, b.getID());
@@ -1161,7 +1301,7 @@ function addBond(addToArray: boolean, mIDM: IDManager, molecule: Molecule, baDiv
  * @param margin The margin for the components.
  */
 function processAtomRefs2(mIDM: IDManager, molecule: Molecule, bDiv: HTMLDivElement, bond: Bond,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    margin: margin) {
     //let id = mIDM.addID(bDiv.id, Bond.s_atomRefs2);
     let id = getID(bDiv.id, Bond.s_atomRefs2);
     //bIDs.add(id);
@@ -1212,8 +1352,7 @@ function processAtomRefs2(mIDM: IDManager, molecule: Molecule, bDiv: HTMLDivElem
  * @param bond The bond.
  * @param margin The margin for components.
  */
-function processOrder(mIDM: IDManager, bondDiv: HTMLDivElement, bond: Bond,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+function processOrder(mIDM: IDManager, bondDiv: HTMLDivElement, bond: Bond, margin: margin): void {
     //let id = mIDM.addID(bondDiv.id, Bond.s_order);
     let id = getID(bondDiv.id, Bond.s_order);
     let div: HTMLDivElement = createFlexDiv(undefined, margin);
@@ -1259,8 +1398,7 @@ function processOrder(mIDM: IDManager, bondDiv: HTMLDivElement, bond: Bond,
  * @param value The order value.
  * @param boundary The boundary.
  */
-function addOrder(div: HTMLDivElement, bond: Bond, id: string, value: number,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+function addOrder(div: HTMLDivElement, bond: Bond, id: string, value: number, boundary: margin) {
     let valueString: string = value.toString();
     let select: HTMLSelectElement = createSelectElement(Bond.orderOptions, Bond.s_order, valueString, id, boundary);
     select.addEventListener('change', (event: Event) => {
@@ -1280,8 +1418,7 @@ function addOrder(div: HTMLDivElement, bond: Bond, id: string, value: number,
  * @param hrpDiv The HinderedRotorPotential div.
  * @param margin The margin for components.
  */
-function processUseSineTerms(mIDM: IDManager, hrpDiv: HTMLDivElement, hrp: HinderedRotorPotential,
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+function processUseSineTerms(mIDM: IDManager, hrpDiv: HTMLDivElement, hrp: HinderedRotorPotential, margin: margin): void {
     let id = mIDM.addID(hrpDiv.id, HinderedRotorPotential.s_useSineTerms);
     let buttonTextContentSelected: string = HinderedRotorPotential.s_useSineTerms + sy_selected;
     let buttonTextContentDeselected: string = HinderedRotorPotential.s_useSineTerms + sy_deselected;
@@ -2152,7 +2289,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
             //let state: State[] = [];
             let xml_ss: HTMLCollectionOf<Element> = xml_states[0].getElementsByTagName(State.tagName);
             for (let j = 0; j < xml_ss.length; j++) {
-                let s: State = new State(getAttributes(xml_ss[j]));
+                let s: State = new State(getAttributes(xml_ss[j]), j);
                 //state.push(s);
                 ss.addState(s);
                 //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
@@ -2213,8 +2350,7 @@ function removeMolecule(mlDiv: HTMLDivElement, mcDiv: HTMLDivElement, mIDM: IDMa
  * @param level The level.
  */
 export function createPropertyAndDiv(pl: PropertyList, xml: Element, plDiv: HTMLDivElement, molecule: Molecule, mIDM: IDManager,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): Property {
+    boundary: margin, level: margin): Property {
     let p: Property = new Property(getAttributes(xml));
     //console.log("p.dictRef " + p.dictRef);
     if (p.dictRef == ZPE.dictRef) {
@@ -2284,9 +2420,7 @@ export function createPropertyAndDiv(pl: PropertyList, xml: Element, plDiv: HTML
  * @param level The level of the component.
  */
 export function processProperty(pl: PropertyList, p: Property, units: string[] | undefined, molecule: Molecule,
-    mIDM: IDManager, element: Element, plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    mIDM: IDManager, element: Element, plDiv: HTMLDivElement,    boundary: margin,    level: margin) {
     let pID = mIDM.addID(getID(plDiv.id, p.dictRef));
     let div: HTMLDivElement;
     // PropertyScalar.
@@ -2396,8 +2530,8 @@ export function processProperty(pl: PropertyList, p: Property, units: string[] |
  */
 export function processPropertyString(pl: PropertyList, p: Property, molecule: Molecule, element: Element,
     plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    boundary: margin,
+    level: margin) {
 
     // This is for storing the IDs of the components so that if property is removed and readded, the IDs are available and there is no confuion...
     let pIDs: Set<string> = new Set<string>();
@@ -2482,8 +2616,8 @@ function processEnergyTransferModel(mIDM: IDManager, etm: EnergyTransferModel, m
  * @param level The margin for the viewer container div.
  */
 export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    boundary: margin,
+    level: margin) {
     // Add a 3Dmol.js viewer.
     // Create a new div for the viewer.
     let viewerContainerDivID: string = mIDM.addID(moleculeDiv.id, s_viewer, s_container);
@@ -2642,9 +2776,7 @@ export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv:
  * @param level The level. 
  * @returns A div element.
  */
-export function addProperty1(dictRef: string, ps: PropertyScalarNumber, id: string,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    level: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+export function addProperty1(dictRef: string, ps: PropertyScalarNumber, id: string, boundary: margin, level: margin): HTMLDivElement {
     let pDiv: HTMLDivElement = createFlexDiv(id, level);
     pDiv.appendChild(createLabel(dictRef, boundary));
     // value.
@@ -2677,7 +2809,7 @@ export function addProperty1(dictRef: string, ps: PropertyScalarNumber, id: stri
  */
 export function addPropertyScalarNumber1(attributes: Map<string, string>, mIDM: IDManager, value: Big,
     units: string[] | undefined, pl: PropertyList, p: Property, plDiv: HTMLDivElement,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): void {
+    boundary: margin): void {
     let ps: PropertyScalarNumber = p.getProperty() as PropertyScalarNumber;
     ps.setValue = function (value: Big) {
         ps.value = value;
@@ -2712,8 +2844,8 @@ export function addPropertyScalarNumber1(attributes: Map<string, string>, mIDM: 
  */
 export function processNumberArrayOrMatrix(plDiv: HTMLDivElement, mIDM: IDManager, name: string, pa: PropertyArray | PropertyMatrix,
     getter: () => Big[] | undefined, setter: (values: Big[]) => void, remover: () => void,
-    marginComponent: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string },
-    margin: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }): HTMLDivElement {
+    marginComponent: margin,
+    margin: margin): HTMLDivElement {
     let divID: string = getID(plDiv.id, name);
     let div: HTMLDivElement = createFlexDiv(divID, margin);
     let buttonTextContentSelected: string = name + sy_selected;
@@ -2768,7 +2900,7 @@ export function processNumberArrayOrMatrix(plDiv: HTMLDivElement, mIDM: IDManage
  */
 function addNumberArray(div: HTMLDivElement, id: string, name: string, values: Big[] | undefined,
     paom: PropertyArray | PropertyMatrix, getter: () => Big[] | undefined, setter: (value: Big[]) => void,
-    boundary: { marginLeft?: string, marginTop?: string, marginBottom?: string, marginRight?: string }) {
+    boundary: margin) {
     let valueString: string;
     if (values == undefined) {
         valueString = "";

@@ -116,7 +116,13 @@ class LibraryMolecules {
                 }
                 continue;
             }
-            let id = (0, gui_moleculeList_1.setMoleculeID)(false, mid, undefined, molecules);
+            let id;
+            while (true) {
+                id = (0, gui_moleculeList_1.setMoleculeID)(false, mid, undefined, molecules);
+                if (id != undefined) {
+                    break;
+                }
+            }
             let m = new xml_molecule_1.Molecule(attributes, id);
             molecules.set(id, m);
             // Create a set of molecule tag names.
@@ -350,6 +356,26 @@ class LibraryMolecules {
                     }
                 }
                 moleculeTagNames.delete(xml_molecule_1.DensityOfStatesList.tagName);
+            }
+            // Organise States.
+            let xml_states = xml_ms[i].getElementsByTagName(xml_molecule_1.States.tagName);
+            if (xml_states.length > 0) {
+                if (xml_states.length > 1) {
+                    throw new Error("Expecting 1 or 0 " + xml_molecule_1.States.tagName + " but finding " + xml_states.length + "!");
+                }
+                let ss = new xml_molecule_1.States((0, xml_1.getAttributes)(xml_states[0]));
+                //let state: State[] = [];
+                let xml_ss = xml_states[0].getElementsByTagName(xml_molecule_1.State.tagName);
+                for (let j = 0; j < xml_ss.length; j++) {
+                    let s = new xml_molecule_1.State((0, xml_1.getAttributes)(xml_ss[j]), j);
+                    //state.push(s);
+                    ss.addState(s);
+                    //let sDivID = mIDM.addID(ssDivID, State.tagName, j);
+                    //let sDiv: HTMLDivElement = createDiv(sDivID, level1);
+                    //ssDiv.appendChild(sDiv);
+                }
+                m.setStates(ss);
+                moleculeTagNames.delete(xml_molecule_1.States.tagName);
             }
             // Check for unexpected tags.
             moleculeTagNames.delete("#text");

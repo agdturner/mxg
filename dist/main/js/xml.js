@@ -340,6 +340,7 @@ class NodeWithNodes extends TagWithAttributes {
                         s += v.toXML(padding1);
                     }
                 }
+                i++;
             });
             return getTag(s, this.tagName, this.attributes, padding, true);
         }

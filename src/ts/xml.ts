@@ -350,9 +350,7 @@ export class NodeWithNodes extends TagWithAttributes {
         }
         let s: string = "";
         if (this.nodes.size > 0) {
-
             let i: number = 0;
-
             this.nodes.forEach((v) => {
                 if (v == undefined) {
                     console.warn("Node " + i.toString() + " is undefined this.nodes.size = " + this.nodes.size);
@@ -365,6 +363,7 @@ export class NodeWithNodes extends TagWithAttributes {
                         s += (v as Tag).toXML(padding1);
                     }
                 }
+                i++;
             });
             return getTag(s, this.tagName, this.attributes, padding, true);
         } else {

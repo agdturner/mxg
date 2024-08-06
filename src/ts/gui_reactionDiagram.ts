@@ -1,6 +1,6 @@
-import { addRID, addSaveAsPNGButton, big0, getMolecule, remove, s_Reactions_Diagram } from "./app";
+import { addRID, addSaveAsPNGButton, big0, boundary1, getMolecule, level0, level1, reactionsDiagramDivID, remove, s_Reactions_Diagram } from "./app";
 import { getTextHeight, getTextWidth, drawLine, drawLevel } from "./canvas";
-import { s_button, createDiv, createButton } from "./html";
+import { s_button, createDiv, createButton, getCollapsibleDiv } from "./html";
 import { Molecule } from "./xml_molecule";
 import { Reaction, TransitionState } from "./xml_reaction";
 import { min, max, get, rescale } from "./util";
@@ -17,9 +17,27 @@ import { min, max, get, rescale } from "./util";
  * @param rdWindow The window to pop the diagram into.
  * @param draw Whether to draw the reaction diagram.
  */
-export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcHeight: number, dark: boolean,
-    rd_font: string, rd_lw: number, rd_lwc: number, rdWindow: Window | null, molecules: Map<string, Molecule>,
+//export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcHeight: number, dark: boolean,
+export function createReactionDiagram(rdcID: string, rdcHeight: number, dark: boolean,
+        rd_font: string, rd_lw: number, rd_lwc: number, rdWindow: Window | null, molecules: Map<string, Molecule>,
     reactions: Map<string, Reaction>, draw: boolean): void {
+    
+    // Destroy any existing rdWindow.
+    if (rdWindow != null) {
+        rdWindow.close();
+        rdWindow = null;
+    }
+    let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
+    let rdDivID: string = addRID(s_Reactions_Diagram);
+    // If rdDiv already exists, remove it.
+    remove(rdDivID);    
+    // Create collapsible content.
+    let rdDiv: HTMLDivElement = createDiv(rdDivID, level1);
+    rddDiv.appendChild(rdDiv);
+    // Create collapsible content.
+    let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
+        s_Reactions_Diagram, boundary1, level0);
+
     // Create a pop diagram button in its own div.
     let bDivId = addRID(rdDiv.id, s_button + 's');
     let bDiv = createDiv(bDivId);
