@@ -624,6 +624,7 @@ parcelHelpers.export(exports, "s_viewer", ()=>s_viewer);
  * @param id The id of the element to remove.
  */ parcelHelpers.export(exports, "remove", ()=>remove);
 parcelHelpers.export(exports, "menuDivID", ()=>menuDivID);
+parcelHelpers.export(exports, "reactionsDiagramDivID", ()=>reactionsDiagramDivID);
 parcelHelpers.export(exports, "big0", ()=>big0);
 /*
 const db = await openDB('my-db', 1, {
@@ -709,6 +710,8 @@ parcelHelpers.export(exports, "s_Reactions_Diagram", ()=>s_Reactions_Diagram);
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
+ * @param remover The remover function.
+ * @param marginComponent The margin component.
  * @param margin The margin.
  */ parcelHelpers.export(exports, "processString", ()=>processString);
 /**
@@ -719,7 +722,7 @@ parcelHelpers.export(exports, "s_Reactions_Diagram", ()=>s_Reactions_Diagram);
  * @param divToAddTo The input div.
  * @param id The id.
  * @param tagOrDictRef The tag or dictionary reference.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */ parcelHelpers.export(exports, "addAnyUnits", ()=>addAnyUnits);
 /**
@@ -1059,23 +1062,13 @@ function startAfresh() {
     let mb = (0, _guiMoleculeListJs.getAddMoleculeButton)(mlDiv, mIDM, molecules);
     // Add add from library button.
     let lb = (0, _guiMoleculeListJs.getAddFromLibraryButton)(mlDiv, mb, mIDM, molecules);
-    // Reactions.
-    let reactionsDiv = document.getElementById(reactionsDivID);
+    // Reaction List.
     let rlDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
-    let rlDiv = (0, _htmlJs.createDiv)(rlDivID);
-    reactionsDiv.appendChild(rlDiv);
-    // Create collapsible content.
-    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, reactionsDiv, null, rlDiv, (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
-    // Add add reaction button.
-    let rb = (0, _guiReactionListJs.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
+    // Remove any existing rlDivID HTMLDivElement.
+    remove(rlDivID);
+    createReactionList((0, _htmlJs.createDiv)(rlDivID));
     // Reactions Diagram.
-    let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDivID = addRID(s_Reactions_Diagram);
-    let rdDiv = (0, _htmlJs.createDiv)(rdDivID);
-    rddDiv.appendChild(rdDiv);
-    // Create collapsible content.
-    let rdcDiv = (0, _htmlJs.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, s_Reactions_Diagram, boundary1, level0);
-    (0, _guiReactionDiagramJs.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    (0, _guiReactionDiagramJs.createReactionDiagram)(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // Conditions.
     let conditionsDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID((0, _xmlConditionsJs.Conditions).tagName);
@@ -1155,6 +1148,19 @@ function startAfresh() {
     }, title, (0, _xmlMesmerJs.Title).tagName);
     lwi.id = lwiId;
     titleDiv.appendChild(lwi);
+}
+/**
+ * Create the Reaction List.
+ * @param rlDiv The reactionList div.
+ */ function createReactionList(rlDiv) {
+    let reactionsDiv = document.getElementById(reactionsDivID);
+    let rlDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
+    //let rlDiv: HTMLDivElement = createDiv(rlDivID);
+    reactionsDiv.appendChild(rlDiv);
+    // Create collapsible content.
+    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, reactionsDiv, null, rlDiv, (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
+    // Add add reaction button.
+    let rb = (0, _guiReactionListJs.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
 }
 function redrawReactionsDiagram() {
     if (rdWindow == null) {
@@ -1246,26 +1252,13 @@ function load() {
     // Create collapsible content.
     let mlcDiv = (0, _htmlJs.getCollapsibleDiv)(mlDivID, mlDiv, null, (0, _guiMoleculeListJs.processMoleculeList)(xml, mIDM, molecules), (0, _xmlMesmerJs.MoleculeList).tagName, boundary1, level0);
     //document.body.appendChild(mlcDiv);
-    // reactionList.
-    let rsDiv = document.getElementById(reactionsDivID);
-    let rsDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
+    // Reaction List.
+    let rlDivID = addRID((0, _xmlMesmerJs.ReactionList).tagName);
     // Remove any existing rlDivID HTMLDivElement.
-    remove(rsDivID);
-    let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rsDivID, rsDiv, null, (0, _guiReactionListJs.processReactionList)(xml, rIDM, rsDivID, reactions, molecules), (0, _xmlMesmerJs.ReactionList).tagName, boundary1, level0);
+    remove(rlDivID);
+    createReactionList((0, _guiReactionListJs.processReactionList)(xml, rIDM, rlDivID, reactions, molecules));
     // Reactions Diagram.
-    let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDivID = addRID(s_Reactions_Diagram);
-    // Destroy any existing rdWindow.
-    if (rdWindow != null) {
-        rdWindow.close();
-        rdWindow = null;
-    }
-    // If rdDiv already exists, remove it.
-    remove(rdDivID);
-    // Create collapsible content.
-    let rdDiv = (0, _htmlJs.createDiv)(rdDivID, level1);
-    let rdcDiv = (0, _htmlJs.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, s_Reactions_Diagram, boundary1, level0);
-    (0, _guiReactionDiagramJs.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    (0, _guiReactionDiagramJs.createReactionDiagram)(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // ConditionsList.
     let cdlDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID((0, _xmlConditionsJs.Conditions).tagName);
@@ -1402,14 +1395,14 @@ function processNumber(id, tIDM, name, getter, setter, remover, marginComponent,
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
- */ function addNumber(div, id, name, value, getter, setter, boundary) {
+ */ function addNumber(div, id, name, value, getter, setter, margin) {
     let valueString;
     if (value == undefined) valueString = "";
     else valueString = value.toString();
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input = (0, _htmlJs.createInput)("text", id, boundary);
+    let input = (0, _htmlJs.createInput)("text", id, margin);
     input.addEventListener("click", (event)=>{
         valueString = input.value;
     });
@@ -1487,14 +1480,14 @@ function processString(id, iDs, name, getter, setter, remover, marginComponent, 
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
- */ function addString(div, id, name, value, setter, boundary) {
+ */ function addString(div, id, name, value, setter, margin) {
     let valueString;
     if (value == undefined) valueString = "";
     else valueString = value.toString();
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input = (0, _htmlJs.createInput)("text", id, boundary);
+    let input = (0, _htmlJs.createInput)("text", id, margin);
     input.addEventListener("change", (event)=>{
         let target = event.target;
         setter(target.value);
@@ -1520,9 +1513,9 @@ function processString(id, iDs, name, getter, setter, remover, marginComponent, 
     xmlPre.textContent = xml;
     xml2Div.appendChild(xmlPre);
 }
-function addAnyUnits(units, attributes, divToAddTo, elementToInsertBefore, id, tagOrDictRef, boundary, level) {
+function addAnyUnits(units, attributes, divToAddTo, elementToInsertBefore, id, tagOrDictRef, margin, level) {
     if (units != undefined) {
-        let lws = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, boundary, level);
+        let lws = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, margin, level);
         if (lws != undefined) divToAddTo.insertBefore(lws, elementToInsertBefore);
     } else {
         let attributesUnits = attributes.get("units");
@@ -3258,7 +3251,7 @@ parcelHelpers.export(exports, "s_select", ()=>s_select);
  * @param elementToInsertBefore The element to insert before. (If null then the content will be appended to the div.)
  * @param content The content to expand/collapse.
  * @param buttonLabel The label for the button.
- * @param buttonMargin The margin for the button.
+ * @param componentMargin The margin for the button.
  * @param margin The margin for HTMLDivElement created. 
  * @returns A HTMLDivElement containing a HTMLButtonElement and the content.
  */ parcelHelpers.export(exports, "getCollapsibleDiv", ()=>getCollapsibleDiv);
@@ -3389,7 +3382,7 @@ parcelHelpers.export(exports, "s_select", ()=>s_select);
  * Create and return HTMLLabelElement.
  *
  * @param textContent The text content of the HTMLLabelElement.
- * @param margin The margin to go around the HTMLLabelElement.
+ * @param margin The margin for the HTMLLabelElement.
  * @param fontsize The font size for the label.
  * @returns An HTMLLabelElement with specified boundary.
  */ parcelHelpers.export(exports, "createLabel", ()=>createLabel);
@@ -3540,11 +3533,11 @@ function createLabelWithSelect(textContent, options, name, value, id, componentM
     div.appendChild(createSelectElement(options, name, value, (0, _util.getID)(id, s_select), componentMargin));
     return div;
 }
-function createButton(textContent, id, boundary) {
+function createButton(textContent, id, margin) {
     let button = document.createElement("button");
     button.textContent = textContent;
     if (id != undefined) button.id = id;
-    if (boundary != undefined) Object.assign(button.style, boundary);
+    if (margin != undefined) Object.assign(button.style, margin);
     button.style.fontSize = "1em"; // Set the font size with a relative unit.
     return button;
 }
@@ -12419,67 +12412,79 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         }
         console.log("states.index.size" + states.nodes.size);
         // Add an add me:State button.
-        let addStateButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), (0, _utilJs.getID)(statesDivID, (0, _xmlMoleculeJs.State).tagName, (0, _appJs.s_Add_sy_add), (0, _htmlJs.s_button)), (0, _appJs.level1));
-        statesDiv.appendChild(addStateButton);
-        addStateButton.addEventListener("click", ()=>{
-            let stateAttributes = new Map();
-            stateAttributes.set((0, _xmlMoleculeJs.State).s_energy, "0");
-            stateAttributes.set((0, _xmlMoleculeJs.State).s_degeneracy, "0");
-            let state = new (0, _xmlMoleculeJs.State)(stateAttributes, states.getNextId());
-            let index = states.addState(state);
-            let stateDivID = mIDM.addID(statesDivID, (0, _xmlMoleculeJs.State).tagName, state.id);
-            let stateDiv = (0, _htmlJs.createFlexDiv)(stateDivID);
-            statesDiv.insertBefore(stateDiv, addStateButton);
-            // Add energy.
-            let energyDivID = mIDM.addID(stateDivID, (0, _xmlMoleculeJs.State).s_energy);
-            let energyDiv = (0, _htmlJs.createFlexDiv)(energyDivID);
-            stateDiv.appendChild(energyDiv);
-            let energyValue = state.getEnergy();
-            let elwi = (0, _htmlJs.createLabelWithInput)((0, _xmlMoleculeJs.State).s_energy, energyDivID, (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
-                let target = event.target;
-                // Check the input is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    energyValue = new (0, _bigJsDefault.default)(target.value);
-                    state.setEnergy(energyValue);
-                } else {
-                    // Reset.
-                    alert("Input is not a number, resetting...");
-                    target.value = energyValue.toString() ?? (0, _appJs.s_undefined);
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, energyValue.toString(), (0, _xmlMoleculeJs.State).s_energy);
-            energyDiv.appendChild(elwi);
-            // Add degeneracy.
-            let degeneracyDivID = mIDM.addID(stateDivID, (0, _xmlMoleculeJs.State).s_degeneracy);
-            let degeneracyDiv = (0, _htmlJs.createFlexDiv)(degeneracyDivID);
-            stateDiv.appendChild(degeneracyDiv);
-            let degeneracyValue = state.getDegeneracy();
-            let dlwi = (0, _htmlJs.createLabelWithInput)((0, _xmlMoleculeJs.State).s_degeneracy, degeneracyDivID, (0, _appJs.boundary1), (0, _appJs.boundary1), (event)=>{
-                let target = event.target;
-                // Check the input is a number.
-                if ((0, _utilJs.isNumeric)(target.value)) {
-                    degeneracyValue = new (0, _bigJsDefault.default)(target.value);
-                    state.setDegeneracy(degeneracyValue);
-                } else {
-                    // Reset.
-                    alert("Input is not a number, resetting...");
-                    target.value = degeneracyValue.toString() ?? (0, _appJs.s_undefined);
-                }
-                (0, _htmlJs.resizeInputElement)(target);
-            }, degeneracyValue.toString(), (0, _xmlMoleculeJs.State).s_degeneracy);
-            degeneracyDiv.appendChild(dlwi);
-            // Add a remove me:State button.
-            (0, _appJs.addRemoveButton)(stateDiv, (0, _appJs.boundary1), ()=>{
-                states.removeState(index);
-                statesDiv.removeChild(stateDiv);
-            });
-        });
+        addAddStateButton(mIDM, statesDiv, states, statesDivID, (0, _appJs.level1));
         // Add a remove molecule button.
         (0, _appJs.addRemoveButton)(mDiv, (0, _appJs.level1), ()=>{
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
         });
     });
     return addMoleculeButton;
+}
+/**
+ * Adds an add state button.
+ * @param mIDM The IDManager for molecule divs.
+ * @param statesDiv The States HTMLDivElement.
+ * @param states The States.
+ * @param statesDivID The States div ID.
+ * @param margin The margin.
+ */ function addAddStateButton(mIDM, statesDiv, states, statesDivID, margin) {
+    let addStateButton = (0, _htmlJs.createButton)((0, _appJs.s_Add_sy_add), (0, _utilJs.getID)(statesDivID, (0, _xmlMoleculeJs.State).tagName, (0, _appJs.s_Add_sy_add), (0, _htmlJs.s_button)), margin);
+    statesDiv.appendChild(addStateButton);
+    addStateButton.addEventListener("click", ()=>{
+        let stateAttributes = new Map();
+        stateAttributes.set((0, _xmlMoleculeJs.State).s_energy, "0");
+        stateAttributes.set((0, _xmlMoleculeJs.State).s_degeneracy, "0");
+        let stateId = states.getNextId();
+        let state = new (0, _xmlMoleculeJs.State)(stateAttributes, stateId);
+        console.log("stateId=" + stateId);
+        let index = states.addState(state);
+        let stateDivID = mIDM.addID(statesDivID, (0, _xmlMoleculeJs.State).tagName, state.id);
+        let stateDiv = (0, _htmlJs.createFlexDiv)(stateDivID);
+        statesDiv.insertBefore(stateDiv, addStateButton);
+        // Add energy.
+        let energyDivID = mIDM.addID(stateDivID, (0, _xmlMoleculeJs.State).s_energy);
+        let energyDiv = (0, _htmlJs.createFlexDiv)(energyDivID);
+        stateDiv.appendChild(energyDiv);
+        let energyValue = state.getEnergy();
+        let elwi = (0, _htmlJs.createLabelWithInput)((0, _xmlMoleculeJs.State).s_energy, energyDivID, (0, _appJs.boundary1), (0, _appJs.level1), (event)=>{
+            let target = event.target;
+            // Check the input is a number.
+            if ((0, _utilJs.isNumeric)(target.value)) {
+                energyValue = new (0, _bigJsDefault.default)(target.value);
+                state.setEnergy(energyValue);
+            } else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = energyValue.toString() ?? (0, _appJs.s_undefined);
+            }
+            (0, _htmlJs.resizeInputElement)(target);
+        }, energyValue.toString(), (0, _xmlMoleculeJs.State).s_energy);
+        energyDiv.appendChild(elwi);
+        // Add degeneracy.
+        let degeneracyDivID = mIDM.addID(stateDivID, (0, _xmlMoleculeJs.State).s_degeneracy);
+        let degeneracyDiv = (0, _htmlJs.createFlexDiv)(degeneracyDivID);
+        stateDiv.appendChild(degeneracyDiv);
+        let degeneracyValue = state.getDegeneracy();
+        let dlwi = (0, _htmlJs.createLabelWithInput)((0, _xmlMoleculeJs.State).s_degeneracy, degeneracyDivID, (0, _appJs.boundary1), (0, _appJs.boundary1), (event)=>{
+            let target = event.target;
+            // Check the input is a number.
+            if ((0, _utilJs.isNumeric)(target.value)) {
+                degeneracyValue = new (0, _bigJsDefault.default)(target.value);
+                state.setDegeneracy(degeneracyValue);
+            } else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = degeneracyValue.toString() ?? (0, _appJs.s_undefined);
+            }
+            (0, _htmlJs.resizeInputElement)(target);
+        }, degeneracyValue.toString(), (0, _xmlMoleculeJs.State).s_degeneracy);
+        degeneracyDiv.appendChild(dlwi);
+        // Add a remove me:State button.
+        (0, _appJs.addRemoveButton)(stateDiv, (0, _appJs.boundary1), ()=>{
+            states.removeState(index);
+            statesDiv.removeChild(stateDiv);
+        });
+    });
 }
 function initialiseProperties(deselect, m, mIDM, plDiv, pl) {
     // "me:ZPE", scalar, Mesmer.energyUnits.
@@ -13102,12 +13107,12 @@ function setMoleculeID(ask, mid, molecule, molecules) {
  * @param id The id.
  * @param value The description value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
- */ function addDescription(div, id, value, setter, boundary) {
+ * @param margin The margin.
+ */ function addDescription(div, id, value, setter, margin) {
     let valueString;
     if (value == undefined) valueString = "";
     else valueString = value;
-    let input = (0, _htmlJs.createInput)("text", id, boundary);
+    let input = (0, _htmlJs.createInput)("text", id, margin);
     input.addEventListener("change", (event)=>{
         let target = event.target;
         setter(target.value);
@@ -13141,10 +13146,19 @@ function setMoleculeID(ask, mid, molecule, molecules) {
     });
     return button;
 }
-function addMetadata(m, md, ml, mdDivID, boundary, level) {
+/**
+ * Adds metadata.
+ * @param m The molecule.
+ * @param md The metadata.
+ * @param ml The metadata list.
+ * @param mdDivID The metadata div id.
+ * @param boundary The margin for components.
+ * @param level The margin for the div.
+ * @returns The metadata div.
+ */ function addMetadata(m, md, ml, mdDivID, boundary, level) {
     ml.addMetadata(md);
-    let mdDiv = (0, _htmlJs.createFlexDiv)(mdDivID, (0, _appJs.level1));
-    mdDiv.appendChild((0, _htmlJs.createLabel)(m.getLabel(), (0, _appJs.boundary1)));
+    let mdDiv = (0, _htmlJs.createFlexDiv)(mdDivID, level);
+    mdDiv.appendChild((0, _htmlJs.createLabel)(m.getLabel(), boundary));
     return mdDiv;
 }
 /**
@@ -15815,7 +15829,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
         }
     } else console.warn("No reaction elements found! Please add a reaction in reactionList.");
     // Add a button to add a reaction.
-    getAddReactionButton(rIDM, rlDiv, reactions, molecules);
+    //getAddReactionButton(rIDM, rlDiv, reactions, molecules);
     return rlDiv;
 }
 
@@ -18997,7 +19011,8 @@ parcelHelpers.defineInteropFlag(exports);
  * @param rd_lwc The line width of connector lines.
  * @param rdWindow The window to pop the diagram into.
  * @param draw Whether to draw the reaction diagram.
- */ parcelHelpers.export(exports, "createReactionDiagram", ()=>createReactionDiagram);
+ */ //export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcHeight: number, dark: boolean,
+parcelHelpers.export(exports, "createReactionDiagram", ()=>createReactionDiagram);
 /**
  * Create a diagram.
  * @param canvas The canvas.
@@ -19013,7 +19028,21 @@ var _app = require("./app");
 var _canvas = require("./canvas");
 var _html = require("./html");
 var _util = require("./util");
-function createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, draw) {
+function createReactionDiagram(rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, draw) {
+    // Destroy any existing rdWindow.
+    if (rdWindow != null) {
+        rdWindow.close();
+        rdWindow = null;
+    }
+    let rddDiv = document.getElementById((0, _app.reactionsDiagramDivID));
+    let rdDivID = (0, _app.addRID)((0, _app.s_Reactions_Diagram));
+    // If rdDiv already exists, remove it.
+    (0, _app.remove)(rdDivID);
+    // Create collapsible content.
+    let rdDiv = (0, _html.createDiv)(rdDivID, (0, _app.level1));
+    rddDiv.appendChild(rdDiv);
+    // Create collapsible content.
+    let rdcDiv = (0, _html.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, (0, _app.s_Reactions_Diagram), (0, _app.boundary1), (0, _app.level0));
     // Create a pop diagram button in its own div.
     let bDivId = (0, _app.addRID)(rdDiv.id, (0, _html.s_button) + "s");
     let bDiv = (0, _html.createDiv)(bDivId);

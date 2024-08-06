@@ -611,18 +611,19 @@ function parse(xml) {
     remove(rsDivID);
     let rlcDiv = (0, html_js_1.getCollapsibleDiv)(rsDivID, rsDiv, null, (0, gui_reactionList_js_1.processReactionList)(xml, rIDM, rsDivID, reactions, molecules), xml_mesmer_js_1.ReactionList.tagName, exports.boundary1, exports.level0);
     // Reactions Diagram.
-    let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDivID = addRID(exports.s_Reactions_Diagram);
     // Destroy any existing rdWindow.
     if (rdWindow != null) {
         rdWindow.close();
         rdWindow = null;
     }
+    let rddDiv = document.getElementById(reactionsDiagramDivID);
+    let rdDivID = addRID(exports.s_Reactions_Diagram);
     // If rdDiv already exists, remove it.
     remove(rdDivID);
     // Create collapsible content.
     let rdDiv = (0, html_js_1.createDiv)(rdDivID, exports.level1);
-    let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level0);
+    rddDiv.appendChild(rdDiv);
+    let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level1);
     (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // ConditionsList.
     let cdlDiv = document.getElementById(conditionsDivID);
@@ -798,10 +799,10 @@ exports.processNumber = processNumber;
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
-function addNumber(div, id, name, value, getter, setter, boundary) {
+function addNumber(div, id, name, value, getter, setter, margin) {
     let valueString;
     if (value == undefined) {
         valueString = "";
@@ -810,7 +811,7 @@ function addNumber(div, id, name, value, getter, setter, boundary) {
         valueString = value.toString();
     }
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input = (0, html_js_1.createInput)("text", id, boundary);
+    let input = (0, html_js_1.createInput)("text", id, margin);
     input.addEventListener('click', (event) => {
         valueString = input.value;
     });
@@ -863,6 +864,8 @@ exports.addRemoveButton = addRemoveButton;
  * @param name The name of the variable.
  * @param getter The getter function.
  * @param setter The setter function.
+ * @param remover The remover function.
+ * @param marginComponent The margin component.
  * @param margin The margin.
  */
 function processString(id, iDs, name, getter, setter, remover, marginComponent, margin) {
@@ -913,10 +916,10 @@ exports.processString = processString;
  * @param name The name of the input.
  * @param value The numerical value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
-function addString(div, id, name, value, setter, boundary) {
+function addString(div, id, name, value, setter, margin) {
     let valueString;
     if (value == undefined) {
         valueString = "";
@@ -925,7 +928,7 @@ function addString(div, id, name, value, setter, boundary) {
         valueString = value.toString();
     }
     //let input: HTMLInputElement = createInput("number", id, boundary);
-    let input = (0, html_js_1.createInput)("text", id, boundary);
+    let input = (0, html_js_1.createInput)("text", id, margin);
     input.addEventListener('change', (event) => {
         let target = event.target;
         setter(target.value);
@@ -960,12 +963,12 @@ function displayXML(xmlFilename, xml) {
  * @param divToAddTo The input div.
  * @param id The id.
  * @param tagOrDictRef The tag or dictionary reference.
- * @param boundary The boundary.
+ * @param margin The boundary.
  * @param level The level.
  */
-function addAnyUnits(units, attributes, divToAddTo, elementToInsertBefore, id, tagOrDictRef, boundary, level) {
+function addAnyUnits(units, attributes, divToAddTo, elementToInsertBefore, id, tagOrDictRef, margin, level) {
     if (units != undefined) {
-        let lws = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, boundary, level);
+        let lws = getUnitsLabelWithSelect(units, attributes, id, tagOrDictRef, margin, level);
         if (lws != undefined) {
             divToAddTo.insertBefore(lws, elementToInsertBefore);
         }

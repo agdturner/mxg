@@ -137,6 +137,19 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
         // Add me:ReservoirSize
         addReservoirSize(m, mIDM, plDiv, pl);
         */
+        // Add me:States
+        let statesDivID = mIDM.addID(mDivID, xml_molecule_js_1.States.tagName);
+        let statesDiv = (0, html_js_1.createDiv)(statesDivID);
+        let statescDivID = mIDM.addID(statesDivID, app_js_1.s_container);
+        let statescDiv = (0, html_js_1.getCollapsibleDiv)(statescDivID, mDiv, null, statesDiv, xml_molecule_js_1.States.tagName, app_js_1.boundary1, app_js_1.level1);
+        let states = m.getStates();
+        if (states == undefined) {
+            states = new xml_molecule_js_1.States(new Map());
+            m.setStates(states);
+        }
+        console.log("states.index.size" + states.nodes.size);
+        // Add an add me:State button.
+        addAddStateButton(mIDM, statesDiv, states, statesDivID, app_js_1.level1);
         // Add a remove molecule button.
         (0, app_js_1.addRemoveButton)(mDiv, app_js_1.level1, () => {
             removeMolecule(mlDiv, mcDiv, mIDM, molecules, mDivID, m);
@@ -145,6 +158,75 @@ function getAddMoleculeButton(mlDiv, mIDM, molecules) {
     return addMoleculeButton;
 }
 exports.getAddMoleculeButton = getAddMoleculeButton;
+/**
+ * Adds an add state button.
+ * @param mIDM The IDManager for molecule divs.
+ * @param statesDiv The States HTMLDivElement.
+ * @param states The States.
+ * @param statesDivID The States div ID.
+ * @param margin The margin.
+ */
+function addAddStateButton(mIDM, statesDiv, states, statesDivID, margin) {
+    let addStateButton = (0, html_js_1.createButton)(app_js_1.s_Add_sy_add, (0, util_js_1.getID)(statesDivID, xml_molecule_js_1.State.tagName, app_js_1.s_Add_sy_add, html_js_1.s_button), margin);
+    statesDiv.appendChild(addStateButton);
+    addStateButton.addEventListener('click', () => {
+        let stateAttributes = new Map();
+        stateAttributes.set(xml_molecule_js_1.State.s_energy, "0");
+        stateAttributes.set(xml_molecule_js_1.State.s_degeneracy, "0");
+        let stateId = states.getNextId();
+        let state = new xml_molecule_js_1.State(stateAttributes, stateId);
+        console.log("stateId=" + stateId);
+        let index = states.addState(state);
+        let stateDivID = mIDM.addID(statesDivID, xml_molecule_js_1.State.tagName, state.id);
+        let stateDiv = (0, html_js_1.createFlexDiv)(stateDivID);
+        statesDiv.insertBefore(stateDiv, addStateButton);
+        // Add energy.
+        let energyDivID = mIDM.addID(stateDivID, xml_molecule_js_1.State.s_energy);
+        let energyDiv = (0, html_js_1.createFlexDiv)(energyDivID);
+        stateDiv.appendChild(energyDiv);
+        let energyValue = state.getEnergy();
+        let elwi = (0, html_js_1.createLabelWithInput)(xml_molecule_js_1.State.s_energy, energyDivID, app_js_1.boundary1, app_js_1.level1, (event) => {
+            let target = event.target;
+            // Check the input is a number.
+            if ((0, util_js_1.isNumeric)(target.value)) {
+                energyValue = new big_js_1.default(target.value);
+                state.setEnergy(energyValue);
+            }
+            else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = energyValue.toString() ?? app_js_1.s_undefined;
+            }
+            (0, html_js_1.resizeInputElement)(target);
+        }, energyValue.toString(), xml_molecule_js_1.State.s_energy);
+        energyDiv.appendChild(elwi);
+        // Add degeneracy.
+        let degeneracyDivID = mIDM.addID(stateDivID, xml_molecule_js_1.State.s_degeneracy);
+        let degeneracyDiv = (0, html_js_1.createFlexDiv)(degeneracyDivID);
+        stateDiv.appendChild(degeneracyDiv);
+        let degeneracyValue = state.getDegeneracy();
+        let dlwi = (0, html_js_1.createLabelWithInput)(xml_molecule_js_1.State.s_degeneracy, degeneracyDivID, app_js_1.boundary1, app_js_1.boundary1, (event) => {
+            let target = event.target;
+            // Check the input is a number.
+            if ((0, util_js_1.isNumeric)(target.value)) {
+                degeneracyValue = new big_js_1.default(target.value);
+                state.setDegeneracy(degeneracyValue);
+            }
+            else {
+                // Reset.
+                alert("Input is not a number, resetting...");
+                target.value = degeneracyValue.toString() ?? app_js_1.s_undefined;
+            }
+            (0, html_js_1.resizeInputElement)(target);
+        }, degeneracyValue.toString(), xml_molecule_js_1.State.s_degeneracy);
+        degeneracyDiv.appendChild(dlwi);
+        // Add a remove me:State button.
+        (0, app_js_1.addRemoveButton)(stateDiv, app_js_1.boundary1, () => {
+            states.removeState(index);
+            statesDiv.removeChild(stateDiv);
+        });
+    });
+}
 /**
  * Initialises the properties for a molecule.
  * @param deslect If true the button is clicked and the property removed.
@@ -411,7 +493,7 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             //let molecule: Molecule = getMolecule(label, libmols)!;
             let mid = molecule.getID();
             while (true) {
-                mid = setMoleculeID(false, mid, molecule, molecules);
+                mid = setMoleculeID(true, mid, molecule, molecules);
                 if (mid != undefined) {
                     break;
                 }
@@ -705,8 +787,61 @@ function getAddFromLibraryButton(mlDiv, amb, mIDM, molecules) {
             if (states != undefined) {
                 states.getStates().forEach((s) => {
                     console.log(s.toString());
+                    // Add state.
+                    let sDivID = (0, util_js_1.getID)(ssDivID, xml_molecule_js_1.State.tagName, s.id);
+                    let sDiv = (0, html_js_1.createFlexDiv)(sDivID);
+                    ssDiv.appendChild(sDiv);
+                    // Add energy.
+                    let energyDivID = mIDM.addID(sDivID, xml_molecule_js_1.State.s_energy);
+                    let energy = s.getEnergy();
+                    let elwi = (0, html_js_1.createLabelWithInput)(xml_molecule_js_1.State.s_energy, energyDivID, app_js_1.boundary1, app_js_1.level1, (event) => {
+                        let target = event.target;
+                        // Check the input is a number.
+                        if ((0, util_js_1.isNumeric)(target.value)) {
+                            energy = new big_js_1.default(target.value);
+                            s.setEnergy(energy);
+                        }
+                        else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = energy.toString() ?? app_js_1.s_undefined;
+                        }
+                        (0, html_js_1.resizeInputElement)(target);
+                    }, energy.toString(), xml_molecule_js_1.State.s_energy);
+                    sDiv.appendChild(elwi);
+                    // Add degeneracy.
+                    let degeneracyDivID = mIDM.addID(sDivID, xml_molecule_js_1.State.s_degeneracy);
+                    let degeneracy = s.getDegeneracy();
+                    let dlwi = (0, html_js_1.createLabelWithInput)(xml_molecule_js_1.State.s_degeneracy, degeneracyDivID, app_js_1.boundary1, app_js_1.boundary1, (event) => {
+                        let target = event.target;
+                        // Check the input is a number.
+                        if ((0, util_js_1.isNumeric)(target.value)) {
+                            degeneracy = new big_js_1.default(target.value);
+                            s.setDegeneracy(degeneracy);
+                        }
+                        else {
+                            // Reset.
+                            alert("Input is not a number, resetting...");
+                            target.value = degeneracy.toString() ?? app_js_1.s_undefined;
+                        }
+                        (0, html_js_1.resizeInputElement)(target);
+                    }, degeneracy.toString(), xml_molecule_js_1.State.s_degeneracy);
+                    sDiv.appendChild(dlwi);
+                    // Add a remove state button.
+                    (0, app_js_1.addRemoveButton)(sDiv, app_js_1.boundary1, () => {
+                        states.removeState(s.id);
+                        sDiv.remove();
+                    });
+                    /*
+                    // Add a move up button.
+                    sDiv.appendChild(getMoveUpButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    // Add a move down button.
+                    sDiv.appendChild(getMoveDownButton(mIDM, molecule, ssDiv, State.tagName, sDiv, s));
+                    */
                 });
             }
+            // Add an add state button.
+            //ssDiv.appendChild(getAddStateButton(mIDM, molecule, ssDiv, State.tagName, boundary1, level1));
             // Remove the select element.
             selectDiv.remove();
             // Add a remove molecule button.
@@ -846,9 +981,9 @@ function processDescription(id, mIDM, getter, setter, marginComponent, marginDiv
  * @param id The id.
  * @param value The description value.
  * @param setter The setter function to call.
- * @param boundary The boundary.
+ * @param margin The margin.
  */
-function addDescription(div, id, value, setter, boundary) {
+function addDescription(div, id, value, setter, margin) {
     let valueString;
     if (value == undefined) {
         valueString = "";
@@ -856,7 +991,7 @@ function addDescription(div, id, value, setter, boundary) {
     else {
         valueString = value;
     }
-    let input = (0, html_js_1.createInput)("text", id, boundary);
+    let input = (0, html_js_1.createInput)("text", id, margin);
     input.addEventListener('change', (event) => {
         let target = event.target;
         setter(target.value);
@@ -891,10 +1026,20 @@ function getAddAtomButton(mIDM, molecule, aaDiv, typeID, boundary, level) {
     });
     return button;
 }
+/**
+ * Adds metadata.
+ * @param m The molecule.
+ * @param md The metadata.
+ * @param ml The metadata list.
+ * @param mdDivID The metadata div id.
+ * @param boundary The margin for components.
+ * @param level The margin for the div.
+ * @returns The metadata div.
+ */
 function addMetadata(m, md, ml, mdDivID, boundary, level) {
     ml.addMetadata(md);
-    let mdDiv = (0, html_js_1.createFlexDiv)(mdDivID, app_js_1.level1);
-    mdDiv.appendChild((0, html_js_1.createLabel)(m.getLabel(), app_js_1.boundary1));
+    let mdDiv = (0, html_js_1.createFlexDiv)(mdDivID, level);
+    mdDiv.appendChild((0, html_js_1.createLabel)(m.getLabel(), boundary));
     return mdDiv;
 }
 /**
@@ -2075,7 +2220,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             //let state: State[] = [];
             let xml_ss = xml_states[0].getElementsByTagName(xml_molecule_js_1.State.tagName);
             for (let j = 0; j < xml_ss.length; j++) {
-                let s = new xml_molecule_js_1.State((0, xml_js_1.getAttributes)(xml_ss[j]));
+                let s = new xml_molecule_js_1.State((0, xml_js_1.getAttributes)(xml_ss[j]), j);
                 //state.push(s);
                 ss.addState(s);
                 //let sDivID = mIDM.addID(ssDivID, State.tagName, j);

@@ -118,7 +118,7 @@ class LibraryMolecules {
             }
             let id;
             while (true) {
-                id = (0, gui_moleculeList_1.setMoleculeID)(true, mid, undefined, molecules);
+                id = (0, gui_moleculeList_1.setMoleculeID)(false, mid, undefined, molecules);
                 if (id != undefined) {
                     break;
                 }
@@ -367,7 +367,7 @@ class LibraryMolecules {
                 //let state: State[] = [];
                 let xml_ss = xml_states[0].getElementsByTagName(xml_molecule_1.State.tagName);
                 for (let j = 0; j < xml_ss.length; j++) {
-                    let s = new xml_molecule_1.State((0, xml_1.getAttributes)(xml_ss[j]));
+                    let s = new xml_molecule_1.State((0, xml_1.getAttributes)(xml_ss[j]), j);
                     //state.push(s);
                     ss.addState(s);
                     //let sDivID = mIDM.addID(ssDivID, State.tagName, j);

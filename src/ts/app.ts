@@ -25,6 +25,7 @@ import { createReactionDiagram, drawReactionDiagram } from './gui_reactionDiagra
 import { Big } from 'big.js';
 import { clear } from 'console';
 import { removeAllListeners } from 'process';
+import { create } from 'domain';
 //import * as $3Dmol from '$3Dmol';
 
 /**
@@ -156,7 +157,7 @@ export const menuDivID: string = addID(s_menu);
 const titleDivID: string = addID(s_title);
 const moleculesDivID: string = addID(s_molecules);
 const reactionsDivID: string = addID(s_reactions);
-const reactionsDiagramDivID: string = addID(s_reactionsDiagram);
+export const reactionsDiagramDivID: string = addID(s_reactionsDiagram);
 const conditionsDivID: string = addID(s_conditions);
 const modelParametersDivID: string = addID(s_modelParameters);
 const controlDivID: string = addID(s_control);
@@ -451,26 +452,14 @@ export function startAfresh() {
     // Add add from library button.
     let lb: HTMLButtonElement = getAddFromLibraryButton(mlDiv, mb, mIDM, molecules);
 
-    // Reactions.
-    let reactionsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
+    // Reaction List.
     let rlDivID: string = addRID(ReactionList.tagName);
-    let rlDiv: HTMLDivElement = createDiv(rlDivID);
-    reactionsDiv.appendChild(rlDiv);
-    // Create collapsible content.
-    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, reactionsDiv, null, rlDiv,
-        ReactionList.tagName, boundary1, level0);
-    // Add add reaction button.
-    let rb: HTMLButtonElement = getAddReactionButton(rIDM, rlDiv, reactions, molecules);
-
+    // Remove any existing rlDivID HTMLDivElement.
+    remove(rlDivID);
+    createReactionList(createDiv(rlDivID));
+    
     // Reactions Diagram.
-    let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
-    let rdDivID: string = addRID(s_Reactions_Diagram);
-    let rdDiv: HTMLDivElement = createDiv(rdDivID);
-    rddDiv.appendChild(rdDiv);
-    // Create collapsible content.
-    let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
-        s_Reactions_Diagram, boundary1, level0);
-    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    createReactionDiagram(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
     // Conditions.
     let conditionsDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
@@ -561,6 +550,22 @@ function createTitle(title: string, attributes: Map<string, string>) {
         }, title, Title.tagName);
     lwi.id = lwiId;
     titleDiv.appendChild(lwi);
+}
+
+/**
+ * Create the Reaction List.
+ * @param rlDiv The reactionList div.
+ */
+function createReactionList(rlDiv: HTMLDivElement): void {
+    let reactionsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
+    let rlDivID: string = addRID(ReactionList.tagName);
+    //let rlDiv: HTMLDivElement = createDiv(rlDivID);
+    reactionsDiv.appendChild(rlDiv);
+    // Create collapsible content.
+    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rlDivID, reactionsDiv, null, rlDiv,
+        ReactionList.tagName, boundary1, level0);
+    // Add add reaction button.
+    let rb: HTMLButtonElement = getAddReactionButton(rIDM, rlDiv, reactions, molecules);
 }
 
 /**
@@ -675,28 +680,14 @@ function parse(xml: XMLDocument) {
         MoleculeList.tagName, boundary1, level0);
     //document.body.appendChild(mlcDiv);
 
-    // reactionList.
-    let rsDiv: HTMLDivElement = document.getElementById(reactionsDivID) as HTMLDivElement;
-    let rsDivID: string = addRID(ReactionList.tagName);
+    // Reaction List.
+    let rlDivID: string = addRID(ReactionList.tagName);
     // Remove any existing rlDivID HTMLDivElement.
-    remove(rsDivID);
-    let rlcDiv: HTMLDivElement = getCollapsibleDiv(rsDivID, rsDiv, null, processReactionList(xml, rIDM, rsDivID, reactions, molecules),
-        ReactionList.tagName, boundary1, level0);
+    remove(rlDivID);
+    createReactionList(processReactionList(xml, rIDM, rlDivID, reactions, molecules));
+
     // Reactions Diagram.
-    let rddDiv: HTMLDivElement = document.getElementById(reactionsDiagramDivID) as HTMLDivElement;
-    let rdDivID: string = addRID(s_Reactions_Diagram);
-    // Destroy any existing rdWindow.
-    if (rdWindow != null) {
-        rdWindow.close();
-        rdWindow = null;
-    }
-    // If rdDiv already exists, remove it.
-    remove(rdDivID);
-    // Create collapsible content.
-    let rdDiv: HTMLDivElement = createDiv(rdDivID, level1);
-    let rdcDiv: HTMLDivElement = getCollapsibleDiv(rdDivID, rddDiv, null, rdDiv,
-        s_Reactions_Diagram, boundary1, level0);
-    createReactionDiagram(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    createReactionDiagram(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
 
     // ConditionsList.
     let cdlDiv: HTMLDivElement = document.getElementById(conditionsDivID) as HTMLDivElement;
