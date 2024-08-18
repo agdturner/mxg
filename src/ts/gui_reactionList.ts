@@ -569,7 +569,7 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: 
     });
     if (reactionListTagNames.size > 0) {
         if (reactionListTagNames.size != 1) {
-            if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
+            if (!(reactionListTagNames.size == 3 && reactionListTagNames.has("#text"))) {
                 console.error("reactionListTagNames:");
                 reactionListTagNames.forEach(x => console.error(x));
                 throw new Error("Additional tag names in reactionList:");
