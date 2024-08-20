@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processNumber = exports.addOrRemoveInstructions = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.startAfresh = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.setLibmols = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_textarea = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
-exports.setNumberNode = exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.getN = exports.addAnyUnits = exports.processString = exports.addRemoveButton = void 0;
+exports.addOrRemoveInstructions = exports.addOptionByClassName = exports.removeOptionByClassName = exports.load = exports.redrawReactionsDiagram = exports.startAfresh = exports.s_Reactions_Diagram = exports.getMolecule = exports.getMoleculeKeys = exports.addMolecule = exports.setLibmols = exports.libmols = exports.defaults = exports.mesmer = exports.IDManager = exports.big0 = exports.reactionsDiagramDivID = exports.menuDivID = exports.remove = exports.addRID = exports.addID = exports.s_viewer = exports.s_units = exports.s_undefined = exports.s_Tunneling = exports.s_textarea = exports.s_Transition_States = exports.s_table = exports.s_selectOption = exports.s_save = exports.s_Remove_sy_remove = exports.s_reactions = exports.s_Reactants = exports.s_Products = exports.s_optionOff = exports.s_optionOn = exports.s_molecules = exports.s_input = exports.s_description = exports.s_container = exports.s_Add_from_spreadsheet = exports.s_Add_from_library = exports.s_Add_sy_add = exports.sy_selected = exports.sy_deselected = exports.sy_edit = exports.sy_add = exports.boundary1 = exports.level1 = exports.level0 = void 0;
+exports.setNumberNode = exports.addSaveAsCSVButton = exports.addSaveAsPNGButton = exports.saveXML = exports.selectAnotherOptionEventListener = exports.getN = exports.addAnyUnits = exports.processString = exports.addRemoveButton = exports.processNumber = void 0;
 // Imports from MXG modules.
 const util_js_1 = require("./util.js");
 const xml_js_1 = require("./xml.js");
@@ -145,7 +145,7 @@ exports.menuDivID = addID(s_menu);
 const titleDivID = addID(s_title);
 const moleculesDivID = addID(exports.s_molecules);
 const reactionsDivID = addID(exports.s_reactions);
-const reactionsDiagramDivID = addID(s_reactionsDiagram);
+exports.reactionsDiagramDivID = addID(s_reactionsDiagram);
 const conditionsDivID = addID(s_conditions);
 const modelParametersDivID = addID(s_modelParameters);
 const controlDivID = addID(s_control);
@@ -395,23 +395,13 @@ function startAfresh() {
     let mb = (0, gui_moleculeList_js_1.getAddMoleculeButton)(mlDiv, mIDM, molecules);
     // Add add from library button.
     let lb = (0, gui_moleculeList_js_1.getAddFromLibraryButton)(mlDiv, mb, mIDM, molecules);
-    // Reactions.
-    let reactionsDiv = document.getElementById(reactionsDivID);
+    // Reaction List.
     let rlDivID = addRID(xml_mesmer_js_1.ReactionList.tagName);
-    let rlDiv = (0, html_js_1.createDiv)(rlDivID);
-    reactionsDiv.appendChild(rlDiv);
-    // Create collapsible content.
-    let rlcDiv = (0, html_js_1.getCollapsibleDiv)(rlDivID, reactionsDiv, null, rlDiv, xml_mesmer_js_1.ReactionList.tagName, exports.boundary1, exports.level0);
-    // Add add reaction button.
-    let rb = (0, gui_reactionList_js_1.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
+    // Remove any existing rlDivID HTMLDivElement.
+    remove(rlDivID);
+    createReactionList((0, html_js_1.createDiv)(rlDivID));
     // Reactions Diagram.
-    let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDivID = addRID(exports.s_Reactions_Diagram);
-    let rdDiv = (0, html_js_1.createDiv)(rdDivID);
-    rddDiv.appendChild(rdDiv);
-    // Create collapsible content.
-    let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level0);
-    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // Conditions.
     let conditionsDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID(xml_conditions_js_1.Conditions.tagName);
@@ -494,6 +484,20 @@ function createTitle(title, attributes) {
     }, title, xml_mesmer_js_1.Title.tagName);
     lwi.id = lwiId;
     titleDiv.appendChild(lwi);
+}
+/**
+ * Create the Reaction List.
+ * @param rlDiv The reactionList div.
+ */
+function createReactionList(rlDiv) {
+    let reactionsDiv = document.getElementById(reactionsDivID);
+    let rlDivID = addRID(xml_mesmer_js_1.ReactionList.tagName);
+    //let rlDiv: HTMLDivElement = createDiv(rlDivID);
+    reactionsDiv.appendChild(rlDiv);
+    // Create collapsible content.
+    let rlcDiv = (0, html_js_1.getCollapsibleDiv)(rlDivID, reactionsDiv, null, rlDiv, xml_mesmer_js_1.ReactionList.tagName, exports.boundary1, exports.level0);
+    // Add add reaction button.
+    let rb = (0, gui_reactionList_js_1.getAddReactionButton)(rIDM, rlDiv, reactions, molecules);
 }
 /**
  * Redraw the reactions diagram.
@@ -604,27 +608,13 @@ function parse(xml) {
     // Create collapsible content.
     let mlcDiv = (0, html_js_1.getCollapsibleDiv)(mlDivID, mlDiv, null, (0, gui_moleculeList_js_1.processMoleculeList)(xml, mIDM, molecules), xml_mesmer_js_1.MoleculeList.tagName, exports.boundary1, exports.level0);
     //document.body.appendChild(mlcDiv);
-    // reactionList.
-    let rsDiv = document.getElementById(reactionsDivID);
-    let rsDivID = addRID(xml_mesmer_js_1.ReactionList.tagName);
+    // Reaction List.
+    let rlDivID = addRID(xml_mesmer_js_1.ReactionList.tagName);
     // Remove any existing rlDivID HTMLDivElement.
-    remove(rsDivID);
-    let rlcDiv = (0, html_js_1.getCollapsibleDiv)(rsDivID, rsDiv, null, (0, gui_reactionList_js_1.processReactionList)(xml, rIDM, rsDivID, reactions, molecules), xml_mesmer_js_1.ReactionList.tagName, exports.boundary1, exports.level0);
+    remove(rlDivID);
+    createReactionList((0, gui_reactionList_js_1.processReactionList)(xml, rIDM, rlDivID, reactions, molecules));
     // Reactions Diagram.
-    // Destroy any existing rdWindow.
-    if (rdWindow != null) {
-        rdWindow.close();
-        rdWindow = null;
-    }
-    let rddDiv = document.getElementById(reactionsDiagramDivID);
-    let rdDivID = addRID(exports.s_Reactions_Diagram);
-    // If rdDiv already exists, remove it.
-    remove(rdDivID);
-    // Create collapsible content.
-    let rdDiv = (0, html_js_1.createDiv)(rdDivID, exports.level1);
-    rddDiv.appendChild(rdDiv);
-    let rdcDiv = (0, html_js_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, exports.s_Reactions_Diagram, exports.boundary1, exports.level1);
-    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rdDiv, rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
+    (0, gui_reactionDiagram_js_1.createReactionDiagram)(rddcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, true);
     // ConditionsList.
     let cdlDiv = document.getElementById(conditionsDivID);
     let cdlDivID = addRID(xml_conditions_js_1.Conditions.tagName);

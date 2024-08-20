@@ -17,7 +17,22 @@ const util_1 = require("./util");
  * @param rdWindow The window to pop the diagram into.
  * @param draw Whether to draw the reaction diagram.
  */
-function createReactionDiagram(rdDiv, rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, draw) {
+//export function createReactionDiagram(rdDiv: HTMLDivElement, rdcID: string, rdcHeight: number, dark: boolean,
+function createReactionDiagram(rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, rdWindow, molecules, reactions, draw) {
+    // Destroy any existing rdWindow.
+    if (rdWindow != null) {
+        rdWindow.close();
+        rdWindow = null;
+    }
+    let rddDiv = document.getElementById(app_1.reactionsDiagramDivID);
+    let rdDivID = (0, app_1.addRID)(app_1.s_Reactions_Diagram);
+    // If rdDiv already exists, remove it.
+    (0, app_1.remove)(rdDivID);
+    // Create collapsible content.
+    let rdDiv = (0, html_1.createDiv)(rdDivID, app_1.level1);
+    rddDiv.appendChild(rdDiv);
+    // Create collapsible content.
+    let rdcDiv = (0, html_1.getCollapsibleDiv)(rdDivID, rddDiv, null, rdDiv, app_1.s_Reactions_Diagram, app_1.boundary1, app_1.level0);
     // Create a pop diagram button in its own div.
     let bDivId = (0, app_1.addRID)(rdDiv.id, html_1.s_button + 's');
     let bDiv = (0, html_1.createDiv)(bDivId);
