@@ -82,23 +82,23 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
         let mm: MCRCMethod = new MesmerILT(mmAttributes);
         r.setMCRCMethod(mm);
         let inputString: string;
-        let value: Big; 
+        let value: Big;
         // PreExponential.
         if (true) {
             // Get value from defaults.
             if (defaults != undefined) {
                 inputString = defaults.values.get(PreExponential.tagName) ?? "";
                 if (inputString == "") {
-                    inputString= "6.00e-12";
+                    inputString = "6.00e-12";
                 }
             } else {
-                inputString= "6.00e-12";
+                inputString = "6.00e-12";
             }
             value = new Big(inputString);
             let peAttributes: Map<string, string> = new Map();
             let pe: PreExponential = new PreExponential(peAttributes, value);
             (mm as MesmerILT).setPreExponential(pe);
-                let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, PreExponential.tagName, s_input),
+            let lwi: HTMLDivElement = createLabelWithInput("number", addRID(mmDivId, PreExponential.tagName, s_input),
                 boundary1, level1,
                 (event: Event) => {
                     let target = event.target as HTMLInputElement;
@@ -128,7 +128,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
                     inputString = "0.0";
                 }
             } else {
-                inputString= "0.0";
+                inputString = "0.0";
             }
             value = new Big(inputString);
             let aeAttributes: Map<string, string> = new Map();
@@ -163,7 +163,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
                     inputString = "298";
                 }
             } else {
-                inputString= "298";
+                inputString = "298";
             }
             value = new Big(inputString);
             let tiAttributes: Map<string, string> = new Map();
@@ -198,7 +198,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
                     inputString = "0.08";
                 }
             } else {
-                inputString= "0.08";
+                inputString = "0.08";
             }
             value = new Big(inputString);
             let niAttributes: Map<string, string> = new Map();
@@ -235,7 +235,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
                 inputString = "2.25e+16";
             }
         } else {
-            inputString= "2.25e+16";
+            inputString = "2.25e+16";
         }
         value = new Big(inputString);
         let erc: ExcessReactantConc = new ExcessReactantConc(new Map(), value);
@@ -259,7 +259,7 @@ export function getAddReactionButton(rIDM: IDManager, rlDiv: HTMLDivElement, rea
         addAnyUnits(undefined, new Map(), lwi, null, addRID(ercDivId, ExcessReactantConc.tagName), ExcessReactantConc.tagName, boundary1, boundary1);
         ercDiv.appendChild(lwi);
         rDiv.appendChild(ercDiv);
-        
+
         // Add a remove reaction button.
         addRemoveButton(rDiv, level1, () => {
             removeReaction(rlDiv, rcDiv, rIDM, rDivID, reactions, r);
@@ -569,7 +569,8 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: 
     });
     if (reactionListTagNames.size > 0) {
         if (reactionListTagNames.size != 1) {
-            if (!(reactionListTagNames.size == 3 && reactionListTagNames.has("#text"))) {
+            if (!((reactionListTagNames.size == 2 && reactionListTagNames.has("#text")) ||
+                ((reactionListTagNames.size == 3 && reactionListTagNames.has("#text") && reactionListTagNames.has("#comment"))))) {
                 console.error("reactionListTagNames:");
                 reactionListTagNames.forEach(x => console.error(x));
                 throw new Error("Additional tag names in reactionList:");

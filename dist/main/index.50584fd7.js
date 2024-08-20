@@ -15431,7 +15431,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
     });
     if (reactionListTagNames.size > 0) {
         if (reactionListTagNames.size != 1) {
-            if (!(reactionListTagNames.size == 3 && reactionListTagNames.has("#text"))) {
+            if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text") || reactionListTagNames.size == 3 && reactionListTagNames.has("#text") && reactionListTagNames.has("#comment"))) {
                 console.error("reactionListTagNames:");
                 reactionListTagNames.forEach((x)=>console.error(x));
                 throw new Error("Additional tag names in reactionList:");
