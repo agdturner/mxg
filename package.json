@@ -1,6 +1,6 @@
 {
   "name": "mxg",
-  "version": "0.13",
+  "version": "0.14",
   "license": "MIT",
   "description": "MESMER XML GUI.",
   "keywords": ["reaction", "kinetics", "chemistry"],
@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "build": "parcel build",
-    "start": "npx parcel --dist-dir dist/main src/index.html -p 3461"
+    "start": "npx parcel --dist-dir dist/main src/index.html -p 3460"
   },
   "targets": {
     "main": {
@@ -39,8 +39,8 @@
           "last 2 Edge versions"
         ]
       },
-      "distDir": "dist/0.13",
-      "publicUrl": "/mxg/dist/0.13"
+      "distDir": "dist/0.14",
+      "publicUrl": "/mxg/dist/0.14"
     }
   },
   "devDependencies": {

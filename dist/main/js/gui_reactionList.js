@@ -535,7 +535,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
     });
     if (reactionListTagNames.size > 0) {
         if (reactionListTagNames.size != 1) {
-            if (!(reactionListTagNames.size == 2 && reactionListTagNames.has("#text"))) {
+            if (!(reactionListTagNames.size == 3 && reactionListTagNames.has("#text"))) {
                 console.error("reactionListTagNames:");
                 reactionListTagNames.forEach(x => console.error(x));
                 throw new Error("Additional tag names in reactionList:");
@@ -968,7 +968,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
         console.warn("No reaction elements found! Please add a reaction in reactionList.");
     }
     // Add a button to add a reaction.
-    getAddReactionButton(rIDM, rlDiv, reactions, molecules);
+    //getAddReactionButton(rIDM, rlDiv, reactions, molecules);
     return rlDiv;
 }
 exports.processReactionList = processReactionList;
