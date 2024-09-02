@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import Big from 'big.js';
 import { s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addOptionByClassName, s_description, mesmer,
     s_save, remove, getMolecule, getMoleculeKeys, libmols, removeOptionByClassName, addOrRemoveInstructions,
@@ -7,7 +8,7 @@ import { s_Add_sy_add, addMolecule, addRID, level1, s_container, boundary1, addO
 import { BathGas } from './xml_conditions.js';
 import { createLabelWithInput, getCollapsibleDiv, resizeInputElement, createSelectElement, resizeSelectElement,
     createFlexDiv, createButton, createLabel, createInput, createLabelWithSelect, createDiv, createLabelWithTextArea, 
-    margin, resizeTextAreaElement, s_button, sy_upTriangle, createTextArea, createTable, addTableRow, s_select } from './html.js';
+    margin, resizeTextAreaElement, s_button, sy_upTriangle, createTextArea, createTable, addTableRow, s_select, addTableHeaderRow } from './html.js';
 import { Description, Mesmer, MoleculeList, T } from './xml_mesmer.js';
 import { MetadataList, Metadata } from './xml_metadata.js';
 import { Atom, AtomArray, Bond, BondArray, BondRef, DOSCMethod, DeltaEDown, DensityOfStates, DensityOfStatesList,
@@ -2004,7 +2005,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
                 throw new Error("Expecting 1 or more " + DensityOfStates.tagName + " but finding 0!");
             } else {
                 let t: HTMLTableElement = createTable(mIDM.addID(doslDivID, s_table), level1);
-                addTableRow(t, DensityOfStates.header);
+                addTableHeaderRow(t, DensityOfStates.header);
                 // Append the table to the div.
                 doslDiv.appendChild(t);
                 for (let j = 0; j < xml_dos.length; j++) {
@@ -2078,7 +2079,7 @@ export function processMoleculeList(xml: XMLDocument, mIDM: IDManager, molecules
             } else {
                 tvs = [];
                 let t: HTMLTableElement = createTable(mIDM.addID(ttDivId, s_table), level1);
-                addTableRow(t, tt.getHeader());
+                addTableHeaderRow(t, tt.getHeader());
                 for (let j = 0; j < xml_tvs.length; j++) {
                     let tv = new ThermoValue(getAttributes(xml_tvs[j]));
                     tvs.push(tv);
@@ -2616,8 +2617,7 @@ function processEnergyTransferModel(mIDM: IDManager, etm: EnergyTransferModel, m
  * @param level The margin for the viewer container div.
  */
 export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv: HTMLDivElement,
-    boundary: margin,
-    level: margin) {
+    boundary: margin, level: margin) {
     // Add a 3Dmol.js viewer.
     // Create a new div for the viewer.
     let viewerContainerDivID: string = mIDM.addID(moleculeDiv.id, s_viewer, s_container);
@@ -2628,7 +2628,7 @@ export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv:
     let showBondLabels: boolean = false;
     // Create the GLViewer viewer.
     function createViewer(
-        //cameraPosition: any, cameraOrientation: any, zoomLevel: any, 
+        position: THREE.Vector3 | undefined, rotation: THREE.Euler | undefined, zoomLevel: number | undefined, 
         showAtomLabels: boolean, showBondLabels: boolean): any {
         let viewerDiv: HTMLDivElement = createDiv(viewerDivID, boundary);
         viewerDiv.className = "mol-container";
@@ -2685,23 +2685,27 @@ export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv:
                 viewer.addLabel(bond.getID()!, { position: { x: (a0x + a1x) / 2, y: (a0y + a1y) / 2, z: (a0z + a1z) / 2 } });
             }
         });
-        viewer.zoomTo();
-        viewer.render();
-        /*
-        if (cameraPosition != undefined) {
-            viewer.setCameraPosition(cameraPosition);
+        if (position != undefined) {
+            console.log("position", position);
+            viewer.position = position;
+        } else {
+            console.log("position", viewer.position);
         }
-        if (cameraOrientation != undefined) {
-            viewer.setCameraOrientation(cameraOrientation);
+        if (rotation != undefined) {
+            console.log("rotation", rotation);
+            viewer.rotation = rotation;
+        } else {
+            console.log("rotation", viewer.rotation);
         }
         if (zoomLevel != undefined) {
-            viewer.zoom(zoomLevel, 2000);
+            console.log("zoom", zoomLevel);
+            viewer.zoomLevel = zoomLevel;
         } else {
-            viewer.zoom(0.8, 2000);
+            console.log("zoom", viewer.zoomLevel);
         }
-        return viewer;
-        */
-        viewer.zoom(0.8, 2000);
+        viewer.zoomTo();
+        viewer.render();
+        //viewer.zoom(0.8, 2000);
 
         return viewer;
 
@@ -2711,9 +2715,11 @@ export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv:
     let viewer: any;
     redrawButton.addEventListener('click', () => {
         remove(viewerDivID);
-        viewer = createViewer(
-            //undefined, undefined, undefined, 
-            showAtomLabels, showBondLabels);
+        if (viewer == undefined) {
+            viewer = createViewer(undefined, undefined, undefined, showAtomLabels, showBondLabels);
+        } else {
+            viewer = createViewer(viewer.position, viewer.rotation, viewer.zoom, showAtomLabels, showBondLabels);
+        }
     });
     viewerContainerDiv.appendChild(redrawButton);
     // Helper function to create a label button for hiding or showing labels on the viewer.
@@ -2727,16 +2733,12 @@ export function create3DViewer(mIDM: IDManager, molecule: Molecule, moleculeDiv:
                 button.textContent = "Hide " + label;
                 showState = true;
             }
-            /*
-            let cameraPosition = viewer.getCameraPosition();
-            let cameraOrientation = viewer.getCameraOrientation();
-            let zoomLevel = viewer.getZoomLevel();
-            */
+            let position: THREE.Vector3 = viewer.position;
+            let rotation: THREE.Euler = viewer.rotation;
+            let zoomLevel: number = viewer.zoomLevel;
             updateState(showState);
             remove(viewerDivID);
-            viewer = createViewer(
-                //cameraPosition, cameraOrientation, zoomLevel,
-                showAtomLabels, showBondLabels);
+            viewer = createViewer(position, rotation, zoomLevel, showAtomLabels, showBondLabels);
         });
         return button;
     }

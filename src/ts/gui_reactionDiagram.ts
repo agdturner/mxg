@@ -101,6 +101,9 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
     font: string, lw: number, lwc: number,
     molecules: Map<string, Molecule>, reactions: Map<string, Reaction>): void {
     console.log("drawReactionDiagram");
+
+    let units: string = "kJ/mol"; // Default units for energy. To be replaced with a true value.
+    
     if (canvas != null && reactions.size > 0) {
         // Set foreground and background colors.
         let foreground: string;
@@ -154,6 +157,10 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                 }
                 let energy: Big = reaction.getReactantsEnergy(getMolecule, molecules);
                 console.log("energy=" + energy.toString());
+
+                units = reaction.getEnergyUnits(getMolecule, molecules, reaction.getReactants());
+                console.log("units=" + units);
+
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -167,6 +174,10 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                 products.add(productsLabel);
                 let energy = reaction.getProductsEnergy(getMolecule, molecules);
                 console.log("energy=" + energy.toString());
+
+                units = reaction.getEnergyUnits(getMolecule, molecules, reaction.getProducts());
+                console.log("units=" + units);
+
                 energyMin = min(energyMin, energy);
                 energyMax = max(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -187,6 +198,10 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                             orders.set(moleculeRef, i);
                             energy = (getMolecule(moleculeRef, molecules) as Molecule).getEnergy() ?? big0;
                             console.log("energy=" + energy.toString());
+
+                            units = reaction.getEnergyUnits(getMolecule, molecules, reaction.getTransitionStates());
+                            console.log("units=" + units);
+
                             energyMin = min(energyMin, energy);
                             energyMax = max(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -313,6 +328,18 @@ export function drawReactionDiagram(canvas: HTMLCanvasElement | null, rdcHeight:
                     productInXY[0], productInXY[1]);
             }
         });
+        // Plot units on the Y-axis.
+        ctx.save();
+        ctx.translate(20, originalCanvasHeight / 2); // Move to the center of the Y-axis
+        ctx.rotate(-Math.PI / 2); // Rotate the context by -90 degrees
+        //ctx.scale(1, -1); // Flip the context vertically
+        ctx.scale(-1, 1); // Flip the context vertically
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "16px Arial"; // Set the font size and family
+        ctx.fillText("Energy " + units, 0, 0); // Draw the label
+        ctx.restore(); // Restore the context to its original state
+
         // Draw horizontal lines and labels.
         // (This is done last so that the labels are on top of the vertical lines.)
         reactants.forEach(function (value) {

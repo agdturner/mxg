@@ -6,7 +6,7 @@ import {
 import {
     createButton, s_button, createDiv, getCollapsibleDiv, createSelectElement, s_select,
     addTableRow, createLabel, createLabelWithInput, createLabelWithSelect, createTable,
-    resizeInputElement, resizeSelectElement, createFlexDiv
+    resizeInputElement, resizeSelectElement, createFlexDiv, addTableHeaderRow
 } from "./html.js";
 import { ReactionList, Description, T } from "./xml_mesmer.js";
 import { Molecule } from "./xml_molecule.js";
@@ -1001,7 +1001,7 @@ export function processReactionList(xml: XMLDocument, rIDM: IDManager, rsDivID: 
                         }
                         if (j == 0) {
                             // It maybe that only the first kinf contains unit details!
-                            addTableRow(t, k.getHeader());
+                            addTableHeaderRow(t, k.getHeader());
                         }
                         addTableRow(t, k.toStringArray());
                     }
