@@ -399,6 +399,23 @@ export function createTable(id: string, margin: margin): HTMLTableElement {
  * @param margin The margin for the HTMLTableRowElement.
  * @returns A HTMLTableRowElement.
  */
+export function addTableHeaderRow(table: HTMLTableElement, content: string[]): HTMLTableRowElement {
+    let thead: HTMLTableSectionElement = table.createTHead();
+    let headerRow: HTMLTableRowElement = thead.insertRow();
+    content.forEach(c => {
+        let th = document.createElement("th");
+        th.textContent = c;
+        headerRow.appendChild(th);
+    });
+    return headerRow;
+}
+
+/**
+ * Create and return a HTMLTableRowElement.
+ * @param id The id of the HTMLTableRowElement.
+ * @param margin The margin for the HTMLTableRowElement.
+ * @returns A HTMLTableRowElement.
+ */
 export function addTableRow(table: HTMLTableElement, content: string[]): HTMLTableRowElement {
     let row: HTMLTableRowElement = table.insertRow();
     content.forEach(c => {

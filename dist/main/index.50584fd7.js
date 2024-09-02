@@ -1714,7 +1714,7 @@ function selectAnotherOptionEventListener(options, select) {
             let tableDiv = (0, _htmlJs.createDiv)(addRID(pDivID, s_table), boundary1);
             pDiv.appendChild(tableDiv);
             let tab = (0, _htmlJs.createTable)(addRID(plDivID, s_table), boundary1);
-            (0, _htmlJs.addTableRow)(tab, refs);
+            (0, _htmlJs.addTableHeaderRow)(tab, refs);
             t_ref_pop.forEach((ref_pop, t)=>{
                 let row = [];
                 row.push(t.toString());
@@ -1790,7 +1790,7 @@ function selectAnotherOptionEventListener(options, select) {
                     let fol = new (0, _xmlAnalysisJs.FirstOrderLoss)(fol_attributes, new (0, _bigJs.Big)(s));
                     rl.addFirstOrderLoss(fol);
                 }
-                if (i == 0) (0, _htmlJs.addTableRow)(tab, th);
+                if (i == 0) (0, _htmlJs.addTableHeaderRow)(tab, th);
                 (0, _htmlJs.addTableRow)(tab, values);
             //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));
             //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(values.join(","), boundary1)));
@@ -3397,6 +3397,12 @@ parcelHelpers.export(exports, "s_select", ()=>s_select);
  * @param id The id of the HTMLTableRowElement.
  * @param margin The margin for the HTMLTableRowElement.
  * @returns A HTMLTableRowElement.
+ */ parcelHelpers.export(exports, "addTableHeaderRow", ()=>addTableHeaderRow);
+/**
+ * Create and return a HTMLTableRowElement.
+ * @param id The id of the HTMLTableRowElement.
+ * @param margin The margin for the HTMLTableRowElement.
+ * @returns A HTMLTableRowElement.
  */ parcelHelpers.export(exports, "addTableRow", ()=>addTableRow);
 var _util = require("./util");
 const s_button = "button";
@@ -3575,6 +3581,16 @@ function createTable(id, margin) {
     table.id = id;
     Object.assign(table.style, margin);
     return table;
+}
+function addTableHeaderRow(table, content) {
+    let thead = table.createTHead();
+    let headerRow = thead.insertRow();
+    content.forEach((c)=>{
+        let th = document.createElement("th");
+        th.textContent = c;
+        headerRow.appendChild(th);
+    });
+    return headerRow;
 }
 function addTableRow(table, content) {
     let row = table.insertRow();
@@ -13943,7 +13959,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             if (xml_dos.length == 0) throw new Error("Expecting 1 or more " + (0, _xmlMoleculeJs.DensityOfStates).tagName + " but finding 0!");
             else {
                 let t = (0, _htmlJs.createTable)(mIDM.addID(doslDivID, (0, _appJs.s_table)), (0, _appJs.level1));
-                (0, _htmlJs.addTableRow)(t, (0, _xmlMoleculeJs.DensityOfStates).header);
+                (0, _htmlJs.addTableHeaderRow)(t, (0, _xmlMoleculeJs.DensityOfStates).header);
                 // Append the table to the div.
                 doslDiv.appendChild(t);
                 for(let j = 0; j < xml_dos.length; j++){
@@ -14010,7 +14026,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             else {
                 tvs = [];
                 let t = (0, _htmlJs.createTable)(mIDM.addID(ttDivId, (0, _appJs.s_table)), (0, _appJs.level1));
-                (0, _htmlJs.addTableRow)(t, tt.getHeader());
+                (0, _htmlJs.addTableHeaderRow)(t, tt.getHeader());
                 for(let j = 0; j < xml_tvs.length; j++){
                     let tv = new (0, _xmlMoleculeJs.ThermoValue)((0, _xmlJs.getAttributes)(xml_tvs[j]));
                     tvs.push(tv);
@@ -14429,8 +14445,7 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
     let showAtomLabels = false;
     let showBondLabels = false;
     // Create the GLViewer viewer.
-    function createViewer(//cameraPosition: any, cameraOrientation: any, zoomLevel: any, 
-    showAtomLabels, showBondLabels) {
+    function createViewer(position, rotation, zoomLevel, showAtomLabels, showBondLabels) {
         let viewerDiv = (0, _htmlJs.createDiv)(viewerDivID, boundary);
         viewerDiv.className = "mol-container";
         viewerContainerDiv.appendChild(viewerDiv);
@@ -14513,22 +14528,21 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
                 }
             });
         });
+        if (position != undefined) {
+            console.log("position", position);
+            viewer.position = position;
+        } else console.log("position", viewer.position);
+        if (rotation != undefined) {
+            console.log("rotation", rotation);
+            viewer.rotation = rotation;
+        } else console.log("rotation", viewer.rotation);
+        if (zoomLevel != undefined) {
+            console.log("zoom", zoomLevel);
+            viewer.zoomLevel = zoomLevel;
+        } else console.log("zoom", viewer.zoomLevel);
         viewer.zoomTo();
         viewer.render();
-        /*
-        if (cameraPosition != undefined) {
-            viewer.setCameraPosition(cameraPosition);
-        }
-        if (cameraOrientation != undefined) {
-            viewer.setCameraOrientation(cameraOrientation);
-        }
-        if (zoomLevel != undefined) {
-            viewer.zoom(zoomLevel, 2000);
-        } else {
-            viewer.zoom(0.8, 2000);
-        }
-        return viewer;
-        */ viewer.zoom(0.8, 2000);
+        //viewer.zoom(0.8, 2000);
         return viewer;
     }
     // Add a redraw button.
@@ -14536,8 +14550,8 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
     let viewer;
     redrawButton.addEventListener("click", ()=>{
         (0, _appJs.remove)(viewerDivID);
-        viewer = createViewer(//undefined, undefined, undefined, 
-        showAtomLabels, showBondLabels);
+        if (viewer == undefined) viewer = createViewer(undefined, undefined, undefined, showAtomLabels, showBondLabels);
+        else viewer = createViewer(viewer.position, viewer.rotation, viewer.zoom, showAtomLabels, showBondLabels);
     });
     viewerContainerDiv.appendChild(redrawButton);
     // Helper function to create a label button for hiding or showing labels on the viewer.
@@ -14551,14 +14565,12 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
                 button.textContent = "Hide " + label;
                 showState = true;
             }
-            /*
-            let cameraPosition = viewer.getCameraPosition();
-            let cameraOrientation = viewer.getCameraOrientation();
-            let zoomLevel = viewer.getZoomLevel();
-            */ updateState(showState);
+            let position = viewer.position;
+            let rotation = viewer.rotation;
+            let zoomLevel = viewer.zoomLevel;
+            updateState(showState);
             (0, _appJs.remove)(viewerDivID);
-            viewer = createViewer(//cameraPosition, cameraOrientation, zoomLevel,
-            showAtomLabels, showBondLabels);
+            viewer = createViewer(position, rotation, zoomLevel, showAtomLabels, showBondLabels);
         });
         return button;
     }
@@ -15816,7 +15828,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
                             k.setKeq(new (0, _xmlReactionJs.Keq)((0, _xmlJs.getAttributes)(xml_Keq[0]), value));
                         }
                         if (j == 0) // It maybe that only the first kinf contains unit details!
-                        (0, _htmlJs.addTableRow)(t, k.getHeader());
+                        (0, _htmlJs.addTableHeaderRow)(t, k.getHeader());
                         (0, _htmlJs.addTableRow)(t, k.toStringArray());
                     }
                     (0, _appJs.addSaveAsCSVButton)(crl.toCSV.bind(crl), crlDiv, t, reaction.id + "_" + (0, _xmlReactionJs.CanonicalRateList).tagName, (0, _appJs.level1));
@@ -15908,6 +15920,7 @@ parcelHelpers.defineInteropFlag(exports);
  * A class for representing a reaction.
  */ parcelHelpers.export(exports, "Reaction", ()=>Reaction);
 var _bigJs = require("big.js");
+var _xmlMoleculeJs = require("./xml_molecule.js");
 var _xmlJs = require("./xml.js");
 var _xmlMesmerJs = require("./xml_mesmer.js");
 var _appJs = require("./app.js");
@@ -16826,43 +16839,64 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
         return label;
     }
     /**
-     * Returns the total energy of all reactants.
-     * @returns The total energy of all reactants.
-     */ //getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
-    getReactantsEnergy(retrieveMolecule, molecules) {
-        // Sum up the energy values of all the reactants in the reaction
-        return Array.from(this.getReactants().values()).map((reactant)=>{
-            let ref = reactant.getMolecule().getRef();
-            //console.log("ref=\"" + ref + "\"");
+     * Returns the total energy of all reactants or products.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @param items Either the reactants or products.
+     * @returns The total energy of all reactants or products.
+     */ getTotalEnergy(retrieveMolecule, molecules, items) {
+        return Array.from(items.values()).map((item)=>{
+            let ref = item.getMolecule().getRef();
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                console.log("molecule with ref " + ref + " not found");
-                // Create alert user to add the molecule to the list of molecules.
+                console.log("Molecule with ref " + ref + " not found!");
                 alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules.                  In the meantime it will be treated as having an energy of 0.");
-                //throw new Error(`Molecule with ref ${ref} not found`);
                 return 0, _appJs.big0;
             }
             return molecule.getEnergy();
         }).reduce((a, b)=>a.add(b), new (0, _bigJs.Big)(0));
     }
     /**
+     * Returns the total energy of all reactants.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @returns The total energy of all reactants.
+     */ getReactantsEnergy(retrieveMolecule, molecules) {
+        return this.getTotalEnergy(retrieveMolecule, molecules, this.getReactants());
+    }
+    /**
      * Returns the total energy of all products.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
      * @returns The total energy of all products.
      */ getProductsEnergy(retrieveMolecule, molecules) {
-        // Sum up the energy values of all the products in the reaction
-        //return Array.from(this.getProducts()).map(product => {
-        return Array.from(this.getProducts().values()).map((product)=>{
-            let ref = product.getMolecule().getRef();
-            //console.log("ref=\"" + ref + "\"");
+        return this.getTotalEnergy(retrieveMolecule, molecules, this.getProducts());
+    }
+    /**
+     * Checks all energy units are the same and returns the energy units.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @param items Either the reactants or products.
+     * @returns The energy units.
+     */ getEnergyUnits(retrieveMolecule, molecules, items) {
+        let unitsSet = new Set();
+        Array.from(items.values()).map((item)=>{
+            let ref = item.getMolecule().getRef();
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
                 console.log("molecule with ref " + ref + " not found");
-                // Print the keys in the molecules map
-                console.log(molecules.keys());
-                throw new Error(`Molecule with ref ${ref} not found`);
+                alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules.                      In the meantime it will be treated as having an energy of 0.");
+                return "";
+            } else {
+                let pZPE = molecule.getProperty("me:ZPE");
+                let units = pZPE?.attributes.get((0, _xmlMoleculeJs.PropertyScalarNumber).s_units);
+                unitsSet.add(units ? units : "");
             }
-            return molecule.getEnergy();
-        }).reduce((a, b)=>a.add(b), new (0, _bigJs.Big)(0));
+        });
+        if (unitsSet.size > 1) {
+            console.log("Warning: Not all molecules have the same units");
+            return "";
+        } else return Array.from(unitsSet)[0]; // Return the only unit in the set
     }
     /**
      * @param tagName The tag name.
@@ -16881,7 +16915,7 @@ class Reaction extends (0, _xmlJs.NodeWithNodes) {
     }
 }
 
-},{"big.js":"91nMZ","./xml.js":"7znDa","./xml_mesmer.js":"8G2m7","./app.js":"dPB9w","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jmz8t":[function(require,module,exports) {
+},{"big.js":"91nMZ","./xml_molecule.js":"cg9tc","./xml.js":"7znDa","./xml_mesmer.js":"8G2m7","./app.js":"dPB9w","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jmz8t":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 /**
@@ -19086,6 +19120,7 @@ function createReactionDiagram(rdcID, rdcHeight, dark, rd_font, rd_lw, rd_lwc, r
 }
 function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, reactions) {
     console.log("drawReactionDiagram");
+    let units = "kJ/mol"; // Default units for energy. To be replaced with a true value.
     if (canvas != null && reactions.size > 0) {
         // Set foreground and background colors.
         let foreground;
@@ -19137,6 +19172,8 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                 if (products.has(reactantsLabel)) intProducts.add(reactantsLabel);
                 let energy = reaction.getReactantsEnergy((0, _app.getMolecule), molecules);
                 console.log("energy=" + energy.toString());
+                units = reaction.getEnergyUnits((0, _app.getMolecule), molecules, reaction.getReactants());
+                console.log("units=" + units);
                 energyMin = (0, _util.min)(energyMin, energy);
                 energyMax = (0, _util.max)(energyMax, energy);
                 energies.set(reactantsLabel, energy);
@@ -19150,6 +19187,8 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                 products.add(productsLabel);
                 let energy = reaction.getProductsEnergy((0, _app.getMolecule), molecules);
                 console.log("energy=" + energy.toString());
+                units = reaction.getEnergyUnits((0, _app.getMolecule), molecules, reaction.getProducts());
+                console.log("units=" + units);
                 energyMin = (0, _util.min)(energyMin, energy);
                 energyMax = (0, _util.max)(energyMax, energy);
                 energies.set(productsLabel, energy);
@@ -19168,6 +19207,8 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
                             orders.set(moleculeRef, i);
                             energy = (0, _app.getMolecule)(moleculeRef, molecules).getEnergy() ?? (0, _app.big0);
                             console.log("energy=" + energy.toString());
+                            units = reaction.getEnergyUnits((0, _app.getMolecule), molecules, reaction.getTransitionStates());
+                            console.log("units=" + units);
                             energyMin = (0, _util.min)(energyMin, energy);
                             energyMax = (0, _util.max)(energyMax, energy);
                             energies.set(moleculeRef, energy);
@@ -19304,6 +19345,17 @@ function drawReactionDiagram(canvas, rdcHeight, dark, font, lw, lwc, molecules, 
             });
             else (0, _canvas.drawLine)(ctx, foreground, lwc, reactantOutXY[0], reactantOutXY[1], productInXY[0], productInXY[1]);
         });
+        // Plot units on the Y-axis.
+        ctx.save();
+        ctx.translate(20, originalCanvasHeight / 2); // Move to the center of the Y-axis
+        ctx.rotate(-Math.PI / 2); // Rotate the context by -90 degrees
+        //ctx.scale(1, -1); // Flip the context vertically
+        ctx.scale(-1, 1); // Flip the context vertically
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "16px Arial"; // Set the font size and family
+        ctx.fillText("Energy " + units, 0, 0); // Draw the label
+        ctx.restore(); // Restore the context to its original state
         // Draw horizontal lines and labels.
         // (This is done last so that the labels are on top of the vertical lines.)
         reactants.forEach(function(value) {

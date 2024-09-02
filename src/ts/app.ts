@@ -2,7 +2,7 @@
 import { arrayToString, getID, isNumeric, mapToString } from './util.js';
 import { getFirstChildNode, getAttributes, getSingularElement, NumberNode } from './xml.js';
 import { addTableRow, createButton, createDiv, createFlexDiv, createLabel, createLabelWithInput, createLabelWithSelect,
-    createInput, createTable, getCollapsibleDiv, margin, resizeInputElement, resizeSelectElement, s_button} from './html.js';
+    createInput, createTable, getCollapsibleDiv, margin, resizeInputElement, resizeSelectElement, s_button, addTableHeaderRow} from './html.js';
 import { Molecule } from './xml_molecule.js';
 import { Reaction } from './xml_reaction.js';
 import { createMenu } from './gui_menu.js';
@@ -1304,7 +1304,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                 let tableDiv: HTMLDivElement = createDiv(addRID(pDivID, s_table), boundary1);
                 pDiv.appendChild(tableDiv);
                 let tab = createTable(addRID(plDivID, s_table), boundary1);
-                addTableRow(tab, refs);
+                addTableHeaderRow(tab, refs);
                 t_ref_pop.forEach((ref_pop, t) => {
                     let row: string[] = [];
                     row.push(t.toString());
@@ -1388,7 +1388,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     }
                 }
                 if (i == 0) {
-                    addTableRow(tab, th);
+                    addTableHeaderRow(tab, th);
                 }
                 addTableRow(tab, values);
                 //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));

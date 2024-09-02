@@ -3,7 +3,11 @@
   "version": "0.14",
   "license": "MIT",
   "description": "MESMER XML GUI.",
-  "keywords": ["reaction", "kinetics", "chemistry"],
+  "keywords": [
+    "reaction",
+    "kinetics",
+    "chemistry"
+  ],
   "source": "src/index.html",
   "homepage": "https://mesmer-kinetics.github.io/mxg/",
   "scripts": {
@@ -76,5 +80,8 @@
       "name": "Andy Turner",
       "url": "https://github.com/agdturner"
     }
-  ]
+  ],
+  "dependencies": {
+    "@types/three": "^0.167.2"
+  }
 }
