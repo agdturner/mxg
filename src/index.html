@@ -21,6 +21,10 @@
       height: 400px;
       position: relative;
     }
+    .grid-container {
+      display: grid;
+      grid-template-columns: 67% 33%;
+    }
     </style>
 
 
@@ -33,19 +37,26 @@
   -->
 
   <!-- For the banner -->
-  <!--
-  -->
-  <div id="banner">
-    <style>
-      #banner {
-        text-align: center;
-      }
-    </style>
+
+<div class="grid-container">
+
+  <div></div>
+  <div>
     <img src="./images/UoL_Logo.png" alt="UoL_Logo" style="width:100%;">
-    <h1>MESMER XML GUI (MXG Version 0.14)</h1>
   </div>
+ 
+</div> 
   
-  <!-- For the main GUI menu buttons -->
+<div id="banner">
+  <style>
+    #banner {
+      text-align: center;
+    }
+  </style>
+  <h1>MESMER XML GUI (MXG Version 0.14)</h1>
+</div>
+
+<!-- For the main GUI menu buttons -->
   <div id="menu"></div>
 
   <!-- Title -->
