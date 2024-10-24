@@ -23,6 +23,10 @@
   position: relative;
 }
 
+.grid-container {
+  grid-template-columns: 67% 33%;
+  display: grid;
+}
 </style>
 
 
@@ -35,19 +39,25 @@
   -->
 
   <!-- For the banner -->
-  <!--
-  -->
-  <div id="banner">
-    <style>#banner {
+
+<div class="grid-container">
+
+  <div></div>
+  <div>
+    <img src="/UoL_Logo.a63bc4b4.png" alt="UoL_Logo" style="width: 100%">
+  </div>
+ 
+</div> 
+  
+<div id="banner">
+  <style>#banner {
   text-align: center;
 }
-
 </style>
-    <img src="/UoL_Logo.a63bc4b4.png" alt="UoL_Logo" style="width: 100%">
-    <h1>MESMER XML GUI (MXG Version 0.14)</h1>
-  </div>
-  
-  <!-- For the main GUI menu buttons -->
+  <h1>MESMER XML GUI (MXG Version 0.14)</h1>
+</div>
+
+<!-- For the main GUI menu buttons -->
   <div id="menu"></div>
 
   <!-- Title -->
@@ -230,15 +240,16 @@
       this[globalName] = mainExports;
     }
   }
-})({"cqxib":[function(require,module,exports) {
+})({"4qAFu":[function(require,module,exports) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
-module.bundle.HMR_BUNDLE_ID = "0802ee0a4aaf78dc";
+var HMR_USE_SSE = false;
+module.bundle.HMR_BUNDLE_ID = "2b78c902081cf689";
 "use strict";
-/* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
+/* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
   HMRAsset,
   HMRMessage,
@@ -277,6 +288,7 @@ declare var HMR_HOST: string;
 declare var HMR_PORT: string;
 declare var HMR_ENV_HASH: string;
 declare var HMR_SECURE: boolean;
+declare var HMR_USE_SSE: boolean;
 declare var chrome: ExtensionContext;
 declare var browser: ExtensionContext;
 declare var __parcel__import__: (string) => Promise<void>;
@@ -320,7 +332,8 @@ if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== "undefined") {
         "0.0.0.0"
     ].includes(hostname) ? "wss" : "ws";
     var ws;
-    try {
+    if (HMR_USE_SSE) ws = new EventSource("/__parcel_hmr");
+    else try {
         ws = new WebSocket(protocol + "://" + hostname + (port ? ":" + port : "") + "/");
     } catch (err) {
         if (err.message) console.error(err.message);
@@ -390,12 +403,14 @@ if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== "undefined") {
             }
         }
     };
-    ws.onerror = function(e) {
-        if (e.message) console.error(e.message);
-    };
-    ws.onclose = function() {
-        console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
-    };
+    if (ws instanceof WebSocket) {
+        ws.onerror = function(e) {
+            if (e.message) console.error(e.message);
+        };
+        ws.onclose = function() {
+            console.warn("[parcel] \uD83D\uDEA8 Connection to the HMR server was lost");
+        };
+    }
 }
 function removeErrorOverlay() {
     var overlay = document.getElementById(OVERLAY_ID);
@@ -666,7 +681,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
     });
 }
 
-},{}],"jAruq":[function(require,module,exports) {
+},{}],"3GCY6":[function(require,module,exports) {
 if ("serviceWorker" in navigator) window.addEventListener("load", function() {
     //navigator.serviceWorker.register('/sw.js')
     navigator.serviceWorker.register(require("ac841797bc4c2dfe"))//navigator.serviceWorker.register(new URL('/sw.js', import.meta.url), { scope: '/' })
@@ -685,10 +700,10 @@ if ("serviceWorker" in navigator) window.addEventListener("load", function() {
     }
     */ 
 
-},{"ac841797bc4c2dfe":"hnNZI"}],"hnNZI":[function(require,module,exports) {
-module.exports = require("3e06788b023d43e4").getBundleURL("GDYlJ") + "up_/sw.js" + "?" + Date.now();
+},{"ac841797bc4c2dfe":"fnKSy"}],"fnKSy":[function(require,module,exports) {
+module.exports = require("dfec28fb53274ddb").getBundleURL("3JoLx") + "up_/sw.js" + "?" + Date.now();
 
-},{"3e06788b023d43e4":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+},{"dfec28fb53274ddb":"lgJ39"}],"lgJ39":[function(require,module,exports) {
 "use strict";
 var bundleURL = {};
 function getBundleURLCached(id) {
@@ -723,7 +738,7 @@ exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
 
-},{}]},["cqxib","jAruq"], "jAruq", "parcelRequirec042")
+},{}]},["4qAFu","3GCY6"], "3GCY6", "parcelRequirec042")
 
 </script>
 
