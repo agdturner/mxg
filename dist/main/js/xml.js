@@ -109,6 +109,7 @@ class Tag {
 exports.Tag = Tag;
 /**
  * A class for representing A Tag with attributes.
+ * <mytag id="1">
  */
 class TagWithAttributes extends Tag {
     /**

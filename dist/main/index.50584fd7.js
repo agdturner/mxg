@@ -1733,72 +1733,89 @@ function selectAnotherOptionEventListener(options, select) {
         let rlDivID = addRID(aDivID, (0, _xmlAnalysisJs.RateList).tagName);
         let rlDiv = (0, _htmlJs.createDiv)(rlDivID, level1);
         let rlcDiv = (0, _htmlJs.getCollapsibleDiv)(rlDivID, aDiv, null, rlDiv, (0, _xmlAnalysisJs.RateList).tagName + "s", boundary1, level1);
-        if (xml_rl.length > 0) {
-            // Create Table.
-            let tableDiv = (0, _htmlJs.createDiv)(addRID(rlDivID, s_table), boundary1);
-            rlDiv.appendChild(tableDiv);
-            let tab = (0, _htmlJs.createTable)(addRID(plDivID, s_table), boundary1);
-            // Table Header
-            let th = [
-                "T",
-                "conc"
-            ];
-            for(let i = 0; i < xml_rl.length; i++){
-                let rl_attributes = (0, _xmlJs.getAttributes)(xml_rl[i]);
-                let values = [];
-                values.push(rl_attributes.get("T"));
-                values.push(rl_attributes.get("conc"));
-                /*if (i == 0) {
-                    Array.from(rl_attributes.keys()).forEach((key) => {
-                        refs.push(key);
-                    });
-                }*/ let rl = new (0, _xmlAnalysisJs.RateList)(rl_attributes);
-                a.addRateList(rl);
-                /*
-                let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rl_attributes);
-                let rlDivID: string = addID(aDiv.id, RateList.tagName, i.toString());
-                // Create a new collapsible div for the RateList.
-                let rDivID: string = addID(rlDivID, i.toString());
-                let rDiv: HTMLDivElement = createDiv(rlDivID, level1);
-                let rcDiv: HTMLDivElement = getCollapsibleDiv(rDivID, rlDiv, null, rDiv,
-                    labelText, boundary1, level0);
-                */ // "me:firstOrderRate".
-                let xml_for = xml_rl[i].getElementsByTagName((0, _xmlAnalysisJs.FirstOrderRate).tagName);
-                if (xml_for.length > 0) //console.log("me:firstOrderRate length " + xml_for.length);
-                for(let j = 0; j < xml_for.length; j++){
-                    let forate_attributes = (0, _xmlJs.getAttributes)(xml_for[j]);
-                    if (i == 0) {
-                        let fromRef = forate_attributes.get("fromRef");
-                        let toRef = forate_attributes.get("toRef");
-                        th.push(fromRef + "->" + toRef);
-                    }
-                    let s = ((0, _xmlJs.getFirstChildNode)(xml_for[j])?.nodeValue ?? "").trim();
+        if (xml_rl.length > 0) for(let i = 0; i < xml_rl.length; i++){
+            let rle_attributes = (0, _xmlJs.getAttributes)(xml_rl[i]);
+            let rle_attributesKeys = Array.from(rle_attributes.keys());
+            let rle_values = [];
+            for(let j = 0; j < rle_attributesKeys.length; j++)rle_values.push(rle_attributes.get(rle_attributesKeys[j]));
+            let rl = new (0, _xmlAnalysisJs.RateList)(rle_attributes);
+            rl.setTemperature(new (0, _bigJs.Big)(rle_attributes.get("T")));
+            rl.setConcentration(new (0, _bigJs.Big)(rle_attributes.get("conc")));
+            rl.setBathGas(rle_attributes.get("bathGas"));
+            rl.setUnits(rle_attributes.get("units"));
+            a.addRateList(rl);
+            let labelText = rl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(rle_attributes);
+            // Create a new collapsible div for the RateList.
+            let rleDivID = addID(rlDivID, i.toString());
+            let rleDiv = (0, _htmlJs.createDiv)(rleDivID);
+            rlDiv.appendChild(rleDiv);
+            let rlecDiv = (0, _htmlJs.getCollapsibleDiv)(rleDivID, rlDiv, null, rleDiv, labelText, boundary1, level0);
+            let keys;
+            let values;
+            // "me:firstOrderLoss".
+            // Create a new collapsible div for the FirstOrderLosses.
+            let folDivID = addID(rleDivID, (0, _xmlAnalysisJs.FirstOrderLoss).tagName);
+            let folDiv = (0, _htmlJs.createDiv)(folDivID);
+            rleDiv.appendChild(folDiv);
+            let folcDiv = (0, _htmlJs.getCollapsibleDiv)(folDivID, rleDiv, null, folDiv, (0, _xmlAnalysisJs.FirstOrderLoss).tagName, boundary1, level1);
+            let xml_fol = xml_rl[i].getElementsByTagName((0, _xmlAnalysisJs.FirstOrderLoss).tagName);
+            let folTable = (0, _htmlJs.createTable)(folDivID, boundary1);
+            let folTableDiv = (0, _htmlJs.createDiv)(addRID(folDivID, s_table), level1);
+            folTableDiv.appendChild(folTable);
+            folDiv.appendChild(folTableDiv);
+            for(let j = 0; j < xml_fol.length; j++){
+                let fol_attributes = (0, _xmlJs.getAttributes)(xml_fol[j]);
+                if (j == 0) {
+                    // header
+                    keys = Array.from(fol_attributes.keys());
+                    keys.push("rate");
+                    (0, _htmlJs.addTableHeaderRow)(folTable, keys);
+                }
+                values = Array.from(fol_attributes.values());
+                // Check lengths.
+                if (keys.length - 1 != values.length) console.error("FirstOrderLoss values0!.length != values!.length");
+                let s = ((0, _xmlJs.getFirstChildNode)(xml_fol[j])?.nodeValue ?? "").trim();
+                let fol = new (0, _xmlAnalysisJs.FirstOrderLoss)(fol_attributes, new (0, _bigJs.Big)(s));
+                rl.addFirstOrderLoss(fol);
+                for(let k = 0; k < keys.length; k++)// Check reference.
+                if (keys[k] == values[k]) values.push(fol_attributes.get(values[k]));
+                else console.log("FirstOrderLoss values0![k] != values![k]");
+                values.push(s);
+                (0, _htmlJs.addTableRow)(folTable, values);
+            }
+            // Insert a save as csv button.
+            addSaveAsCSVButton(()=>tableToCSV(folTable), folDiv, folTableDiv, "First Order Losses", level1);
+        //addSaveAsCSVButton(() => tableToCSV(folTable), rleDiv, folTableDiv, "Bartis-Widom Phenomenological Rate Coefficients", boundary1);
+        /*
+                // "me:firstOrderRate".
+                let xml_for: HTMLCollectionOf<Element> = xml_rl[i].getElementsByTagName(FirstOrderRate.tagName);
+                for (let j: number = 0; j < xml_for.length; j++) {
+                    let forate_attributes: Map<string, string> = getAttributes(xml_for[j]);
+                    let fromRef: string = forate_attributes.get("fromRef") as string;
+                    let toRef: string = forate_attributes.get("toRef") as string;
+                    values.push(fromRef + "->" + toRef);
+                    let s: string = (getFirstChildNode(xml_for[j])?.nodeValue ?? "").trim();
                     values.push(s);
-                    let forate = new (0, _xmlAnalysisJs.FirstOrderRate)(forate_attributes, new (0, _bigJs.Big)(s));
+                    let forate: FirstOrderRate = new FirstOrderRate(forate_attributes, new Big(s));
                     rl.addFirstOrderRate(forate);
                 }
-                // "me:firstOrderLoss".
-                let xml_fol = xml_rl[i].getElementsByTagName((0, _xmlAnalysisJs.FirstOrderLoss).tagName);
-                if (xml_fol.length > 0) //console.log("me:firstOrderLoss length " + xml_fol.length);
-                for(let j = 0; j < xml_fol.length; j++){
-                    let fol_attributes = (0, _xmlJs.getAttributes)(xml_fol[j]);
-                    if (i == 0) Array.from(fol_attributes.values()).forEach((v)=>{
-                        th.push("loss of " + v);
-                    });
-                    let s = ((0, _xmlJs.getFirstChildNode)(xml_fol[j])?.nodeValue ?? "").trim();
-                    values.push(s);
-                    let fol = new (0, _xmlAnalysisJs.FirstOrderLoss)(fol_attributes, new (0, _bigJs.Big)(s));
-                    rl.addFirstOrderLoss(fol);
+                // "me:secondOrderRate".
+                let xml_sor: HTMLCollectionOf<Element> = xml_rl[i].getElementsByTagName(SecondOrderRate.tagName);
+                if (xml_sor.length > 0) {
+                    console.log("me:secondOrderRate length " + xml_for.length);
+                    for (let j: number = 0; j < xml_for.length; j++) {
+                        let sorate_attributes: Map<string, string> = getAttributes(xml_for[j]);
+                        let fromRef: string = sorate_attributes.get("fromRef") as string;
+                        let toRef: string = sorate_attributes.get("toRef") as string;
+                        th.push(fromRef + "->" + toRef);
+                        let s: string = (getFirstChildNode(xml_for[j])?.nodeValue ?? "").trim();
+                        values.push(s);
+                        let forate: FirstOrderRate = new FirstOrderRate(sorate_attributes, new Big(s));
+                        rl.addSecondOrderRate(forate);
+                    }
                 }
-                if (i == 0) (0, _htmlJs.addTableHeaderRow)(tab, th);
-                (0, _htmlJs.addTableRow)(tab, values);
-            //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));
-            //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(values.join(","), boundary1)));
-            }
-            //console.log(refs);
-            tableDiv.appendChild(tab);
-            // Insert a save as csv button.
-            addSaveAsCSVButton(()=>tableToCSV(tab), rlDiv, tableDiv, "Bartis-Widom Phenomenological Rate Coefficients", boundary1);
+                */ //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));
+        //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(values.join(","), boundary1)));
         }
     }
     return aDiv;
@@ -2937,6 +2954,7 @@ parcelHelpers.defineInteropFlag(exports);
  */ parcelHelpers.export(exports, "Tag", ()=>Tag);
 /**
  * A class for representing A Tag with attributes.
+ * <mytag id="1">
  */ parcelHelpers.export(exports, "TagWithAttributes", ()=>TagWithAttributes);
 /**
  * A class for representing a TagWithAttributes with a string as a value.
@@ -5359,10 +5377,15 @@ parcelHelpers.defineInteropFlag(exports);
  * ref
  */ parcelHelpers.export(exports, "FirstOrderLoss", ()=>FirstOrderLoss);
 /**
- * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
+ * In the XML, the "me:firstOrderRate" element is a child of the "me:rateList" element.
  * Attributes include:
  * fromRef, toRef, reactionType
  */ parcelHelpers.export(exports, "FirstOrderRate", ()=>FirstOrderRate);
+/**
+ * In the XML, the "me:secondOrderRate" element is a child of the "me:rateList" element.
+ * Attributes include:
+ * fromRef, toRef, reactionType
+ */ parcelHelpers.export(exports, "SecondOrderRate", ()=>SecondOrderRate);
 /**
  * In the XML, the "me:rateList" element is a child of the "analysis" element.
  * Attributes include:
@@ -5489,7 +5512,20 @@ class FirstOrderRate extends (0, _xmlJs.NumberNode) {
      * @param attributes The attributes.
      * @param value The value.
      */ constructor(attributes, value){
-        super(attributes, FirstOrderLoss.tagName, value);
+        super(attributes, FirstOrderRate.tagName, value);
+    }
+}
+class SecondOrderRate extends (0, _xmlJs.NumberNode) {
+    static{
+        /**
+     * Tag name.
+     */ this.tagName = "me:secondOrderRate";
+    }
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */ constructor(attributes, value){
+        super(attributes, SecondOrderRate.tagName, value);
     }
 }
 class RateList extends (0, _xmlJs.NodeWithNodes) {
@@ -5500,7 +5536,7 @@ class RateList extends (0, _xmlJs.NodeWithNodes) {
     }
     /**
      * @param attributes The attributes.
-     */ constructor(attributes, firstOrderLosses, firstOrderRates){
+     */ constructor(attributes, firstOrderLosses, firstOrderRates, secondOrderRates){
         super(attributes, Analysis.tagName);
         this.index = new Map();
         this.folIndex = new Map();
@@ -5525,6 +5561,41 @@ class RateList extends (0, _xmlJs.NodeWithNodes) {
             });
             this.fors = firstOrderRates;
         } else this.fors = [];
+        this.sorIndex = new Map();
+        if (secondOrderRates) {
+            let i = 0;
+            secondOrderRates.forEach((sor)=>{
+                this.index.set(SecondOrderRate.tagName + i.toString(), this.nodes.size);
+                this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+                this.addNode(sor);
+                i++;
+            });
+            this.sors = secondOrderRates;
+        } else this.sors = [];
+    }
+    /**
+     * Set temperature.
+     * @param T The temperature.
+     */ setTemperature(T) {
+        this.attributes.set("T", T.toString());
+    }
+    /**
+     * Set concentration.
+     * @param conc The concentration.
+     */ setConcentration(conc) {
+        this.attributes.set("conc", conc.toString());
+    }
+    /**
+     * Set bath gas.
+     * @param bathGas The bath gas.
+     */ setBathGas(bathGas) {
+        this.attributes.set("bathGas", bathGas);
+    }
+    /**
+     * Set units.
+     * @param units The units.
+     */ setUnits(units) {
+        this.attributes.set("units", units);
     }
     /**
      * Add a first order loss.
@@ -5541,6 +5612,14 @@ class RateList extends (0, _xmlJs.NodeWithNodes) {
         this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
         this.fors.push(f);
         this.addNode(f);
+    }
+    /**
+     * Add a second order rate.
+     */ addSecondOrderRate(s) {
+        this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+        this.index.set(SecondOrderRate.tagName + this.sorIndex.size.toString(), this.nodes.size);
+        this.sors.push(s);
+        this.addNode(s);
     }
 }
 class Analysis extends (0, _xmlJs.NodeWithNodes) {

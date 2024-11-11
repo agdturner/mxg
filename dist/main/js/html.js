@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addTableRow = exports.createTable = exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.s_select = exports.sy_upTriangle = exports.sy_downTriangle = exports.s_collapsible = exports.s_button = void 0;
+exports.addTableRow = exports.addTableHeaderRow = exports.createTable = exports.createLabel = exports.createFlexDiv = exports.createDiv = exports.createLabelWithButton = exports.createButton = exports.createLabelWithSelect = exports.createSelectElement = exports.resizeTextAreaElement = exports.resizeSelectElement = exports.resizeInputElement = exports.getSelfClosingTag = exports.createTextArea = exports.createTextAreaWithFunction = exports.createLabelWithTextArea = exports.createInput = exports.createInputWithFunction = exports.createLabelWithInput = exports.getCollapsibleDiv = exports.s_select = exports.sy_upTriangle = exports.sy_downTriangle = exports.s_collapsible = exports.s_button = void 0;
 const util_1 = require("./util");
 exports.s_button = "button";
 exports.s_collapsible = "collapsible";
@@ -383,6 +383,23 @@ function createTable(id, margin) {
     return table;
 }
 exports.createTable = createTable;
+/**
+ * Create and return a HTMLTableRowElement.
+ * @param id The id of the HTMLTableRowElement.
+ * @param margin The margin for the HTMLTableRowElement.
+ * @returns A HTMLTableRowElement.
+ */
+function addTableHeaderRow(table, content) {
+    let thead = table.createTHead();
+    let headerRow = thead.insertRow();
+    content.forEach(c => {
+        let th = document.createElement("th");
+        th.textContent = c;
+        headerRow.appendChild(th);
+    });
+    return headerRow;
+}
+exports.addTableHeaderRow = addTableHeaderRow;
 /**
  * Create and return a HTMLTableRowElement.
  * @param id The id of the HTMLTableRowElement.

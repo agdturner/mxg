@@ -165,7 +165,7 @@ export class FirstOrderLoss extends NumberNode {
 }
 
 /**
- * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
+ * In the XML, the "me:firstOrderRate" element is a child of the "me:rateList" element.
  * Attributes include:
  * fromRef, toRef, reactionType
  */
@@ -181,7 +181,28 @@ export class FirstOrderRate extends NumberNode {
      * @param value The value.
      */
     constructor(attributes: Map<string, string>, value: Big) {
-        super(attributes, FirstOrderLoss.tagName, value);
+        super(attributes, FirstOrderRate.tagName, value);
+    }
+}
+
+/**
+ * In the XML, the "me:secondOrderRate" element is a child of the "me:rateList" element.
+ * Attributes include:
+ * fromRef, toRef, reactionType
+ */
+export class SecondOrderRate extends NumberNode {
+
+    /**
+     * Tag name.
+     */
+    public static tagName = 'me:secondOrderRate';
+
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes: Map<string, string>, value: Big) {
+        super(attributes, SecondOrderRate.tagName, value);
     }
 }
 
@@ -226,9 +247,20 @@ export class RateList extends NodeWithNodes {
     fors: FirstOrderRate[];
 
     /**
+     * The second order rate index.
+     */
+    sorIndex: Map<number, number>;
+
+    /**
+     * The second order rates.
+     */
+    sors: SecondOrderRate[];
+
+    /**
      * @param attributes The attributes.
      */
-    constructor(attributes: Map<string, string>, firstOrderLosses?: FirstOrderLoss[], firstOrderRates?: FirstOrderRate[]) {
+    constructor(attributes: Map<string, string>, firstOrderLosses?: FirstOrderLoss[], firstOrderRates?: FirstOrderRate[],
+        secondOrderRates?: SecondOrderRate[]) {
         super(attributes, Analysis.tagName);
         this.index = new Map();
         this.folIndex = new Map();
@@ -257,6 +289,51 @@ export class RateList extends NodeWithNodes {
         } else {
             this.fors = [];
         }
+        this.sorIndex = new Map();
+        if (secondOrderRates) {
+            let i: number = 0;
+            secondOrderRates.forEach((sor) => {
+                this.index.set(SecondOrderRate.tagName + i.toString(), this.nodes.size);
+                this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+                this.addNode(sor);
+                i++;
+            });
+            this.sors = secondOrderRates;
+        } else {
+            this.sors = [];
+        }
+    }
+
+    /**
+     * Set temperature.
+     * @param T The temperature.
+     */
+    public setTemperature(T: Big): void {
+        this.attributes.set('T', T.toString());
+    }
+
+    /**
+     * Set concentration.
+     * @param conc The concentration.
+     */
+    public setConcentration(conc: Big): void {
+        this.attributes.set('conc', conc.toString());
+    }
+
+    /**
+     * Set bath gas.
+     * @param bathGas The bath gas.
+     */
+    public setBathGas(bathGas: string): void {
+        this.attributes.set('bathGas', bathGas);
+    }
+
+    /**
+     * Set units.
+     * @param units The units.
+     */
+    public setUnits(units: string): void {
+        this.attributes.set('units', units);
     }
 
     /**
@@ -277,6 +354,16 @@ export class RateList extends NodeWithNodes {
         this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
         this.fors.push(f);
         this.addNode(f);
+    }
+
+    /**
+     * Add a second order rate.
+     */
+    public addSecondOrderRate(s: SecondOrderRate): void {
+        this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+        this.index.set(SecondOrderRate.tagName + this.sorIndex.size.toString(), this.nodes.size);
+        this.sors.push(s);
+        this.addNode(s);
     }
 }
 

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Analysis = exports.RateList = exports.FirstOrderRate = exports.FirstOrderLoss = exports.PopulationList = exports.Population = exports.Pop = exports.EigenvalueList = exports.Eigenvalue = void 0;
+exports.Analysis = exports.RateList = exports.SecondOrderRate = exports.FirstOrderRate = exports.FirstOrderLoss = exports.PopulationList = exports.Population = exports.Pop = exports.EigenvalueList = exports.Eigenvalue = void 0;
 const xml_mesmer_js_1 = require("./xml_mesmer.js");
 const xml_js_1 = require("./xml.js");
 /**
@@ -149,7 +149,7 @@ class FirstOrderLoss extends xml_js_1.NumberNode {
 }
 exports.FirstOrderLoss = FirstOrderLoss;
 /**
- * In the XML, the "me:firstOrderLoss" element is a child of the "me:rateList" element.
+ * In the XML, the "me:firstOrderRate" element is a child of the "me:rateList" element.
  * Attributes include:
  * fromRef, toRef, reactionType
  */
@@ -163,10 +163,29 @@ class FirstOrderRate extends xml_js_1.NumberNode {
      * @param value The value.
      */
     constructor(attributes, value) {
-        super(attributes, FirstOrderLoss.tagName, value);
+        super(attributes, FirstOrderRate.tagName, value);
     }
 }
 exports.FirstOrderRate = FirstOrderRate;
+/**
+ * In the XML, the "me:secondOrderRate" element is a child of the "me:rateList" element.
+ * Attributes include:
+ * fromRef, toRef, reactionType
+ */
+class SecondOrderRate extends xml_js_1.NumberNode {
+    /**
+     * Tag name.
+     */
+    static tagName = 'me:secondOrderRate';
+    /**
+     * @param attributes The attributes.
+     * @param value The value.
+     */
+    constructor(attributes, value) {
+        super(attributes, SecondOrderRate.tagName, value);
+    }
+}
+exports.SecondOrderRate = SecondOrderRate;
 /**
  * In the XML, the "me:rateList" element is a child of the "analysis" element.
  * Attributes include:
@@ -201,9 +220,17 @@ class RateList extends xml_js_1.NodeWithNodes {
      */
     fors;
     /**
+     * The second order rate index.
+     */
+    sorIndex;
+    /**
+     * The second order rates.
+     */
+    sors;
+    /**
      * @param attributes The attributes.
      */
-    constructor(attributes, firstOrderLosses, firstOrderRates) {
+    constructor(attributes, firstOrderLosses, firstOrderRates, secondOrderRates) {
         super(attributes, Analysis.tagName);
         this.index = new Map();
         this.folIndex = new Map();
@@ -234,6 +261,48 @@ class RateList extends xml_js_1.NodeWithNodes {
         else {
             this.fors = [];
         }
+        this.sorIndex = new Map();
+        if (secondOrderRates) {
+            let i = 0;
+            secondOrderRates.forEach((sor) => {
+                this.index.set(SecondOrderRate.tagName + i.toString(), this.nodes.size);
+                this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+                this.addNode(sor);
+                i++;
+            });
+            this.sors = secondOrderRates;
+        }
+        else {
+            this.sors = [];
+        }
+    }
+    /**
+     * Set temperature.
+     * @param T The temperature.
+     */
+    setTemperature(T) {
+        this.attributes.set('T', T.toString());
+    }
+    /**
+     * Set concentration.
+     * @param conc The concentration.
+     */
+    setConcentration(conc) {
+        this.attributes.set('conc', conc.toString());
+    }
+    /**
+     * Set bath gas.
+     * @param bathGas The bath gas.
+     */
+    setBathGas(bathGas) {
+        this.attributes.set('bathGas', bathGas);
+    }
+    /**
+     * Set units.
+     * @param units The units.
+     */
+    setUnits(units) {
+        this.attributes.set('units', units);
     }
     /**
      * Add a first order loss.
@@ -252,6 +321,15 @@ class RateList extends xml_js_1.NodeWithNodes {
         this.index.set(FirstOrderRate.tagName + this.forIndex.size.toString(), this.nodes.size);
         this.fors.push(f);
         this.addNode(f);
+    }
+    /**
+     * Add a second order rate.
+     */
+    addSecondOrderRate(s) {
+        this.sorIndex.set(this.sorIndex.size, this.nodes.size);
+        this.index.set(SecondOrderRate.tagName + this.sorIndex.size.toString(), this.nodes.size);
+        this.sors.push(s);
+        this.addNode(s);
     }
 }
 exports.RateList = RateList;
