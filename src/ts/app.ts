@@ -1366,7 +1366,7 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     if (j == 0) {
                         // header
                         keys = Array.from(fol_attributes.keys());
-                        keys.push("rate");
+                        keys.push("loss");
                         addTableHeaderRow(folTable, keys);
                     }
                     values = Array.from(fol_attributes.values());
@@ -1390,38 +1390,92 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                 }
                 // Insert a save as csv button.
                 addSaveAsCSVButton(() => tableToCSV(folTable), folDiv, folTableDiv, "First Order Losses", level1);
-                //addSaveAsCSVButton(() => tableToCSV(folTable), rleDiv, folTableDiv, "Bartis-Widom Phenomenological Rate Coefficients", boundary1);
-                /*
                 // "me:firstOrderRate".
+                // Create a new collapsible div for the FirstOrderRates.
+                let forDivID: string = addID(rleDivID, FirstOrderRate.tagName);
+                let forDiv: HTMLDivElement = createDiv(forDivID);
+                rleDiv.appendChild(forDiv);
+                let forcDiv: HTMLDivElement = getCollapsibleDiv(forDivID, rleDiv, null, forDiv,
+                    FirstOrderRate.tagName, boundary1, level1);
                 let xml_for: HTMLCollectionOf<Element> = xml_rl[i].getElementsByTagName(FirstOrderRate.tagName);
+                let forTable: HTMLTableElement = createTable(forDivID, boundary1);
+                let forTableDiv: HTMLDivElement = createDiv(addRID(forDivID, s_table), level1);
+                forTableDiv.appendChild(forTable);
+                forDiv.appendChild(forTableDiv);
                 for (let j: number = 0; j < xml_for.length; j++) {
-                    let forate_attributes: Map<string, string> = getAttributes(xml_for[j]);
-                    let fromRef: string = forate_attributes.get("fromRef") as string;
-                    let toRef: string = forate_attributes.get("toRef") as string;
-                    values.push(fromRef + "->" + toRef);
-                    let s: string = (getFirstChildNode(xml_for[j])?.nodeValue ?? "").trim();
-                    values.push(s);
-                    let forate: FirstOrderRate = new FirstOrderRate(forate_attributes, new Big(s));
-                    rl.addFirstOrderRate(forate);
-                }
-                // "me:secondOrderRate".
-                let xml_sor: HTMLCollectionOf<Element> = xml_rl[i].getElementsByTagName(SecondOrderRate.tagName);
-                if (xml_sor.length > 0) {
-                    console.log("me:secondOrderRate length " + xml_for.length);
-                    for (let j: number = 0; j < xml_for.length; j++) {
-                        let sorate_attributes: Map<string, string> = getAttributes(xml_for[j]);
-                        let fromRef: string = sorate_attributes.get("fromRef") as string;
-                        let toRef: string = sorate_attributes.get("toRef") as string;
-                        th.push(fromRef + "->" + toRef);
-                        let s: string = (getFirstChildNode(xml_for[j])?.nodeValue ?? "").trim();
-                        values.push(s);
-                        let forate: FirstOrderRate = new FirstOrderRate(sorate_attributes, new Big(s));
-                        rl.addSecondOrderRate(forate);
+                    let for_attributes: Map<string, string> = getAttributes(xml_for[j]);
+                    //let fromRef: string = for_attributes.get("fromRef") as string;
+                    //let toRef: string = for_attributes.get("toRef") as string;
+                    if (j == 0) {
+                        // header
+                        keys = Array.from(for_attributes.keys());
+                        keys.push("rate");
+                        addTableHeaderRow(forTable, keys);
                     }
+                    values = Array.from(for_attributes.values());
+                    // Check lengths.
+                    if (keys!.length - 1 != values!.length) {
+                        console.error("FirstOrderLoss values0!.length != values!.length");
+                    }
+                    let s: string = (getFirstChildNode(xml_for[j])?.nodeValue ?? "").trim();
+                    let forate: FirstOrderRate = new FirstOrderRate(for_attributes, new Big(s));
+                    rl.addFirstOrderRate(forate);
+                    for (let k: number = 0; k < keys!.length; k++) {
+                        // Check reference.
+                        if (keys![k] == values![k]) {
+                            values!.push(for_attributes.get(values![k]) as string);
+                        } else {
+                            console.log("FirstOrderRate values0![k] != values![k]");
+                        }
+                    }
+                    values!.push(s);
+                    addTableRow(forTable, values!);
                 }
-                */
-                //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(th.join(","), boundary1)));
-                //rDiv.appendChild(createDiv(undefined, boundary1).appendChild(createLabel(values.join(","), boundary1)));
+                // Insert a save as csv button.
+                addSaveAsCSVButton(() => tableToCSV(forTable), forDiv, forTableDiv, "First Order Rates", level1);
+                // "me:secondOrderRate".
+                // Create a new collapsible div for the SecondOrderRates.
+                let sorDivID: string = addID(rleDivID, SecondOrderRate.tagName);
+                let sorDiv: HTMLDivElement = createDiv(sorDivID);
+                rleDiv.appendChild(sorDiv);
+                let sorcDiv: HTMLDivElement = getCollapsibleDiv(sorDivID, rleDiv, null, sorDiv,
+                    SecondOrderRate.tagName, boundary1, level1);
+                let xml_sor: HTMLCollectionOf<Element> = xml_rl[i].getElementsByTagName(SecondOrderRate.tagName);
+                let sorTable: HTMLTableElement = createTable(sorDivID, boundary1);
+                let sorTableDiv: HTMLDivElement = createDiv(addRID(sorDivID, s_table), level1);
+                sorTableDiv.appendChild(sorTable);
+                sorDiv.appendChild(sorTableDiv);
+                for (let j: number = 0; j < xml_sor.length; j++) {
+                    let sor_attributes: Map<string, string> = getAttributes(xml_sor[j]);
+                    //let fromRef: string = sor_attributes.get("fromRef") as string;
+                    //let toRef: string = sor_attributes.get("toRef") as string;
+                    if (j == 0) {
+                        // header
+                        keys = Array.from(sor_attributes.keys());
+                        keys.push("rate");
+                        addTableHeaderRow(sorTable, keys);
+                    }
+                    values = Array.from(sor_attributes.values());
+                    // Check lengths.
+                    if (keys!.length - 1 != values!.length) {
+                        console.error("SecondOrderRate values0!.length != values!.length");
+                    }
+                    let s: string = (getFirstChildNode(xml_sor[j])?.nodeValue ?? "").trim();
+                    let sorate: SecondOrderRate = new SecondOrderRate(sor_attributes, new Big(s));
+                    rl.addSecondOrderRate(sorate);
+                    for (let k: number = 0; k < keys!.length; k++) {
+                        // Check reference.
+                        if (keys![k] == values![k]) {
+                            values!.push(sor_attributes.get(values![k]) as string);
+                        } else {
+                            console.log("SecondOrderRate values0![k] != values![k]");
+                        }
+                    }
+                    values!.push(s);
+                    addTableRow(sorTable, values!);
+                }
+                // Insert a save as csv button.
+                addSaveAsCSVButton(() => tableToCSV(sorTable), sorDiv, sorTableDiv, "Second Order Rates", level1);
             }
         }
     }
