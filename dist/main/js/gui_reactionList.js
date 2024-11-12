@@ -535,7 +535,8 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
     });
     if (reactionListTagNames.size > 0) {
         if (reactionListTagNames.size != 1) {
-            if (!(reactionListTagNames.size == 3 && reactionListTagNames.has("#text"))) {
+            if (!((reactionListTagNames.size == 2 && reactionListTagNames.has("#text")) ||
+                ((reactionListTagNames.size == 3 && reactionListTagNames.has("#text") && reactionListTagNames.has("#comment"))))) {
                 console.error("reactionListTagNames:");
                 reactionListTagNames.forEach(x => console.error(x));
                 throw new Error("Additional tag names in reactionList:");
@@ -951,7 +952,7 @@ function processReactionList(xml, rIDM, rsDivID, reactions, molecules) {
                         }
                         if (j == 0) {
                             // It maybe that only the first kinf contains unit details!
-                            (0, html_js_1.addTableRow)(t, k.getHeader());
+                            (0, html_js_1.addTableHeaderRow)(t, k.getHeader());
                         }
                         (0, html_js_1.addTableRow)(t, k.toStringArray());
                     }

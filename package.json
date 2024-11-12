@@ -1,6 +1,6 @@
 {
   "name": "mxg",
-  "version": "0.14",
+  "version": "0.15",
   "license": "MIT",
   "description": "MESMER XML GUI.",
   "keywords": [
@@ -43,8 +43,8 @@
           "last 2 Edge versions"
         ]
       },
-      "distDir": "dist/0.14",
-      "publicUrl": "/mxg/dist/0.14"
+      "distDir": "dist/0.15",
+      "publicUrl": "/mxg/dist/0.15"
     }
   },
   "devDependencies": {

@@ -1942,7 +1942,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             }
             else {
                 let t = (0, html_js_1.createTable)(mIDM.addID(doslDivID, app_js_1.s_table), app_js_1.level1);
-                (0, html_js_1.addTableRow)(t, xml_molecule_js_1.DensityOfStates.header);
+                (0, html_js_1.addTableHeaderRow)(t, xml_molecule_js_1.DensityOfStates.header);
                 // Append the table to the div.
                 doslDiv.appendChild(t);
                 for (let j = 0; j < xml_dos.length; j++) {
@@ -2021,7 +2021,7 @@ function processMoleculeList(xml, mIDM, molecules) {
             else {
                 tvs = [];
                 let t = (0, html_js_1.createTable)(mIDM.addID(ttDivId, app_js_1.s_table), app_js_1.level1);
-                (0, html_js_1.addTableRow)(t, tt.getHeader());
+                (0, html_js_1.addTableHeaderRow)(t, tt.getHeader());
                 for (let j = 0; j < xml_tvs.length; j++) {
                     let tv = new xml_molecule_js_1.ThermoValue((0, xml_js_1.getAttributes)(xml_tvs[j]));
                     tvs.push(tv);
@@ -2555,9 +2555,7 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
     let showAtomLabels = false;
     let showBondLabels = false;
     // Create the GLViewer viewer.
-    function createViewer(
-    //cameraPosition: any, cameraOrientation: any, zoomLevel: any, 
-    showAtomLabels, showBondLabels) {
+    function createViewer(position, rotation, zoomLevel, showAtomLabels, showBondLabels) {
         let viewerDiv = (0, html_js_1.createDiv)(viewerDivID, boundary);
         viewerDiv.className = "mol-container";
         viewerContainerDiv.appendChild(viewerDiv);
@@ -2615,23 +2613,30 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
                 viewer.addLabel(bond.getID(), { position: { x: (a0x + a1x) / 2, y: (a0y + a1y) / 2, z: (a0z + a1z) / 2 } });
             }
         });
-        viewer.zoomTo();
-        viewer.render();
-        /*
-        if (cameraPosition != undefined) {
-            viewer.setCameraPosition(cameraPosition);
+        if (position != undefined) {
+            console.log("position", position);
+            viewer.position = position;
         }
-        if (cameraOrientation != undefined) {
-            viewer.setCameraOrientation(cameraOrientation);
+        else {
+            console.log("position", viewer.position);
+        }
+        if (rotation != undefined) {
+            console.log("rotation", rotation);
+            viewer.rotation = rotation;
+        }
+        else {
+            console.log("rotation", viewer.rotation);
         }
         if (zoomLevel != undefined) {
-            viewer.zoom(zoomLevel, 2000);
-        } else {
-            viewer.zoom(0.8, 2000);
+            console.log("zoom", zoomLevel);
+            viewer.zoomLevel = zoomLevel;
         }
-        return viewer;
-        */
-        viewer.zoom(0.8, 2000);
+        else {
+            console.log("zoom", viewer.zoomLevel);
+        }
+        viewer.zoomTo();
+        viewer.render();
+        //viewer.zoom(0.8, 2000);
         return viewer;
     }
     // Add a redraw button.
@@ -2639,9 +2644,12 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
     let viewer;
     redrawButton.addEventListener('click', () => {
         (0, app_js_1.remove)(viewerDivID);
-        viewer = createViewer(
-        //undefined, undefined, undefined, 
-        showAtomLabels, showBondLabels);
+        if (viewer == undefined) {
+            viewer = createViewer(undefined, undefined, undefined, showAtomLabels, showBondLabels);
+        }
+        else {
+            viewer = createViewer(viewer.position, viewer.rotation, viewer.zoom, showAtomLabels, showBondLabels);
+        }
     });
     viewerContainerDiv.appendChild(redrawButton);
     // Helper function to create a label button for hiding or showing labels on the viewer.
@@ -2656,16 +2664,12 @@ function create3DViewer(mIDM, molecule, moleculeDiv, boundary, level) {
                 button.textContent = "Hide " + label;
                 showState = true;
             }
-            /*
-            let cameraPosition = viewer.getCameraPosition();
-            let cameraOrientation = viewer.getCameraOrientation();
-            let zoomLevel = viewer.getZoomLevel();
-            */
+            let position = viewer.position;
+            let rotation = viewer.rotation;
+            let zoomLevel = viewer.zoomLevel;
             updateState(showState);
             (0, app_js_1.remove)(viewerDivID);
-            viewer = createViewer(
-            //cameraPosition, cameraOrientation, zoomLevel,
-            showAtomLabels, showBondLabels);
+            viewer = createViewer(position, rotation, zoomLevel, showAtomLabels, showBondLabels);
         });
         return button;
     }

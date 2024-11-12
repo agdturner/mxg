@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Reaction = exports.CanonicalRateList = exports.Kinf = exports.Keq = exports.Rev = exports.Val = exports.ExcessReactantConc = exports.Tunneling = exports.MesmerILT = exports.MCRCMethod = exports.NInfinity = exports.TInfinity = exports.ActivationEnergy = exports.PreExponential = exports.TransitionState = exports.Product = exports.Reactant = exports.ReactionMolecule = void 0;
 const big_js_1 = require("big.js");
+const xml_molecule_js_1 = require("./xml_molecule.js");
 const xml_js_1 = require("./xml.js");
 const xml_mesmer_js_1 = require("./xml_mesmer.js");
 const app_js_1 = require("./app.js");
@@ -1197,46 +1198,74 @@ class Reaction extends xml_js_1.NodeWithNodes {
         return label;
     }
     /**
-     * Returns the total energy of all reactants.
-     * @returns The total energy of all reactants.
+     * Returns the total energy of all reactants or products.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @param items Either the reactants or products.
+     * @returns The total energy of all reactants or products.
      */
-    //getReactantsEnergy(retrieveMolecule: Function, molecules: Map<string, Molecule>): Big {
-    getReactantsEnergy(retrieveMolecule, molecules) {
-        // Sum up the energy values of all the reactants in the reaction
-        return Array.from(this.getReactants().values()).map(reactant => {
-            let ref = reactant.getMolecule().getRef();
-            //console.log("ref=\"" + ref + "\"");
+    getTotalEnergy(retrieveMolecule, molecules, items) {
+        return Array.from(items.values()).map(item => {
+            let ref = item.getMolecule().getRef();
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
-                console.log("molecule with ref " + ref + " not found");
-                // Create alert user to add the molecule to the list of molecules.
+                console.log("Molecule with ref " + ref + " not found!");
                 alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules. \
                  In the meantime it will be treated as having an energy of 0.");
-                //throw new Error(`Molecule with ref ${ref} not found`);
                 return app_js_1.big0;
             }
             return molecule.getEnergy();
         }).reduce((a, b) => a.add(b), new big_js_1.Big(0));
     }
     /**
+     * Returns the total energy of all reactants.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @returns The total energy of all reactants.
+     */
+    getReactantsEnergy(retrieveMolecule, molecules) {
+        return this.getTotalEnergy(retrieveMolecule, molecules, this.getReactants());
+    }
+    /**
      * Returns the total energy of all products.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
      * @returns The total energy of all products.
      */
     getProductsEnergy(retrieveMolecule, molecules) {
-        // Sum up the energy values of all the products in the reaction
-        //return Array.from(this.getProducts()).map(product => {
-        return Array.from(this.getProducts().values()).map(product => {
-            let ref = product.getMolecule().getRef();
-            //console.log("ref=\"" + ref + "\"");
+        return this.getTotalEnergy(retrieveMolecule, molecules, this.getProducts());
+    }
+    /**
+     * Checks all energy units are the same and returns the energy units.
+     * @param retrieveMolecule A function to retrieve a molecule.
+     * @param molecules The molecules.
+     * @param items Either the reactants or products.
+     * @returns The energy units.
+     */
+    getEnergyUnits(retrieveMolecule, molecules, items) {
+        let unitsSet = new Set();
+        Array.from(items.values()).map(item => {
+            let ref = item.getMolecule().getRef();
             let molecule = retrieveMolecule(ref, molecules);
             if (molecule == undefined) {
                 console.log("molecule with ref " + ref + " not found");
-                // Print the keys in the molecules map
-                console.log(molecules.keys());
-                throw new Error(`Molecule with ref ${ref} not found`);
+                alert("Molecule with ref " + ref + " not found. Please add it to the list of molecules. \
+                     In the meantime it will be treated as having an energy of 0.");
+                return "";
             }
-            return molecule.getEnergy();
-        }).reduce((a, b) => a.add(b), new big_js_1.Big(0));
+            else {
+                let pZPE = molecule.getProperty("me:ZPE");
+                let units = pZPE?.attributes.get(xml_molecule_js_1.PropertyScalarNumber.s_units);
+                unitsSet.add(units ? units : "");
+            }
+        });
+        if (unitsSet.size > 1) {
+            console.log("Warning: Not all molecules have the same units");
+            return "";
+        }
+        else {
+            return Array.from(unitsSet)[0]; // Return the only unit in the set
+        }
     }
     /**
      * @param tagName The tag name.

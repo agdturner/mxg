@@ -110,6 +110,7 @@ export class Tag {
 
 /**
  * A class for representing A Tag with attributes.
+ * <mytag id="1">
  */
 export class TagWithAttributes extends Tag {
 
