@@ -1234,7 +1234,8 @@ function processAnalysis(xml) {
                 rl.setTemperature(new big_js_1.Big(rle_attributes.get("T")));
                 rl.setConcentration(new big_js_1.Big(rle_attributes.get("conc")));
                 rl.setBathGas(rle_attributes.get("bathGas"));
-                rl.setUnits(rle_attributes.get("units"));
+                let units = rle_attributes.get("units");
+                rl.setUnits(units);
                 a.addRateList(rl);
                 let labelText = rl.tagName + " " + i.toString() + " " + (0, util_js_1.mapToString)(rle_attributes);
                 // Create a new collapsible div for the RateList.
@@ -1260,7 +1261,7 @@ function processAnalysis(xml) {
                     if (j == 0) {
                         // header
                         keys = Array.from(fol_attributes.keys());
-                        keys.push("loss");
+                        keys.push("kloss/" + units);
                         (0, html_js_1.addTableHeaderRow)(folTable, keys);
                     }
                     values = Array.from(fol_attributes.values());
@@ -1303,12 +1304,25 @@ function processAnalysis(xml) {
                     if (j == 0) {
                         // header
                         keys = Array.from(for_attributes.keys());
-                        keys.push("rate");
-                        (0, html_js_1.addTableHeaderRow)(forTable, keys);
+                        let keys2 = Array.from(for_attributes.keys());
+                        // In keys2, replace "fromRef" to be "reactant" and "toRef" to be "product".
+                        keys2 = keys2.map((key) => {
+                            if (key == "fromRef") {
+                                return "reactant";
+                            }
+                            else if (key == "toRef") {
+                                return "product";
+                            }
+                            else {
+                                return key;
+                            }
+                        });
+                        keys2.push("k/" + units);
+                        (0, html_js_1.addTableHeaderRow)(forTable, keys2);
                     }
                     values = Array.from(for_attributes.values());
                     // Check lengths.
-                    if (keys.length - 1 != values.length) {
+                    if (keys.length != values.length) {
                         console.error("FirstOrderLoss values0!.length != values!.length");
                     }
                     let s = ((0, xml_js_1.getFirstChildNode)(xml_for[j])?.nodeValue ?? "").trim();
@@ -1346,12 +1360,25 @@ function processAnalysis(xml) {
                     if (j == 0) {
                         // header
                         keys = Array.from(sor_attributes.keys());
-                        keys.push("rate");
-                        (0, html_js_1.addTableHeaderRow)(sorTable, keys);
+                        let keys2 = Array.from(sor_attributes.keys());
+                        // In keys2, replace "fromRef" to be "reactant" and "toRef" to be "product".
+                        keys2 = keys2.map((key) => {
+                            if (key == "fromRef") {
+                                return "reactant";
+                            }
+                            else if (key == "toRef") {
+                                return "product";
+                            }
+                            else {
+                                return key;
+                            }
+                        });
+                        keys2.push("k/cm3molecule-1" + units);
+                        (0, html_js_1.addTableHeaderRow)(sorTable, keys2);
                     }
                     values = Array.from(sor_attributes.values());
                     // Check lengths.
-                    if (keys.length - 1 != values.length) {
+                    if (keys.length != values.length) {
                         console.error("SecondOrderRate values0!.length != values!.length");
                     }
                     let s = ((0, xml_js_1.getFirstChildNode)(xml_sor[j])?.nodeValue ?? "").trim();
