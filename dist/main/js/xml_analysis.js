@@ -231,7 +231,7 @@ class RateList extends xml_js_1.NodeWithNodes {
      * @param attributes The attributes.
      */
     constructor(attributes, firstOrderLosses, firstOrderRates, secondOrderRates) {
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         this.folIndex = new Map();
         if (firstOrderLosses) {
@@ -381,7 +381,7 @@ class Analysis extends xml_js_1.NodeWithNodes {
      * @param attributes The attributes.
      */
     constructor(attributes, description, els, pls, rls) {
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         if (description) {
             this.index.set(xml_mesmer_js_1.Description.tagName, this.nodes.size);

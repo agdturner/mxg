@@ -261,7 +261,7 @@ export class RateList extends NodeWithNodes {
      */
     constructor(attributes: Map<string, string>, firstOrderLosses?: FirstOrderLoss[], firstOrderRates?: FirstOrderRate[],
         secondOrderRates?: SecondOrderRate[]) {
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         this.folIndex = new Map();
         if (firstOrderLosses) {
@@ -425,7 +425,7 @@ export class Analysis extends NodeWithNodes {
      */
     constructor(attributes: Map<string, string>, description?: Description, els?: EigenvalueList[], 
         pls?: PopulationList[], rls?: RateList[]) {
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         if (description) {
             this.index.set(Description.tagName, this.nodes.size);

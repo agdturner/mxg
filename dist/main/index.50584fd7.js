@@ -1739,12 +1739,17 @@ function selectAnotherOptionEventListener(options, select) {
             let rle_values = [];
             for(let j = 0; j < rle_attributesKeys.length; j++)rle_values.push(rle_attributes.get(rle_attributesKeys[j]));
             let rl = new (0, _xmlAnalysisJs.RateList)(rle_attributes);
-            rl.setTemperature(new (0, _bigJs.Big)(rle_attributes.get("T")));
-            rl.setConcentration(new (0, _bigJs.Big)(rle_attributes.get("conc")));
-            rl.setBathGas(rle_attributes.get("bathGas"));
-            rl.setUnits(rle_attributes.get("units"));
+            let t = rle_attributes.get("T");
+            rl.setTemperature(new (0, _bigJs.Big)(t));
+            let conc = rle_attributes.get("conc");
+            rl.setConcentration(new (0, _bigJs.Big)(conc));
+            let bathGas = rle_attributes.get("bathGas");
+            rl.setBathGas(bathGas);
+            let units = rle_attributes.get("units");
+            rl.setUnits(units);
             a.addRateList(rl);
-            let labelText = rl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(rle_attributes);
+            //let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
+            let labelText = rl.tagName + " " + i.toString() + " T(" + t + "(K)) conc(" + rle_attributes.get("conc") + "(molec/cm3)) bathGas(" + bathGas + ")";
             // Create a new collapsible div for the RateList.
             let rleDivID = addID(rlDivID, i.toString());
             let rleDiv = (0, _htmlJs.createDiv)(rleDivID);
@@ -1768,11 +1773,24 @@ function selectAnotherOptionEventListener(options, select) {
                 if (j == 0) {
                     // header
                     keys = Array.from(fol_attributes.keys());
-                    keys.push("loss");
+                    /*
+                        let keys2 = Array.from(fol_attributes.keys());
+                        // In keys2, replace "ref" to be "reactant/product".
+                        keys2 = keys2.map((key) => {
+                            if (key == "ref") {
+                                return "reactant/product";
+                            } else {
+                                return key;
+                            }
+                        });
+                        keys2.push("kloss/" + units);
+                        addTableHeaderRow(folTable, keys2);
+                        */ keys.push("kloss/" + units);
                     (0, _htmlJs.addTableHeaderRow)(folTable, keys);
                 }
                 values = Array.from(fol_attributes.values());
                 // Check lengths.
+                //if (keys!.length != values!.length) {
                 if (keys.length - 1 != values.length) console.error("FirstOrderLoss values0!.length != values!.length");
                 let s = ((0, _xmlJs.getFirstChildNode)(xml_fol[j])?.nodeValue ?? "").trim();
                 let fol = new (0, _xmlAnalysisJs.FirstOrderLoss)(fol_attributes, new (0, _bigJs.Big)(s));
@@ -1803,12 +1821,19 @@ function selectAnotherOptionEventListener(options, select) {
                 if (j == 0) {
                     // header
                     keys = Array.from(for_attributes.keys());
-                    keys.push("rate");
-                    (0, _htmlJs.addTableHeaderRow)(forTable, keys);
+                    let keys2 = Array.from(for_attributes.keys());
+                    // In keys2, replace "fromRef" to be "reactant" and "toRef" to be "product".
+                    keys2 = keys2.map((key)=>{
+                        if (key == "fromRef") return "reactant";
+                        else if (key == "toRef") return "product";
+                        else return key;
+                    });
+                    keys2.push("k/" + units);
+                    (0, _htmlJs.addTableHeaderRow)(forTable, keys2);
                 }
                 values = Array.from(for_attributes.values());
                 // Check lengths.
-                if (keys.length - 1 != values.length) console.error("FirstOrderLoss values0!.length != values!.length");
+                if (keys.length != values.length) console.error("FirstOrderLoss values0!.length != values!.length");
                 let s = ((0, _xmlJs.getFirstChildNode)(xml_for[j])?.nodeValue ?? "").trim();
                 let forate = new (0, _xmlAnalysisJs.FirstOrderRate)(for_attributes, new (0, _bigJs.Big)(s));
                 rl.addFirstOrderRate(forate);
@@ -1838,12 +1863,19 @@ function selectAnotherOptionEventListener(options, select) {
                 if (j == 0) {
                     // header
                     keys = Array.from(sor_attributes.keys());
-                    keys.push("rate");
-                    (0, _htmlJs.addTableHeaderRow)(sorTable, keys);
+                    let keys2 = Array.from(sor_attributes.keys());
+                    // In keys2, replace "fromRef" to be "reactant" and "toRef" to be "product".
+                    keys2 = keys2.map((key)=>{
+                        if (key == "fromRef") return "reactant";
+                        else if (key == "toRef") return "product";
+                        else return key;
+                    });
+                    keys2.push("k/cm3molecule-1" + units);
+                    (0, _htmlJs.addTableHeaderRow)(sorTable, keys2);
                 }
                 values = Array.from(sor_attributes.values());
                 // Check lengths.
-                if (keys.length - 1 != values.length) console.error("SecondOrderRate values0!.length != values!.length");
+                if (keys.length != values.length) console.error("SecondOrderRate values0!.length != values!.length");
                 let s = ((0, _xmlJs.getFirstChildNode)(xml_sor[j])?.nodeValue ?? "").trim();
                 let sorate = new (0, _xmlAnalysisJs.SecondOrderRate)(sor_attributes, new (0, _bigJs.Big)(s));
                 rl.addSecondOrderRate(sorate);
@@ -5576,7 +5608,7 @@ class RateList extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param attributes The attributes.
      */ constructor(attributes, firstOrderLosses, firstOrderRates, secondOrderRates){
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         this.folIndex = new Map();
         if (firstOrderLosses) {
@@ -5670,7 +5702,7 @@ class Analysis extends (0, _xmlJs.NodeWithNodes) {
     /**
      * @param attributes The attributes.
      */ constructor(attributes, description, els, pls, rls){
-        super(attributes, Analysis.tagName);
+        super(attributes, RateList.tagName);
         this.index = new Map();
         if (description) {
             this.index.set((0, _xmlMesmerJs.Description).tagName, this.nodes.size);
