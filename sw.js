@@ -1,5 +1,5 @@
 // The version of the cache.
-const VERSION = "v0.14.0";
+const VERSION = "v0.15.0";
 
 // The name of the cache
 const CACHE_NAME = `mxg-${VERSION}`;

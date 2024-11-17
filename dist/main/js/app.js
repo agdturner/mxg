@@ -1231,13 +1231,17 @@ function processAnalysis(xml) {
                     rle_values.push(rle_attributes.get(rle_attributesKeys[j]));
                 }
                 let rl = new xml_analysis_js_1.RateList(rle_attributes);
-                rl.setTemperature(new big_js_1.Big(rle_attributes.get("T")));
-                rl.setConcentration(new big_js_1.Big(rle_attributes.get("conc")));
-                rl.setBathGas(rle_attributes.get("bathGas"));
+                let t = rle_attributes.get("T");
+                rl.setTemperature(new big_js_1.Big(t));
+                let conc = rle_attributes.get("conc");
+                rl.setConcentration(new big_js_1.Big(conc));
+                let bathGas = rle_attributes.get("bathGas");
+                rl.setBathGas(bathGas);
                 let units = rle_attributes.get("units");
                 rl.setUnits(units);
                 a.addRateList(rl);
-                let labelText = rl.tagName + " " + i.toString() + " " + (0, util_js_1.mapToString)(rle_attributes);
+                //let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
+                let labelText = rl.tagName + " " + i.toString() + " T(" + t + ") conc(" + rle_attributes.get("conc") + ") bathGas(" + bathGas + ")";
                 // Create a new collapsible div for the RateList.
                 let rleDivID = addID(rlDivID, i.toString());
                 let rleDiv = (0, html_js_1.createDiv)(rleDivID);
@@ -1261,11 +1265,25 @@ function processAnalysis(xml) {
                     if (j == 0) {
                         // header
                         keys = Array.from(fol_attributes.keys());
+                        /*
+                        let keys2 = Array.from(fol_attributes.keys());
+                        // In keys2, replace "ref" to be "reactant/product".
+                        keys2 = keys2.map((key) => {
+                            if (key == "ref") {
+                                return "reactant/product";
+                            } else {
+                                return key;
+                            }
+                        });
+                        keys2.push("kloss/" + units);
+                        addTableHeaderRow(folTable, keys2);
+                        */
                         keys.push("kloss/" + units);
                         (0, html_js_1.addTableHeaderRow)(folTable, keys);
                     }
                     values = Array.from(fol_attributes.values());
                     // Check lengths.
+                    //if (keys!.length != values!.length) {
                     if (keys.length - 1 != values.length) {
                         console.error("FirstOrderLoss values0!.length != values!.length");
                     }

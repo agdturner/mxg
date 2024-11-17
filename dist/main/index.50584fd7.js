@@ -1739,13 +1739,17 @@ function selectAnotherOptionEventListener(options, select) {
             let rle_values = [];
             for(let j = 0; j < rle_attributesKeys.length; j++)rle_values.push(rle_attributes.get(rle_attributesKeys[j]));
             let rl = new (0, _xmlAnalysisJs.RateList)(rle_attributes);
-            rl.setTemperature(new (0, _bigJs.Big)(rle_attributes.get("T")));
-            rl.setConcentration(new (0, _bigJs.Big)(rle_attributes.get("conc")));
-            rl.setBathGas(rle_attributes.get("bathGas"));
+            let t = rle_attributes.get("T");
+            rl.setTemperature(new (0, _bigJs.Big)(t));
+            let conc = rle_attributes.get("conc");
+            rl.setConcentration(new (0, _bigJs.Big)(conc));
+            let bathGas = rle_attributes.get("bathGas");
+            rl.setBathGas(bathGas);
             let units = rle_attributes.get("units");
             rl.setUnits(units);
             a.addRateList(rl);
-            let labelText = rl.tagName + " " + i.toString() + " " + (0, _utilJs.mapToString)(rle_attributes);
+            //let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
+            let labelText = rl.tagName + " " + i.toString() + " T(" + t + "(K)) conc(" + rle_attributes.get("conc") + "(molec/cm3)) bathGas(" + bathGas + ")";
             // Create a new collapsible div for the RateList.
             let rleDivID = addID(rlDivID, i.toString());
             let rleDiv = (0, _htmlJs.createDiv)(rleDivID);

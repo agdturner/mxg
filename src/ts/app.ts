@@ -1335,13 +1335,17 @@ function processAnalysis(xml: XMLDocument): HTMLDivElement {
                     rle_values.push(rle_attributes.get(rle_attributesKeys[j]) as string);
                 }
                 let rl: RateList = new RateList(rle_attributes);
-                rl.setTemperature(new Big(rle_attributes.get("T") as string));
-                rl.setConcentration(new Big(rle_attributes.get("conc") as string));
-                rl.setBathGas(rle_attributes.get("bathGas") as string);
+                let t: string = rle_attributes.get("T") as string;
+                rl.setTemperature(new Big(t));
+                let conc: string = rle_attributes.get("conc") as string;
+                rl.setConcentration(new Big(conc));
+                let bathGas: string = rle_attributes.get("bathGas") as string;
+                rl.setBathGas(bathGas);
                 let units: string | undefined = rle_attributes.get("units");
                 rl.setUnits(units as string);
                 a.addRateList(rl);
-                let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
+                //let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
+                let labelText: string = rl.tagName + " " + i.toString() + " T(" + t + "(K)) conc(" + rle_attributes.get("conc") + "(molec/cm3)) bathGas(" + bathGas + ")";
                 // Create a new collapsible div for the RateList.
                 let rleDivID: string = addID(rlDivID, i.toString());
                 let rleDiv: HTMLDivElement = createDiv(rleDivID);
