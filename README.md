@@ -79,20 +79,19 @@ There is a [Developer Guide](#developer-guide) below with set up instructions. T
 
 ### Releasing a new version
 1. Update the version number at the following locations:
-   - [index.html](../src/index.html)
-    - Line 45
-   - [package-lock.json](../src/package-lock.json)
-    - Line 3, 9, 
-   - [package.json](../package.json)
-    - Line 3, 46, 47
-   - [sw.js](../sw.js)
-    - Line 2
+   - [index.html](../src/index.html) line 56.
+   - [manifest.webmanifest](../src/manifest.webmanifest) line 5.
+   - [package-lock.json](../src/package-lock.json) lines 3, 9.
+   - [package.json](../package.json) line 3, 19, 31, 32.
+   - [sw.js](../sw.js) line 2.
 2. Build:
    `npm run start`
 3. Launch:
    `npm run start`
-4. Commit/Pull changes.
-5. Test installation as a PWA.
+4. Commit changes.
+5. Create pull request.
+6. Merge pull request.
+7. Test installation as a PWA.
 
 ### Trouble Shooting Guide
 1. Open the Web browser developer console and check for error and warning messages.
