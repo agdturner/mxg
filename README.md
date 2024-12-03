@@ -55,12 +55,12 @@ There is a [Developer Guide](#developer-guide) below with set up instructions. T
 
 ### Set Up
 - Install the latest LTS release of [Node](https://nodejs.org/)
-  - Current development is tested with Node 20.11.1
+  - Current development is tested with Node 22.10.1
 - Fork and clone this repository.
 - cd into the repository
 - Install dependencies:
 `npm install`
-  - Some dependencies have a cascade of other dependencies which should all be drawn in. Installation may tak a few minutes.
+  - This can take a few minutes.
 
 ### Compile
 - To compile (transpile using the installed [typescript Node Package](https://www.npmjs.com/package/typescript)) run:
@@ -72,26 +72,23 @@ There is a [Developer Guide](#developer-guide) below with set up instructions. T
 
 ### Launch
 - To launch (using the installed [npx Node Package](https://www.npmjs.com/package/npx)) run:
-`npm run start`
+  `npm run start`
 - A Web server should run on the local host on port 3460:
-[localhost:3460/](http://localhost:3460/)
+  [localhost:3460/](http://localhost:3460/)
 - To stop the Web server, kill the running process.
 
 ### Releasing a new version
-1. Update the version number at the following locations:
-   - [index.html](../src/index.html) line 56.
-   - [manifest.webmanifest](../src/manifest.webmanifest) line 5.
-   - [package-lock.json](../src/package-lock.json) lines 3, 9.
-   - [package.json](../package.json) line 3, 19, 31, 32.
-   - [sw.js](../sw.js) line 2.
-2. Build:
+1. Update the version number in [.env](../.env).
+2. Configure to use the new version number (this updates all the build files where the version number is used):
+   `npm run configure`
+3. Build the new version:
+   `npm run build`
+4. Run the new version to test:
    `npm run start`
-3. Launch:
-   `npm run start`
-4. Commit changes.
-5. Create pull request.
-6. Merge pull request.
-7. Test installation as a PWA.
+6. Commit changes.
+7. Create pull request.
+8. Merge pull request.
+9. Test installation as a PWA.
 
 ### Trouble Shooting Guide
 1. Open the Web browser developer console and check for error and warning messages.
