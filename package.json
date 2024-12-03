@@ -16,21 +16,6 @@
     "start": "npx parcel --dist-dir dist/main src/index.html -p 3460"
   },
   "targets": {
-    "main": {
-      "context": "browser",
-      "includeNodeModules": true,
-      "sourceMap": true,
-      "engines": {
-        "browsers": [
-          "last 2 Chrome versions",
-          "last 2 Firefox versions",
-          "last 2 Safari versions",
-          "last 2 Edge versions"
-        ]
-      },
-      "distDir": "dist/main",
-      "publicUrl": "/mxg/dist/main"
-    },
     "0.15": {
       "context": "browser",
       "includeNodeModules": true,
