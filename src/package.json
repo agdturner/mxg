@@ -1,6 +1,6 @@
 {
   "name": "mxg",
-  "version": "0.15.1",
+  "version": "%VERSION%",
   "license": "MIT",
   "description": "MESMER XML GUI.",
   "keywords": [
@@ -14,10 +14,10 @@
     "compile": "tsc -p tsconfig.json",
     "configure": "node configure.js",
     "build": "parcel build",
-    "start": "npx parcel --dist-dir dist/0.15.1 index.html -p 3460"
+    "start": "npx parcel --dist-dir dist/%VERSION% index.html -p 3460"
   },
   "targets": {
-    "0.15.1": {
+    "%VERSION%": {
       "context": "browser",
       "includeNodeModules": true,
       "sourceMap": true,
@@ -29,8 +29,8 @@
           "last 2 Edge versions"
         ]
       },
-      "distDir": "dist/0.15.1",
-      "publicUrl": "/mxg/dist/0.15.1"
+      "distDir": "dist/%VERSION%",
+      "publicUrl": "/mxg/dist/%VERSION%"
     }
   },
   "devDependencies": {

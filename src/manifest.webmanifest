@@ -2,7 +2,7 @@
     "name": "MESMER XML GUI",
     "short_name": "MXG",
     "description": "A Progressive Web App for Visualising and Generating MESMER XML.",
-    "start_url": "/mxg/dist/0.15.1/index.html",
+    "start_url": "/mxg/dist/%VERSION%/index.html",
     "theme_color": "#eeffee",
     "background_color": "#eeffee",
     "display": "standalone",

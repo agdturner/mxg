@@ -168,7 +168,7 @@ const xmlDivID: string = addID(s_xml);
 //const welcomeDivID: string = addID(s_welcome);
 
 // For dark/light mode.
-let dark: boolean;
+let dark: boolean = false;
 
 // Numbers
 export const big0: Big = new Big(0);
@@ -372,7 +372,7 @@ let rdcHeight: number = 400;
 let rd_lw: number = 4; // Line width of reactants, transition states and products.
 let rd_lwc: number = 2; // Line width of connectors.
 let rd_font: string = "1em SensSerif";
-let rdWindow: Window | null;
+let rdWindow: Window | null = null;
 
 // Scatterplot font.
 let sp_font: string = "2em SensSerif";
@@ -381,7 +381,7 @@ let sp_font: string = "2em SensSerif";
  * Once the DOM is loaded, add the menu and collapsed buttons for content
  */
 document.addEventListener('DOMContentLoaded', () => {
-
+    
     // Update the page styles based on the user's preference.
     document.body.className = dark ? 'dark-mode' : 'light-mode';
 

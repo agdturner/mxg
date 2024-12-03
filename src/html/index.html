@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>MESMER XML GUI (MXG)</title>
+  <meta charset="utf-8" />
+  <!--<base href="/mxg-pwa/dist/">-->
+  <meta name="viewport" content="width=device-width" />
+  <script>var parcelRequire;</script>
+  <link rel="stylesheet" href="./src/css/style.css" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <!--
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>     
+  <script src="https://3Dmol.org/build/3Dmol.ui-min.js"></script>
+  -->
+  <script src="./src/scripts/3Dmol-min.js"></script>     
+  <script src="./src/scripts/3Dmol.ui-min.js"></script>
+  <style>
+    .mol-container {
+      width: 60%;
+      height: 400px;
+      position: relative;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: 67% 33%;
+    }
+    </style>
+
+
+</head>
+
+<body>
+  <!-- 3Dmol.js viewer -->
+  <!--
+  <div style="height: 400px; width: 400px; position: relative;" class='viewer_3Dmoljs' data-pdb='2POR' data-backgroundcolor='0xffffff' data-style='stick' data-ui='true'></div>
+  -->
+
+  <!-- For the banner -->
+
+<div class="grid-container">
+
+  <div></div>
+  <div>
+    <img src="./src/images/UoL_Logo.png" alt="UoL_Logo" style="width:100%;">
+  </div>
+ 
+</div> 
+  
+<div id="banner">
+  <style>
+    #banner {
+      text-align: center;
+    }
+  </style>
+  <h1>MESMER XML GUI (MXG Version %VERSION%)</h1>
+</div>
+
+<!-- For the main GUI menu buttons -->
+  <div id="menu"></div>
+
+  <!-- Title -->
+  <h1 id="title"></h1>
+
+  <!-- Molecules -->
+  <div id="molecules"></div>
+  <!--<div id="container-01" class="mol-container"></div>-->
+
+  <!-- Reactions -->
+  <div id="reactions"></div>
+
+  <!-- Reactions -->
+  <div id="reactionsDiagram"></div>
+
+  <!-- Conditions -->
+  <div id="conditions"></div>
+
+  <!-- Model Parameters -->
+  <div id="modelParameters"></div>
+
+  <!-- Control -->
+  <div id="control"></div>
+  
+  <!-- MetadataList -->
+  <div id="metadata"></div>
+
+  <!-- Analysis -->
+  <div id="analysis"></div>
+
+  <!-- XML -->
+  <div id="xml"></div>
+
+  <!-- Welcome -->
+  <div id="welcome"></div>
+
+  <script type="module" src="./src/ts/app.ts" defer></script>
+  <!-- Register the app's service worker. -->
+  <script type="module">
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        //navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register(new URL('/sw.js', import.meta.url))
+        //navigator.serviceWorker.register(new URL('/sw.js', import.meta.url), { scope: '/' })
+        .then(function (registration) {
+          // Registration was successful
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function (err) {
+          // registration failed :(
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+    /*
+    if ("serviceWorker" in navigator) {
+      //navigator.serviceWorker.register("sw.js");
+      navigator.serviceWorker.register(new URL('/sw.js', import.meta.url));
+    }
+    */
+  </script>
+
+</body>
+
+</html>
