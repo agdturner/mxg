@@ -1241,7 +1241,7 @@ function processAnalysis(xml) {
                 rl.setUnits(units);
                 a.addRateList(rl);
                 //let labelText: string = rl.tagName + " " + i.toString() + " " + mapToString(rle_attributes);
-                let labelText = rl.tagName + " " + i.toString() + " T(" + t + ") conc(" + rle_attributes.get("conc") + ") bathGas(" + bathGas + ")";
+                let labelText = rl.tagName + " " + i.toString() + " T(" + t + "(K)) conc(" + rle_attributes.get("conc") + "(molec/cm3)) bathGas(" + bathGas + ")";
                 // Create a new collapsible div for the RateList.
                 let rleDivID = addID(rlDivID, i.toString());
                 let rleDiv = (0, html_js_1.createDiv)(rleDivID);

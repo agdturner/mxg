@@ -31,7 +31,7 @@
       "distDir": "dist/main",
       "publicUrl": "/mxg/dist/main"
     },
-    "0.13": {
+    "0.15": {
       "context": "browser",
       "includeNodeModules": true,
       "sourceMap": true,
