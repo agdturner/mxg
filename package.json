@@ -9,7 +9,7 @@
     "chemistry"
   ],
   "source": "src/index.html",
-  "homepage": "https://mesmer-kinetics.github.io/mxg/",
+  "homepage": "https://agdturner.github.io/mxg/",
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "build": "parcel build",
