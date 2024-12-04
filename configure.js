@@ -14,12 +14,12 @@ function replaceVariablesInFile(src, dest) {
 
 // List of files to process
 const filesToProcess = [
-  { src: 'src/html/index.html', dest: 'index.html' },
-  { src: 'src/tsconfig.json', dest: 'tsconfig.json' },
-  { src: 'src/manifest.webmanifest', dest: 'manifest.webmanifest' },
-  { src: 'src/package.json', dest: 'package.json' },
-  { src: 'src/sw.js', dest: 'sw.js' },
-  { src: 'src/docs/README.md', dest: 'README.md' }
+  { src: 'src/html/index.html.src', dest: 'index.html' },
+  { src: 'src/tsconfig.json.src', dest: 'tsconfig.json' },
+  { src: 'src/manifest.webmanifest.src', dest: 'manifest.webmanifest' },
+  { src: 'src/package.json.src', dest: 'package.json' },
+  { src: 'src/sw.js.src', dest: 'sw.js' },
+  { src: 'src/docs/README.md.src', dest: 'README.md' }
 ];
 
 // Process each file

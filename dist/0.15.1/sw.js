@@ -16,7 +16,9 @@ const APP_STATIC_RESOURCES = [
     "index.html",
     "src/css/style.css",
     "src/ts/app.js",
-    "src/images/UoL_Logo.png"
+    "src/images/UoL_Logo.png",
+    "src/scripts/3Dmol-min.js",
+    "src/scripts/3Dmol.ui-min.js"
 ];
 // On install, cache the static resources
 self.addEventListener("install", (event)=>{
