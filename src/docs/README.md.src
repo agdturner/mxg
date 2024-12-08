@@ -8,6 +8,7 @@ MESMER XML GUI (MXG) is a Graphical User Interface (GUI) for generating and visu
 
 MXG can be used via GitHub Pages and can be installed onto devices as a Progressive Web Application (PWA) that can be used offline. Version %VERSION% is served from GitHub Pages from where the respective PWA can be installed:
  - [Version %VERSION%](https://%GITHUB_USER%.github.io/mxg/dist/%VERSION%/)
+ - [Version 0.15](https://%GITHUB_USER%.github.io/mxg/dist/0.15/)
 
 A PWA is a type of application software delivered via the Web and built using common Web technologies including HTML, CSS, JavaScript, and WebAssembly. It should work on any platform with a standards-compliant browser. For more details about what a PWA is please see:
 - [Wikipedia Progressive Web App Article](https://en.wikipedia.org/wiki/Progressive_web_app)
