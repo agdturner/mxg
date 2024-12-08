@@ -1,8 +1,7 @@
-// This is the template of the service worker file.
-// The 0.15.1 placeholder is replaced with the actual version number when the app is built.
-// The service worker caches the static resources that the app needs to function.
-// The service worker intercepts server requests and responds with cached responses instead of going to the network.
-// The service worker deletes old caches on activation.
+// The service worker:
+// - caches the static resources that the app needs to function
+// - intercepts server requests and responds with cached responses instead of going to the network
+// - deletes old caches on activation
 
 // The name of the cache
 const CACHE_NAME = `mxg-0.15.1`;
