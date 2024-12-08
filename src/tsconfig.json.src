@@ -8,7 +8,7 @@
             "ES2021",
             "dom"
         ],
-        "outDir": "./dist/0.16/js",
+        "outDir": "./dist/%VERSION%/js",
         "strict": true,
         "sourceMap": true
     },

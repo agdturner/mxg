@@ -53,7 +53,7 @@
       text-align: center;
     }
   </style>
-  <h1>MESMER XML GUI (MXG Version 0.16)</h1>
+  <h1>MESMER XML GUI (MXG Version %VERSION%)</h1>
 </div>
 
 <!-- For the main GUI menu buttons -->
