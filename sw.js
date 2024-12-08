@@ -4,7 +4,7 @@
 // - deletes old caches on activation
 
 // The name of the cache
-const CACHE_NAME = `mxg-0.15`;
+const CACHE_NAME = `mxg-0.16`;
 
 // The static resources that the app needs to function.
 const APP_STATIC_RESOURCES = [
