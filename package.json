@@ -9,13 +9,13 @@
     "chemistry"
   ],
   "source": "src/index.html",
-  "homepage": "https://agdturner.github.io/mxg/",
+  "homepage": "https://MESMER-kinetics.github.io/mxg/",
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "configure": "node configure.js",
-    "build": "parcel build",
-    "start": "npx parcel --dist-dir dist/0.16 src/index.html -p 3460"
-  },
+    "build": "parcel build src/index.html --dist-dir dist/0.16",
+    "start": "npx parcel src/index.html --dist-dir dist/0.16 -p 3460"
+    },
   "targets": {
     "0.16": {
       "context": "browser",
